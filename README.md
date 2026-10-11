@@ -66,7 +66,7 @@ Type these into the Mudlet command input:
 | `ui debug` | Show which core GMCP data tables have arrived. |
 | `ui damage` | Session damage report (total, hits, damage per second, current fight). `ui damage reset` clears it. Clicking the **DMG** counter in the target panel shows the same report. |
 | `ui set` | List the toggles below. `ui set <name> on` or `off` changes one and remembers it. |
-| `auto` | ArjAuto help: automation toggles (`auto set`, `auto <name> on|off`), variables (`vars`), and the utility aliases. |
+| `auto` | ArjAuto help: automation toggles (`auto set`, `auto <name> on\|off`), variables (`vars`), and the utility aliases. |
 | `mapper` | Show mapper help. |
 | `mapper on` / `mapper off` | Enable or pause mapper updates. |
 | `mapper status` | Show the current map mode, room, zone, and cache statistics. |
