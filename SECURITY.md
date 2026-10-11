@@ -8,8 +8,8 @@ Keep exploit details and sensitive logs out of public issues. Ordinary bugs and 
 
 ## Version scope
 
-Report against the [latest release](https://github.com/LuminariMUD/duris-client/releases/latest) when possible, and identify older affected versions if known. This fork does not maintain separate security backport branches or promise a fixed response time.
+Report against the [latest release](https://github.com/LuminariMUD/duris-client/releases/latest) when possible, and identify older affected versions if known. This project does not maintain separate security backport branches or promise a fixed response time.
 
 ## Package data
 
-The package runs Lua inside Mudlet, receives GMCP and game text, downloads zone maps from `www.newduris.com`, and saves local settings in the Mudlet profile. Automation is disabled by default. Saved automation settings may include login commands; do not include them in reports or share your entire profile.
+The package runs Lua inside Mudlet, receives GMCP and game text, downloads zone maps from `duris.sbs`, and saves local settings in the Mudlet profile. Automation is disabled by default. Saved automation settings may include login commands; do not include them in reports or share your entire profile.

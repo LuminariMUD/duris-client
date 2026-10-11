@@ -12,7 +12,7 @@ ArjMapper = ArjMapper or {}
 -- ============================================================
 
 ArjMapper.config = {
-    apiBase = "https://www.newduris.com/api/wiki/zones/",
+    apiBase = "https://duris.sbs/api/wiki/zones/",
 
     wildFontSize = 11,
     wildZoom     = 1.4,

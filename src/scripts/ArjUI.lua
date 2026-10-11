@@ -78,16 +78,16 @@ function ArjUI:applyBackground()
   -- Package installs to profile folder: getMudletHomeDir()/profiles/[profile]/[package]/
   -- Try multiple possible paths
   local possiblePaths = {
-    getMudletHomeDir() .. "/Arjinius Client V1.0/NewDuris v1.png",  -- Old location
-    getMudletHomeDir() .. "/Arjinius Client/NewDuris v1.png",       -- Without version
+    getMudletHomeDir() .. "/Arjinius Client V1.0/duris-v1.png",  -- Old location
+    getMudletHomeDir() .. "/Arjinius Client/duris-v1.png",       -- Without version
   }
   
   -- Also try profile-relative path if available
   if getProfileName then
     local profile = getProfileName()
     if profile then
-      table.insert(possiblePaths, 1, getMudletHomeDir() .. "/profiles/" .. profile .. "/Arjinius Client V1.0/NewDuris v1.png")
-      table.insert(possiblePaths, 2, getMudletHomeDir() .. "/profiles/" .. profile .. "/Arjinius Client/NewDuris v1.png")
+      table.insert(possiblePaths, 1, getMudletHomeDir() .. "/profiles/" .. profile .. "/Arjinius Client V1.0/duris-v1.png")
+      table.insert(possiblePaths, 2, getMudletHomeDir() .. "/profiles/" .. profile .. "/Arjinius Client/duris-v1.png")
     end
   end
   
@@ -319,7 +319,7 @@ function ArjUI:init()
   
   -- Layout constants as percentages for DPI-independent scaling
   -- Tuned to match the decorative background frame
-  self.bannerPct = 10.5     -- top margin (below New Duris banner)
+  self.bannerPct = 10.5     -- top margin (below Duris banner)
   self.frameInsetXPct = 2.5 -- side margins (inside decorative frame)
   self.frameInsetBottomPct = 2.8  -- bottom margin (above bottom frame)
 
@@ -442,7 +442,7 @@ function ArjUI:init()
     QLabel:hover { background-color: rgba(22,20,15,220); color: #9df; border-color: #8c6e46; }
   ]])
   self.globeBtn:echo("<center>🌐</center>")
-  self.globeBtn:setClickCallback(function() openUrl("https://www.newduris.com/wiki/map") end)
+  self.globeBtn:setClickCallback(function() openUrl("https://duris.sbs/wiki/map") end)
   self.globeBtn:setOnEnter(function() self.globeBtn:setCursor("PointingHand") end)
   self.globeBtn:setOnLeave(function() self.globeBtn:setCursor("Arrow") end)
   
@@ -451,7 +451,7 @@ function ArjUI:init()
   styleSafe(self.areaLabel, self.styles.areaName)
   labelSet(self.areaLabel, "Unknown Area")
   self.areaLabel:setClickCallback(function()
-    if self.state.zoneId then openUrl("https://www.newduris.com/wiki/zones/" .. tostring(self.state.zoneId)) end
+    if self.state.zoneId then openUrl("https://duris.sbs/wiki/zones/" .. tostring(self.state.zoneId)) end
   end)
   self.areaLabel:setOnEnter(function()
     if self.state.zoneId then styleSafe(self.areaLabel, self.styles.areaNameHover); self.areaLabel:setCursor("PointingHand") end
@@ -679,7 +679,7 @@ function ArjUI:init()
     font-size: 8px;
     padding: 4px;
   ]])
-  self.creditTooltip:echo("<center>A Mudlet client for New Duris\nCreated by Arjin / Arjinius</center>")
+  self.creditTooltip:echo("<center>A Mudlet client for Duris\nCreated by Arjin / Arjinius</center>")
   self.creditTooltip:hide()
   
   self.creditBox:setOnEnter(function()
@@ -848,7 +848,7 @@ function ArjUI:init()
   -- Output launch message to the UI console
   if self.console then
     self.console:cecho("\n<gold>══ Arjinius Client v" .. ArjUI.VERSION .. " ══<reset>\n")
-    self.console:cecho("<dim_gray>  A Mudlet client for New Duris<reset>\n")
+    self.console:cecho("<dim_gray>  A Mudlet client for Duris<reset>\n")
     self.console:cecho("<dim_gray>  Created by Arjin / Arjinius<reset>\n")
     self.console:cecho("<gold>═══════════════════════════════<reset>\n\n")
   end

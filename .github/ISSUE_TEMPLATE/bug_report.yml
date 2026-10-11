@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a problem with the New Duris Mudlet package.
+description: Report a problem with the Duris Mudlet package.
 title: "[Bug]: "
 body:
   - type: markdown

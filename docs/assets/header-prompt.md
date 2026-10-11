@@ -3,15 +3,15 @@
 `new-duris-header.png` was generated with the built-in imagegen tool for this
 repository's README. It is illustrative artwork, not a screenshot of Mudlet.
 Its palette and map motifs were informed by `src/scripts/ArjUI.lua`,
-`src/scripts/ArjMapper.lua`, and the existing `src/assets/NewDuris v1.png` frame.
+`src/scripts/ArjMapper.lua`, and the existing `src/assets/duris-v1.png` frame.
 The original generated PNG is preserved without image edits.
 
 ## Generation prompt
 
 ```text
 Use case: stylized-concept
-Asset type: ultra-wide GitHub README header illustration for the New Duris Mudlet client package, approximately 3:1 landscape, ideally 2400 x 800.
-Primary request: Create a polished, atmospheric dark-fantasy title banner grounded in this project's actual identity: New Duris, Arjinius Client, a Lua/Geyser interface for a text-based MUD with zone and wilderness maps. The existing UI uses warm charcoal, muted bronze borders, antique gold lettering, parchment highlights, and restrained ember-red accents.
+Asset type: ultra-wide GitHub README header illustration for the Duris Mudlet client package, approximately 3:1 landscape, ideally 2400 x 800.
+Primary request: Create a polished, atmospheric dark-fantasy title banner grounded in this project's actual identity: Duris, Arjinius Client, a Lua/Geyser interface for a text-based MUD with zone and wilderness maps. The existing UI uses warm charcoal, muted bronze borders, antique gold lettering, parchment highlights, and restrained ember-red accents.
 Scene/backdrop: A misty medieval fortress silhouette and rugged wilderness dissolve into an aged, dark cartographer's chart. Subtle geometric rooms and connecting passages etched in bronze at the edges evoke the package's zone mapper. Small warm lights, fine dust, weathered stone, and thin engraved ornamental corners give rich depth without clutter.
 Style/medium: Premium hand-painted fantasy concept art with exquisite antique-metal typography; cinematic, restrained, elegant, finely detailed.
 Composition/framing: Wide panoramic banner. Keep the central title area dark and calm. Landscape and map details live toward the outer thirds; generous safe margins around all lettering; a fine bronze border inset from every edge. Strong readability at GitHub README width and on a phone. Full bleed, no white margins.

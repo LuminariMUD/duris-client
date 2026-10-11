@@ -1,17 +1,17 @@
 # Updates and upgrades: server and web-client study
 
 Working log for improving the Arjinius Client Mudlet package by comparing it
-against what the New Duris server actually sends and what the official web
+against what the Duris server actually sends and what the official web
 client already does with that data.
 
 Sources studied (all public, cloned read-only into a scratch dir on 2026-09-20):
 
-- Server: https://github.com/Community-Duris/Duris
+- Server: https://github.com/LuminariMUD/Duris
   - `src/net/gmcp.h`, `src/net/gmcp.c` (package list, send paths)
   - `src/core/json_utils.c` (exact JSON field names for each package)
   - `src/net/prompt.c` (prompt format the package's regex triggers depend on)
   - `src/net/chat_presentation.c`, `docs/guides/STRUCTURED_CHAT_COLORIZATION.md`
-- Web app (website + browser client): https://github.com/Community-Duris/DurisWebApp
+- Web app (website + browser client): https://github.com/LuminariMUD/DurisWeb
   - `frontend/src/types/mud.ts` (typed GMCP shapes)
   - `frontend/src/stores/mudStore.ts`, `components/mud/MudChatPanel.vue`,
     `MudAffects.vue`, `ShipRadar.vue`, `MudMap.vue`

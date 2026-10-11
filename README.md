@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/new-duris-header.png" alt="New Duris — Arjinius Client: a Mudlet interface, illustrated with a bronze-lit fortress and an ancient map" width="100%">
+  <img src="docs/assets/new-duris-header.png" alt="Duris — Arjinius Client: a Mudlet interface, illustrated with a bronze-lit fortress and an ancient map" width="100%">
 </p>
 
 <p align="center">
@@ -9,28 +9,28 @@
   <a href="src/scripts/ArjUI.lua"><img src="https://img.shields.io/badge/UI-Geyser-b89970?style=for-the-badge&amp;labelColor=16140f" alt="Built with Geyser"></a>
 </p>
 <p align="center">
-  <a href="#new-duris--arjinius-client"><img src="https://img.shields.io/badge/scope-client_UI-8c6e46?style=for-the-badge&amp;labelColor=16140f" alt="Client-side UI package"></a>
+  <a href="#duris--arjinius-client"><img src="https://img.shields.io/badge/scope-client_UI-8c6e46?style=for-the-badge&amp;labelColor=16140f" alt="Client-side UI package"></a>
   <a href="#install"><img src="https://img.shields.io/badge/GMCP-required-70b0c0?style=for-the-badge&amp;labelColor=16140f" alt="GMCP required"></a>
   <a href="#build-and-contribute"><img src="https://img.shields.io/badge/build-Python_3-7090c0?style=for-the-badge&amp;labelColor=16140f&amp;logo=python&amp;logoColor=white" alt="Build with Python 3"></a>
   <a href="https://github.com/LuminariMUD/duris-client/releases/latest/download/duris-client.mpackage"><img src="https://img.shields.io/badge/download-.mpackage-d4a855?style=for-the-badge&amp;labelColor=16140f" alt="Download the Mudlet package"></a>
 </p>
 
-# New Duris · Arjinius Client
+# Duris · Arjinius Client
 
 **The world in view. Your adventure at the center.**
 
-A custom [Mudlet](https://www.mudlet.org/) interface for [New Duris](https://www.newduris.com/), with a bronze-and-charcoal frame, live character information, integrated maps, and organized chat. Its three-column layout keeps the game console central while room, group, and combat details stay within reach.
+A custom [Mudlet](https://www.mudlet.org/) interface for [Duris](https://duris.sbs/), with a bronze-and-charcoal frame, live character information, integrated maps, and organized chat. Its three-column layout keeps the game console central while room, group, and combat details stay within reach.
 
-This is the **[LuminariMUD](https://github.com/LuminariMUD) community fork** of [Community-Duris/duris-client](https://github.com/Community-Duris/duris-client), originally created by Arjinius / Arjin. The package remains a client for **New Duris**.
+This **Duris** client is maintained by **[LuminariMUD](https://github.com/LuminariMUD)** in [LuminariMUD/duris-client](https://github.com/LuminariMUD/duris-client), originally created by Arjinius / Arjin.
 
 **[Install](#install)** · **[Features](#features)** · **[Commands](#commands)** · **[How it works](#how-it-works)** · **[Build and contribute](#build-and-contribute)**
 
 ## Install
 
-You need **Mudlet 4.19.1 or newer**, a New Duris profile, and **GMCP enabled** in both the Mudlet profile and the game. Zone maps also need access to `www.newduris.com` over HTTPS.
+You need **Mudlet 4.19.1 or newer**, a Duris profile, and **GMCP enabled** in both the Mudlet profile and the game. Zone maps also need access to `duris.sbs` over HTTPS.
 
 1. **[Download duris-client.mpackage](https://github.com/LuminariMUD/duris-client/releases/latest/download/duris-client.mpackage)** from the [latest release](https://github.com/LuminariMUD/duris-client/releases/latest). Each release lists its changes and a SHA-256 checksum; you do not need to build it yourself.
-2. Open your New Duris profile in Mudlet.
+2. Open your Duris profile in Mudlet.
 3. Open **Package Manager** (`Alt+O`), choose **Install New Package**, and select the downloaded `.mpackage`. See the [Mudlet Package Manager guide](https://wiki.mudlet.org/w/Manual:Package_Manager) for details.
 4. Reconnect and enter the game so fresh character and room data can populate the interface.
 
@@ -42,7 +42,7 @@ The package is named **Arjinius Client** inside Mudlet. For updates, download th
 | --- | --- |
 | **A cohesive interface** | A dark fantasy frame, percentage-based layout, central game console, and dedicated command input. |
 | **Character and quests** | HP, mana, movement, progress toward the next level, position, character identity, coins, and active bartender quest details. Non-mana classes show **MP n/a**. |
-| **Zone and wilderness maps** | Zone layouts from the New Duris map API and wilderness maps from GMCP, with zoom controls, room tooltips, and a current-position marker. |
+| **Zone and wilderness maps** | Zone layouts from the Duris map API and wilderness maps from GMCP, with zoom controls, room tooltips, and a current-position marker. |
 | **Room awareness** | Clickable exits, distinct closed/locked exit styles, lists of mobs, items, and players, plus NPC annotations showing whom they are fighting. |
 | **Combat and groups** | Target health and position, a prompt-derived tank display, affects, a per-fight damage counter, group size/capacity, moves per member, the most hurt member highlighted, and dimmed **AWAY** markers for members outside your room. |
 | **Chat that stays organized** | **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**, with timestamps, individual tell windows, contact history for the current session, and alignment-colored nchat/jchat senders. |
@@ -85,10 +85,10 @@ Three Lua scripts run inside Mudlet. **ArjUI** builds the Geyser interface and p
 
 ```mermaid
 flowchart TB
-    accTitle: New Duris client data flow
+    accTitle: Duris client data flow
     accDescr: The server supplies GMCP and game text to ArjUI. ArjMapper combines room GMCP with zone layouts from the web API and renders maps inside ArjUI.
-    server["New Duris server"]
-    wiki["New Duris web API"]
+    server["Duris server"]
+    wiki["Duris web API"]
 
     subgraph mudlet["Mudlet · Arjinius Client"]
         direction TB
@@ -123,12 +123,12 @@ flowchart TB
     linkStyle default stroke:#8c6e46,stroke-width:1.5px
 ```
 
-Most live panels use GMCP. Inventory, equipment, and who lists capture game text; tank and time displays also depend on text triggers. The damage counter reads `Combat.Update.round` when the server sends it and falls back to `[Damage: N]` display lines. Several display helpers were adapted from the community "lielz scripts" collection; see [`docs/ongoing-projects/lielz-port.md`](docs/ongoing-projects/lielz-port.md) for what was taken and what was left out. Zone layouts come from `https://www.newduris.com/api/wiki/zones/{zoneId}/map-data` and are cached in memory. The mapper listens to `Room.Info` and `Room.Map` directly.
+Most live panels use GMCP. Inventory, equipment, and who lists capture game text; tank and time displays also depend on text triggers. The damage counter reads `Combat.Update.round` when the server sends it and falls back to `[Damage: N]` display lines. Several display helpers were adapted from the community "lielz scripts" collection; see [`docs/ongoing-projects/lielz-port.md`](docs/ongoing-projects/lielz-port.md) for what was taken and what was left out. Zone layouts come from `https://duris.sbs/api/wiki/zones/{zoneId}/map-data` and are cached in memory. The mapper listens to `Room.Info` and `Room.Map` directly.
 
 ## Troubleshooting and current limits
 
 - **Empty vitals or room panels:** run `ui debug`, check that GMCP is enabled, then reconnect and enter the game. Initial character setup uses `Char.Status` on login.
-- **Blank or stale zone map:** run `mapper status` and `mapper debug`, check access to the New Duris website, then try `mapper reload` followed by `look`.
+- **Blank or stale zone map:** run `mapper status` and `mapper debug`, check access to the Duris website, then try `mapper reload` followed by `look`.
 - **Missing tank, inventory, equipment, who, or time information:** these displays depend on recognized text and prompt formats. Custom prompts or changed server output can affect capture even when GMCP panels work.
 - **Need to restore the main console:** use `ui off`; `ui on` builds the interface again.
 
@@ -173,8 +173,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and [SUPPOR
 
 ## Credits and links
 
-Originally created by **[Arjinius / Arjin](https://github.com/Arjinius)**. This fork is maintained in **[LuminariMUD/duris-client](https://github.com/LuminariMUD/duris-client)**; upstream development is at **[Community-Duris/duris-client](https://github.com/Community-Duris/duris-client)**. Additional display helpers and automation derive from the community lielz scripts archive, and the Mudlet reference documents come from LuminariGUI.
+Originally created by **[Arjinius / Arjin](https://github.com/Arjinius)**. Development is maintained in **[LuminariMUD/duris-client](https://github.com/LuminariMUD/duris-client)**. Additional display helpers and automation derive from the community lielz scripts archive, and the Mudlet reference documents come from LuminariGUI.
 
-**License status:** upstream does not include a license file. This fork preserves existing credits and does not introduce a new license; see [LICENSE.md](LICENSE.md).
+**License status:** the project has no declared license. Existing credits are preserved and no new license is introduced; see [LICENSE.md](LICENSE.md).
 
-[New Duris](https://www.newduris.com/) · [World map](https://www.newduris.com/wiki/map) · [Mudlet](https://www.mudlet.org/)
+[Duris](https://duris.sbs/) · [World map](https://duris.sbs/wiki/map) · [Mudlet](https://www.mudlet.org/)

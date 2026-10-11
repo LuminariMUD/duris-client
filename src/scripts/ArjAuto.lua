@@ -1,5 +1,5 @@
 -- ArjAuto (Mudlet 4.19.1)
--- Automation and utility aliases for New Duris, adapted from the community
+-- Automation and utility aliases for Duris, adapted from the community
 -- "lielz scripts" collection (2015-2024). Every automatic behaviour is OFF
 -- until switched on with `auto <name> on`; the setting is remembered.
 -- Type `auto` for help.

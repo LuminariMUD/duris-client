@@ -1,8 +1,8 @@
 mpackage = [[Arjinius Client]]
 author = [[Arjinius / Arjin]]
 icon = [[ArjUI.jpeg]]
-title = [[A custom Mudlet client created for New Duris by Arjinius.]]
-description = [[Arjinius Client is a custom Mudlet client designed specifically for New Duris, focused on clarity, usability, and a cohesive dark fantasy aesthetic.
+title = [[A custom Mudlet client created for Duris by Arjinius.]]
+description = [[Arjinius Client is a custom Mudlet client designed specifically for Duris, focused on clarity, usability, and a cohesive dark fantasy aesthetic.
 
 This package replaces the default Mudlet layout with a structured interface that includes:
 • A fully custom UI layout
@@ -15,7 +15,7 @@ The Arjinius Client is intended for players who want a more modern, informative 
 
 Requirements:
 • Mudlet 4.19.1 or newer
-• GMCP enabled (default on New Duris)
+• GMCP enabled (default on Duris)
 
 Installation:
 • Import this package using Mudlet’s Package Manager

@@ -1,6 +1,6 @@
 # Contributing
 
-Contributions to the New Duris Mudlet package are welcome in [LuminariMUD/duris-client](https://github.com/LuminariMUD/duris-client). This is a fork of [Community-Duris/duris-client](https://github.com/Community-Duris/duris-client), originally by Arjinius / Arjin.
+Contributions to the Duris Mudlet package are welcome in [LuminariMUD/duris-client](https://github.com/LuminariMUD/duris-client). The package was originally created by Arjinius / Arjin.
 
 Read the [Code of Conduct](CODE_OF_CONDUCT.md) and [license status](LICENSE.md) before contributing. Preserve existing author credits and identify the source and license of any material you add.
 
@@ -24,6 +24,6 @@ Use the [issue forms](https://github.com/LuminariMUD/duris-client/issues/new/cho
    The build has no Python package dependencies. The syntax check warns and skips Lua validation if no supported compiler is installed. Confirm that it actually ran. A full build also validates the assembled XML.
 
 5. For runtime changes, import the rebuilt package into Mudlet 4.19.1 or newer with GMCP enabled. Check the affected behavior, reconnect, and verify `ui off` / `ui on`. Check the UI, maps, chat, and any changed automation toggles as applicable. There is no automated runtime test suite.
-6. Commit the changed sources, version/changelog, and rebuilt package together. Open a pull request against this fork's `master` branch. Describe the user-visible change and the validation performed; state explicitly when Mudlet testing was unavailable.
+6. Commit the changed sources, version/changelog, and rebuilt package together. Open a pull request against this repository's `master` branch. Describe the user-visible change and the validation performed; state explicitly when Mudlet testing was unavailable.
 
-See [AGENTS.md](AGENTS.md) for repository conventions and the [implementation log](docs/ongoing-projects/updates-upgrades.md) for New Duris GMCP field names. Documents copied from LuminariGUI are background references, as explained in [docs/README.md](docs/README.md).
+See [AGENTS.md](AGENTS.md) for repository conventions and the [implementation log](docs/ongoing-projects/updates-upgrades.md) for Duris GMCP field names. Documents copied from LuminariGUI are background references, as explained in [docs/README.md](docs/README.md).

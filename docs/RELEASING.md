@@ -18,7 +18,7 @@ Releases are published by GitHub Actions (`.github/workflows/release.yml`) when 
 
 ## Cut a release
 
-Publish this fork to `LuminariMUD/duris-client`. Keep `origin` pointed at that repository and `upstream` at `Community-Duris/duris-client`; check `git remote -v` before pushing. Repository-only documentation changes do not require a package version bump.
+Publish to `LuminariMUD/duris-client`. Use `origin` as the only remote, pointing at that repository; check `git remote -v` before pushing. Repository-only documentation changes do not require a package version bump.
 
 1. Bump `VERSION` (for example `1.2.0`) following the table above. Do not edit `src/config.lua` or `ArjUI.VERSION` by hand.
 2. Add a `## 1.2.0 - YYYY-MM-DD` section to `CHANGELOG.md`. Its heading must equal `VERSION` exactly; the workflow copies that section into the release notes.

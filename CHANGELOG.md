@@ -2,6 +2,13 @@
 
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
+## 1.3.1 - 2026-10-12
+
+- Use Duris naming in the package metadata, UI messages, documentation, and issue forms.
+- Point zone-map downloads and world-map/wiki links to `https://duris.sbs`.
+- Rename the packaged background to `duris-v1.png` and update the UI's asset paths.
+- Point repository and publishing instructions to `LuminariMUD/duris-client` with `origin` as the only remote.
+
 ## 1.3.0 - 2026-09-20
 
 New **ArjAuto** script: the automation and utility side of the "lielz scripts" archive, reworked so nothing is hardcoded to one character. Every automatic behaviour is off until `auto <name> on`; toggles, variables, the rescue list, bidscores and login commands persist in `arjauto.json`. Type `auto` for help.
@@ -52,7 +59,7 @@ Same package as 1.1, re-released to adopt semantic versioning.
 
 First tagged release.
 
-- Aligned ArjUI with the New Duris server's GMCP output (`Char.Status`, `Char.Vitals`, room, group, and combat fields).
+- Aligned ArjUI with the Duris server's GMCP output (`Char.Status`, `Char.Vitals`, room, group, and combat fields).
 - Split the package into editable sources under `src/` with a stdlib-only `build.py` assembler.
 - Renamed the build output to `duris-client.mpackage`.
 - Added GitHub Actions: CI syntax-checks and builds on every push; pushing a `v*` tag publishes a release with the package attached.
