@@ -1,6 +1,6 @@
 name: Release
 
-# Pushing a tag like `v1.2` builds the package from that tag and publishes a
+# Pushing a tag like `v1.2.0` builds the package from that tag and publishes a
 # GitHub Release with the .mpackage attached. See docs/RELEASING.md.
 
 on:
@@ -42,7 +42,7 @@ jobs:
           mkdir -p dist
           python3 build.py -o dist/duris-client.mpackage
           cp dist/duris-client.mpackage "dist/duris-client-${VERSION}.mpackage"
-          (cd dist && sha256sum *.mpackage > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          (cd dist && sha256sum -- *.mpackage > SHA256SUMS.txt && cat SHA256SUMS.txt)
 
       - name: Extract release notes from CHANGELOG.md
         run: |

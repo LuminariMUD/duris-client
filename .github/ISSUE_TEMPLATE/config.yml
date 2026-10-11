@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Installation and troubleshooting
+    url: https://github.com/LuminariMUD/duris-client/blob/master/SUPPORT.md
+    about: Find setup help and diagnostics before filing an issue.
+  - name: Private security report
+    url: https://github.com/LuminariMUD/duris-client/security/advisories/new
+    about: Report vulnerabilities privately, without posting exploit details in public issues.

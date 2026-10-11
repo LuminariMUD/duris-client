@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Community-Duris/duris-client/releases/latest"><img src="https://img.shields.io/github/v/release/Community-Duris/duris-client?style=for-the-badge&amp;color=d4a855&amp;labelColor=16140f&amp;label=release" alt="Latest release"></a>
+  <a href="https://github.com/LuminariMUD/duris-client/releases/latest"><img src="https://img.shields.io/github/v/release/LuminariMUD/duris-client?style=for-the-badge&amp;color=d4a855&amp;labelColor=16140f&amp;label=release" alt="Latest release"></a>
   <a href="https://www.mudlet.org/download/"><img src="https://img.shields.io/badge/Mudlet-4.19.1%2B-8c6e46?style=for-the-badge&amp;labelColor=16140f" alt="Requires Mudlet 4.19.1 or newer"></a>
   <a href="src/scripts/"><img src="https://img.shields.io/badge/code-Lua-7090c0?style=for-the-badge&amp;labelColor=16140f&amp;logo=lua&amp;logoColor=white" alt="Written in Lua"></a>
   <a href="src/scripts/ArjUI.lua"><img src="https://img.shields.io/badge/UI-Geyser-b89970?style=for-the-badge&amp;labelColor=16140f" alt="Built with Geyser"></a>
@@ -12,7 +12,7 @@
   <a href="#new-duris--arjinius-client"><img src="https://img.shields.io/badge/scope-client_UI-8c6e46?style=for-the-badge&amp;labelColor=16140f" alt="Client-side UI package"></a>
   <a href="#install"><img src="https://img.shields.io/badge/GMCP-required-70b0c0?style=for-the-badge&amp;labelColor=16140f" alt="GMCP required"></a>
   <a href="#build-and-contribute"><img src="https://img.shields.io/badge/build-Python_3-7090c0?style=for-the-badge&amp;labelColor=16140f&amp;logo=python&amp;logoColor=white" alt="Build with Python 3"></a>
-  <a href="https://github.com/Community-Duris/duris-client/releases/latest/download/duris-client.mpackage"><img src="https://img.shields.io/badge/download-.mpackage-d4a855?style=for-the-badge&amp;labelColor=16140f" alt="Download the Mudlet package"></a>
+  <a href="https://github.com/LuminariMUD/duris-client/releases/latest/download/duris-client.mpackage"><img src="https://img.shields.io/badge/download-.mpackage-d4a855?style=for-the-badge&amp;labelColor=16140f" alt="Download the Mudlet package"></a>
 </p>
 
 # New Duris · Arjinius Client
@@ -21,18 +21,20 @@
 
 A custom [Mudlet](https://www.mudlet.org/) interface for [New Duris](https://www.newduris.com/), with a bronze-and-charcoal frame, live character information, integrated maps, and organized chat. Its three-column layout keeps the game console central while room, group, and combat details stay within reach.
 
+This is the **[LuminariMUD](https://github.com/LuminariMUD) community fork** of [Community-Duris/duris-client](https://github.com/Community-Duris/duris-client), originally created by Arjinius / Arjin. The package remains a client for **New Duris**.
+
 **[Install](#install)** · **[Features](#features)** · **[Commands](#commands)** · **[How it works](#how-it-works)** · **[Build and contribute](#build-and-contribute)**
 
 ## Install
 
 You need **Mudlet 4.19.1 or newer**, a New Duris profile, and **GMCP enabled** in both the Mudlet profile and the game. Zone maps also need access to `www.newduris.com` over HTTPS.
 
-1. **[Download duris-client.mpackage](https://github.com/Community-Duris/duris-client/releases/latest/download/duris-client.mpackage)** from the [latest release](https://github.com/Community-Duris/duris-client/releases/latest). Each release lists its changes and a SHA-256 checksum; you do not need to build it yourself.
+1. **[Download duris-client.mpackage](https://github.com/LuminariMUD/duris-client/releases/latest/download/duris-client.mpackage)** from the [latest release](https://github.com/LuminariMUD/duris-client/releases/latest). Each release lists its changes and a SHA-256 checksum; you do not need to build it yourself.
 2. Open your New Duris profile in Mudlet.
 3. Open **Package Manager** (`Alt+O`), choose **Install New Package**, and select the downloaded `.mpackage`. See the [Mudlet Package Manager guide](https://wiki.mudlet.org/w/Manual:Package_Manager) for details.
 4. Reconnect and enter the game so fresh character and room data can populate the interface.
 
-The package is named **Arjinius Client** inside Mudlet. For updates, download the `.mpackage` from the [latest release](https://github.com/Community-Duris/duris-client/releases/latest), replace your installed copy through Package Manager, and reconnect. See [`CHANGELOG.md`](CHANGELOG.md) for what changed.
+The package is named **Arjinius Client** inside Mudlet. For updates, download the `.mpackage` from the [latest release](https://github.com/LuminariMUD/duris-client/releases/latest), replace your installed copy through Package Manager, and reconnect. See [`CHANGELOG.md`](CHANGELOG.md) for what changed.
 
 ## Features
 
@@ -167,8 +169,12 @@ When changing the package, bump `VERSION` (semantic versioning, see [`docs/RELEA
 
 Read [`AGENTS.md`](AGENTS.md) for repository guidance and the [Duris implementation log](docs/ongoing-projects/updates-upgrades.md) for server field names. The [Mudlet reference documents](docs/README.md) were copied from LuminariGUI and are background references; their project-specific architecture and MSDP instructions do not describe this package.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and [SUPPORT.md](SUPPORT.md) for help and bug reports. Participation follows our [Code of Conduct](CODE_OF_CONDUCT.md). Report security concerns through the private channel in [SECURITY.md](SECURITY.md).
+
 ## Credits and links
 
-Originally created by **[Arjinius / Arjin](https://github.com/Arjinius)**. Maintained here in **[Community-Duris/duris-client](https://github.com/Community-Duris/duris-client)**.
+Originally created by **[Arjinius / Arjin](https://github.com/Arjinius)**. This fork is maintained in **[LuminariMUD/duris-client](https://github.com/LuminariMUD/duris-client)**; upstream development is at **[Community-Duris/duris-client](https://github.com/Community-Duris/duris-client)**. Additional display helpers and automation derive from the community lielz scripts archive, and the Mudlet reference documents come from LuminariGUI.
+
+**License status:** upstream does not include a license file. This fork preserves existing credits and does not introduce a new license; see [LICENSE.md](LICENSE.md).
 
 [New Duris](https://www.newduris.com/) · [World map](https://www.newduris.com/wiki/map) · [Mudlet](https://www.mudlet.org/)

@@ -1,0 +1,52 @@
+name: Bug report
+description: Report a problem with the New Duris Mudlet package.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For security concerns, use https://github.com/LuminariMUD/duris-client/security/advisories/new.
+        Remove passwords, saved login commands, and private messages from all attachments.
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version
+      description: The Arjinius Client version shown in Mudlet's Package Manager.
+      placeholder: "1.3.0"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Mudlet version and operating system
+      placeholder: "Mudlet version; Windows, macOS, or Linux version"
+    validations:
+      required: true
+  - type: dropdown
+    id: gmcp
+    attributes:
+      label: Is GMCP enabled in Mudlet and the game?
+      options:
+        - "Yes"
+        - "No"
+        - "Not sure"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include relevant commands and whether the problem persists after reconnecting.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics or screenshots
+      description: If useful, include sanitized ui debug, mapper status, mapper debug, or Mudlet error output. Do not attach your full profile.
