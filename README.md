@@ -167,7 +167,7 @@ When changing the package, bump `VERSION` (semantic versioning, see [`docs/RELEA
 
 **Validation is limited:** `--check` checks Lua syntax only and skips that check with a warning if `luac` is absent. A full build also validates the assembled XML. Neither verifies runtime behavior; import the package into Mudlet to check layout, GMCP updates, chat, maps, controls, and reconnect behavior. No automated runtime test suite exists in this repository.
 
-Read [`AGENTS.md`](AGENTS.md) for repository guidance and the [Duris implementation log](docs/ongoing-projects/updates-upgrades.md) for server field names. The [Mudlet reference documents](docs/README.md) were copied from LuminariGUI and are background references; their project-specific architecture and MSDP instructions do not describe this package.
+Read [`AGENTS.md`](AGENTS.md) for repository guidance, the [Linux development and visual-testing guide](docs/LINUX_DEVELOPMENT.md) for real-Mudlet testing with Xvfb and live Duris sessions, and the [Duris implementation log](docs/ongoing-projects/updates-upgrades.md) for server field names. The imported [Mudlet reference documents](docs/README.md#imported-reference-material) are background references from LuminariGUI; their project-specific architecture and MSDP instructions do not describe this package.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and [SUPPORT.md](SUPPORT.md) for help and bug reports. Participation follows our [Code of Conduct](CODE_OF_CONDUCT.md). Report security concerns through the private channel in [SECURITY.md](SECURITY.md).
 

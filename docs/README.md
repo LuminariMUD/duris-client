@@ -1,10 +1,21 @@
 # docs/
 
+## Duris client documentation
+
+| File | Purpose |
+| --- | --- |
+| [LINUX_DEVELOPMENT.md](LINUX_DEVELOPMENT.md) | Verified Linux/Mudlet setup, Xvfb screenshots, offline scenarios, live-server testing and visual review. Includes prerequisites and verification limits. |
+| [RELEASING.md](RELEASING.md) | Package versioning, builds and releases. |
+| [Server study and implementation log](ongoing-projects/updates-upgrades.md) | Duris protocol field references and the client improvement history. |
+| [lielz port log](ongoing-projects/lielz-port.md) | Adapted display helpers and automation. |
+
+## Imported reference material
+
 Reference material copied from the sibling project **LuminariGUI**
 (`~/projects/LuminariGUI/docs/`), a Mudlet UI package for a different MUD.
-These files were copied verbatim and have **not** been adapted for the Duris
-client yet. Treat them as background reading, not as a description of this
-repo.
+The files in the table below were copied verbatim and have **not** been adapted
+for the Duris client yet. Treat them as background reading, not as a description
+of this repo.
 
 | File | Why it is here | What does NOT apply here |
 |---|---|---|
