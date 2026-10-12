@@ -2,6 +2,9 @@
 
 Guidance for AI agents working in this repo. `CLAUDE.md` and `GEMINI.md` are symlinks to this file.
 
+## .env
+The `.env` file, if relevant, will contain local locations of the MUD server code and MUD website code (MUD website also has a built-in MUD client)
+
 ## What this is
 A **Mudlet client package** for the MUD *Duris*. Repository: https://github.com/LuminariMUD/duris-client (originally by Arjinius).
 
