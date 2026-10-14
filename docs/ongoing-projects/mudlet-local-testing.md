@@ -4,7 +4,7 @@ Updated **2026-10-14**. The recorded 1.3.1 defects and additional defects found
 by offline/live testing are fixed in **1.3.2**. All eleven offline scenarios and
 six deliberate failure cases pass their automated expectations in real Mudlet
 5.0.1. Screenshot review passed for the eleven positive scenarios and ten
-additional size/scaling runs. Remote CI is pending the first push below.
+additional size/scaling runs. Remote CI is being verified after publication.
 
 The user's target is this installed Ubuntu/Mudlet environment. Coverage of
 other Mudlet versions, physical displays and unavailable live game states is
@@ -190,7 +190,12 @@ GMCP cannot count as a login. Final core checks passed **31 assertions**.
 - **Unavailable live states:** the table above remains open; synthetic
   fixtures do not substitute for live group/ship/wilderness/chat/active-quest
   and full combat checks. Quest-map rendering remains an unsupported feature.
-- **Remote CI:** workflow implemented; execution result pending publication.
+- **Remote CI:** first push reached `master` at `66d5d69`. The first runtime
+  [attempt](https://github.com/LuminariMUD/duris-client/actions/runs/38630930024)
+  was rejected before jobs started: the job-level environment referenced
+  `runner.temp`, which is unavailable in that expression context. Artifact
+  setup now uses `$RUNNER_TEMP` inside a step and writes `$GITHUB_ENV`;
+  the corrected workflow is being verified.
   `.github/workflows/mudlet-runtime.yml` pins Ubuntu 26.04, Mudlet 5.0.1 and its
   installer checksum, runs the same suite, bounds runtime and uploads evidence
   on failure. It supports manual dispatch and relevant push/PR changes.

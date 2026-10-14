@@ -16,10 +16,10 @@ jobs:
     name: Offline behavior (visual review remains manual)
     runs-on: ubuntu-26.04
     timeout-minutes: 20
-    env:
-      MUDLET_ARTIFACTS: ${{ runner.temp }}/mudlet-runs
     steps:
       - uses: actions/checkout@v4
+      - name: Set artifact directory
+        run: echo "MUDLET_ARTIFACTS=$RUNNER_TEMP/mudlet-runs" >> "$GITHUB_ENV"
       - name: Install pinned Mudlet and desktop dependencies
         shell: bash
         run: |
