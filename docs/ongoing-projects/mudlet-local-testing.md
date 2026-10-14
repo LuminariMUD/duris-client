@@ -4,7 +4,8 @@ Updated **2026-10-14**. The recorded 1.3.1 defects and additional defects found
 by offline/live testing are fixed in **1.3.2**. All eleven offline scenarios and
 six deliberate failure cases pass their automated expectations in real Mudlet
 5.0.1. Screenshot review passed for the eleven positive scenarios and ten
-additional size/scaling runs. Remote CI is being verified after publication.
+additional size/scaling runs. Both the runtime and syntax/build workflows
+passed on GitHub after publication.
 
 The user's target is this installed Ubuntu/Mudlet environment. Coverage of
 other Mudlet versions, physical displays and unavailable live game states is
@@ -195,7 +196,13 @@ GMCP cannot count as a login. Final core checks passed **31 assertions**.
   was rejected before jobs started: the job-level environment referenced
   `runner.temp`, which is unavailable in that expression context. Artifact
   setup now uses `$RUNNER_TEMP` inside a step and writes `$GITHUB_ENV`;
-  the corrected workflow is being verified.
+  the corrected [runtime run](https://github.com/LuminariMUD/duris-client/actions/runs/38631065544)
+  at `e327e8a` **passed**, including all 17 scenario/fault expectations,
+  eight controller checks, cleanup and artifact upload. The corresponding
+  [syntax/build run](https://github.com/LuminariMUD/duris-client/actions/runs/38631065661)
+  also **passed**. Runtime evidence is retained for 14 days as artifact
+  `mudlet-runtime-e327e8a4d06542b824614f5b4cfea0179c2dd213` (ID `11925974054`);
+  local API result snapshots are in `artifacts/remediation/ci-*.json`.
   `.github/workflows/mudlet-runtime.yml` pins Ubuntu 26.04, Mudlet 5.0.1 and its
   installer checksum, runs the same suite, bounds runtime and uploads evidence
   on failure. It supports manual dispatch and relevant push/PR changes.
@@ -206,5 +213,5 @@ The original seven-phase plan and 1.3.1 setup report remain in Git history at
 [`aebfd72`](https://github.com/LuminariMUD/duris-client/blob/aebfd727844a57c974cdb6f329377646732a836a/docs/ongoing-projects/mudlet-local-testing.md).
 Environment/baseline, repeatable execution, offline fixtures, triage and operator
 documentation are implemented. Live/compatibility has the explicit limits
-above; remote CI evidence is recorded after its first run. No unresolved
+above; remote CI execution and evidence upload passed. No unresolved
 reproduced defect currently blocks ordinary use in the tested primary target.

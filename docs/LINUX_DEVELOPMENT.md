@@ -143,8 +143,10 @@ reacted to fixture text; ArjMapper remains installed. The source build is at
 initial evidence is under `artifacts/setup-20261014T184545Z/`. A future build
 should use a new artifact directory to preserve this baseline.
 
-No VNC listener or live-server connection was configured. Follow the optional
-viewer and live-test sections when those are needed.
+The saved Duris-Visual profile remains offline, with no VNC listener configured.
+A separate `Duris-Live-Test` profile was used for the integration checks recorded
+in the testing report and is now disconnected. Follow the optional viewer and
+live-test sections for future sessions.
 
 ## Testing layers
 
