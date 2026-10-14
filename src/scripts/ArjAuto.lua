@@ -172,6 +172,14 @@ function ArjAuto:kill()
   self.handlers = {}
 end
 
+function ArjAuto:resetSession()
+  for id in pairs(self.pendingTimers or {}) do killTimer(id) end
+  for _, id in pairs(self.timers or {}) do killTimer(id) end
+  self.pendingTimers, self.timers = {}, {}
+  self.rescueLocked, self.fleeStabArmed, self.contactsWanted = false, false, false
+  self.rebash = {generic=false, target=false, inLag=false}
+end
+
 function ArjAuto:after(delay, callback)
   self.pendingTimers = self.pendingTimers or {}
   local id
@@ -461,7 +469,7 @@ function ArjAuto:targetContact()
   local s = self:shipState()
   if not s.target then return nil end
   local list = s.contacts
-  if type(list) ~= "table" or #list == 0 then list = s.textContacts end
+  if type(list) ~= "table" then list = s.textContacts end
   for _, c in ipairs(list or {}) do
     if tostring(c.id) == tostring(s.target) then return c end
   end

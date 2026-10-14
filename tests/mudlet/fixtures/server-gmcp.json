@@ -1,0 +1,321 @@
+{
+  "provenance": {
+    "description": "Production functions with isolated world/mechanics dependencies; no live player data.",
+    "server_commit": "d27e2b5ec5431d6489acd6258c264dcb1aeec29a",
+    "source_sha256": {
+      "src/net/gmcp.c": "faec3bef7846c8559c3c521779be161857d4e833936d9f9e34106be9ebc985e6",
+      "src/core/json_utils.c": "450824d9df68db12b26c8de9d072a1a12a70914e511b34fa8108e8a5003d325a",
+      "src/core/structs.h": "2ac19e2dbe62ef5bf4678b5e5e7f4055a82a8a256dbe73e40b4e23556035884e",
+      "src/combat/fight.c": "896c464bf2be78b8f0b9fff5a869c922bab6473afc18fb6665a4b520ac8cb8e2",
+      "tests/async/gui_gmcp_contract_harness.cpp": "a72b4742e0b9708952bdd59fa3768292ba25aed9a05227af4356b44850c9ad3c",
+      "tests/async/test_gui_gmcp_contract.py": "a8bc11b2b21449d416849f1f7827c82c6053f19c4f1d126d591a2a1bc4c7b5fe"
+    }
+  },
+  "phases": {
+    "snapshot": [
+      {
+        "package": "Ship.Info",
+        "data": {
+          "name": "Bronze Voyager",
+          "id": "AA",
+          "captain": "",
+          "class": 0,
+          "frags": 0,
+          "status": "sailing",
+          "maxSpeed": 18,
+          "contactRange": 35,
+          "sail": 0,
+          "maxSail": 0,
+          "crewStamina": 0,
+          "maxCrewStamina": 0,
+          "repairStock": 0,
+          "chiefs": {
+            "sail": "",
+            "guns": "",
+            "repair": ""
+          },
+          "skills": {
+            "sail": 0,
+            "guns": 0,
+            "repair": 0
+          },
+          "skillMods": {
+            "sail": 0,
+            "guns": 0,
+            "repair": 0
+          },
+          "people": 2,
+          "maxPeople": 0,
+          "armor": {
+            "bow": [
+              80,
+              100
+            ],
+            "port": [
+              0,
+              0
+            ],
+            "stern": [
+              0,
+              0
+            ],
+            "starboard": [
+              0,
+              0
+            ]
+          },
+          "internal": {
+            "bow": [
+              40,
+              50
+            ],
+            "port": [
+              0,
+              0
+            ],
+            "stern": [
+              0,
+              0
+            ],
+            "starboard": [
+              0,
+              0
+            ]
+          },
+          "weapons": [],
+          "equipment": [],
+          "cargo": {
+            "current": 3,
+            "max": 0,
+            "items": [
+              {
+                "slot": 0,
+                "name": "silk",
+                "crates": 3,
+                "invoicePrice": 0,
+                "contraband": false
+              }
+            ]
+          }
+        }
+      },
+      {
+        "package": "Ship.Contacts",
+        "data": {
+          "heading": 90,
+          "speed": 12,
+          "contacts": [
+            {
+              "id": "BB",
+              "name": "Enemy vessel",
+              "x": 0,
+              "y": 0,
+              "range": 5,
+              "bearing": 70,
+              "heading": 50,
+              "speed": 8,
+              "arc": "port",
+              "race": "evil",
+              "status": "",
+              "targeting_you": true,
+              "you_targeting": true
+            }
+          ]
+        }
+      },
+      {
+        "package": "Room.Map",
+        "data": {
+          "map": "&+G@&n\n"
+        }
+      },
+      {
+        "package": "Combat.Update",
+        "data": {
+          "target": {
+            "name": "wolf",
+            "health": "big nasty wounds",
+            "healthPercent": 40,
+            "position": "on their ass"
+          },
+          "round": {
+            "attacker": "Tester",
+            "damage": 8,
+            "damageType": "unknown",
+            "critical": false
+          }
+        }
+      },
+      {
+        "package": "Room.Info",
+        "data": {
+          "num": 22800,
+          "name": "Gate of \"Dawn\"",
+          "colored_name": "Gate of \"Dawn\"",
+          "area": "Test Zone",
+          "colored_area": "Test Zone",
+          "environment": "inside",
+          "coords": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "exits": {},
+          "doors": {},
+          "players": [],
+          "npcs": [],
+          "items": [],
+          "zone": 228,
+          "terrain": 0
+        }
+      },
+      {
+        "package": "Char.Status",
+        "data": {
+          "name": "Tester",
+          "level": 0,
+          "class": "Warrior",
+          "race": "Human",
+          "alignment": "neutral",
+          "guild": "",
+          "title": ""
+        }
+      },
+      {
+        "package": "Char.Affects",
+        "data": [
+          {
+            "name": "bless",
+            "id": 1,
+            "duration": 180,
+            "icon": "shield"
+          }
+        ]
+      },
+      {
+        "package": "Quest.Status",
+        "data": {
+          "remaining": 2,
+          "active": true,
+          "type": "kill",
+          "killCount": 2,
+          "killRequired": 5,
+          "target": "Go kill 5 bronze guardian (3 left) in Test Zone!",
+          "zoneNumber": 0,
+          "mapBought": false
+        }
+      },
+      {
+        "package": "Comm.Channel",
+        "data": {
+          "channel": "nchat",
+          "sender": "Tester",
+          "text": "hello",
+          "alignment": "good",
+          "timestamp": 1792012178
+        }
+      },
+      {
+        "package": "Group.Status",
+        "data": {
+          "members": [
+            {
+              "name": "Tester",
+              "level": 0,
+              "class": "Warrior",
+              "race": "Human",
+              "hp": 0,
+              "maxHp": 0,
+              "move": 0,
+              "maxMove": 0,
+              "position": "prone",
+              "rank": "head",
+              "isNpc": false,
+              "inRoom": true,
+              "targetNum": null,
+              "targetKeyword": null
+            },
+            {
+              "name": "Ally",
+              "level": 0,
+              "class": "Warrior",
+              "race": "Human",
+              "hp": 0,
+              "maxHp": 0,
+              "move": 0,
+              "maxMove": 0,
+              "position": "prone",
+              "rank": "front",
+              "isNpc": false,
+              "inRoom": true,
+              "targetNum": null,
+              "targetKeyword": null
+            }
+          ],
+          "size": 2,
+          "maxSize": 13
+        }
+      },
+      {
+        "package": "Char.Vitals",
+        "data": {
+          "hp": 70,
+          "maxHp": 100,
+          "mana": 18,
+          "maxMana": 0,
+          "move": 80,
+          "maxMove": 100,
+          "exp": 0,
+          "tnl": 0,
+          "platinum": 0,
+          "gold": 0,
+          "silver": 0,
+          "copper": 0,
+          "position": "on your ass",
+          "fighting": null,
+          "usesMana": false
+        }
+      }
+    ],
+    "clear": [
+      {
+        "package": "Group.Status",
+        "data": {
+          "members": [],
+          "size": 0,
+          "maxSize": 9
+        }
+      },
+      {
+        "package": "Char.Affects",
+        "data": []
+      },
+      {
+        "package": "Quest.Status",
+        "data": {
+          "remaining": 2,
+          "active": false,
+          "type": null,
+          "target": "",
+          "mapBought": false
+        }
+      },
+      {
+        "package": "Combat.Update",
+        "data": {
+          "target": null
+        }
+      },
+      {
+        "package": "Ship.Info",
+        "data": {}
+      },
+      {
+        "package": "Ship.Contacts",
+        "data": {
+          "contacts": []
+        }
+      }
+    ]
+  }
+}

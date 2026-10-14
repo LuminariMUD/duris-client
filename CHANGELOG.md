@@ -2,6 +2,18 @@
 
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
+## 1.3.3 - 2026-10-14
+
+- Advertise all consumed GMCP packages, including maps, quests and ships.
+- Clear character, combat, ship and map state and cancel pending actions on logout or disconnect.
+- Consume ship navigation and targeting from the server's actual payload fields; keep empty contact lists authoritative.
+- Display nested ship armor, hull, weapons, equipment and cargo data.
+- Read mapper door state from Room.Info.doors.
+- Finish inventory and equipment captures on Telnet prompts, including custom prompts.
+- Show complete server quest descriptions without duplicate Ask/Kill prefixes.
+- Clear combat on the server's end notification, including bleeding targets.
+- Avoid counting buffered text damage again after a GMCP fight ends.
+
 ## 1.3.2 - 2026-10-14
 
 - Load the decorative background using platform-compatible asset paths.

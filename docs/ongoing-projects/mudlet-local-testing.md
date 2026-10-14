@@ -1,4 +1,115 @@
-# Local Mudlet testing — 1.3.2 results
+# Local Mudlet testing — GUI/server connection audit
+
+## 1.3.3 connection audit — 2026-10-14
+
+The client/server source audit and fixes cover all **eleven GMCP packages
+consumed by this client**, their login/reconnect/empty-state lifecycles, the
+existing text/command interfaces, and the HTTPS zone-map dependency. Client
+candidate **1.3.3** is prepared for publication to this repository's `master`
+at the user's request. The user is handling the server repository separately;
+changes in `/home/staging/duris` remain uncommitted by this audit. No release,
+production restart or binary replacement was performed. The 1.3.2 results
+below are retained as historical evidence.
+
+### Fixes and connection matrix
+
+| Connection | Finding and resulting behavior | Verification |
+| --- | --- | --- |
+| Telnet GMCP / Core.Hello / Supports | Advertisement omitted maps, ships and quests in some paths. Advertise all eleven packages with the built version, renew on reconnect, use Supports.Add, release gmod registrations on uninstall. | Real Mudlet loopback negotiation; received Hello/Supports log; `connections`, `server-wire`, `lifecycle`. |
+| Character login, linkdead reconnect, late negotiation, GMCP preference re-enable | Event-only state could remain empty until gameplay changed it. Server sends identity, vitals, affects, room, group, quest, combat and ship clearing; schedules a map refresh. Linkdead account reconnect calls the same helper. | Native contract exercises bootstrap/negotiation and checks all caller hooks; GMCP preference regression; client `login` and `connections`. |
+| Char.Vitals | Publish immediately on combat start/stop, damage and vamp healing. Flag group observers even if the affected member does not use GMCP. | Native combat/group hooks, gameplay telemetry regressions, actual serialized vitals in `server-wire`; `vitals`. |
+| Char.Status | Name/class/race and login detection agree with actual fields; color normalization retained. | Production serializer replay, `login`, `information`. |
+| Char.Affects | Initial snapshot now includes active effects; empty updates replace old effects. | Production serializer replay of populated/empty lists; `combat`. |
+| Room.Info | Mapper now reads abbreviated keys in `doors` and explicit `closed`; retains legacy `#` exit fallback. Room/area/door/player/NPC/item names are escaped once by cJSON rather than twice. | Native quote-escaping regression; actual `Gate of "Dawn"` over Telnet; `maps`, `connections`, room/group fixtures. |
+| Room.Map | Ship passenger rendering no longer temporarily marks a Telnet descriptor as WebSocket. Map output stays in its negotiated transport. | Server framing/source guard, Telnet output regressions, actual Room.Map decoding in `server-wire`; zone/wilderness transitions in `maps`. |
+| Group.Status | New members/observers receive data; leaving/disbanding clears the departing and last member, refreshes remaining members. `group` refresh works for Telnet while retaining normal text. `maxSize` reflects good/evil properties (default 13; CTF 5). | Executable group mutation/disband and configured-limit checks, serialized populated/empty groups, `crowded`. |
+| Comm.Channel | Channel/message/sender shape matches the client; existing text fallbacks retained. | Production nchat serialization over Telnet plus eight text/channel forms and six tabs in `chat`. |
+| Combat.Update | Server now publishes applied damage rounds and immediate target/start/end state. Client treats explicit null as authoritative even for bleeding targets; retains state when the field is absent. Once rounds are observed, queued final text damage cannot count again after GMCP end. Counter reset preserves stream detection; disabling streaming restores text fallback. | Native applied-damage publication and start/stop hooks; real round/null replay followed by delayed text; `combat`, `connections`. |
+| Quest.Status | Active/empty payloads agree; display the complete server description without adding duplicate Ask/Kill prefixes. | Production quest serializer replay, `information`, quest-remaining regression. |
+| Ship.Info | Per-descriptor hashes deliver unchanged ships to new bridge observers and track personalized bonuses. Bridge exit clears data. Client renders nested armor/hull, weapons, equipment and cargo and passes maxSpeed to automation. | Native observer join/leave/rejoin and personalized-speed tests; actual serializer replay; ship screenshot review. |
+| Ship.Contacts | Server refreshes each recipient and sends empty contacts on docking/departure. Client takes heading/speed from the envelope, allegiance from `race`, and target lock from `you_targeting`. Empty GMCP lists retire old text contacts and target locks. | Native docking/observer tests, real populated/empty replay, `connections` asserts relative order heading 160 from bearing 70. |
+| Account menu / disconnect / new character | Clear character, inventory/equipment/who, group, affects, quest, combat, ship and mapper state; cancel login queries, command timers, scan reports and pending map callbacks. Re-arm same-socket character login. Chat history and user preferences remain available. | `connections`, `login`, `lifecycle`, real socket disconnect in `server-wire`. |
+| Text and outgoing commands | INV→`inv`, EQ→`eq`, WHO→`who`, STATS→`score`, SHIP→`look contacts`, time, movement and ship heading interfaces match server handlers. Telnet GA ends inventory/equipment capture even with a custom prompt. | Server command/ship-handler inspection; real custom-prompt replay; mouse/key and recorded-command fixtures in `information`, `controls`, `text`. |
+| HTTPS zone map | Existing `https://duris.sbs/api/wiki/zones/<zone>/map-data` shape remains compatible; no website change needed. | Zone 228 returned HTTP 200 with successful TLS verification, 7 nodes/12 edges and room 22800; retained `map-api-228.json`. Loopback `maps` checks errors, timeouts, stale responses and recovery. |
+
+The applied-damage boundary does not retain damage-type/critical metadata;
+new rounds deliberately report `damageType: "unknown"` and do not infer a
+critical hit. Optional fields the server does not send, such as player-list
+alignment, remain optional. This audit does not add new protocol features
+such as Quest.Map consumption or a WebSocket client.
+
+### Reproducible evidence
+
+Evidence root: `/home/staging/.local/share/duris-client-dev` (outside Git).
+
+- `runs/connections-reviewed-1.3.3`: final rebuilt package suite: **19/19
+  expectations passed** (thirteen positive scenarios and six expected failures).
+  Screenshot review recorded PASS for all thirteen positive scenarios.
+  Every retained candidate payload matches the root archive exactly;
+  `candidate-comparison.json` records that check. Root archive SHA-256:
+  `646ae303623718e544a4468e3614bb7bc569c2cab5afd6cc42f729c8e62c8946`.
+- `runs/connections-final-1.3.3`: preceding suite passed all 19 expectations;
+  actual screenshots reviewed for all thirteen positive scenarios. Final review
+  subsequently added cancellation of the separate scan timer and retention of
+  GMCP damage capability on manual counter reset, with regressions for both.
+- `runs/connections-suite-1.3.3`: initial suite exposed the removed legacy `#`
+  door fallback; restored and verified in `connections-map-retest` and later
+  suites. The first expanded wire test also exposed a fixture console-name
+  capitalization error; corrected before the passing runs.
+- `tests/mudlet/fixtures/server-gmcp.json`: all eleven packages produced by the
+  server executable contract test against isolated world/mechanics state.
+  Includes source hashes and server commit; contains no live player data.
+  `tests/mudlet/gmcp_server.py` replays them over a loopback socket, writes frames
+  in fragments, and records the actual Mudlet handshake.
+- Server native regressions passed: `test_gui_gmcp_contract.py`,
+  `test_telemetry_combat_hooks.py`, `test_telemetry_group_hooks.py`,
+  `test_gmcp_prompt_regressions.py`, `test_telnet_fragmentation_contract.py`,
+  `test_telnet_output_runtime.py`, `test_json_utils_runtime.py` (13 cases),
+  `test_telemetry_gameplay_hooks.py`, `test_racewar_admission.py`, and
+  `test_world_quest_remaining_unloaded.py`.
+- Eight client controller unit tests passed. Server `make -C src -j4` passed;
+  final log: `/home/staging/duris/bin/gui-connection-build-final.log`.
+  The quote regression failed before its fix; evidence is retained at
+  `/home/staging/duris/bin/gui-gmcp-room-escaping-before.log`.
+- Both worktrees pass `git diff --check`. Changed C/C++ lines were formatted
+  with `scripts/format.sh`; whole-file `--check` still flags existing baseline
+  drift in `account/account.c`, `cmd/actoth.c`, and `net/comm.c`. The same drift
+  was confirmed in their HEAD versions. Unrelated whole-file formatting was
+  deliberately left out of this connection fix.
+
+```bash
+# From /home/staging/duris
+make -C src -j4
+python3 tests/async/test_gui_gmcp_contract.py
+python3 tests/async/test_telemetry_combat_hooks.py
+python3 tests/async/test_telemetry_group_hooks.py
+
+# From /home/staging/gui
+python3 scripts/capture_server_gmcp.py --server /home/staging/duris
+python3 build.py
+python3 -m unittest discover -s tests/mudlet -p 'test_*.py'
+python3 scripts/mudlet_suite.py
+```
+
+### Verification boundaries
+
+These are source/build, executable server-function, and **real Mudlet 5.0.1
+Telnet/GMCP integration** results. The loopback peer replays actual serializer
+output; it does not boot a complete game world. The new server candidate has
+not been exercised through a production gameplay session. Ship combat and
+other unavailable live world states are not claimed as live passes. The
+4.19.1 minimum and other platforms still need separate manual verification.
+
+Both trees were clean at audit start. The server `.env` declares production;
+PID 3429849 remains the original `bin/server/dms 7777` process started at
+17:47:57 UTC. The built replacement is `bin/server/dms_new`. Applying it to
+production is a separate operational action requiring owner permission under
+[server AGENTS.md](/home/staging/duris/AGENTS.md): “Never run migrations, wipes,
+or operational scripts against production without owner/user permission.”
+Source fixes are ready for review; no production activation is included in
+these results. No credentials, player files or environment files were edited.
+
+## Historical 1.3.2 testing
 
 Updated **2026-10-14**. The recorded 1.3.1 defects and additional defects found
 by offline/live testing are fixed in **1.3.2**. All eleven offline scenarios and

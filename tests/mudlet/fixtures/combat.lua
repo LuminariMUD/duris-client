@@ -20,9 +20,17 @@ T.steps({
   T.check(ArjUI.state.target==nil and ArjUI.damage.fight==0,"JSON null clears combat target and fight damage resets")
   T.check(T.lines("ArjUI_BuffsBox"):find("(none)",1,true),"expired affects cleared")
  end},
- {name="text-damage-next-fight",run=function()
+ {name="late-text-after-gmcp-end",run=function()
+  feedTriggers("[Damage: 73]\n")
+  T.check(ArjUI.damage.fight==0 and ArjUI.damage.session==73,"late text cannot double count the closed GMCP fight")
+  ArjUI:reportDamage(true)
+  feedTriggers("[Damage: 73]\n")
+  T.check(ArjUI.damage.session==0,"manual counter reset preserves GMCP stream detection")
+ end},
+ {name="text-damage-without-stream",run=function()
+  feedTriggers("GMCP data streaming disabled.\n")
   feedTriggers("[Damage: 21]\n")
-  T.check(ArjUI.damage.fight==21,"next fight can use text damage fallback")
+  T.check(ArjUI.damage.fight==21,"disabled GMCP stream uses text damage fallback")
   T.emit("Combat.Update",{round={attacker="VisualTester",damage=21}})
   T.check(ArjUI.damage.fight==21,"text-first damage not duplicated by later GMCP")
  end}

@@ -181,6 +181,11 @@ def session(run):
     from map_server import MapServer
     map_server = MapServer(run / "map-requests.json")
     config["map_base"] = map_server.base
+    wire_server = None
+    if config["scenario"] == "server-wire":
+        from gmcp_server import GMCPServer
+        wire_server = GMCPServer(run / "gmcp-client-messages.json")
+        config["gmcp_port"] = wire_server.port
     write_json(run / "run.json", config)
     result = {"run_id": config["run_id"], "scenario": config["scenario"], "status": "FAIL",
               "visual_review": "NOT RUN", "error_review": "NOT RUN"}
@@ -309,6 +314,8 @@ def session(run):
         for child in reversed(children):
             stop_process(child)
         map_server.close()
+        if wire_server:
+            wire_server.close()
         result["cleanup"] = all(child.poll() is not None for child in children)
         result["processes"] = [{"pid": child.pid, "exit_code": child.returncode} for child in children]
         if not result["normal_shutdown"] or not result["cleanup"]:
@@ -338,7 +345,7 @@ def prepare(args):
     config = {"run_id": run_id, "scenario": args.scenario, "candidate": candidate,
               "mudlet": env["tools"][args.mudlet], "environment": env,
               "source": command(["git", "rev-parse", "HEAD"], cwd=ROOT), "scale": args.scale,
-              "size": args.size, "timeout": args.timeout, "network": "offline fixtures; loopback maps only"}
+              "size": args.size, "timeout": args.timeout, "network": "offline fixtures; loopback map and GMCP servers only"}
     config["started_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     config["fixtures"] = {str(f.relative_to(TESTS)): hashlib.sha256(f.read_bytes()).hexdigest()
                           for f in TESTS.rglob("*") if f.is_file() and "__pycache__" not in f.parts}

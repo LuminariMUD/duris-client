@@ -25,6 +25,9 @@ ArjUI.tellContacts = {}  -- List of players we've had tells with
 -- ============================================================
 
 function ArjUI:kill()
+  if gmod and gmod.disableModule then
+    for _, module in ipairs(self.gmcpModules or {}) do gmod.disableModule("ArjUI", module) end
+  end
   for id in pairs(self.timers or {}) do killTimer(id) end
   self.timers = {}
   for _, id in ipairs(self.runtimeTriggers or {}) do killTrigger(id) end
@@ -370,6 +373,64 @@ end
 -- ============================================================
 -- UI INITIALIZATION
 -- ============================================================
+
+function ArjUI:resetCharacterState()
+  self.state = {
+    hp = 1, hpmax = 1, mana = 1, manamax = 1, move = 1, movemax = 1,
+    tnl = 0, tnlBaseline = nil, position = "standing",
+    area = "Unknown", room = "Unknown", roomId = nil, zoneId = nil,
+    exits = {}, exitsRaw = {}, npcs = {}, items = {}, players = {},
+    target = nil, targetHpPct = 100, targetCond = nil, targetPos = nil,
+    tank = nil, tankHp = nil, tankMaxHp = nil, tankCond = nil, tankPos = nil, iAmTank = false,
+    group = {}, groupSize = 0, groupMax = 0, affects = {},
+    doors = {},
+    coins = { platinum = 0, gold = 0, silver = 0, copper = 0 },
+    usesMana = true, fighting = nil,
+    charLevel = nil, charClass = nil, charRace = nil, charGuild = nil, charTitle = nil,
+    quest = nil,
+    timeOfDay = "day",  -- day, night, dawn, dusk
+  }
+
+  self.initialDataRequested = false
+
+  self.playerName = nil
+  self.timeQuerySilent = false
+  self.capturing, self.captureBuffer = nil, {}
+  self:resetShip()
+end
+
+function ArjUI:endSession()
+  for id in pairs(self.timers or {}) do killTimer(id) end
+  self.timers = {}
+  if self.scanTimer then killTimer(self.scanTimer); self.scanTimer = nil end
+  self.scanCounts = {}
+  self:resetCharacterState()
+  self.damage = {fight=0, fightHits=0, session=0, sessionHits=0, sessionStart=os.time(), lastHit=0}
+  if ArjAuto and ArjAuto.resetSession then ArjAuto:resetSession() end
+  if ArjMapper and ArjMapper.resetSession then ArjMapper:resetSession() end
+  self:renderAll()
+  self:renderDamage()
+  self:renderStats()
+  self:renderInventory()
+  self:renderEq()
+  self:renderWho()
+  self:renderShip()
+end
+
+-- Advertise every package consumed by the UI and mapper.
+ArjUI.gmcpModules = {"Char.Vitals", "Char.Status", "Char.Affects", "Room.Info", "Room.Map",
+  "Group.Status", "Comm.Channel", "Combat.Update", "Quest.Status", "Ship.Info", "Ship.Contacts"}
+
+function ArjUI:enableGMCP()
+  sendGMCP('Core.Hello {"client":"Mudlet-ArjUI","version":"' .. ArjUI.VERSION .. '"}')
+  local modules = {}
+  for _, module in ipairs(self.gmcpModules) do modules[#modules+1] = module .. " 1" end
+  if gmod and gmod.enableModule then
+    for _, module in ipairs(self.gmcpModules) do gmod.enableModule("ArjUI", module) end
+  end
+  -- gmod retains registrations across sockets; always renew this subscription.
+  sendGMCP("Core.Supports.Add " .. yajl.to_string(modules))
+end
 
 function ArjUI:init()
   self:kill()
@@ -850,25 +911,7 @@ function ArjUI:init()
   self.damageLabel:setOnLeave(function() self.damageLabel:setCursor("Arrow") end)
   self.debuffsBox = makeConsole(self.targetWrap, "ArjUI_DebuffsBox", "3%", "51%", "94%", "46%", 8)
 
-  -- STATE
-  self.state = {
-    hp = 1, hpmax = 1, mana = 1, manamax = 1, move = 1, movemax = 1,
-    tnl = 0, tnlBaseline = nil, position = "standing",
-    area = "Unknown", room = "Unknown", roomId = nil, zoneId = nil,
-    exits = {}, exitsRaw = {}, npcs = {}, items = {}, players = {},
-    target = nil, targetHpPct = 100, targetCond = nil, targetPos = nil,
-    tank = nil, tankHp = nil, tankMaxHp = nil, tankCond = nil, tankPos = nil, iAmTank = false,
-    group = {}, groupSize = 0, groupMax = 0, affects = {},
-    doors = {},
-    coins = { platinum = 0, gold = 0, silver = 0, copper = 0 },
-    usesMana = true, fighting = nil,
-    charLevel = nil, charClass = nil, charRace = nil, charGuild = nil, charTitle = nil,
-    quest = nil,
-    timeOfDay = "day",  -- day, night, dawn, dusk
-  }
-  
-  -- Initialize login flag (reset on each init so reconnects work)
-  self.initialDataRequested = false
+  self:resetCharacterState()
 
   local h
   h = registerAnonymousEventHandler("sysWindowResizeEvent", function() self:layout() end)
@@ -1715,36 +1758,17 @@ function ArjUI:registerGMCPHandlers()
   end)
   table.insert(self.eventHandlers, h)
   
-  -- Send GMCP handshake when protocol is enabled
   h = registerAnonymousEventHandler("sysProtocolEnabled", function(_, protocol)
-    if protocol == "GMCP" then
-      sendGMCP('Core.Hello {"client":"Mudlet-ArjUI","version":"' .. ArjUI.VERSION .. '"}')
-      sendGMCP('Core.Supports.Set ["Char 1","Char.Vitals 1","Char.Status 1","Char.Affects 1","Room 1","Room.Info 1","Group 1","Group.Status 1","Comm 1","Comm.Channel 1","Combat 1"]')
-    end
+    if protocol == "GMCP" then self:enableGMCP() end
   end)
   table.insert(self.eventHandlers, h)
-  
-  -- On socket connect, reset flag and enable GMCP modules
-  h = registerAnonymousEventHandler("sysConnectionEvent", function()
-    self.initialDataRequested = false
-    if gmod and gmod.enableModule then
-      gmod.enableModule("ArjUI", "Char")
-      gmod.enableModule("ArjUI", "Char.Vitals")
-      gmod.enableModule("ArjUI", "Char.Status")
-      gmod.enableModule("ArjUI", "Char.Affects")
-      gmod.enableModule("ArjUI", "Room")
-      gmod.enableModule("ArjUI", "Room.Info")
-      gmod.enableModule("ArjUI", "Group")
-      gmod.enableModule("ArjUI", "Group.Status")
-      gmod.enableModule("ArjUI", "Comm")
-      gmod.enableModule("ArjUI", "Comm.Channel")
-      gmod.enableModule("ArjUI", "Combat")
-      gmod.enableModule("ArjUI", "Quest")
-      gmod.enableModule("ArjUI", "Quest.Status")
-    end
-  end)
+  h = registerAnonymousEventHandler("sysConnectionEvent", function() self:endSession() end)
   table.insert(self.eventHandlers, h)
-  
+  h = registerAnonymousEventHandler("sysDisconnectionEvent", function() self:endSession() end)
+  table.insert(self.eventHandlers, h)
+  -- Installing into an already negotiated session must advertise the package too.
+  if getConnectionInfo and select(3, getConnectionInfo()) and gmcp then self:enableGMCP() end
+
   -- Detect character login and render UI.
   -- Primary signal: first gmcp.Char.Status after connect (server sends it once on
   -- character entry, independent of prompt settings). Fallback: default prompt shape.
@@ -1798,19 +1822,7 @@ function ArjUI:registerGMCPHandlers()
   -- Trigger to detect player death (clears all combat state)
   -- Matches account menu which appears after death
   self.playerDeathTrigger = self:addRuntimeTrigger("ACCOUNT MENU", function()
-    -- Clear target
-    ArjUI.state.target = nil
-    ArjUI.state.targetHpPct = 100
-    ArjUI.state.targetCond = nil
-    ArjUI.state.targetPos = nil
-    ArjUI.state.targetBleeding = false
-    -- Reset tank bar to self
-    ArjUI.state.iAmTank = true
-    ArjUI.state.tank = nil
-    ArjUI.state.tankCond = nil
-    ArjUI.state.tankHpPct = nil
-    ArjUI:renderTarget()
-    ArjUI:renderTank()
+    ArjUI:endSession()
   end)
   
   -- Trigger to detect assist (sets assist target for YOU bar)
@@ -2035,6 +2047,7 @@ function ArjUI:onCombatUpdate()
   
   -- Per-round damage dealt by us (Combat.Update.round {attacker, damage, damageType, critical})
   if type(c.round) == "table" and c.round.damage and self.addDamage then
+    self.damage.gmcpAvailable = true
     local atk = tostring(c.round.attacker or ""):lower()
     local me = (self.playerName or ""):lower()
     if atk == "you" or (me ~= "" and atk == me) then
@@ -2084,21 +2097,14 @@ function ArjUI:onCombatUpdate()
       killTimer(self._targetClearTimer)
       self._targetClearTimer = nil
     end
-  else
-    -- No target in update - check if we should persist a bleeding target
-    if self.state.target and self.state.targetBleeding then
-      -- Target is bleeding to death - keep showing at 1% until confirmed dead
-      self.state.targetHpPct = 1
-      self.state.targetCond = "bleeding to death"
-      -- Don't clear target yet
-    else
-      -- No bleeding target - clear normally
-      self.state.target = nil
-      self.state.targetHpPct = 100
-      self.state.targetCond = nil
-      self.state.targetPos = nil
-      self.state.targetBleeding = false
-    end
+  elseif c.target ~= nil then
+    self.state.target = nil
+    self.state.targetHpPct = 100
+    self.state.targetCond, self.state.targetPos, self.state.targetBleeding = nil, nil, false
+    self.state.fighting, self.state.tank, self.state.tankCond, self.state.tankHpPct = nil, nil, nil, nil
+    self.state.assistTarget, self.state.iAmTank = nil, true
+    self:endFight()
+    self:renderTank()
   end
   self:renderTarget()
 end
@@ -2913,13 +2919,9 @@ function ArjUI:renderStats()
   -- Quest (Quest.Status)
   local q = s.quest
   if q then
-    local line
+    local line = stripColors(q.target)
     if q.type == "kill" and q.killRequired then
-      line = string.format("Kill %s <dim_gray>(%d/%d)", q.target, q.killCount or 0, q.killRequired)
-    elseif q.type == "ask" then
-      line = "Ask " .. q.target
-    else
-      line = q.target
+      line = string.format("%s <dim_gray>(%d/%d)", line, q.killCount or 0, q.killRequired)
     end
     if q.remaining then line = line .. string.format(" <dim_gray>(%d more today)", q.remaining) end
     if q.mapBought then line = line .. " <dim_gray>[map]" end
@@ -3176,7 +3178,7 @@ function ArjUI:setupCaptureTriggers()
     local currentLine = matches[1] or line
     
     -- Check for prompt (end of capture)
-    if currentLine:match("^%s*<%s*%d+h") then
+    if (isPrompt and isPrompt()) or currentLine:match("^%s*<%s*%d+h") then
       ArjUI:finishCapture()
       return
     end
@@ -3385,8 +3387,9 @@ end
 -- ------------------------------------------------------------
 -- DAMAGE TRACKER
 -- Sources: GMCP Combat.Update.round (preferred) or the server's
--- "[Damage: N ]" display lines. Whichever arrives first wins so a hit
--- is never counted twice.
+-- "[Damage: N ]" display lines on servers without rounds. Once a round
+-- stream is observed it remains authoritative across fights: the server may
+-- flush the final text damage AFTER its GMCP combat-end packet.
 -- ------------------------------------------------------------
 
 function ArjUI:setupDamageTracker()
@@ -3396,10 +3399,14 @@ function ArjUI:setupDamageTracker()
     lastHit = 0, source = nil,
   }
   addTrigger(self, "\\[Damage:\\s*(\\d+)\\s*\\]", function()
-    if ArjUI.damage.source == "gmcp" then return end
+    local damage = ArjUI.damage
+    if damage.source == "gmcp" or (damage.gmcpAvailable and damage.source ~= "text") then return end
     for n in string.gmatch(line or "", "%[Damage:%s*(%d+)%s*%]") do
       ArjUI:addDamage(tonumber(n), "text")
     end
+  end)
+  addTrigger(self, "^GMCP data streaming disabled\\.$", function()
+    ArjUI.damage.gmcpAvailable, ArjUI.damage.source = false, nil
   end)
   addTrigger(self, "^You receive your share of experience\\.$", function() ArjUI:endFight() end)
   addTrigger(self, "^.+ is dead! R\\.I\\.P\\.$", function() ArjUI:endFight() end)
@@ -3445,7 +3452,7 @@ end
 function ArjUI:reportDamage(reset)
   local d = self.damage
   if reset then
-    self.damage = { fight = 0, fightHits = 0, session = 0, sessionHits = 0, sessionStart = os.time(), lastHit = 0, source = d and d.source or nil }
+    self.damage = { fight = 0, fightHits = 0, session = 0, sessionHits = 0, sessionStart = os.time(), lastHit = 0, source = d and d.source or nil, gmcpAvailable = d and d.gmcpAvailable or nil }
     self:renderDamage()
     self:note("<cyan>[ArjUI] Damage counters reset.")
     return
@@ -3617,7 +3624,12 @@ end
 function ArjUI:onShipInfo()
   if not gmcp or not gmcp.Ship or not gmcp.Ship.Info then return end
   if not self.state.ship then self:resetShip() end
-  self.state.ship.info = gmcp.Ship.Info
+  local info = gmcp.Ship.Info
+  if type(info) ~= "table" then return end
+  if next(info) == nil then self:resetShip() else
+    self.state.ship.info = info
+    self.state.ship.maxSpeed = toNum(info.maxSpeed)
+  end
   self:renderShipIfActive()
 end
 
@@ -3625,8 +3637,16 @@ function ArjUI:onShipContacts()
   if not gmcp or not gmcp.Ship or not gmcp.Ship.Contacts then return end
   if not self.state.ship then self:resetShip() end
   local c = gmcp.Ship.Contacts
-  if type(c) == "table" and c.contacts then c = c.contacts end
-  self.state.ship.contacts = c
+  if type(c) ~= "table" then return end
+  local ship = self.state.ship
+  if type(c.contacts) == "table" then
+    ship.heading, ship.speed = c.heading, c.speed
+    c = c.contacts
+  end
+  ship.contacts, ship.textContacts, ship.target = c, nil, nil
+  for _, contact in ipairs(c) do
+    if contact.you_targeting then ship.target = contact.id end
+  end
   self:renderShipIfActive()
 end
 
@@ -3636,16 +3656,17 @@ end
 
 local function sortedKeys(t)
   local keys = {}
-  for k in pairs(t) do table.insert(keys, tostring(k)) end
-  table.sort(keys)
+  for k in pairs(t) do table.insert(keys, k) end
+  table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
   return keys
 end
 
 local function shipSideColor(contact)
-  local side = tostring(pick(contact, "side", "alignment", "racewar", "faction") or ""):lower()
+  local side = tostring(pick(contact, "race", "side", "alignment", "racewar", "faction") or ""):lower()
   if contact.sunk == true then return "<royal_blue>" end
   if side:find("evil") then return "<indian_red>" end
   if side:find("good") then return "<khaki>" end
+  if side == "undead" then return "<medium_purple>" end
   if contact.hostile == true then return "<indian_red>" end
   return "<light_gray>"
 end
@@ -3661,7 +3682,7 @@ function ArjUI:renderShip()
   local shown = false
   if type(info) == "table" then
     local name = pick(info, "name", "ship", "shipName")
-    if name then box:cecho(string.format("<white>%s\n", tostring(name))); shown = true end
+    if name then box:cecho(string.format("<white>%s\n", stripColors(tostring(name)))); shown = true end
     local lineParts = {}
     local heading = pick(info, "heading", "course")
     local speed = pick(info, "speed")
@@ -3673,13 +3694,28 @@ function ArjUI:renderShip()
     for _, k in ipairs(sortedKeys(info)) do
       local v = info[k]
       if not skip[k] and type(v) ~= "table" then
-        box:cecho(string.format("<dim_gray>%s: <light_gray>%s\n", k, tostring(v)))
+        box:cecho(string.format("<dim_gray>%s: <light_gray>%s\n", k, stripColors(tostring(v))))
         shown = true
       elseif not skip[k] and type(v) == "table" then
         local vals = {}
         for _, kk in ipairs(sortedKeys(v)) do
           local vv = v[kk]
-          if type(vv) ~= "table" then table.insert(vals, kk .. "=" .. tostring(vv)) end
+          if type(vv) ~= "table" then
+            table.insert(vals, kk .. "=" .. stripColors(tostring(vv)))
+          elseif #vv == 2 and type(vv[1]) == "number" and type(vv[2]) == "number" then
+            table.insert(vals, kk .. "=" .. vv[1] .. "/" .. vv[2])
+          else
+            local entries = (#vv > 0 and type(vv[1]) == "table") and vv or {vv}
+            for _, entry in ipairs(entries) do
+              local details = {}
+              for _, field in ipairs(sortedKeys(entry)) do
+                if type(entry[field]) ~= "table" then
+                  details[#details+1] = field .. "=" .. stripColors(tostring(entry[field]))
+                end
+              end
+              vals[#vals+1] = table.concat(details, " ")
+            end
+          end
         end
         if #vals > 0 then box:cecho(string.format("<dim_gray>%s: <light_gray>%s\n", k, table.concat(vals, " "))); shown = true end
       end
@@ -3706,7 +3742,7 @@ function ArjUI:renderShip()
   end
 
   local contacts = s.contacts
-  if type(contacts) ~= "table" or #contacts == 0 then contacts = s.textContacts end
+  if type(contacts) ~= "table" then contacts = s.textContacts end
   if type(contacts) == "table" and #contacts > 0 then
     local list = {}
     for _, c in ipairs(contacts) do if type(c) == "table" then table.insert(list, c) end end
@@ -3726,6 +3762,9 @@ function ArjUI:renderShip()
       if h then table.insert(bits, "H:" .. tostring(h)) end
       if r then table.insert(bits, "R:" .. tostring(r)) end
       if sp then table.insert(bits, "S:" .. tostring(sp)) end
+      if c.arc then table.insert(bits, "arc:" .. c.arc) end
+      if c.status and c.status ~= "" then table.insert(bits, c.status) end
+      if c.targeting_you then table.insert(bits, "targeting you") end
       if c.facing and c.pointing then table.insert(bits, "(" .. c.facing .. "|" .. c.pointing .. ")") end
       if #bits == 0 then
         for _, k in ipairs(sortedKeys(c)) do
@@ -3733,7 +3772,7 @@ function ArjUI:renderShip()
         end
       end
       local tag = (s.target and id and tostring(id) == tostring(s.target)) and "<white>*" or ""
-      box:cecho(string.format("%s%s[%s] %s%s<dim_gray> %s\n", tag, color, tostring(id or "-"), tostring(name), c.sunk and " (sunk)" or "", table.concat(bits, " ")))
+      box:cecho(string.format("%s%s[%s] %s%s<dim_gray> %s\n", tag, color, tostring(id or "-"), stripColors(tostring(name)), c.sunk and " (sunk)" or "", table.concat(bits, " ")))
     end
     shown = true
   end

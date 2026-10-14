@@ -1185,24 +1185,19 @@ function ArjMapper:processRoom(roomData)
     self.state.currentCoords = roomData.coords
     self.state.visitedRooms[roomId] = true
     
-    -- Parse doors from exits
-    -- GMCP might have: { ["East #"] = 123 } or { east = 123 } with separate door info
-    -- The # indicates a door
     local doors = {}
-    if roomData.exits then
-        for exitKey, dest in pairs(roomData.exits) do
-            local keyStr = tostring(exitKey):lower()
-            
-            -- Check if the key contains # (door marker)
-            if keyStr:match("#") then
-                -- Extract direction by removing # and extra spaces
-                local cleanDir = keyStr:gsub("#", ""):gsub("%s+", "")
-                doors[cleanDir] = true
-                
-                if self.config.debug then
-                    self:out(string.format("<dim_gray>[Door] Found door: '%s' -> '%s'<reset>\n", keyStr, cleanDir))
-                end
-            end
+    local directions = {n="north", e="east", s="south", w="west", u="up", d="down",
+      ne="northeast", nw="northwest", se="southeast", sw="southwest"}
+    -- Older payloads used a trailing #; explicit door state takes precedence.
+    for dir in pairs(roomData.exits or {}) do
+        if dir:find("#", 1, true) then
+            local key = dir:lower():gsub("#", ""):gsub("%s+", "")
+            doors[directions[key] or key] = true
+        end
+    end
+    for dir, door in pairs(roomData.doors or {}) do
+        if type(door) == "table" then
+            doors[directions[dir] or dir] = door.closed == true
         end
     end
     self.state.roomDoors[roomId] = doors
@@ -1391,6 +1386,18 @@ function ArjMapper:kill()
         end
     end
     self.ui = { roomLabels = {} }
+end
+
+function ArjMapper:resetSession()
+    if self.renderTimer then killTimer(self.renderTimer); self.renderTimer = nil end
+    for _, request in pairs(self.requests or {}) do request.finish() end
+    self.requests = {}
+    self.state.currentRoom, self.state.currentZone, self.state.currentCoords = nil, nil, nil
+    self.state.inWilderness = false
+    self.state.roomDoors, self.state.visitedRooms = {}, {}
+    self:clearZoneDisplay()
+    if self.ui.wildConsole then self.ui.wildConsole:clear(); self.ui.wildConsole:hide() end
+    self:showZoneMap()
 end
 
 function ArjMapper:init()

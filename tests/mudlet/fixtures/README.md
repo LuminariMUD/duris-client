@@ -2,7 +2,9 @@
 
 These files belong to the test companion, never the distributable package.
 They exercise actual Mudlet events, text triggers, widgets, aliases and HTTP.
-They do not establish live transport coverage.
+Most scenarios inject events directly. `server-wire` additionally exercises
+real loopback Telnet negotiation, GMCP decoding and disconnects in Mudlet.
+These tests do not establish production gameplay coverage.
 
 Payload fields were checked on 2026-10-14 against Duris server revision
 `d27e2b5ec5431d6489acd6258c264dcb1aeec29a` (`src/core/json_utils.c`,
@@ -17,6 +19,22 @@ transitions, not just fully populated panels. Login querying is suppressed in
 ordinary fixtures and separately observed in `login`. `send` is recorded only
 in the offline companion. Downloads are restricted to its loopback map server.
 The live profile never imports this companion.
+
+`server-gmcp.json` contains all eleven consumed packages emitted by production
+Duris serializers against isolated world/mechanics fixtures. Its provenance
+includes the server commit and hashes of the modified source and test harness.
+Refresh it after server protocol changes, then run the wire scenario:
+
+```bash
+python3 scripts/capture_server_gmcp.py --server /path/to/duris
+python3 scripts/mudlet_test.py run --scenario server-wire
+```
+
+Generation requires the server's native build dependencies. Ordinary client
+tests use the checked-in JSON and require no server checkout. The loopback
+server offers GMCP, records Core.Hello/Supports, writes frames in fragments,
+and sends populated and empty snapshots plus a custom Telnet-GA prompt. It
+never reads credentials or connects to a game server.
 
 `assertion-error`, `timer-error` and `event-error` deliberately fail. A zero
 exit code from any of them is a harness regression. Readiness/profile/candidate
