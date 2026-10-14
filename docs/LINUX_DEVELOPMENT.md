@@ -26,15 +26,24 @@ option and, if isolation is needed, the documented
 [portable mode](https://wiki.mudlet.org/w/Portable_App). Do not assume the 5.x
 CLI or configuration-root behavior exists in older versions.
 
-At verification time, the workspace was Ubuntu 26.04.1 x86_64, with no active
-`DISPLAY` or `WAYLAND_DISPLAY`. Python 3 and `xauth` were available; Mudlet,
+At documentation verification on 2026-10-12, the workspace was Ubuntu 26.04.1
+x86_64, with no active `DISPLAY` or `WAYLAND_DISPLAY`. Python 3 and `xauth` were available; Mudlet,
 Xvfb, Openbox, xdotool, ImageMagick and a Lua compiler were absent from `PATH`.
 An isolated Lua 5.1 compiler was subsequently extracted into a temporary
 directory to validate examples and the package build, without installing it
-system-wide. **The graphical setup, screenshots, fixture execution inside
-Mudlet, and live-server connection have not been run here.**
+system-wide. Graphical execution had not yet been attempted at that time.
 
-Documentation validation passed: all 12 Bash blocks were parsed with `bash -n`,
+On **2026-10-14**, the native Mudlet 5.0.1 build and Linux tools were installed.
+The isolated offline profile, actual package import, low-health fixture,
+1280×720 / 1366×768 / 1920×1080 captures, scale factor 2, normal shutdown and
+profile reopen were exercised. The background-path defect was confirmed and
+other setup/layout findings were recorded in the
+[local testing execution log](ongoing-projects/mudlet-local-testing.md#execution-log--2026-10-14-setup).
+Live-server, map-data, full scenario-matrix, minimum-version and player-desktop
+checks remain unrun; the setup smoke checks do not establish those results.
+
+Documentation checks were rerun after setup: all 15 Bash blocks parsed with
+`bash -n`,
 the Lua fixture and package scripts passed Lua 5.1 syntax checks, relative file
 links resolved, and a temporary package build passed archive integrity,
 assembled-XML and version-metadata checks. These are static/build results,
@@ -45,6 +54,60 @@ add a fixture runner or a visual CI job. Current
 [repository CI](../.github/workflows/ci.yml) checks Lua syntax and builds the
 archive; the older [smoke-test reference](MUDLET_SMOKE_TEST.md) describes another
 project's tooling.
+
+The [local Mudlet testing plan](ongoing-projects/mudlet-local-testing.md)
+tracks the work to execute this procedure, build repeatable runtime coverage,
+investigate findings, and add offline CI.
+
+## This workstation's prepared setup
+
+The following helpers exist locally at
+`/home/staging/.local/share/duris-client-dev`; they are not a committed fixture
+runner or CI suite. The generic installation procedure below remains the
+reference for other machines.
+
+Start the saved **Duris-Visual** profile in a virtual desktop:
+
+```bash
+/home/staging/.local/share/duris-client-dev/desktop.sh
+```
+
+The launcher uses the isolated configuration root, offline mode, scale 1 and a
+2048×1200 Xvfb screen, leaving space for a 1920×1080 window plus decorations.
+It keeps a separate log directory for each desktop session and rejects a
+second concurrent desktop using the same configuration. In Mudlet's package
+command line, enter `dev lowhp` to run the saved fixture. Close Mudlet normally
+to save and stop the desktop; the launcher cleans up Openbox, Xvfb and the
+authentication file.
+
+For commands from another shell while that desktop is running:
+
+```bash
+/home/staging/.local/share/duris-client-dev/on-desktop.sh \
+  xdotool search --onlyvisible --class mudlet
+/home/staging/.local/share/duris-client-dev/on-desktop.sh \
+  import -window root /home/staging/.local/share/duris-client-dev/artifacts/desktop.png
+```
+
+`on-desktop.sh` shares the running session's display and authentication. Use
+the returned main-window ID with the geometry/capture commands later in this
+guide. For a scale-2 session, close the existing desktop first, then run:
+
+```bash
+QT_SCALE_FACTOR=2 MUDLET_SCREEN=4096x2400x24 \
+  /home/staging/.local/share/duris-client-dev/desktop.sh
+```
+
+The prepared profile uses DejaVu Sans Mono 12, GMCP on, automatic reconnect
+off, all ArjAuto toggles off, and no login credentials. The starter UI is
+hidden. The unrelated default `generic_mapper` package was removed after it
+reacted to fixture text; ArjMapper remains installed. The source build is at
+`~/.local/share/duris-client-dev/artifacts/duris-client.mpackage`, and the
+initial evidence is under `artifacts/setup-20261014T184545Z/`. A future build
+should use a new artifact directory to preserve this baseline.
+
+No VNC listener or live-server connection was configured. Follow the optional
+viewer and live-test sections when those are needed.
 
 ## Testing layers
 
@@ -371,12 +434,14 @@ as a way to test scaling without high-DPI hardware; physical screen pixels and
 Qt logical geometry differ at higher scale factors.
 See [Qt high-DPI testing](https://doc.qt.io/qt-6/highdpi.html#testing).
 
-Source-review finding to check in the first Linux run:
+Confirmed in the 2026-10-14 Linux run:
 `ArjUI:applyBackground()` converts `/` to `\` before `io.open()`. Ordinary
-Linux asset paths therefore appear likely to fail the existence check and
-select the gradient fallback. Treat this as an **unconfirmed runtime issue**,
-not a successful check of the decorative background. This guide does not
-change the package to resolve it.
+Linux asset paths fail the existence check and select the gradient fallback.
+Runtime inspection found the installed asset readable through its Linux path
+and confirmed the fallback stylesheet. See **LINUX-001** in the
+[execution log](ongoing-projects/mudlet-local-testing.md#execution-log--2026-10-14-setup).
+The decorative background check fails; the package has not yet been changed
+to resolve it.
 
 ## Test a live server separately
 
