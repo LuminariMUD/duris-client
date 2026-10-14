@@ -161,6 +161,8 @@ end
 -- ============================================================
 
 function ArjAuto:kill()
+  for id in pairs(self.pendingTimers or {}) do killTimer(id) end
+  self.pendingTimers = {}
   for _, id in ipairs(self.triggers) do pcall(function() killTrigger(id) end) end
   for _, id in ipairs(self.aliases) do pcall(function() killAlias(id) end) end
   for _, id in ipairs(self.keys) do pcall(function() killKey(id) end) end
@@ -168,6 +170,17 @@ function ArjAuto:kill()
   self.triggers, self.aliases, self.keys, self.timers = {}, {}, {}, {}
   for _, h in ipairs(self.handlers or {}) do pcall(function() killAnonymousEventHandler(h) end) end
   self.handlers = {}
+end
+
+function ArjAuto:after(delay, callback)
+  self.pendingTimers = self.pendingTimers or {}
+  local id
+  id = tempTimer(delay, function()
+    self.pendingTimers[id] = nil
+    callback()
+  end)
+  self.pendingTimers[id] = true
+  return id
 end
 
 function ArjAuto:init()
@@ -234,7 +247,7 @@ function ArjAuto:setupCombatTriggers()
   -- Auto rage (berserker)
   addTrigger("^You feel yourself return to normal as your rage abates\\.$", function()
     if on("autoRage") and inCombat() then
-      tempTimer(3, function() if on("autoRage") and inCombat() then send("rage", false) end end)
+      ArjAuto:after(3, function() if on("autoRage") and inCombat() then send("rage", false) end end)
     end
   end)
 
@@ -370,7 +383,7 @@ function ArjAuto:setupGroupTriggers()
     send("rescue " .. victim, false)
     ArjAuto.rescueLocked = true
     -- Safety net: unlock after 6 s even if no response line matched
-    tempTimer(6, function() ArjAuto.rescueLocked = false end)
+    ArjAuto:after(6, function() ArjAuto.rescueLocked = false end)
   end
   local hitVerbs = "(?:punch|slash|pierce|bludgeon|maul|claw|whip|pound|crush)"
   local rescuePatterns = {
@@ -387,7 +400,7 @@ function ArjAuto:setupGroupTriggers()
   end
   local function unlock(delay, why)
     if delay > 0 then
-      tempTimer(delay, function() ArjAuto.rescueLocked = false end)
+      ArjAuto:after(delay, function() ArjAuto.rescueLocked = false end)
     else
       ArjAuto.rescueLocked = false
     end
@@ -406,7 +419,7 @@ function ArjAuto:setupGroupTriggers()
     if isGroupMember(attacker) and not isGroupMember(firstWord(victim)) then
       send("assist " .. attacker, false)
       ArjAuto.assistLocked = true
-      tempTimer(2, function() ArjAuto.assistLocked = false end)
+      ArjAuto:after(2, function() ArjAuto.assistLocked = false end)
     end
   end)
 end

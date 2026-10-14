@@ -187,7 +187,7 @@ function ArjMapper:setupUI()
 
     if self.ui.wildConsole then self.ui.wildConsole:hide() end
     self.ui.wildConsole = Geyser.MiniConsole:new({
-        name = "ArjMapper_Wild_" .. os.time(),
+        name = "ArjMapper_Wild",
         x = 0, y = 0, width = "100%", height = "100%",
     }, ArjUI.mapWrap)
     self.ui.wildConsole:setColor(bg[1], bg[2], bg[3])
@@ -197,7 +197,7 @@ function ArjMapper:setupUI()
 
     if self.ui.zoneContainer then self.ui.zoneContainer:hide() end
     self.ui.zoneContainer = Geyser.Label:new({
-        name = "ArjMapper_Zone_" .. os.time(),
+        name = "ArjMapper_Zone",
         x = 0, y = 0, width = "100%", height = "100%",
     }, ArjUI.mapWrap)
     -- Add clipping to prevent room labels from rendering outside the container
@@ -208,7 +208,7 @@ function ArjMapper:setupUI()
 
     -- Create hover tooltip label (instant, no delay)
     self.ui.hoverLabel = Geyser.Label:new({
-        name = "ArjMapper_Hover_" .. os.time(),
+        name = "ArjMapper_Hover",
         x = 0, y = 0, width = 200, height = 24,
     }, ArjUI.mapWrap)
     self.ui.hoverLabel:setStyleSheet([[
@@ -223,6 +223,7 @@ function ArjMapper:setupUI()
         }
     ]])
     self.ui.hoverLabel:hide()
+    self.ui.hoverLabel:enableClickthrough()
     self.ui.hoverLabel:raise()
 
     -- Create control buttons
@@ -257,7 +258,7 @@ function ArjMapper:setupControls()
     -- Zoom In button (+)
     if self.ui.zoomIn then self.ui.zoomIn:hide() end
     self.ui.zoomIn = Geyser.Label:new({
-        name = "ArjMapper_ZoomIn_" .. os.time(),
+        name = "ArjMapper_ZoomIn",
         x = "82%", y = "2%",
         width = "8%", height = "8%",
     }, ArjUI.mapWrap)
@@ -272,7 +273,7 @@ function ArjMapper:setupControls()
     -- Zoom Out button (-)
     if self.ui.zoomOut then self.ui.zoomOut:hide() end
     self.ui.zoomOut = Geyser.Label:new({
-        name = "ArjMapper_ZoomOut_" .. os.time(),
+        name = "ArjMapper_ZoomOut",
         x = "91%", y = "2%",
         width = "8%", height = "8%",
     }, ArjUI.mapWrap)
@@ -682,7 +683,7 @@ function ArjMapper:getLabel(key, x, y, w, h, tooltip, roomId)
     local label = self.ui.roomLabels[key]
     if not label then
         label = Geyser.Label:new({
-            name = "Arj_" .. key .. "_" .. os.time(),
+            name = "Arj_" .. key,
             x = x, y = y,
             width = w, height = h,
         }, self.ui.zoneContainer)
@@ -697,8 +698,11 @@ function ArjMapper:getLabel(key, x, y, w, h, tooltip, roomId)
         label:setOnEnter(function()
             if ArjMapper.ui.hoverLabel then
                 ArjMapper.ui.hoverLabel:echo("<center>" .. tooltip .. "</center>")
-                -- Position above the room, centered
-                local labelX = x - 80 + w/2  -- center the 200px wide hover label
+                -- Keep tooltips inside the map at narrow window sizes.
+                local mapWidth = ArjUI.mapWrap:get_width()
+                local tooltipWidth = math.min(200, math.max(1, mapWidth - 4))
+                ArjMapper.ui.hoverLabel:resize(tooltipWidth, 24)
+                local labelX = math.max(2, math.min(x + w/2 - tooltipWidth/2, mapWidth - tooltipWidth - 2))
                 local labelY = y - 28  -- above the room
                 if labelY < 0 then labelY = y + h + 4 end  -- below if too high
                 ArjMapper.ui.hoverLabel:move(labelX, labelY)
@@ -711,6 +715,9 @@ function ArjMapper:getLabel(key, x, y, w, h, tooltip, roomId)
                 ArjMapper.ui.hoverLabel:hide()
             end
         end)
+    else
+        -- Player dots and exit decorations must not intercept room hover.
+        label:enableClickthrough()
     end
     
     return label
@@ -721,14 +728,29 @@ end
 function ArjMapper:renderZoneMap()
     if not self.ui.zoneContainer then return end
     
-    -- Throttle: don't re-render more than 4x per second
-    local now = os.clock()
-    if now - (self.state.lastRenderTime or 0) < 0.25 then return end
+    -- Coalesce rapid updates using wall time, retaining the final update.
+    -- os.clock() measures CPU time and can leave an idle client's map stale.
+    local now = getEpoch()
+    if now - (self.state.lastRenderTime or 0) < 0.25 then
+        if not self.renderTimer then
+            self.renderTimer = tempTimer(0.25, function()
+                self.renderTimer = nil
+                self:renderZoneMap()
+            end)
+        end
+        return
+    end
     self.state.lastRenderTime = now
 
     local zoneId = self.state.currentZone
     local currentRoom = self.state.currentRoom
     local data = self.state.zoneData[zoneId]
+
+    if self.state.lastZoneId ~= zoneId then
+        self:clearZoneDisplay()
+        self.state.lastZoneId = zoneId
+    end
+    self.ui.zoneContainer:echo("")
 
     if not data or not data.nodes or #data.nodes == 0 then
         self.ui.zoneContainer:echo([[
@@ -742,11 +764,6 @@ function ArjMapper:renderZoneMap()
             <center><br/><br/><font color='#888' size='4'>Layout failed</font></center>
         ]])
         return
-    end
-
-    if self.state.lastZoneId ~= zoneId then
-        self:clearZoneDisplay()
-        self.state.lastZoneId = zoneId
     end
 
     -- Find player
@@ -1042,6 +1059,21 @@ end
 -- FETCH ZONE DATA
 -- ============================================================
 
+local function validZoneData(data)
+    if type(data) ~= "table" or type(data.nodes) ~= "table" or type(data.edges) ~= "table" then return false end
+    local ids = {}
+    for _, node in ipairs(data.nodes) do
+        if type(node) ~= "table" or type(node.id) ~= "number" or ids[node.id] then return false end
+        if node.name ~= nil and type(node.name) ~= "string" then return false end
+        if node.label ~= nil and type(node.label) ~= "string" then return false end
+        ids[node.id] = true
+    end
+    for _, edge in ipairs(data.edges) do
+        if type(edge) ~= "table" or type(edge.from) ~= "number" or type(edge.to) ~= "number" or type(edge.direction) ~= "string" then return false end
+    end
+    return true
+end
+
 function ArjMapper:fetchZoneData(zoneId, callback)
     if not zoneId then return end
 
@@ -1050,41 +1082,58 @@ function ArjMapper:fetchZoneData(zoneId, callback)
         return
     end
 
+    self.requests = self.requests or {}
+    if self.requests[zoneId] then return end
+    self.requestSerial = (self.requestSerial or 0) + 1
+
     local url = self.config.apiBase .. tostring(zoneId) .. "/map-data"
-    local tempFile = getMudletHomeDir() .. "/arjmapper_zone_" .. zoneId .. ".json"
+    local tempFile = getMudletHomeDir() .. "/arjmapper_zone_" .. zoneId .. "_" .. self.requestSerial .. ".json"
+    local request = {}
+    self.requests[zoneId] = request
+    function request.finish()
+        if request.done then return end
+        request.done = true
+        if request.success then killAnonymousEventHandler(request.success) end
+        if request.failure then killAnonymousEventHandler(request.failure) end
+        if request.timeout then killTimer(request.timeout) end
+        self.requests[zoneId] = nil
+        os.remove(tempFile)
+    end
 
-    local handlerId, errorId
-
-    handlerId = registerAnonymousEventHandler("sysDownloadDone", function(event, filename)
+    request.success = registerAnonymousEventHandler("sysDownloadDone", function(event, filename)
         if filename == tempFile then
+            local data
             local file = io.open(filename, "r")
             if file then
                 local content = file:read("*a")
                 file:close()
-                local ok, data = pcall(yajl.to_value, content)
-                if ok and data then
-                    self.state.zoneData[zoneId] = data
-                    self:out(string.format("<green>[Mapper]<reset> Zone %s: %d rooms\n",
-                        tostring(zoneId), #(data.nodes or {})))
-                    
-                    if callback then callback(data) end
-                end
-                os.remove(filename)
+                local ok, decoded = pcall(yajl.to_value, content)
+                if ok and validZoneData(decoded) then data = decoded end
             end
-            killAnonymousEventHandler(handlerId)
-            if errorId then killAnonymousEventHandler(errorId) end
+            request.finish()
+            if not data then
+                self:out("<yellow>[Mapper]<reset> Invalid zone map response\n")
+                return
+            end
+            self.state.zoneData[zoneId] = data
+            self:out(string.format("<green>[Mapper]<reset> Zone %s: %d rooms\n", tostring(zoneId), #data.nodes))
+            -- A delayed zone response must not replace a newer wilderness map.
+            if callback and self.state.currentZone == zoneId and not self.state.inWilderness then callback(data) end
         end
     end)
 
-    errorId = registerAnonymousEventHandler("sysDownloadError", function(event, err, filename)
+    request.failure = registerAnonymousEventHandler("sysDownloadError", function(event, err, filename)
         if filename == tempFile then
+            request.finish()
             self:out("<yellow>[Mapper]<reset> Zone fetch failed\n")
-            killAnonymousEventHandler(handlerId)
-            killAnonymousEventHandler(errorId)
         end
     end)
-
-    downloadFile(tempFile, url)
+    request.timeout = tempTimer(15, function()
+        request.finish()
+        self:out("<yellow>[Mapper]<reset> Zone fetch timed out; move or look to retry\n")
+    end)
+    local ok = downloadFile(tempFile, url)
+    if not ok then request.finish() end
 end
 
 -- ============================================================
@@ -1159,6 +1208,8 @@ function ArjMapper:processRoom(roomData)
     self.state.roomDoors[roomId] = doors
 
     if zoneId and not self.state.zoneData[zoneId] then
+        -- Retire the previous zone/wilderness while a new map is unavailable.
+        self:showZoneMap()
         self:fetchZoneData(zoneId, function() self:showZoneMap() end)
     else
         self:showZoneMap()
@@ -1295,7 +1346,7 @@ function ArjMapper:setupAliases()
     end)
     
     -- Alias to reload/refresh map layout
-    tempAlias("^/mapreload$", function()
+    self.reloadAlias = tempAlias("^/mapreload$", function()
         ArjMapper.state.zoneData = {}
         ArjMapper:clearZoneDisplay()
         ArjMapper:out("<cyan>[Mapper]<reset> Cache cleared. Move or 'look' to reload.\n")
@@ -1325,19 +1376,29 @@ end
 -- ============================================================
 
 function ArjMapper:kill()
+    if self.initTimer then killTimer(self.initTimer); self.initTimer = nil end
+    if self.renderTimer then killTimer(self.renderTimer); self.renderTimer = nil end
+    for _, request in pairs(self.requests or {}) do request.finish() end
+    self.requests = {}
     for _, h in ipairs(self.handlers) do killAnonymousEventHandler(h) end
     self.handlers = {}
-    if self.alias then killAlias(self.alias) end
+    if self.alias then killAlias(self.alias); self.alias = nil end
+    if self.reloadAlias then killAlias(self.reloadAlias); self.reloadAlias = nil end
     self:clearZoneDisplay()
-    if self.ui.wildConsole then self.ui.wildConsole:hide() end
-    if self.ui.zoneContainer then self.ui.zoneContainer:hide() end
+    for key, widget in pairs(self.ui) do
+        if type(widget) == "table" and widget.hide then
+            if widget.delete then widget:delete() else widget:hide() end
+        end
+    end
+    self.ui = { roomLabels = {} }
 end
 
 function ArjMapper:init()
     self:kill()
 
     -- Delay banner and UI setup until ArjUI is ready
-    tempTimer(0.5, function()
+    self.initTimer = tempTimer(0.5, function()
+        self.initTimer = nil
         ArjMapper:out("\n<green>══ ArjMapper v1.0 ══<reset>\n")
         ArjMapper:out("  <dim_gray>Type 'mapper' for help<reset>\n")
         ArjMapper:out("<green>════════════════════<reset>\n\n")

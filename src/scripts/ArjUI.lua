@@ -25,6 +25,17 @@ ArjUI.tellContacts = {}  -- List of players we've had tells with
 -- ============================================================
 
 function ArjUI:kill()
+  for id in pairs(self.timers or {}) do killTimer(id) end
+  self.timers = {}
+  for _, id in ipairs(self.runtimeTriggers or {}) do killTrigger(id) end
+  self.runtimeTriggers = {}
+  for _, id in ipairs(self.captureTriggerIds or {}) do killTrigger(id) end
+  self.captureTriggerIds = {}
+  for _, key in ipairs({"uiOnAlias", "uiOffAlias", "debugAlias"}) do
+    if self[key] then killAlias(self[key]); self[key] = nil end
+  end
+  for _, id in ipairs(self.portAliases or {}) do killAlias(id) end
+  self.portAliases = {}
   for _, handler in ipairs(self.eventHandlers) do
     killAnonymousEventHandler(handler)
   end
@@ -47,31 +58,77 @@ function ArjUI:kill()
     pcall(function() killTrigger("ArjUI_RouteAll") end)
   end
   -- Clean up popup if open
-  if self.addCmdPopup then pcall(function() self.addCmdPopup:hide() end) end
+  if self.addCmdPopup then self:disposeWidget(self.addCmdPopup); self.addCmdPopup = nil end
+  if self.currentMenu then self:disposeWidget(self.currentMenu); self.currentMenu = nil end
   -- Clean up private chat windows (Label-based custom windows)
   for pname, chat in pairs(self.privateChats or {}) do
     if chat.window then 
       pcall(function() 
-        chat.window:hide()
+        self:disposeWidget(chat.window)
       end)
     end
   end
   if self.bg then
-    self.bg:hide()
+    self:disposeWidget(self.bg)
     self.bg = nil
   end
   if self.main then
-    self.main:hide()
+    self:disposeWidget(self.main)
     self.main = nil
   end
+  self.uiRoot, self.console = nil, nil
+  self.privateChats, self.tellContacts = {}, {}
+  self.exitButtonsStatic, self.groupWidgets = nil, {}
+  self.playerName, self.damage = nil, nil
   -- Restore default borders so main console is visible again
   setBorderTop(0)
   setBorderBottom(0)
   setBorderLeft(0)
   setBorderRight(0)
-  -- Re-enable main command line
-  pcall(function() enableCommandLine("main") end)
-  pcall(function() enableCommandLine() end)
+  -- Mudlet's main command line remains available while the UI is hidden.
+end
+
+function ArjUI:disposeWidget(widget)
+  -- Geyser delete() is available on newer Mudlet releases. Older releases
+  -- retain hidden primitives; stable names allow them to be reused on import.
+  if widget.delete then widget:delete() else widget:hide() end
+end
+
+function ArjUI:after(delay, callback)
+  self.timers = self.timers or {}
+  local id
+  id = tempTimer(delay, function()
+    self.timers[id] = nil
+    callback()
+  end)
+  self.timers[id] = true
+  return id
+end
+
+function ArjUI:addRuntimeTrigger(pattern, callback)
+  local id = tempRegexTrigger(pattern, callback)
+  self.runtimeTriggers = self.runtimeTriggers or {}
+  table.insert(self.runtimeTriggers, id)
+  return id
+end
+
+function ArjUI:setVisible(visible)
+  if not self.main then return end
+  self.hidden = not visible
+  if visible then
+    self.bg:show()
+    self.main:show()
+    self:layout()
+  else
+    self.main:hide()
+    self.bg:hide()
+    if self.currentMenu then self.currentMenu:hide() end
+    for _, chat in pairs(self.privateChats) do chat.window:hide() end
+    setBorderTop(0)
+    setBorderBottom(0)
+    setBorderLeft(0)
+    setBorderRight(0)
+  end
 end
 
 function ArjUI:applyBackground()
@@ -93,8 +150,9 @@ function ArjUI:applyBackground()
   
   local bgPath = nil
   for _, path in ipairs(possiblePaths) do
-    local normalPath = path:gsub("/", "\\")
-    local f = io.open(normalPath, "r")
+    -- Forward slashes work on Windows as well as Unix. Converting them to
+    -- backslashes before io.open makes a valid Unix asset path unreadable.
+    local f = io.open(path, "rb")
     if f then
       f:close()
       bgPath = path:gsub("\\", "/")  -- Qt needs forward slashes
@@ -141,15 +199,14 @@ local function makePanel(parent, name, x, y, w, h, css)
   return panel
 end
 
-local function makeConsole(parent, name, x, y, w, h, fontSize, wrap)
+local function makeConsole(parent, name, x, y, w, h, fontSize)
   local console = Geyser.MiniConsole:new({
-    name = name, x = x, y = y, width = w, height = h, fontSize = fontSize or 10
+    name = name, x = x, y = y, width = w, height = h, fontSize = fontSize or 10, autoWrap = true
   }, parent)
   -- Warm-tinted background - MiniConsoles don't support true transparency
   -- Use a color that blends with the bronze theme
   console:setBgColor(12, 11, 9)
   console:setFgColor(200, 200, 200)
-  console:setWrap(wrap or 200)
   setBackgroundColor(console.name, 12, 11, 9, 255)
   return console
 end
@@ -316,6 +373,7 @@ end
 
 function ArjUI:init()
   self:kill()
+  self.hidden = false
   
   -- Layout constants as percentages for DPI-independent scaling
   -- Tuned to match the decorative background frame
@@ -339,8 +397,8 @@ function ArjUI:init()
   setBorderLeft(0)
   setBorderRight(0)
 
-  pcall(function() disableCommandLine("main") end)
-  pcall(function() disableCommandLine() end)
+  -- Mudlet does not permit disableCommandLine("main"). Use its native input
+  -- as our single command line, including history, completion and focus.
 
   -- Main container for our UI, sits on top of background (transparent so bg shows through gaps)
   self.main = Geyser.Container:new({
@@ -461,7 +519,9 @@ function ArjUI:init()
   -- Map - below globe and area label (with clipping to prevent overflow)
   self.mapWrap = makePanel(self.mapSection, "ArjUI_MapWrap", "3%", "14%", "94%", "83%", self.styles.panel)
   self.mapWrap:setStyleSheet("background-color: rgba(10,9,8,240); border: 2px solid #5a4b37; border-top: 2px solid #8c6e46; border-radius: 4px; overflow: hidden;")
-  self.mapper = Geyser.Mapper:new({ name = "ArjUI_Mapper", x = 2, y = 2, width = "96%", height = "96%" }, self.mapWrap)
+  self.mapper = Geyser.Label:new({ name = "ArjUI_Mapper", x = "2%", y = "2%", width = "96%", height = "96%" }, self.mapWrap)
+  self.mapper:setStyleSheet("background-color: #0c0b09; color: #8a8a8a; qproperty-alignment: 'AlignCenter'; font-size: 10px;")
+  self.mapper:echo("Waiting for room data")
 
   -- SECTION 2: Exits + Time (36% - 40%) - Split into two halves
   self.exitsSection = makePanel(self.leftCol, "ArjUI_ExitsSection", 0, "36%", "50%", "4%", self.styles.panel)
@@ -487,7 +547,7 @@ function ArjUI:init()
   self.mobsHeader = Geyser.Label:new({ name = "ArjUI_MobsHeader", x = "3%", y = "3%", width = "94%", height = "14%" }, self.mobsSection)
   styleSafe(self.mobsHeader, self.styles.headerCombat)
   labelSet(self.mobsHeader, "⚔ MOBS")
-  self.mobsBox = makeConsole(self.mobsSection, "ArjUI_MobsBox", "3%", "18%", "94%", "79%", 9, 30)
+  self.mobsBox = makeConsole(self.mobsSection, "ArjUI_MobsBox", "3%", "18%", "94%", "79%", 9)
 
   -- SECTION 4: Items (70% - 100%) - extends to match output window bottom
   self.itemsSection = makePanel(self.leftCol, "ArjUI_ItemsSection", 0, "70%", "100%", "30%", self.styles.panel)
@@ -496,7 +556,7 @@ function ArjUI:init()
   self.objsHeader = Geyser.Label:new({ name = "ArjUI_ObjsHeader", x = "3%", y = "3%", width = "94%", height = "13%" }, self.itemsSection)
   styleSafe(self.objsHeader, self.styles.headerTarget)
   labelSet(self.objsHeader, "◆ ITEMS")
-  self.objsBox = makeConsole(self.itemsSection, "ArjUI_ObjsBox", "3%", "17%", "94%", "80%", 9, 30)
+  self.objsBox = makeConsole(self.itemsSection, "ArjUI_ObjsBox", "3%", "17%", "94%", "80%", 9)
 
   -- CENTER COLUMN (with gaps on sides) - primary panel, near-opaque for readability
   self.centerCol = makePanel(self.topSection, "ArjUI_CenterCol", "16.7%", 0, centerW, "100%", self.styles.panel)
@@ -510,11 +570,7 @@ function ArjUI:init()
   self.roomLabel = Geyser.Label:new({ name = "ArjUI_RoomLabel", x = "0.5%", y = "3.0%", width = "99%", height = "3.2%" }, self.centerCol)
   styleSafe(self.roomLabel, self.styles.roomName)
 
-  self.console = makeConsole(self.centerCol, "ArjUI_Console", "0.5%", "6.5%", "99%", "88%", 10, 400)
-
-  self.inputBar = Geyser.CommandLine:new({ name = "ArjUI_Input", x = "0.5%", y = "95%", width = "99%", height = "4.5%" }, self.centerCol)
-  self.inputBar:setStyleSheet(self.styles.inputBar)
-  self.inputBar:setFontSize(12)
+  self.console = makeConsole(self.centerCol, "ArjUI_Console", "0.5%", "6.5%", "99%", "93%", 10)
 
   -- RIGHT COLUMN (container for distinct panels with gaps) - extends to target bar bottom
   self.rightCol = makePanel(self.uiRoot, "ArjUI_RightCol", "73.9%", "0%", rightW, "100%", self.styles.panel)
@@ -548,32 +604,32 @@ function ArjUI:init()
   self.tabContent = Geyser.Container:new({ name = "ArjUI_TabContent", x = "3%", y = "8%", width = "94%", height = "90%" }, self.tabSection)
   
   -- GROUP panel (default) - Container for dynamic gauge widgets
-  self.groupContainer = Geyser.Container:new({ name = "ArjUI_GroupContainer", x = 0, y = 0, width = "100%", height = "100%" }, self.tabContent)
+  self.groupContainer = Geyser.ScrollBox:new({ name = "ArjUI_GroupContainer", x = 0, y = 0, width = "100%", height = "100%" }, self.tabContent)
   self.tabPanels.group = self.groupContainer
   self.groupWidgets = {}  -- Store dynamically created group member widgets
   
   -- STATS panel
-  self.statsBox = makeConsole(self.tabContent, "ArjUI_StatsBox", 0, 0, "100%", "100%", 9, 40)
+  self.statsBox = makeConsole(self.tabContent, "ArjUI_StatsBox", 0, 0, "100%", "100%", 9)
   self.statsBox:hide()
   self.tabPanels.stats = self.statsBox
   
   -- INVENTORY panel
-  self.invBox = makeConsole(self.tabContent, "ArjUI_InvBox", 0, 0, "100%", "100%", 9, 40)
+  self.invBox = makeConsole(self.tabContent, "ArjUI_InvBox", 0, 0, "100%", "100%", 9)
   self.invBox:hide()
   self.tabPanels.inv = self.invBox
   
   -- EQ panel (equipment)
-  self.eqBox = makeConsole(self.tabContent, "ArjUI_EqBox", 0, 0, "100%", "100%", 9, 50)
+  self.eqBox = makeConsole(self.tabContent, "ArjUI_EqBox", 0, 0, "100%", "100%", 9)
   self.eqBox:hide()
   self.tabPanels.eq = self.eqBox
   
   -- WHO panel
-  self.whoBox = makeConsole(self.tabContent, "ArjUI_WhoBox", 0, 0, "100%", "100%", 9, 60)
+  self.whoBox = makeConsole(self.tabContent, "ArjUI_WhoBox", 0, 0, "100%", "100%", 9)
   self.whoBox:hide()
   self.tabPanels.who = self.whoBox
   
   -- SHIP panel (GMCP Ship.Info/Ship.Contacts, or 'look contacts' text)
-  self.shipBox = makeConsole(self.tabContent, "ArjUI_ShipBox", 0, 0, "100%", "100%", 9, 60)
+  self.shipBox = makeConsole(self.tabContent, "ArjUI_ShipBox", 0, 0, "100%", "100%", 9)
   self.shipBox:hide()
   self.tabPanels.ship = self.shipBox
   
@@ -586,7 +642,7 @@ function ArjUI:init()
   self.enemyHeader = Geyser.Label:new({ name = "ArjUI_EnemyHeader", x = "3%", y = "3%", width = "94%", height = "14%" }, self.playersSection)
   styleSafe(self.enemyHeader, self.styles.headerCombat)
   labelSet(self.enemyHeader, "⚔ PLAYERS")
-  self.enemyBox = makeConsole(self.playersSection, "ArjUI_EnemyBox", "3%", "18%", "94%", "79%", 9, 60)
+  self.enemyBox = makeConsole(self.playersSection, "ArjUI_EnemyBox", "3%", "18%", "94%", "79%", 9)
 
   -- SECTION 3: Chat (73% - 100%) - Chat at bottom, sits just above credit box
   self.chatSection = makePanel(self.rightCol, "ArjUI_ChatSection", 0, "73%", "100%", "27%", self.styles.panel)
@@ -616,31 +672,31 @@ function ArjUI:init()
   self.chatContent = Geyser.Container:new({ name = "ArjUI_ChatContent", x = "3%", y = "12%", width = "94%", height = "86%" }, self.chatSection)
   
   -- ALL chat panel (default)
-  self.chatBox = makeConsole(self.chatContent, "ArjUI_ChatBox", 0, 0, "100%", "100%", 9, 60)
+  self.chatBox = makeConsole(self.chatContent, "ArjUI_ChatBox", 0, 0, "100%", "100%", 9)
   self.chatPanels.all = self.chatBox
   
   -- TELLS panel
-  self.tellsBox = makeConsole(self.chatContent, "ArjUI_TellsBox", 0, 0, "100%", "100%", 9, 60)
+  self.tellsBox = makeConsole(self.chatContent, "ArjUI_TellsBox", 0, 0, "100%", "100%", 9)
   self.tellsBox:hide()
   self.chatPanels.tells = self.tellsBox
   
   -- NCHAT panel
-  self.nchatBox = makeConsole(self.chatContent, "ArjUI_NchatBox", 0, 0, "100%", "100%", 9, 60)
+  self.nchatBox = makeConsole(self.chatContent, "ArjUI_NchatBox", 0, 0, "100%", "100%", 9)
   self.nchatBox:hide()
   self.chatPanels.nchat = self.nchatBox
   
   -- ROOM panel (say/yell)
-  self.roomBox = makeConsole(self.chatContent, "ArjUI_RoomBox", 0, 0, "100%", "100%", 9, 60)
+  self.roomBox = makeConsole(self.chatContent, "ArjUI_RoomBox", 0, 0, "100%", "100%", 9)
   self.roomBox:hide()
   self.chatPanels.room = self.roomBox
   
   -- GUILD panel
-  self.guildBox = makeConsole(self.chatContent, "ArjUI_GuildBox", 0, 0, "100%", "100%", 9, 60)
+  self.guildBox = makeConsole(self.chatContent, "ArjUI_GuildBox", 0, 0, "100%", "100%", 9)
   self.guildBox:hide()
   self.chatPanels.guild = self.guildBox
   
   -- GROUP panel
-  self.groupChatBox = makeConsole(self.chatContent, "ArjUI_GroupChatBox", 0, 0, "100%", "100%", 9, 60)
+  self.groupChatBox = makeConsole(self.chatContent, "ArjUI_GroupChatBox", 0, 0, "100%", "100%", 9)
   self.groupChatBox:hide()
   self.chatPanels.group = self.groupChatBox
   
@@ -663,7 +719,7 @@ function ArjUI:init()
     qproperty-alignment: 'AlignRight | AlignVCenter';
     padding-right: 8px;
   ]])
-  self.creditBox:echo("Arjinius Client v1.0")
+  self.creditBox:echo("Arjinius Client v" .. self.VERSION)
   
   -- Hover tooltip (appears above credit box)
   local tooltipY = (100 - self.frameInsetBottomPct - 3.2) .. "%"
@@ -756,7 +812,7 @@ function ArjUI:init()
   self.buffsHeader = Geyser.Label:new({ name="ArjUI_BuffsHeader", x="3%", y="38%", width="94%", height="12%" }, self.tankWrap)
   styleSafe(self.buffsHeader, self.styles.headerAffects)
   labelSet(self.buffsHeader, "✦ BUFFS")
-  self.buffsBox = makeConsole(self.tankWrap, "ArjUI_BuffsBox", "3%", "51%", "94%", "46%", 8, 40)
+  self.buffsBox = makeConsole(self.tankWrap, "ArjUI_BuffsBox", "3%", "51%", "94%", "46%", 8)
 
   self.separator = Geyser.Label:new({ name = "ArjUI_Separator", x = "45.2%", y = "5%", width = "0.3%", height = "90%" }, self.bottomBar)
   styleSafe(self.separator, self.styles.separator)
@@ -792,7 +848,7 @@ function ArjUI:init()
   self.damageLabel:setClickCallback(function() self:reportDamage(false) end)
   self.damageLabel:setOnEnter(function() self.damageLabel:setCursor("PointingHand") end)
   self.damageLabel:setOnLeave(function() self.damageLabel:setCursor("Arrow") end)
-  self.debuffsBox = makeConsole(self.targetWrap, "ArjUI_DebuffsBox", "3%", "51%", "94%", "46%", 8, 40)
+  self.debuffsBox = makeConsole(self.targetWrap, "ArjUI_DebuffsBox", "3%", "51%", "94%", "46%", 8)
 
   -- STATE
   self.state = {
@@ -820,13 +876,13 @@ function ArjUI:init()
 
   h = registerAnonymousEventHandler("sysConnectionEvent", function()
     self:applyBackground()
-    tempTimer(0.2, function() if self and self.applyBackground then self:applyBackground() end end)
+    self:after(0.2, function() if self and self.applyBackground then self:applyBackground() end end)
   end)
   table.insert(self.eventHandlers, h)
 
   h = registerAnonymousEventHandler("sysAppStyleSheetChange", function()
     self:applyBackground()
-    tempTimer(0.2, function() if self and self.applyBackground then self:applyBackground() end end)
+    self:after(0.2, function() if self and self.applyBackground then self:applyBackground() end end)
   end)
   table.insert(self.eventHandlers, h)
 
@@ -839,7 +895,7 @@ function ArjUI:init()
   self:renderAll()
   
   -- If GMCP data already exists (reconnecting to existing session), render again after short delay
-  tempTimer(1, function()
+  self:after(1, function()
     if ArjUI and gmcp and gmcp.Char and gmcp.Char.Vitals then
       ArjUI:renderAll()
     end
@@ -855,7 +911,7 @@ function ArjUI:init()
 end
 
 function ArjUI:layout()
-  if not self.uiRoot then return end
+  if not self.uiRoot or self.hidden then return end
   local w, h = getMainWindowSize()
   setBorderTop(h)
   
@@ -984,7 +1040,7 @@ function ArjUI:showContextMenu(items, x, y)
   end
 
   -- Auto-hide after 10 seconds so it can't get stuck
-  tempTimer(10, function() 
+  self:after(10, function()
     if menu then pcall(function() menu:hide() end) end
   end)
 
@@ -1692,22 +1748,21 @@ function ArjUI:registerGMCPHandlers()
   -- Detect character login and render UI.
   -- Primary signal: first gmcp.Char.Status after connect (server sends it once on
   -- character entry, independent of prompt settings). Fallback: default prompt shape.
-  self.loginTrigger = tempRegexTrigger("^< \\d+h/\\d+H \\d+v/\\d+V Pos:", function()
+  self.loginTrigger = self:addRuntimeTrigger("^< \\d+h/\\d+H \\d+v/\\d+V Pos:", function()
     if ArjUI then ArjUI:onLoginDetected() end
   end)
-  table.insert(self.eventHandlers, self.loginTrigger)
   
   
   -- Room refresh triggers disabled - GMCP Room.Info handles this automatically
-  -- self.dropTrigger = tempRegexTrigger("^(You drop|.+ drops) ", function()
-  --   tempTimer(0.3, function() if ArjUI then send("look", false) end end)
+  -- self.dropTrigger = self:addRuntimeTrigger("^(You drop|.+ drops) ", function()
+  --   self:after(0.3, function() if ArjUI then send("look", false) end end)
   -- end)
-  -- self.getTrigger = tempRegexTrigger("^(You get|You pick up|.+ gets) ", function()
-  --   tempTimer(0.3, function() if ArjUI then send("look", false) end end)
+  -- self.getTrigger = self:addRuntimeTrigger("^(You get|You pick up|.+ gets) ", function()
+  --   self:after(0.3, function() if ArjUI then send("look", false) end end)
   -- end)
   
   -- Trigger to detect when a mob dies (clears target and resets tank bar to self)
-  self.deathTrigger = tempRegexTrigger("^.+ is dead! R\\.I\\.P\\.$", function()
+  self.deathTrigger = self:addRuntimeTrigger("^.+ is dead! R\\.I\\.P\\.$", function()
     -- Clear target
     ArjUI.state.target = nil
     ArjUI.state.targetHpPct = 100
@@ -1724,7 +1779,7 @@ function ArjUI:registerGMCPHandlers()
   end)
   
   -- Trigger to detect flee (clears target and resets tank bar to self)
-  self.fleeTrigger = tempRegexTrigger("^You flee ", function()
+  self.fleeTrigger = self:addRuntimeTrigger("^You flee ", function()
     -- Clear target
     ArjUI.state.target = nil
     ArjUI.state.targetHpPct = 100
@@ -1742,7 +1797,7 @@ function ArjUI:registerGMCPHandlers()
   
   -- Trigger to detect player death (clears all combat state)
   -- Matches account menu which appears after death
-  self.playerDeathTrigger = tempRegexTrigger("ACCOUNT MENU", function()
+  self.playerDeathTrigger = self:addRuntimeTrigger("ACCOUNT MENU", function()
     -- Clear target
     ArjUI.state.target = nil
     ArjUI.state.targetHpPct = 100
@@ -1759,7 +1814,7 @@ function ArjUI:registerGMCPHandlers()
   end)
   
   -- Trigger to detect assist (sets assist target for YOU bar)
-  self.assistTrigger = tempRegexTrigger("^You are now assisting (.+)\\.$", function()
+  self.assistTrigger = self:addRuntimeTrigger("^You are now assisting (.+)\\.$", function()
     local assistName = matches[2]
     if assistName and assistName ~= "" then
       ArjUI.state.assistTarget = assistName
@@ -1770,33 +1825,33 @@ function ArjUI:registerGMCPHandlers()
   end)
   
   -- Trigger to detect stop assisting
-  self.stopAssistTrigger = tempRegexTrigger("^You are no longer assisting ", function()
+  self.stopAssistTrigger = self:addRuntimeTrigger("^You are no longer assisting ", function()
     ArjUI.state.assistTarget = nil
     ArjUI.state.iAmTank = true
     ArjUI:renderTank()
   end)
   
   -- Time of day triggers (automatic announcements)
-  self.timeDayTrigger = tempRegexTrigger("^The day has begun\\.$", function()
+  self.timeDayTrigger = self:addRuntimeTrigger("^The day has begun\\.$", function()
     ArjUI.state.timeOfDay = "day"
     ArjUI:renderTime()
   end)
-  self.timeNightTrigger = tempRegexTrigger("^The night has begun\\.$", function()
+  self.timeNightTrigger = self:addRuntimeTrigger("^The night has begun\\.$", function()
     ArjUI.state.timeOfDay = "night"
     ArjUI:renderTime()
   end)
-  self.timeDawnTrigger = tempRegexTrigger("^The sun rises", function()
+  self.timeDawnTrigger = self:addRuntimeTrigger("^The sun rises", function()
     ArjUI.state.timeOfDay = "dawn"
     ArjUI:renderTime()
   end)
-  self.timeDuskTrigger = tempRegexTrigger("^The sun sets", function()
+  self.timeDuskTrigger = self:addRuntimeTrigger("^The sun sets", function()
     ArjUI.state.timeOfDay = "dusk"
     ArjUI:renderTime()
   end)
   
   -- Parse 'time' command output: "It is 9pm, on the Day of the Deception"
   -- Gag the output if it was from our silent auto-query
-  self.timeCommandTrigger = tempRegexTrigger("^It is (\\d+)(am|pm)", function()
+  self.timeCommandTrigger = self:addRuntimeTrigger("^It is (\\d+)(am|pm)", function()
     local hour = tonumber(matches[2])
     local ampm = matches[3]
     -- Convert to 24h for easier day/night detection
@@ -1820,16 +1875,16 @@ function ArjUI:registerGMCPHandlers()
   end)
   
   -- Gag the additional time output lines when silent
-  self.timeGagTrigger1 = tempRegexTrigger("^The \\d+.. Day of the ", function()
+  self.timeGagTrigger1 = self:addRuntimeTrigger("^The \\d+.. Day of the ", function()
     if ArjUI.timeQuerySilent then deleteLine() end
   end)
-  self.timeGagTrigger2 = tempRegexTrigger("^Time elapsed since boot-up:", function()
+  self.timeGagTrigger2 = self:addRuntimeTrigger("^Time elapsed since boot-up:", function()
     if ArjUI.timeQuerySilent then deleteLine() end
   end)
-  self.timeGagTrigger3 = tempRegexTrigger("^Current time is:", function()
+  self.timeGagTrigger3 = self:addRuntimeTrigger("^Current time is:", function()
     if ArjUI.timeQuerySilent then deleteLine() end
   end)
-  self.timeGagTrigger4 = tempRegexTrigger("^\\s+\\w+ \\w+ +\\d+ \\d+:\\d+:\\d+ \\d+", function()
+  self.timeGagTrigger4 = self:addRuntimeTrigger("^\\s+\\w+ \\w+ +\\d+ \\d+:\\d+:\\d+ \\d+", function()
     if ArjUI.timeQuerySilent then 
       deleteLine()
       -- Last line of time output - clear the silent flag
@@ -1839,7 +1894,7 @@ function ArjUI:registerGMCPHandlers()
   
   -- Trigger to parse combat prompt line for tank, target, and positions
   -- Format: < T: Seveiwyn TP: sta TC: excellent E: wolf EP: sta EC: small wounds>
-  self.combatPromptTrigger = tempRegexTrigger("^< T: (.+) TP: (\\w+) TC: ([^E]+) E: (.+) EP: (\\w+) EC: ([^>]+)>", function()
+  self.combatPromptTrigger = self:addRuntimeTrigger("^< T: (.+) TP: (\\w+) TC: ([^E]+) E: (.+) EP: (\\w+) EC: ([^>]+)>", function()
     local tankName = matches[2]:gsub("%s+$", "")  -- trim trailing space
     local tankPos = matches[3]
     local tankCond = matches[4]:gsub("%s+$", "")  -- trim trailing space
@@ -1881,11 +1936,11 @@ function ArjUI:onLoginDetected()
   if self.initialDataRequested then return end
   self.initialDataRequested = true
   -- Render after short delay to allow any pending GMCP data to arrive
-  tempTimer(0.5, function()
+  self:after(0.5, function()
     if ArjUI then ArjUI:renderAll() end
   end)
   -- Query time silently on login
-  tempTimer(1.0, function()
+  self:after(1.0, function()
     ArjUI.timeQuerySilent = true
     send("time", false)
   end)
@@ -1947,7 +2002,7 @@ function ArjUI:onRoomInfo()
   local r = gmcp.Room.Info
   self.state.room = r.name or self.state.room
   self.state.coloredRoom = r.colored_name or r.name or self.state.room
-  self.state.area = r.area or r.zone or self.state.area
+  self.state.area = tostring(r.area or r.zone or self.state.area)
   self.state.coloredArea = r.colored_area or r.area or self.state.area
   self.state.roomId = r.num or self.state.roomId
   self.state.zoneId = r.zone or self.state.zoneId
@@ -1970,11 +2025,13 @@ function ArjUI:onRoomInfo()
   self:renderMobs()
   self:renderItems()
   self:renderPlayers()
+  if self.activeTab == "stats" then self:renderStats() end
 end
 
 function ArjUI:onCombatUpdate()
   if not gmcp or not gmcp.Combat or not gmcp.Combat.Update then return end
   local c = gmcp.Combat.Update
+  if type(c) ~= "table" then return end
   
   -- Per-round damage dealt by us (Combat.Update.round {attacker, damage, damageType, critical})
   if type(c.round) == "table" and c.round.damage and self.addDamage then
@@ -1986,7 +2043,7 @@ function ArjUI:onCombatUpdate()
   end
   
   -- Handle tank info if provided (rescue, swap, flee changes)
-  if c.tank then
+  if type(c.tank) == "table" then
     local t = c.tank
     local tankName = t.name or ""
     local myName = self.playerName or ""
@@ -2006,7 +2063,8 @@ function ArjUI:onCombatUpdate()
   end
   
   -- Handle target/enemy info
-  if c.target then
+  -- Mudlet decodes JSON null as a truthy sentinel, not Lua nil.
+  if type(c.target) == "table" then
     local t = c.target
     self.state.target = t.name or "Unknown"
     self.state.targetHpPct = toNum(pick(t, "healthPercent", "hpPercent", "hp_pct")) or self.state.targetHpPct
@@ -2070,10 +2128,10 @@ function ArjUI:onCharStatus()
   -- Char.Status is only ever about ourselves: record identity fields
   if type(s.name) == "string" and s.name ~= "" then self.playerName = s.name end
   self.state.charLevel = toNum(s.level) or self.state.charLevel
-  self.state.charClass = s.class or self.state.charClass
-  self.state.charRace = s.race or self.state.charRace
-  self.state.charGuild = s.guild or self.state.charGuild
-  self.state.charTitle = s.title or self.state.charTitle
+  self.state.charClass = s.class and stripColors(s.class) or self.state.charClass
+  self.state.charRace = s.race and stripColors(s.race) or self.state.charRace
+  self.state.charGuild = s.guild and stripColors(s.guild) or self.state.charGuild
+  self.state.charTitle = s.title and stripColors(s.title) or self.state.charTitle
   
   -- Update our own position if this is about us
   if s.position then self.state.position = s.position end
@@ -2187,7 +2245,6 @@ function ArjUI:debugPlayers()
 end
 
 -- Register /debugplayers alias
-tempAlias("^/debugplayers$", function() ArjUI:debugPlayers() end)
 
 -- ============================================================
 -- RENDER FUNCTIONS
@@ -2242,6 +2299,8 @@ function ArjUI:renderRoom()
   local coloredRoom = self.state.coloredRoom or self.state.room or ""
   self.areaLabel:decho(durisToDecho(coloredArea))
   self.roomLabel:decho(durisToDecho(coloredRoom))
+  self.areaLabel:setToolTip(stripColors(tostring(coloredArea)))
+  self.roomLabel:setToolTip(stripColors(tostring(coloredRoom)))
   self:renderExits()
 end
 
@@ -2559,9 +2618,14 @@ function ArjUI:renderTank()
   end
 end
 
-function ArjUI:clearGroupWidgets()
+function ArjUI:clearGroupWidgets(shrinking)
   for _, w in pairs(self.groupWidgets or {}) do
-    if w.container then w.container:hide() end
+    if w.container then
+      -- Qt defers deletion and does not recompute ScrollBox extents on child
+      -- removal. Hide departing rows first when shrinking to clamp scrolling.
+      if shrinking then w.container:hide() end
+      self:disposeWidget(w.container)
+    end
   end
   self.groupWidgets = {}
 end
@@ -2579,8 +2643,9 @@ function ArjUI:getGroupHpStyle(pct)
 end
 
 function ArjUI:renderGroup()
-  self:clearGroupWidgets()
   local members = self.state.group or {}
+  self:clearGroupWidgets(#members < (self.groupMemberCount or 0))
+  self.groupMemberCount = #members
   
   -- Styles
   local headerStyle = "background-color: transparent; color: #50c878; font-size: 10px; font-weight: bold; qproperty-alignment: 'AlignLeft';"
@@ -2592,23 +2657,24 @@ function ArjUI:renderGroup()
   local gaugeText = "color: #e0e0e0; font-size: 8px; font-weight: bold;"
   
   if #members == 0 then 
-    local soloLabel = Geyser.Label:new({ name = "ArjUI_GroupSolo", x = "2%", y = "2%", width = "96%", height = "40%" }, self.groupContainer)
+    local soloLabel = Geyser.Label:new({ name = "ArjUI_GroupSolo", x = "2%", y = "2%", width = "90%", height = "40%" }, self.groupContainer)
     soloLabel:setStyleSheet(headerStyle)
-    soloLabel:echo("── Group ──\n\n(solo)\n\nType 'group <name>' to invite")
+    soloLabel:echo("── Group ──<br/>(solo)<br/>Type 'group &lt;name&gt;' to invite")
     self.groupWidgets.solo = { container = soloLabel }
     return 
   end
   
   -- Header
-  local header = Geyser.Label:new({ name = "ArjUI_GroupHeader", x = "2%", y = "1%", width = "96%", height = "8%" }, self.groupContainer)
+  local header = Geyser.Label:new({ name = "ArjUI_GroupHeader", x = "2%", y = 0, width = "90%", height = 22 }, self.groupContainer)
   header:setStyleSheet(headerStyle)
   local sizeText = tostring(self.state.groupSize or #members)
   if (self.state.groupMax or 0) > 0 then sizeText = sizeText .. "/" .. self.state.groupMax end
   header:echo("── Group (" .. sizeText .. ") ──")
   self.groupWidgets.header = { container = header }
   
-  local yOffsetPct = 10  -- Start at 10% from top
-  local rowHeightPct = math.min(15, 85 / math.max(#members, 1))  -- Dynamic row height based on member count
+  -- Keep rows readable at every group size; overflow scrolls within the panel.
+  local yOffset = 26
+  local rowHeight = 38
   
   -- Find the most hurt player (not NPC, in room) so their name can be highlighted
   local weakestIdx, weakestPct = nil, 100
@@ -2644,7 +2710,6 @@ function ArjUI:renderGroup()
     local posUpper = (pos or ""):upper():sub(1,3)
     local isAlert = posUpper ~= "STA" and posUpper ~= ""
     local inRoom = (mem.inRoom ~= false)  -- Group.Status.members[].inRoom
-    if mem.isNpc == true then displayName = displayName .. "*" end
     local mv = toNum(pick(mem, "move", "mv"))
     local maxMv = toNum(pick(mem, "maxMove", "maxmove", "maxMv"))
     local mvPct = (mv and maxMv and maxMv > 0) and math.floor((mv / maxMv) * 100) or nil
@@ -2652,8 +2717,8 @@ function ArjUI:renderGroup()
     -- Container for this member (percentage-based positioning)
     local memContainer = Geyser.Container:new({ 
       name = "ArjUI_GroupMem_" .. i, 
-      x = "2%", y = yOffsetPct .. "%", 
-      width = "96%", height = rowHeightPct .. "%" 
+      x = "2%", y = yOffset,
+      width = "90%", height = rowHeight
     }, self.groupContainer)
     
     -- Name label (left)
@@ -2662,7 +2727,8 @@ function ArjUI:renderGroup()
     if not inRoom then thisNameStyle = nameStyle:gsub("#d0d0d0", "#707070")
     elseif i == weakestIdx then thisNameStyle = nameStyle:gsub("#d0d0d0", "#ff8080") end
     nameLabel:setStyleSheet(thisNameStyle)
-    nameLabel:echo(displayName:sub(1, 14))
+    nameLabel:echo(displayName:sub(1, mem.isNpc and 13 or 14) .. (mem.isNpc and "*" or ""))
+    nameLabel:setToolTip(displayName)
     nameLabel:setClickCallback(function()
       self:showContextMenu(self:getContextMenuItems("players", name))
     end)
@@ -2709,7 +2775,7 @@ function ArjUI:renderGroup()
       hpGauge = hpGauge
     }
     
-    yOffsetPct = yOffsetPct + rowHeightPct + 1
+    yOffset = yOffset + rowHeight + 4
   end
 end
 
@@ -2859,7 +2925,7 @@ function ArjUI:renderStats()
     if q.mapBought then line = line .. " <dim_gray>[map]" end
     self.statsBox:cecho("\n<dim_gray>Quest: <gold>" .. line .. "\n")
   end
-  self.statsBox:cecho("\n<dim_gray>Click tab to send 'stat'\n")
+  self.statsBox:cecho("\n<dim_gray>Click tab to send 'score'\n")
 end
 
 function ArjUI:renderInventory()
@@ -2892,7 +2958,7 @@ function ArjUI:renderEq()
     end
   else
     self.eqBox:cecho("<dim_gray>── Equipment ──\n\n")
-    self.eqBox:cecho("<dim_gray>(click tab to refresh)\n")
+    self.eqBox:cecho(eq and "<dim_gray>You aren't wearing anything!\n" or "<dim_gray>(click tab to refresh)\n")
   end
 end
 
@@ -3086,6 +3152,13 @@ function ArjUI:setupCaptureTriggers()
     ArjUI.state.capturedLines = {}  -- Reset dedup hash
   end)
   table.insert(self.captureTriggerIds, eqId)
+
+  local emptyEqId = tempRegexTrigger("^You aren't wearing anything!$", function()
+    ArjUI.state.equipment = { lines = {} }
+    ArjUI.state.capturing = nil
+    ArjUI:renderEq()
+  end)
+  table.insert(self.captureTriggerIds, emptyEqId)
   
   -- Who header trigger
   local whoId = tempTrigger("Listing of the Gods", function()
@@ -3102,28 +3175,22 @@ function ArjUI:setupCaptureTriggers()
     if not ArjUI.state.capturing then return end
     local currentLine = matches[1] or line
     
-    -- Skip if we've already seen this exact line in this capture session
-    ArjUI.state.capturedLines = ArjUI.state.capturedLines or {}
-    if ArjUI.state.capturedLines[currentLine] then return end
-    
     -- Check for prompt (end of capture)
     if currentLine:match("^%s*<%s*%d+h") then
-      if ArjUI.state.captureCount and ArjUI.state.captureCount > 0 then
-        ArjUI:finishCapture()
-      end
+      ArjUI:finishCapture()
       return
     end
     
     -- Capture based on type
     if ArjUI.state.capturing == "inv" then
-      if currentLine:match("^a ") or currentLine:match("^an ") or currentLine:match("^some ") or currentLine:match("^the ") or currentLine:match("^%d+ ") then
-        ArjUI.state.capturedLines[currentLine] = true
+      -- Duris item short descriptions need not start with an article. Keep
+      -- capitalized names, bare names and grouped counts such as "[2] boots".
+      if currentLine:match("%S") and not currentLine:match("^You are carrying:") then
         table.insert(ArjUI.state.invCapture.lines, currentLine)
         ArjUI.state.captureCount = (ArjUI.state.captureCount or 0) + 1
       end
     elseif ArjUI.state.capturing == "eq" then
       if currentLine:match("^<[^>]+>") then
-        ArjUI.state.capturedLines[currentLine] = true
         table.insert(ArjUI.state.eqCapture.lines, currentLine)
         ArjUI.state.captureCount = (ArjUI.state.captureCount or 0) + 1
       end
@@ -3133,7 +3200,6 @@ function ArjUI:setupCaptureTriggers()
          currentLine:match("^There are %d+") or currentLine:match("^Total visible") or 
          currentLine:match("^Record number") or currentLine:match("^<None>") or
          currentLine:match("^There are .* online") then
-        ArjUI.state.capturedLines[currentLine] = true
         table.insert(ArjUI.state.whoCapture.lines, currentLine)
         ArjUI.state.captureCount = (ArjUI.state.captureCount or 0) + 1
       end
@@ -3176,7 +3242,7 @@ end
 -- Request data when clicking on a tab - sends command to main console
 function ArjUI:requestTabData(tabName)
   if tabName == "stats" then
-    send("stat")
+    send("score")
   elseif tabName == "who" then
     send("who")
   elseif tabName == "inv" then
@@ -3344,7 +3410,8 @@ function ArjUI:addDamage(n, source)
   if not n or n <= 0 then return end
   if not (self.settings and self.settings.damageTracker) then return end
   local d = self.damage
-  if source == "gmcp" then d.source = "gmcp" elseif d.source == "gmcp" then return end
+  if d.source and d.source ~= source then return end
+  d.source = source
   d.fight = d.fight + n
   d.fightHits = d.fightHits + 1
   d.session = d.session + n
@@ -3361,6 +3428,7 @@ function ArjUI:endFight()
     self:note(string.format("<gold>[Fight damage: %s in %d hits, best %s]", fmtNum(d.fight), d.fightHits, fmtNum(d.lastBest or 0)))
   end
   d.fight, d.fightHits, d.lastBest = 0, 0, 0
+  d.source = nil
   self:renderDamage()
 end
 
@@ -3750,7 +3818,7 @@ function ArjUI:setupRouteAll()
   -- Create a regex trigger that matches every line
   -- Pattern "^.*$" matches entire line (same as working manual trigger)
   self.routeAllTriggerId = tempRegexTrigger("^.*$", function()
-    if ArjUI and ArjUI.console then
+    if ArjUI and ArjUI.console and not ArjUI.hidden then
       selectCurrentLine()
       copy()
       appendBuffer("ArjUI_Console")
@@ -3767,17 +3835,15 @@ function ArjUI:setupAliases()
   for _, id in ipairs(self.portAliases or {}) do pcall(function() killAlias(id) end) end
   self.portAliases = {}
   
-  -- ui on - reinitialize the UI
+  -- Hide/show retains state and widgets rather than rebuilding callbacks.
   self.uiOnAlias = tempAlias("^ui on$", function()
-    ArjUI:init()
-    ArjUI:setupCaptureTriggers()
-    ArjUI:setupRouteAll()
+    ArjUI:setVisible(true)
     cecho("<green>[ArjUI]<reset> UI enabled.\n")
   end)
   
   -- ui off - kill the UI and restore default Mudlet
   self.uiOffAlias = tempAlias("^ui off$", function()
-    ArjUI:kill()
+    ArjUI:setVisible(false)
     cecho("<yellow>[ArjUI]<reset> UI disabled. Type 'ui on' to re-enable.\n")
   end)
   
@@ -3805,6 +3871,7 @@ function ArjUI:setupAliases()
   end)
   
   -- ui help
+  table.insert(self.portAliases, tempAlias("^/debugplayers$", function() ArjUI:debugPlayers() end))
   table.insert(self.portAliases, tempAlias("^ui help$", function() ArjUI:showHelp() end))
   -- ui damage [reset]
   table.insert(self.portAliases, tempAlias("^ui damage$", function() ArjUI:reportDamage(false) end))
@@ -3830,3 +3897,9 @@ ArjUI:init()
 ArjUI:setupCaptureTriggers()
 ArjUI:setupRouteAll()
 ArjUI:setupAliases()
+table.insert(ArjUI.eventHandlers, registerAnonymousEventHandler("sysUninstallPackage", function(_, name)
+  if name ~= "Arjinius Client" then return end
+  if ArjAuto then ArjAuto:kill() end
+  if ArjMapper then ArjMapper:kill() end
+  ArjUI:kill()
+end))

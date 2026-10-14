@@ -2,6 +2,26 @@
 
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
+## 1.3.2 - 2026-10-14
+
+- Load the decorative background using platform-compatible asset paths.
+- Use Mudlet's native command line as the single input and give the reclaimed space to the output console.
+- Display the built package version in the footer.
+- Preserve character state and widgets when hiding and showing the UI.
+- Remove package aliases, triggers, event handlers and delayed actions on uninstall; clean up map download handlers and bound their waits.
+- Keep delayed zone downloads from replacing a newer wilderness map, and report malformed map responses.
+- Clear stale maps when a zone cannot load; refresh using wall time and validate nested map fields.
+- Let room tooltips work through the player marker and keep them inside narrow maps.
+- Show a compact map placeholder until room data arrives.
+- Keep large groups readable in a scrolling panel and retain NPC markers on long names.
+- Recompute group scrolling when members leave so remaining members stay visible.
+- Reset the damage source between fights so text damage works after a GMCP-tracked fight.
+- Accept the server's JSON-null combat target when disengaging without raising a Lua error.
+- Render a numeric zone ID safely when optional room area text is absent.
+- Wrap console text to the available width when resizing.
+- Capture inventory items with capitalized names, bare names and grouped counts; finish empty captures at the prompt.
+- Clear equipment when the server reports nothing worn, remove Duris color codes from identity text, and refresh STATS on room changes using the player `score` command.
+
 ## 1.3.1 - 2026-10-12
 
 - Use Duris naming in the package metadata, UI messages, documentation, and issue forms.
