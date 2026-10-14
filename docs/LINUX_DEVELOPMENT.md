@@ -34,36 +34,73 @@ directory to validate examples and the package build, without installing it
 system-wide. Graphical execution had not yet been attempted at that time.
 
 On **2026-10-14**, the native Mudlet 5.0.1 build and Linux tools were installed.
-The isolated offline profile, actual package import, low-health fixture,
-1280×720 / 1366×768 / 1920×1080 captures, scale factor 2, normal shutdown and
-profile reopen were exercised. The background-path defect was confirmed and
-other setup/layout findings were recorded in the
-[local testing execution log](ongoing-projects/mudlet-local-testing.md#execution-log--2026-10-14-setup).
-Live-server, map-data, full scenario-matrix, minimum-version and player-desktop
-checks remain unrun; the setup smoke checks do not establish those results.
+Version 1.3.2 now has automated fixtures running in real Mudlet, reviewed
+layouts, lifecycle/reopen checks and live Duris integration. The
+[testing results](ongoing-projects/mudlet-local-testing.md) identify exact
+candidates, findings and coverage limits. Mudlet 4.19.1 and physical desktop
+DPI are not established by these Xvfb runs.
 
-Documentation checks were rerun after setup: all 15 Bash blocks parsed with
-`bash -n`,
-the Lua fixture and package scripts passed Lua 5.1 syntax checks, relative file
-links resolved, and a temporary package build passed archive integrity,
-assembled-XML and version-metadata checks. These are static/build results,
-not graphical or live-server results.
+## Automated offline tests
 
-This document supplies a setup procedure and a starter scenario. It does not
-add a fixture runner or a visual CI job. Current
-[repository CI](../.github/workflows/ci.yml) checks Lua syntax and builds the
-archive; the older [smoke-test reference](MUDLET_SMOKE_TEST.md) describes another
-project's tooling.
+After installing the prerequisites below, run from the repository root:
 
-The [local Mudlet testing plan](ongoing-projects/mudlet-local-testing.md)
-tracks the work to execute this procedure, build repeatable runtime coverage,
-investigate findings, and add offline CI.
+```bash
+python3 scripts/mudlet_test.py doctor
+python3 -m unittest discover -s tests/mudlet -p 'test_*.py'
+python3 scripts/mudlet_suite.py
+```
+
+The suite runs every scenario registered in `tests/mudlet/scenarios.json`,
+including deliberate failures. It creates isolated profiles and evidence below
+`~/.local/share/duris-client-dev/runs`, imports the built candidate before a
+separate test companion, and checks real widgets, events, text, mouse/key input,
+loopback HTTP and shutdown. It never reads `.env` or logs into the game.
+Its controller requires **Mudlet 5.0+** for supported profile isolation.
+Dependencies are Python's standard library plus the workstation tools; no
+external Lua modules are added to the package.
+
+For a focused run, choose a scenario and physical window size:
+
+```bash
+python3 scripts/mudlet_test.py run --scenario information
+python3 scripts/mudlet_test.py run --scenario maps --size 1280x720 --timeout 70
+python3 scripts/mudlet_test.py run --scenario crowded --size 1920x1080
+python3 scripts/mudlet_test.py run --scenario controls --scale 2 --size 2732x1536
+```
+
+Each command prints its run directory. `manifest.json` records source/diff,
+package hash, fixture hashes, versions, geometry and screenshot hashes.
+`results.json` records assertions, observed commands, Lua errors, restart and
+shutdown results. Inspect the candidate-only, scenario/checkpoint and actual
+Errors-view PNGs, along with `main-console.txt` and `report.md`.
+
+A zero exit code means **automated behavior passed**. Overall status remains
+`NOT RUN` until screenshots have actually been reviewed. Record that review
+against the printed run directory (replace the example path):
+
+```bash
+python3 scripts/mudlet_test.py review \
+  --run-dir /path/to/printed-run-directory --result PASS \
+  --note 'Reviewed layout and Errors-view captures; no clipping or script errors.'
+```
+
+Use `--result FAIL` with a specific finding if the rendered output is wrong.
+Deliberate `assertion-error`, `timer-error` and `event-error` runs must exit 1;
+`--fault wrong-profile`, `--fault wrong-candidate` and `--fault no-readiness`
+must also fail. The suite checks that these fail for the expected reason.
+`python3 scripts/mudlet_test.py bootstrap` prepares a disposable run without
+launching it. `stop --run-dir /path/to/run` stops only the process group
+identified by that active run's `owner.json`; completed runs have no owner file.
+
+The [runtime workflow](../.github/workflows/mudlet-runtime.yml) uses the same
+suite on Ubuntu 26.04 with checksum-pinned Mudlet 5.0.1. It uploads evidence even
+on failure. Live-game and visual review stay separate from its automated result.
 
 ## This workstation's prepared setup
 
 The following helpers exist locally at
-`/home/staging/.local/share/duris-client-dev`; they are not a committed fixture
-runner or CI suite. The generic installation procedure below remains the
+`/home/staging/.local/share/duris-client-dev`; they are manual desktop helpers. The committed runner above creates fresh
+profiles independently of these saved profiles. The generic installation procedure below remains the
 reference for other machines.
 
 Start the saved **Duris-Visual** profile in a virtual desktop:
@@ -434,14 +471,11 @@ as a way to test scaling without high-DPI hardware; physical screen pixels and
 Qt logical geometry differ at higher scale factors.
 See [Qt high-DPI testing](https://doc.qt.io/qt-6/highdpi.html#testing).
 
-Confirmed in the 2026-10-14 Linux run:
-`ArjUI:applyBackground()` converts `/` to `\` before `io.open()`. Ordinary
-Linux asset paths fail the existence check and select the gradient fallback.
-Runtime inspection found the installed asset readable through its Linux path
-and confirmed the fallback stylesheet. See **LINUX-001** in the
-[execution log](ongoing-projects/mudlet-local-testing.md#execution-log--2026-10-14-setup).
-The decorative background check fails; the package has not yet been changed
-to resolve it.
+The original 1.3.1 Linux run confirmed that converting asset paths to Windows
+backslashes prevented the decorative background from loading. Version 1.3.2
+preserves compatible path separators. Both the artwork and a deliberately
+missing-asset gradient fallback are covered by real Mudlet tests; see
+**LINUX-001** in the [results](ongoing-projects/mudlet-local-testing.md).
 
 ## Test a live server separately
 
@@ -469,8 +503,8 @@ A dedicated development Duris instance is useful for repeatable game states
 if one is available. Follow that server repository's own environment and
 startup instructions; this client guide does not start or modify a server.
 Complete the relevant integration checks against the intended live endpoint
-before claiming live compatibility. No live connection was attempted during
-this documentation work.
+before claiming live compatibility. Actual results and unavailable game states
+are recorded in the testing log.
 
 ## Iterate and record results
 
@@ -482,7 +516,7 @@ For a trustworthy replacement test, uninstall **Arjinius Client**, save and
 close the test profile, then reopen offline and install the new archive.
 Restart after installation for a clean startup check. A fresh disposable
 profile is preferable when investigating persistence or resource leaks.
-`ui off` / `ui on` rebuilds the current in-memory UI; it does **not** reload
+`ui off` / `ui on` preserves and hides/shows the current UI; it does **not** reload
 edited source files or prove complete teardown of all three package scripts.
 Directly calling `dofile()` on changed scripts is not the documented baseline.
 
@@ -527,7 +561,8 @@ child shell exits. Keep the test profile and artifacts for the next run.
 | Map fails offline | Check whether the scenario supplied the zone data; `--offline` does not supply or disable HTTP map downloads. |
 | Lua error absent from terminal log | Inspect Mudlet's Errors view; application stdout/stderr is not a complete capture of script errors. |
 
-Future automation should add explicit profile bootstrap, versioned fixtures,
-readiness signals, error capture, screenshot review and bounded shutdown.
+The committed controller implements profile bootstrap, versioned fixtures,
+readiness signals, error capture and bounded shutdown; screenshot review remains
+an explicit human/agent review step.
 Upstream's Busted/self-test environment variables belong to its own test
 harness; copying them into this repository does not create Duris UI tests.

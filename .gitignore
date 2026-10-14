@@ -1,2 +1,4 @@
 .kilo
 .env
+__pycache__/
+*.pyc

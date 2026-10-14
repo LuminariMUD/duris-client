@@ -1,0 +1,16 @@
+{
+  "nodes": [
+    {"id": 90010, "name": "Bronze Gate"},
+    {"id": 90011, "name": "Northern Hall"},
+    {"id": 90012, "name": "Eastern Tower"},
+    {"id": 90013, "name": "Upper Landing"}
+  ],
+  "edges": [
+    {"from": 90010, "to": 90011, "direction": "north"},
+    {"from": 90011, "to": 90010, "direction": "south"},
+    {"from": 90010, "to": 90012, "direction": "east"},
+    {"from": 90012, "to": 90010, "direction": "west"},
+    {"from": 90012, "to": 90013, "direction": "up"},
+    {"from": 90013, "to": 90012, "direction": "down"}
+  ]
+}

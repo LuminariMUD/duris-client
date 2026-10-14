@@ -1,0 +1,1 @@
+DurisTest.check(false, "DELIBERATE_ASSERTION_FAILURE")

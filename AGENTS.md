@@ -30,7 +30,7 @@ A **Mudlet client package** for the MUD *Duris*. Repository: https://github.com/
 
 ## Constraints
 - Keep the dark-fantasy aesthetic and percentage-based scaling consistent.
-- No runtime tests exist; `build.py --check` is syntax only. Verify behaviour by importing the package into Mudlet.
+- `build.py --check` is syntax only. Use `python3 scripts/mudlet_suite.py` for offline behavior in real Mudlet 5.0+, then inspect its screenshots; see `docs/LINUX_DEVELOPMENT.md`. Live checks use a separate profile. The declared 4.19.1 minimum needs separate manual verification.
 
 ## Git
 - Commit only when asked. Keep commits small and describe what changed in the XML/Lua.

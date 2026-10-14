@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<MudletPackage version="1.001">
+  <HostPackage>
+    <Host autoClearCommandLineAfterSend="yes" mEchoLuaErrors="yes" mEnableGMCP="yes" mFORCE_SAVE_ON_EXIT="yes" mAcceptServerGUI="no" mAcceptServerMedia="no">
+      <name>Duris-Visual</name>
+      <url>127.0.0.1</url>
+      <port>65534</port>
+      <wrapAt>100</wrapAt>
+      <mFgColor>#c0c0c0</mFgColor>
+      <mBgColor alpha="255">#000000</mBgColor>
+      <mCommandFgColor>#717100</mCommandFgColor>
+      <mCommandBgColor>#000000</mCommandBgColor>
+      <mCommandLineFgColor>#808080</mCommandLineFgColor>
+      <mCommandLineBgColor>#000000</mCommandLineBgColor>
+      <mDisplayFont>DejaVu Sans Mono,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,192</mDisplayFont>
+      <mCommandLineFont>DejaVu Sans Mono,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,192</mCommandLineFont>
+      <commandLineMinimumHeight>30</commandLineMinimumHeight>
+    </Host>
+  </HostPackage>
+  <AliasPackage>
+    <Alias isActive="yes" isFolder="no">
+      <name>Test Lua command</name>
+      <script>assert(loadstring(matches[2]))()</script>
+      <regex>^lua (.*)$</regex>
+      <packageName />
+    </Alias>
+  </AliasPackage>
+</MudletPackage>

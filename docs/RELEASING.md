@@ -22,6 +22,11 @@ Publish to `LuminariMUD/duris-client`. Use `origin` as the only remote, pointing
 
 1. Bump `VERSION` (for example `1.2.0`) following the table above. Do not edit `src/config.lua` or `ArjUI.VERSION` by hand.
 2. Add a `## 1.2.0 - YYYY-MM-DD` section to `CHANGELOG.md`. Its heading must equal `VERSION` exactly; the workflow copies that section into the release notes.
+   For runtime changes, run `python3 scripts/mudlet_suite.py` using the
+   [Linux setup](LINUX_DEVELOPMENT.md#automated-offline-tests), inspect the
+   screenshots and Errors view, and record affected live/compatibility checks
+   in the [testing log](ongoing-projects/mudlet-local-testing.md). CI's automated
+   result does not replace visual review or establish Mudlet 4.19.1 coverage.
 3. Rebuild and commit everything together:
 
    ```bash

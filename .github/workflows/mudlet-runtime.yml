@@ -1,0 +1,54 @@
+name: Mudlet runtime
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths: ['src/**', 'VERSION', 'build.py', 'scripts/**', 'tests/mudlet/**', '.github/workflows/mudlet-runtime.yml']
+  pull_request:
+    paths: ['src/**', 'VERSION', 'build.py', 'scripts/**', 'tests/mudlet/**', '.github/workflows/mudlet-runtime.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: Offline behavior (visual review remains manual)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    env:
+      MUDLET_ARTIFACTS: ${{ runner.temp }}/mudlet-runs
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Mudlet and desktop dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -q
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/mudlet.deb" \
+            https://github.com/Mudlet/Mudlet/releases/download/Mudlet-5.0.1/Mudlet-5.0.1-ubuntu-26.04-amd64.deb
+          echo '6ea43609e9d043e9272b67ddb356ba8b33894682453ddfb4d61c0406e5dc8b25  '"$RUNNER_TEMP/mudlet.deb" | sha256sum --check
+          sudo apt-get install --no-install-recommends -y \
+            python3 lua5.1 xvfb xauth openbox xdotool imagemagick \
+            fonts-dejavu-core fontconfig ca-certificates "$RUNNER_TEMP/mudlet.deb"
+      - name: Controller checks
+        run: |
+          python3 scripts/mudlet_test.py doctor
+          python3 -m unittest discover -s tests/mudlet -p 'test_*.py'
+      - name: Real Mudlet scenarios and deliberate failures
+        run: python3 scripts/mudlet_suite.py --root "$MUDLET_ARTIFACTS"
+      - name: Stop any remaining owned desktops
+        if: always()
+        shell: bash
+        run: |
+          if [ -d "$MUDLET_ARTIFACTS" ]; then
+            find "$MUDLET_ARTIFACTS" -name owner.json -print0 | while IFS= read -r -d '' owner; do
+              python3 scripts/mudlet_test.py stop --run-dir "$(dirname "$owner")"
+            done
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mudlet-runtime-${{ github.sha }}
+          path: ${{ env.MUDLET_ARTIFACTS }}
+          retention-days: 14

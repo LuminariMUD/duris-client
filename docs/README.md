@@ -5,7 +5,7 @@
 | File | Purpose |
 | --- | --- |
 | [LINUX_DEVELOPMENT.md](LINUX_DEVELOPMENT.md) | Verified Linux/Mudlet setup, Xvfb screenshots, offline scenarios, live-server testing and visual review. Includes prerequisites and verification limits. |
-| [Local Mudlet testing plan](ongoing-projects/mudlet-local-testing.md) | Implementation phases for local deployment, runtime fixtures, issue triage, live/desktop checks, and offline CI, with acceptance gates. |
+| [Local Mudlet testing results](ongoing-projects/mudlet-local-testing.md) | Version 1.3.2 findings, fixes, real Mudlet scenario results, live integration, evidence locations and remaining coverage limits. |
 | [RELEASING.md](RELEASING.md) | Package versioning, builds and releases. |
 | [Server study and implementation log](ongoing-projects/updates-upgrades.md) | Duris protocol field references and the client improvement history. |
 | [lielz port log](ongoing-projects/lielz-port.md) | Adapted display helpers and automation. |
