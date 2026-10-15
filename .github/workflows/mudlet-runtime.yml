@@ -2,11 +2,7 @@ name: Mudlet runtime
 
 on:
   workflow_dispatch:
-  push:
-    branches: [master]
-    paths: ['src/**', 'VERSION', 'build.py', 'scripts/**', 'tests/mudlet/**', '.github/workflows/mudlet-runtime.yml']
-  pull_request:
-    paths: ['src/**', 'VERSION', 'build.py', 'scripts/**', 'tests/mudlet/**', '.github/workflows/mudlet-runtime.yml']
+  workflow_call:
 
 permissions:
   contents: read

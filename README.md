@@ -168,7 +168,7 @@ python3 build.py -o /tmp/duris-client.mpackage
 | [`CHANGELOG.md`](CHANGELOG.md) | Release notes per version; the release workflow reads it. |
 | [`scripts/`](scripts/) and [`tests/mudlet/`](tests/mudlet/) | Real Mudlet offline test controller, scenarios, fixtures, and review tooling. |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | Interface layout, visual conventions, interactions, architecture, and state ownership. |
-| [`.github/workflows/`](.github/workflows/) | Build and offline runtime checks; tag `v*` publishes a GitHub Release. See [`docs/RELEASING.md`](docs/RELEASING.md). |
+| [`.github/workflows/`](.github/workflows/) | Pushes to `master` run build and offline runtime checks, then automatically publish any unreleased `VERSION`. See [`docs/RELEASING.md`](docs/RELEASING.md). |
 
 When changing the package, bump `VERSION` (semantic versioning, see [`docs/RELEASING.md`](docs/RELEASING.md)), rebuild, and include the generated `.mpackage` with the source change. Let the build insert version strings; do not hand-edit the archive. Use Mudlet/Geyser APIs without external Lua dependencies, and preserve the dark fantasy style and percentage-based layout.
 

@@ -4,10 +4,14 @@ on:
   push:
     branches: [master]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    name: Syntax-check and build
+    name: Validate release and build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,19 +19,27 @@ jobs:
       - name: Install luac (Lua 5.1, matching Mudlet)
         run: sudo apt-get update -q && sudo apt-get install -y -q lua5.1
 
-      - name: Lua syntax check
-        run: python3 build.py --check
+      - name: Release automation tests
+        run: python3 -m unittest discover -s tests/release -v
 
-      - name: Build package
-        run: python3 build.py -o build/duris-client.mpackage
-
-      - name: Verify archive layout
-        run: |
-          set -e
-          unzip -l build/duris-client.mpackage
-          unzip -p build/duris-client.mpackage config.lua | grep -Fx "version = [[$(cat VERSION)]]"
+      - name: Validate changelog, Lua, XML, and committed package
+        run: python3 scripts/release.py --output build
 
       - uses: actions/upload-artifact@v4
         with:
           name: duris-client-${{ github.sha }}
-          path: build/duris-client.mpackage
+          path: build/*
+
+  runtime:
+    uses: ./.github/workflows/mudlet-runtime.yml
+
+  release:
+    name: Publish unreleased version
+    needs: [build, runtime]
+    if: >-
+      github.repository == 'LuminariMUD/duris-client' &&
+      github.ref == 'refs/heads/master' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml
