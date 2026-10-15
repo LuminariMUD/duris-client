@@ -4,6 +4,13 @@ Working log for improving the Arjinius Client Mudlet package by comparing it
 against what the Duris server actually sends and what the official web
 client already does with that data.
 
+This is a **historical study of the original package**, followed by its early
+implementation log. The usage table and findings in sections 1–2 describe
+the 2026-09-20 baseline, before the fixes below. For current design and data
+sources, see [DESIGN.md](../DESIGN.md#data-sources); for later protocol fixes,
+see the [connection audit](mudlet-local-testing.md) and
+[server fixture provenance](../../tests/mudlet/fixtures/README.md).
+
 Sources studied (all public, cloned read-only into a scratch dir on 2026-09-20):
 
 - Server: https://github.com/LuminariMUD/Duris
@@ -22,11 +29,11 @@ created at runtime with `tempTrigger`/`tempAlias`).
 
 ---
 
-## 1. What the server sends (ground truth)
+## 1. Server protocol snapshot (2026-09-20)
 
 Every GMCP package the server can emit, from `gmcp.h` and grep of `src/`:
 
-| Package | Sent when | Package uses it? |
+| Package | Sent when | Original package uses it? |
 |---|---|---|
 | `Char.Vitals` | HP/mana/move change, group vitals | Yes |
 | `Char.Status` | Login, level change (self only) | Partially |
@@ -95,7 +102,7 @@ killRequired?, mapBought, zoneNumber?`.
 
 ---
 
-## 2. Findings: mismatches and gaps in the package
+## 2. Original findings: mismatches and gaps in the package
 
 Ordered by user impact.
 
@@ -212,10 +219,11 @@ Notes from implementation:
 - Group members with `isNpc=true` get a trailing `*`; members with
   `inRoom=false` are dimmed and their position slot reads `[AWAY]`.
 
-Not verified in a running Mudlet (no Mudlet in this environment). Everything
-changed is data-driven from fields confirmed in the server source; the risk
-is in Geyser layout only. Import into Mudlet and run through
-`docs/MUDLET_SMOKE_TEST.md` sections that apply before release.
+At this implementation stage, no Mudlet runtime was available; the checks
+above established syntax/XML and correspondence to the studied server source,
+not runtime behavior. Later real-Mudlet results are in the
+[testing log](mudlet-local-testing.md). For new changes, follow the
+[Duris testing guide](../LINUX_DEVELOPMENT.md#automated-offline-tests).
 
 ## 3b. Source/assembly split (2026-09-20)
 

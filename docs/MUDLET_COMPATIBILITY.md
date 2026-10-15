@@ -1,7 +1,12 @@
 # Mudlet Compatibility Reference (4.19 → 4.22)
 
+> **Historical LuminariGUI reference.** Release labels below reflect its
+> September 2026 study. Duris declares Mudlet 4.19.1+ and uses GMCP; its
+> offline test controller requires 5.0+. See the
+> [Duris verification status](LINUX_DEVELOPMENT.md#verification-status-and-supported-versions).
+
 **Last researched:** 2026-09-07
-**Current Mudlet release:** 4.22.0 (released 2026-07-06)
+**Mudlet release at the time of the study:** 4.22.0 (released 2026-07-06)
 **Package target declared in `theGUI/package.py`:** `mudlet_version = "4.21+"` (raised from `4.0+` in v2.0.4.028).
 
 This document records what changed in Mudlet between the 4.19 era and 4.22, filtered to **only the changes that can affect LuminariGUI**. It exists because the package worked on an older Mudlet and began misbehaving after upgrading to 4.22.0.

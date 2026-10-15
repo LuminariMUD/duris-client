@@ -1,5 +1,10 @@
 # Runtime Resource Ownership
 
+> **Imported LuminariGUI implementation.** The `GUI.*` helpers and audit
+> scripts below do not exist in Duris. Duris owns resources within each of
+> its three scripts; see [state and lifecycle](DESIGN.md#state-persistence-and-lifecycle)
+> and the [runtime tests](../tests/mudlet/README.md).
+
 LuminariGUI treats every runtime-created anonymous event handler and temporary
 timer as an owned resource. The ownership layer is defined in
 `theGUI/src/scripts/00_resources.xml` and loads before the mapper and GUI.

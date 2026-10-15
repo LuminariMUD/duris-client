@@ -1,6 +1,6 @@
 # Support
 
-Start with the [installation instructions and troubleshooting guide](README.md#install). Use Mudlet **4.19.1 or newer** and enable **GMCP** in both your profile and the game.
+Start with the [installation instructions](README.md#install) and [troubleshooting guide](README.md#troubleshooting-and-current-limits). Use Mudlet **4.19.1 or newer** and enable **GMCP** in both your profile and the game.
 
 - **Package bugs and feature requests:** use the [issue forms](https://github.com/LuminariMUD/duris-client/issues/new/choose).
 - **Setup and usage questions:** open an [issue](https://github.com/LuminariMUD/duris-client/issues/new) with your package version, Mudlet version, operating system, and what you have already tried.

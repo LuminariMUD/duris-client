@@ -30,7 +30,7 @@ owners' names) became variables or were dropped.
 | --- | --- | --- |
 | Auto Stand (takedowns, sweeps, quake, wall kick, mem/pray done) | `autoStand` | Same lines; "already down" and "immovable" banners kept. |
 | Auto Group (consent lines, incl. pets) | `autoGroup` | Groups the last word of the consenting name. "Is in another group" tell kept. |
-| Autorescue Group (terse + full hit lines, lag handling) | `autoRescue`, `rescue add|del|group|list|clear` | `MyAllies` became a persisted list; `rescue group` adds the current group. A 6 s safety unlock covers unmatched response lines. |
+| Autorescue Group (terse + full hit lines, lag handling) | `autoRescue`, `rescue add\|del\|group\|list\|clear` | `MyAllies` became a persisted list; `rescue group` adds the current group. A 6 s safety unlock covers unmatched response lines. |
 | autoassist (assist a group member who is attacked) | `autoAssist` | Uses GMCP group membership instead of the archive's captured list; `rage` on assist moved to `autoRage`. |
 | AutoRage timer/trigger | `autoRage` | Re-rage 3 s after "rage abates" while fighting. The 12 s rage timer was dropped. |
 | Disarm re-wield | `autoWield` + `wep` | |
@@ -49,13 +49,13 @@ owners' names) became variables or were dropped.
 | Set Variables | `tt ht container food wep held dd tank song cargo contra` | Pet and plane targets dropped. |
 | vit_all / virtue_all | `castall <spell>`, `vitall`, `virtueall` | Iterates GMCP group members. `max vits` cap dropped. |
 | Cleric "weakest link" helpers | `weakest` | Sets `healtarget` to the most hurt group member. |
-| Spam Timer, Scan Timer | `spam <cmd>`/`spamon`/`spamoff`, `scan timer on|off` | Interval configurable; both idle-and-standing only. |
+| Spam Timer, Scan Timer | `spam <cmd>`/`spamon`/`spamoff`, `scan timer on\|off` | Interval configurable; both idle-and-standing only. |
 | Ships aliases and Ship key group | `oh os ff* ot* jet disem le..lw ship poll lout shipf shipn qkcargo qkreload`, `shipKeys` | Relative headings use the SHIP tab's locked contact. |
-| Split tracker / bidscore | `split start|roll|free|scores|set|flush` | Mudlet DB replaced by the JSON file. |
+| Split tracker / bidscore | `split start\|roll\|free\|scores\|set\|flush` | Mudlet DB replaced by the JSON file. |
 | ID trigger group | `id <item>`, `idscroll` | Echoes locally; also reports when a channel is set. |
 | Epic Zone Checker | `epic report` | Records completed zones from `epic zones` output; no polling timer. |
 | Roller | `roller`, `roller threshold` | Stops itself when a keeper is found. |
-| Startup commands | `login add|list|clear` | Nothing is sent by default. |
+| Startup commands | `login add\|list\|clear` | Nothing is sent by default. |
 | Directions notes (planes) | `dirs <plane>` | Personal speedwalks to specific zones dropped. |
 | Comm `locate` | `locate` | |
 
@@ -75,9 +75,14 @@ owners' names) became variables or were dropped.
   is available as `ship poll`; the others were not carried.
 - **deleteOldProfiles**: profile housekeeping.
 
-## Verification
+## Verification at the time of the port
 
-`python3 build.py --check` passes. No Mudlet runtime is available in the
-build environment, so none of this was exercised against live server text.
-Regexes were taken from the archive as written. Import the package and try
-each toggle in a safe spot; every toggle can be switched off individually.
+The original port passed `python3 build.py --check`. No Mudlet runtime was
+available in that build environment, so it had not been exercised against
+live server text at that point. Regexes were taken from the archive as written.
+
+Later runtime checks and their coverage limits are recorded in the
+[testing log](mudlet-local-testing.md); they do not establish that every
+ported automation has been exercised live. For new changes, use the
+[Duris testing guide](../LINUX_DEVELOPMENT.md#automated-offline-tests) and
+verify affected toggles in a separate live profile when needed.

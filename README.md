@@ -23,7 +23,7 @@ A custom [Mudlet](https://www.mudlet.org/) interface for [Duris](https://duris.s
 
 This **Duris** client is maintained by **[LuminariMUD](https://github.com/LuminariMUD)** in [LuminariMUD/duris-client](https://github.com/LuminariMUD/duris-client), originally created by Arjinius / Arjin.
 
-**[Install](#install)** · **[Features](#features)** · **[Commands](#commands)** · **[How it works](#how-it-works)** · **[Build and contribute](#build-and-contribute)**
+**[Install](#install)** · **[Features](#features)** · **[Commands](#commands)** · **[How it works](#how-it-works)** · **[Design](docs/DESIGN.md)** · **[Build and contribute](#build-and-contribute)**
 
 ## Install
 
@@ -40,7 +40,7 @@ The package is named **Arjinius Client** inside Mudlet. For updates, download th
 
 | At a glance | What the client provides |
 | --- | --- |
-| **A cohesive interface** | A dark fantasy frame, percentage-based layout, central game console, and dedicated command input. |
+| **A cohesive interface** | A dark fantasy frame, percentage-based layout, central game console, and Mudlet's native command line. |
 | **Character and quests** | HP, mana, movement, progress toward the next level, position, character identity, coins, and active bartender quest details. Non-mana classes show **MP n/a**. |
 | **Zone and wilderness maps** | Zone layouts from the Duris map API and wilderness maps from GMCP, with zoom controls, room tooltips, and a current-position marker. |
 | **Room awareness** | Clickable exits, distinct closed/locked exit styles, lists of mobs, items, and players, plus NPC annotations showing whom they are fighting. |
@@ -48,7 +48,7 @@ The package is named **Arjinius Client** inside Mudlet. For updates, download th
 | **Chat that stays organized** | **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**, with timestamps, individual tell windows, contact history for the current session, and alignment-colored nchat/jchat senders. |
 | **Useful details nearby** | Inventory, equipment, who-list, and ship panels; context menus for common actions; in-game time; links to the world map and current zone's wiki page. |
 | **Text intelligence** | Aligned, color-coded `scan` output with a per-direction summary; `+exp` notices with a kills-to-level estimate; banners when sanctuary, rage, war cry, or stone skin drop, when you are disarmed or scryed, and when a skill improves. |
-| **Automation, off by default** | Auto-stand, auto-group on consent, auto-rescue for a list of names, auto-assist, re-rage, re-wield after disarm, auto-loot, bard song restart, follower traps, repeat timers, stat reroller, and ship hotkeys. Each has its own `auto <name> on` switch. |
+| **Automation, off by default** | Auto-stand, auto-group on consent, auto-rescue for a list of names, auto-assist, re-rage, re-wield after disarm, auto-loot, bard song restart, follower traps, stat reroller, and ship hotkeys use `auto <name> on`. Repeat timers have separate start/stop commands; type `auto` for help. |
 | **Utility aliases** | Container, corpse, door, potion, bash-by-race, flee-stab, rebash-after-lag, hold-and-use wands, one-line identify, group casting, loot split by bidscore, ship orders and dock runs. Type `auto` for the list. |
 | **Numpad movement** | 8/2/4/6 move, 7/9/1/3 diagonals, `-` up, `+` down, 5 look, `/` scan, 0 flee. Turn off with `ui set keypad off`. |
 
@@ -60,8 +60,8 @@ Type these into the Mudlet command input:
 
 | Command | Purpose |
 | --- | --- |
-| `ui on` | Initialize or rebuild the interface. |
-| `ui off` | Hide the interface and restore Mudlet's main console and command line. |
+| `ui on` | Show the interface, retaining its state and widgets. |
+| `ui off` | Hide the interface and restore Mudlet's main output area; the native command line stays available. |
 | `ui help` | List commands and numpad keys. |
 | `ui debug` | Show which core GMCP data tables have arrived. |
 | `ui damage` | Session damage report (total, hits, damage per second, current fight). `ui damage reset` clears it. Clicking the **DMG** counter in the target panel shows the same report. |
@@ -77,7 +77,7 @@ Type these into the Mudlet command input:
 
 Toggles for `ui set`: `keypad` (numpad keys), `chatTimestamps`, `damageTracker`, `scanFormat`, `alerts`, and `expTracker`. All default to on and are saved to `arjui_settings.json` in your Mudlet profile folder.
 
-Use the map's **+ / −** controls to zoom. Click the active **STATS**, **INV**, **EQ**, **WHO**, or **SHIP** tab to send `stat`, `inv`, `eq`, `who`, or `look contacts` and refresh the corresponding information.
+Use the map's **+ / −** controls to zoom. Click the active **STATS**, **INV**, **EQ**, **WHO**, or **SHIP** tab to send `score`, `inv`, `eq`, `who`, or `look contacts` and refresh the corresponding information.
 
 ## How it works
 
@@ -86,7 +86,7 @@ Three Lua scripts run inside Mudlet. **ArjUI** builds the Geyser interface and p
 ```mermaid
 flowchart TB
     accTitle: Duris client data flow
-    accDescr: The server supplies GMCP and game text to ArjUI. ArjMapper combines room GMCP with zone layouts from the web API and renders maps inside ArjUI.
+    accDescr: The server supplies GMCP and game text to ArjUI. ArjMapper combines room GMCP with zone layouts from the web API and renders maps inside ArjUI. ArjAuto reads live state and sends commands for enabled behaviors and invoked utility aliases.
     server["Duris server"]
     wiki["Duris web API"]
 
@@ -96,6 +96,7 @@ flowchart TB
         text["Game text and prompts"]
         ui["ArjUI.lua<br/>Interface and live state"]
         mapper["ArjMapper.lua<br/>Zone cache and map rendering"]
+        auto["ArjAuto.lua<br/>Opt-in automation and utility aliases"]
         panels["Console · vitals · room · group<br/>combat · chat · character tabs"]
         maps["Zone and wilderness views<br/>inside ArjUI's map area"]
 
@@ -105,11 +106,13 @@ flowchart TB
         ui --> panels
         ui -.->|"Provides map container"| mapper
         mapper --> maps
+        ui -->|"Live state"| auto
     end
 
     server --> gmcp
     server --> text
     wiki -->|"HTTPS zone layout JSON"| mapper
+    auto -->|"Game commands"| server
 
     classDef source fill:#211b14,stroke:#d4a855,color:#f0dfbf,stroke-width:2px
     classDef transport fill:#14202a,stroke:#7090c0,color:#dce7f5
@@ -117,7 +120,7 @@ flowchart TB
     classDef surface fill:#18241d,stroke:#7da68b,color:#e1f0e6
     class server,wiki source
     class gmcp,text transport
-    class ui,mapper script
+    class ui,mapper,auto script
     class panels,maps surface
     style mudlet fill:transparent,stroke:#8c6e46
     linkStyle default stroke:#8c6e46,stroke-width:1.5px
@@ -125,12 +128,14 @@ flowchart TB
 
 Most live panels use GMCP. Inventory, equipment, and who lists capture game text; tank and time displays also depend on text triggers. The damage counter reads `Combat.Update.round` when the server sends it and falls back to `[Damage: N]` display lines. Several display helpers were adapted from the community "lielz scripts" collection; see [`docs/ongoing-projects/lielz-port.md`](docs/ongoing-projects/lielz-port.md) for what was taken and what was left out. Zone layouts come from `https://duris.sbs/api/wiki/zones/{zoneId}/map-data` and are cached in memory. The mapper listens to `Room.Info` and `Room.Map` directly.
 
+See the [design guide](docs/DESIGN.md) for panel proportions, visual conventions, interactions, data sources, and lifecycle behavior.
+
 ## Troubleshooting and current limits
 
 - **Empty vitals or room panels:** run `ui debug`, check that GMCP is enabled, then reconnect and enter the game. Initial character setup uses `Char.Status` on login.
 - **Blank or stale zone map:** run `mapper status` and `mapper debug`, check access to the Duris website, then try `mapper reload` followed by `look`.
 - **Missing tank, inventory, equipment, who, or time information:** these displays depend on recognized text and prompt formats. Custom prompts or changed server output can affect capture even when GMCP panels work.
-- **Need to restore the main console:** use `ui off`; `ui on` builds the interface again.
+- **Need to restore the main console:** use `ui off`; `ui on` shows the existing interface again without rebuilding it.
 
 The **SHIP** tab lists contacts sorted by range and colored by side when the server sends `Ship.Info`/`Ship.Contacts` or when you look at contacts; it is a text panel, not a drawn radar. Quest-map rendering and the server's structured chat color runs are not implemented. Alignment coloring for other players in the room is limited by the fields the server supplies. The [server study and implementation log](docs/ongoing-projects/updates-upgrades.md) records the protocol details, completed work, and remaining candidates.
 
@@ -161,13 +166,17 @@ python3 build.py -o /tmp/duris-client.mpackage
 | [`build.py`](build.py) | Injects Lua and version values, escapes script text, validates XML, and writes the package archive. |
 | [`duris-client.mpackage`](duris-client.mpackage) | Committed build output; releases attach a copy built from the tag. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release notes per version; the release workflow reads it. |
-| [`.github/workflows/`](.github/workflows/) | CI build on every push; tag `v*` publishes a GitHub Release. See [`docs/RELEASING.md`](docs/RELEASING.md). |
+| [`scripts/`](scripts/) and [`tests/mudlet/`](tests/mudlet/) | Real Mudlet offline test controller, scenarios, fixtures, and review tooling. |
+| [`docs/DESIGN.md`](docs/DESIGN.md) | Interface layout, visual conventions, interactions, architecture, and state ownership. |
+| [`.github/workflows/`](.github/workflows/) | Build and offline runtime checks; tag `v*` publishes a GitHub Release. See [`docs/RELEASING.md`](docs/RELEASING.md). |
 
 When changing the package, bump `VERSION` (semantic versioning, see [`docs/RELEASING.md`](docs/RELEASING.md)), rebuild, and include the generated `.mpackage` with the source change. Let the build insert version strings; do not hand-edit the archive. Use Mudlet/Geyser APIs without external Lua dependencies, and preserve the dark fantasy style and percentage-based layout.
 
-**Validation is limited:** `--check` checks Lua syntax only and skips that check with a warning if `luac` is absent. A full build also validates the assembled XML. Neither verifies runtime behavior; import the package into Mudlet to check layout, GMCP updates, chat, maps, controls, and reconnect behavior. No automated runtime test suite exists in this repository.
+Repository-only documentation changes do not require a package version bump or rebuild.
 
-Read [`AGENTS.md`](AGENTS.md) for repository guidance, the [Linux development and visual-testing guide](docs/LINUX_DEVELOPMENT.md) for real-Mudlet testing with Xvfb and live Duris sessions, and the [Duris implementation log](docs/ongoing-projects/updates-upgrades.md) for server field names. The imported [Mudlet reference documents](docs/README.md#imported-reference-material) are background references from LuminariGUI; their project-specific architecture and MSDP instructions do not describe this package.
+**Validation has separate layers:** `--check` checks Lua syntax only and skips that check with a warning if `luac` is absent. A full build also validates the assembled XML. For runtime changes, run `python3 scripts/mudlet_suite.py` with the [Linux prerequisites](docs/LINUX_DEVELOPMENT.md#automated-offline-tests), then inspect and record review of its screenshots and Errors view. The suite runs offline scenarios in real Mudlet **5.0+**; a zero exit code establishes automated behavior, not visual approval. Live-server checks use a separate profile, and the declared **4.19.1** minimum needs separate manual verification.
+
+Read [`AGENTS.md`](AGENTS.md) for repository guidance and the [documentation index](docs/README.md) for design, testing, protocol fixtures, and implementation history. The imported [Mudlet reference documents](docs/README.md#imported-reference-material) are background references from LuminariGUI; their project-specific architecture and MSDP instructions do not describe this package.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and [SUPPORT.md](SUPPORT.md) for help and bug reports. Participation follows our [Code of Conduct](CODE_OF_CONDUCT.md). Report security concerns through the private channel in [SECURITY.md](SECURITY.md).
 

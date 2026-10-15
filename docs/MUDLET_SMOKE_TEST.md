@@ -1,11 +1,16 @@
 # Mudlet Runtime Smoke Test
 
-This is the release checklist for LuminariGUI on the current documented Mudlet
-release. The automated Lua tests exercise production code with mocks; they do
+> **Imported LuminariGUI checklist.** Its release rules, MSDP steps, and
+> package-specific tools apply to LuminariGUI. For this client, follow the
+> [Duris test and screenshot-review procedure](LINUX_DEVELOPMENT.md#automated-offline-tests)
+> and [release guide](RELEASING.md).
+
+This is the imported release checklist for LuminariGUI on its documented
+Mudlet release. The automated Lua tests exercise production code with mocks; they do
 not prove that Mudlet imported the package, Qt rendered it, Geyser callbacks
 survived a reset, physical keys arrived, or the server negotiated MSDP.
 
-The documented target is currently **Mudlet 4.22.0**. Re-read
+The target at the time of this LuminariGUI checklist was **Mudlet 4.22.0**. Re-read
 [`MUDLET_COMPATIBILITY.md`](MUDLET_COMPATIBILITY.md) before each run and update
 both documents when the supported release changes.
 

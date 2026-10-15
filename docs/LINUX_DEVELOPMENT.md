@@ -34,11 +34,12 @@ directory to validate examples and the package build, without installing it
 system-wide. Graphical execution had not yet been attempted at that time.
 
 On **2026-10-14**, the native Mudlet 5.0.1 build and Linux tools were installed.
-Version 1.3.2 now has automated fixtures running in real Mudlet, reviewed
-layouts, lifecycle/reopen checks and live Duris integration. The
-[testing results](ongoing-projects/mudlet-local-testing.md) identify exact
-candidates, findings and coverage limits. Mudlet 4.19.1 and physical desktop
-DPI are not established by these Xvfb runs.
+Version 1.3.2 introduced automated fixtures running in real Mudlet, reviewed
+layouts, lifecycle/reopen checks and live Duris integration. The versioned
+[testing results](ongoing-projects/mudlet-local-testing.md) include subsequent
+connection and display audits, identifying exact candidates, findings and
+coverage limits. Mudlet 4.19.1 and physical desktop DPI are not established
+by these Xvfb runs.
 
 ## Automated offline tests
 

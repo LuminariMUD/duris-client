@@ -1,5 +1,10 @@
 # LuminariGUI screen diagnostics
 
+> **Imported LuminariGUI diagnostics.** Duris has no `GUI.DEBUG` switch or
+> `00_debug.xml`. Use `ui debug`, `mapper status`, and `mapper debug`; see
+> [troubleshooting](../README.md#troubleshooting-and-current-limits) and the
+> [real-Mudlet testing guide](LINUX_DEVELOPMENT.md).
+
 LuminariGUI has one master diagnostic switch, defined at the start of
 `theGUI/src/scripts/00_debug.xml`:
 

@@ -18,6 +18,7 @@ A **Mudlet client package** for the MUD *Duris*. Repository: https://github.com/
 - `build.py` — assembles the package (stdlib Python only). `python3 build.py --check` only syntax-checks the Lua.
 - `duris-client.mpackage` — **build output**, committed so users can download it. Never hand-edit it.
 - `README.md` — user-facing install docs. `docs/` — reference material and the ongoing-projects log.
+- `docs/DESIGN.md` — interface layout, visual conventions, interactions, architecture, and lifecycle. Keep it aligned with design changes.
 
 ## Working on the package
 - Edit `src/`, then run `python3 build.py`. Commit the rebuilt `.mpackage` together with the source change.
@@ -26,7 +27,7 @@ A **Mudlet client package** for the MUD *Duris*. Repository: https://github.com/
 - Releases: push a tag `v<VERSION>` (e.g. `v1.2.0`) and `.github/workflows/release.yml` builds and publishes the GitHub Release. Steps in `docs/RELEASING.md`.
 - Keep XML well-formed; the build validates it. Lua gets XML-escaped automatically, so write plain Lua.
 - Requires **Mudlet 4.19.1+** and **GMCP**. Use Mudlet/Geyser APIs; do not introduce external Lua deps.
-- Server ground truth for GMCP field names is documented in `docs/ongoing-projects/updates-upgrades.md`.
+- GMCP field examples and their provenance are in `tests/mudlet/fixtures/server-gmcp.json` and `tests/mudlet/fixtures/README.md`. `docs/ongoing-projects/mudlet-local-testing.md` records later connection audits; `docs/ongoing-projects/updates-upgrades.md` preserves the original server study.
 
 ## Constraints
 - Keep the dark-fantasy aesthetic and percentage-based scaling consistent.

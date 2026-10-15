@@ -1,5 +1,10 @@
 # LuminariGUI Development Guide
 
+> **Imported LuminariGUI reference.** The architecture and commands below belong
+> to that project. For Duris, use [DESIGN.md](DESIGN.md), the
+> [build instructions](../README.md#build-and-contribute), and the
+> [real-Mudlet testing guide](LINUX_DEVELOPMENT.md).
+
 This document outlines the development workflow, architecture, and best practices for the LuminariGUI project.
 
 > **Mudlet version compatibility:** Mudlet 4.20 migrated to Qt6 and 4.21 changed label/callback internals and MSDP negotiation. If the package worked on an older Mudlet and misbehaves on a newer one, read **[MUDLET_COMPATIBILITY.md](MUDLET_COMPATIBILITY.md)** first — it has a version-by-version breakdown and a triage checklist.
@@ -25,7 +30,7 @@ theGUI/
 -   **Source of Truth**: the fragments under `theGUI/src/`, listed in `theGUI/build.yaml`.
 -   **Build Output**: `LuminariGUI.xml`, assembled by `build.py`. Each build auto-increments the version in `build.yaml` and archives the previous XML to `docs/archive/`.
 -   **Embedded Lua**: Lua scripts are embedded inside the XML fragments.
--   **Python Toolchain**: custom Python scripts (see [PYTHON_TOOLS.md](PYTHON_TOOLS.md)) assemble, validate, test, and release the package.
+-   **Python Toolchain**: custom Python scripts (see LuminariGUI's `PYTHON_TOOLS.md`, not included here) assemble, validate, test, and release the package.
 
 Fragments are named `NN_descriptive_name.xml`, where `NN` is `00`–`09` for core/init, `10`–`19` for major subsystems, and `20+` for extensions.
 
@@ -45,7 +50,7 @@ Fragments are named `NN_descriptive_name.xml`, where `NN` is `00`–`09` for cor
     JSON metadata attached and verifies both assets. It never treats local
     commits as a completed release.
 9.  **Verify**: independently inspect the remote refs and GitHub Release before
-    handoff. See [PYTHON_TOOLS.md](PYTHON_TOOLS.md#creating-a-release).
+    handoff. See LuminariGUI's `PYTHON_TOOLS.md`, Creating a release section (not included here).
 
 Additional build modes: `--diff` and `--stats` are read-only; `--extract`
 overwrites fragments and `build.yaml`, while `--watch` immediately builds and
@@ -59,6 +64,7 @@ that behavior is intended.
 *(The following sections provide general advice for Mudlet package development)*
 
 ## Table of Contents
+
 1. [Foundation: Understanding Mudlet Packages](#foundation)
 2. [Development Methods: Choosing Your Approach](#development-methods)
 3. [Project Architecture & Best Practices](#architecture)
@@ -67,7 +73,9 @@ that behavior is intended.
 6. [Distribution & Maintenance](#distribution)
 7. [Professional Workflow & Tools](#professional-workflow)
 
-## Foundation: Understanding Mudlet Packages {#foundation}
+<a id="foundation"></a>
+
+## Foundation: Understanding Mudlet Packages
 
 A Mudlet package is a **collection of triggers, aliases, timers, scripts, keybindings, and resources** bundled into a single `.mpackage` file . These packages are essentially **ZIP archives containing XML configuration data and optional assets** like images, sounds, and fonts .
 
@@ -81,7 +89,9 @@ A Mudlet package is a **collection of triggers, aliases, timers, scripts, keybin
 - **GUI Elements**: Windows, labels, gauges
 - **Resources**: Images, sounds, fonts, and other assets
 
-## Development Methods: Choosing Your Approach {#development-methods}
+<a id="development-methods"></a>
+
+## Development Methods: Choosing Your Approach
 
 > **Note:** LuminariGUI uses **neither** of the two methods below — it uses its own Python source-to-build toolchain (`theGUI/build.py` + `theGUI/package.py`), described above. The following is background on the ecosystem's standard options, useful context when reading other packages' source or Mudlet's own documentation.
 
@@ -194,7 +204,9 @@ require("@PKGNAME@.module")
 require("MyMudPackage.module")
 ```
 
-## Project Architecture & Best Practices {#architecture}
+<a id="architecture"></a>
+
+## Project Architecture & Best Practices
 
 ### Namespace Management
 
@@ -276,7 +288,9 @@ registerAnonymousEventHandler("MyMudPackage.healthChanged", function(event, curr
 end)
 ```
 
-## Core Development Principles {#core-principles}
+<a id="core-principles"></a>
+
+## Core Development Principles
 
 ### Lua Best Practices 
 
@@ -365,7 +379,9 @@ local fontPath = getMudletHomeDir() .. "/MyMudPackage/fonts/custom.ttf"
 setFont("MyMudPackage_Display", fontPath)
 ```
 
-### Stylesheets are Qt, not CSS {#qt-stylesheets}
+<a id="qt-stylesheets"></a>
+
+### Stylesheets are Qt, not CSS
 
 Mudlet styles widgets with **Qt Style Sheets (QSS)**, which resemble CSS but are a distinct, smaller language. Since **Mudlet 4.20 all platforms build against Qt6** (Qt 6.9), so styling behaviour shifted for anyone upgrading from an older release.
 
@@ -378,7 +394,9 @@ Practical rules:
 -   Qt6 parses stylesheets more strictly than Qt5. A malformed declaration can cause the surrounding rule to be dropped, which typically shows up as a **silently unstyled widget** rather than an error.
 -   Verify texture/image paths resolve at runtime — a missing file also yields a silently unstyled widget.
 
-### Sound ownership {#sound-ownership}
+<a id="sound-ownership"></a>
+
+### Sound ownership
 
 Route package audio through `GUI.Sound` rather than calling `playSoundFile`
 from aliases, triggers, or feature scripts. The subsystem supplies stable
@@ -387,9 +405,11 @@ profile-exit cleanup. Add a new channel to `GUI.Sound.DEFAULTS`, expose only
 the configuration fields users need, and keep unsolicited channels disabled
 by default. Threshold alerts should call `GUI.Sound.checkThreshold()` so they
 fire once per crossing and re-arm with hysteresis. See
-[`SOUND_USAGE.md`](SOUND_USAGE.md) for the public API and command contract.
+LuminariGUI's `SOUND_USAGE.md` (not included here) for the public API and command contract.
 
-### Label callbacks: prefer closures {#label-callbacks}
+<a id="label-callbacks"></a>
+
+### Label callbacks: prefer closures
 
 The legacy form passes a **function name as a string plus trailing arguments**:
 
@@ -405,11 +425,15 @@ This surface was directly affected by the callback-lifetime and registry-index w
 tab:setClickCallback(function() demonnicChatSwitch(tab) end)
 ```
 
-### Resize handling {#resize-handling}
+<a id="resize-handling"></a>
+
+### Resize handling
 
 `sysWindowResize` is the traditional signal, but it is **not reliable on all window managers** — see the open upstream bug [#9262](https://github.com/Mudlet/Mudlet/issues/9262), where tiled windows stop emitting it. Mudlet 4.20 added **`sysConsoleSizeChanged`**, which fires on resize and on toggling timestamps; use it as a supplementary signal when layout must track the console size.
 
-## Advanced Features & Integration {#advanced-features}
+<a id="advanced-features"></a>
+
+## Advanced Features & Integration
 
 ### GMCP Integration 
 
@@ -528,7 +552,9 @@ function MyMudPackage.log(level, message)
 end
 ```
 
-## Distribution & Maintenance {#distribution}
+<a id="distribution"></a>
+
+## Distribution & Maintenance
 
 ### Package Repository Submission 
 
@@ -602,7 +628,9 @@ Topics: setup, combat, mapping, troubleshooting
 }
 ```
 
-## Professional Workflow & Tools {#professional-workflow}
+<a id="professional-workflow"></a>
+
+## Professional Workflow & Tools
 
 ### Development Environment Setup
 

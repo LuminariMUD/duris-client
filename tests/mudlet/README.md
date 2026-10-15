@@ -12,8 +12,8 @@ map downloads to a loopback server. It never reads `.env`. Never import it
 into a live/player profile. [Fixture provenance](fixtures/README.md) identifies
 the server/website revisions and the live-derived regression cases.
 
-`scenarios.json` registers the eleven positive scenarios, three deliberate Lua
-failures and three startup faults. The suite's zero exit code means those
+[`scenarios.json`](scenarios.json) registers the positive scenarios, deliberate Lua
+failures and startup faults. The suite's zero exit code means those
 automated expectations passed, including normal process cleanup. It does not
 approve screenshots. Use the controller's `review` operation after inspecting
 the relevant candidate/checkpoint/scenario and Errors-view images.

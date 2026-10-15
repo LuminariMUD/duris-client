@@ -60,4 +60,3 @@ Make ONE precise layout correction: reduce the entire TOP HEADER from its curren
 Recompose the top engraving into a shallower horizontal band with smaller/simpler compass arcs; make the wordmark elegantly wide and about 40 pixels tall, centered around y=52. It must read exactly "DURIS", once. Reduce the small compass crest if needed. Do not crop the letters or merely erase the bottom of the original header. Redraw a complete compact header with the same excellent metalwork and palette.
 Preserve the overall canvas aspect ratio, black iron and muted bronze aesthetic, all side and bottom rails, engraved wayfinding details, and huge pure-black central space. Preserve the exact outer border alignment. Do not enlarge any side or bottom ornament, do not add text. Borders left/right should remain within the outermost 2.5% and bottom within 2.8%. Output the corrected full artwork, flat and straight on, opaque. No screenshot or mockup.
 ```
-
