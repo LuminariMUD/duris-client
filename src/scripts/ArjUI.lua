@@ -202,15 +202,15 @@ local function makePanel(parent, name, x, y, w, h, css)
   return panel
 end
 
-local function makeConsole(parent, name, x, y, w, h, fontSize)
+local function makeConsole(parent, name, x, y, w, h, fontSize, bgColor)
   local console = Geyser.MiniConsole:new({
     name = name, x = x, y = y, width = w, height = h, fontSize = fontSize or 10, autoWrap = true
   }, parent)
-  -- Warm-tinted background - MiniConsoles don't support true transparency
-  -- Use a color that blends with the bronze theme
-  console:setBgColor(12, 11, 9)
+  -- Default to the warm panel color; the main MUD feed supplies black.
+  bgColor = bgColor or {12, 11, 9}
+  console:setBgColor(unpack(bgColor))
   console:setFgColor(200, 200, 200)
-  setBackgroundColor(console.name, 12, 11, 9, 255)
+  setBackgroundColor(console.name, bgColor[1], bgColor[2], bgColor[3], 255)
   return console
 end
 
@@ -494,8 +494,8 @@ function ArjUI:init()
   self.styles = {
     -- Primary panels (main output, map, input) - stronger bronze border, near-opaque
     panel = string.format("background-color: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 %s,stop:1 %s); border: 2px solid %s; border-top: 2px solid %s; border-radius: 4px;", colors.bgMid, colors.bgDark, colors.borderSecondary, colors.borderPrimary),
-    -- Primary content panels (main output, input) - opaque for readability
-    panelPrimary = "background-color: rgba(10, 9, 8, 250); border: 2px solid #5a4b37; border-top: 2px solid #8c6e46; border-radius: 4px;",
+    -- Main output panel - solid black to match the MUD text background
+    panelPrimary = "background-color: #000000; border: 2px solid #5a4b37; border-top: 2px solid #8c6e46; border-radius: 4px;",
     -- Secondary panels (side info) - softer border, slight transparency (85-90%)
     panelGlass = "background-color: rgba(10, 9, 8, 218); border: 1px solid #5a4b37; border-top: 1px solid #8c6e46; border-radius: 4px;",
     header = string.format("background-color: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 %s,stop:1 %s); border: 1px solid %s; border-bottom: 1px solid %s; color: %s; qproperty-alignment: 'AlignCenter'; font-size: 9px; font-weight: bold;", colors.bgLight, colors.bgMid, colors.borderDivider, colors.borderSecondary, colors.textDim),
@@ -619,7 +619,7 @@ function ArjUI:init()
   labelSet(self.objsHeader, "◆ ITEMS")
   self.objsBox = makeConsole(self.itemsSection, "ArjUI_ObjsBox", "3%", "17%", "94%", "80%", 9)
 
-  -- CENTER COLUMN (with gaps on sides) - primary panel, near-opaque for readability
+  -- CENTER COLUMN (with gaps on sides) - opaque black behind the main MUD feed
   self.centerCol = makePanel(self.topSection, "ArjUI_CenterCol", "16.7%", 0, centerW, "100%", self.styles.panel)
   styleSafe(self.centerCol, self.styles.panelPrimary)
 
@@ -631,7 +631,7 @@ function ArjUI:init()
   self.roomLabel = Geyser.Label:new({ name = "ArjUI_RoomLabel", x = "0.5%", y = "3.0%", width = "99%", height = "3.2%" }, self.centerCol)
   styleSafe(self.roomLabel, self.styles.roomName)
 
-  self.console = makeConsole(self.centerCol, "ArjUI_Console", "0.5%", "6.5%", "99%", "93%", 10)
+  self.console = makeConsole(self.centerCol, "ArjUI_Console", "0.5%", "6.5%", "99%", "93%", 10, {0, 0, 0})
 
   -- RIGHT COLUMN (container for distinct panels with gaps) - extends to target bar bottom
   self.rightCol = makePanel(self.uiRoot, "ArjUI_RightCol", "73.9%", "0%", rightW, "100%", self.styles.panel)

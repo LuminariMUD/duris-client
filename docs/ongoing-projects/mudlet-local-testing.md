@@ -1,5 +1,30 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## 1.3.4 primary feed background — 2026-10-15
+
+The primary output console and its surrounding panel now use opaque black,
+matching the main Mudlet console's background in the test profile. The bronze
+frame and secondary panel colors are preserved.
+
+- `python3 build.py` passed Lua 5.1 syntax, XML validation and package assembly.
+- `python3 scripts/mudlet_suite.py --root /home/staging/.local/share/duris-client-dev/runs/primary-background-1.3.4`
+  passed **19/19 expectations** in Mudlet 5.0.1 (thirteen positive scenarios
+  and six expected failures).
+- Reviewed the `lowhp` scenario, `text` scenario and artwork fallback,
+  `lifecycle` reopened fixture, and their Errors-view screenshots. The feed
+  remains black, ANSI colors and wrapping are intact, and no Lua errors appear.
+  Visual PASS notes are recorded for those three runs; other scenarios received
+  automated checks only.
+- Pixel comparison with the 1.3.3 `text/scenario.png` confirms the feed changed
+  from RGB `(12,11,9)` to `(0,0,0)` at `(600,500)`. Panel padding at `(252,500)`
+  and `(600,608)` is also `(0,0,0)` in the new text screenshot.
+- `candidate-comparison.json` in that evidence root confirms all nineteen
+  tested archives have the same payload as the rebuilt root package, whose
+  SHA-256 is `44452b7da3a78fdee712a300a1a3c49ec86994acb339f75efcc1a13cfab82fa0`.
+
+This visual fix was checked offline at 1366×768 under Xvfb. No live server
+check was needed; Mudlet 4.19.1 and physical desktop DPI remain unverified.
+
 ## 1.3.3 connection audit — 2026-10-14
 
 The client/server source audit and fixes cover all **eleven GMCP packages

@@ -2,6 +2,15 @@
 
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
+## 1.3.5 - 2026-10-15
+
+- Replace the old border artwork with a custom obsidian-and-bronze atlas frame, engraved compass details, and a compact DURIS wordmark.
+- Remove the "New Duris" heading and keep the frame's interior black for readable game output.
+
+## 1.3.4 - 2026-10-15
+
+- Use a solid black background for the primary MUD text feed and its surrounding panel so incoming text blends with the console.
+
 ## 1.3.3 - 2026-10-14
 
 - Advertise all consumed GMCP packages, including maps, quests and ships.
