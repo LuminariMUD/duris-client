@@ -14,6 +14,7 @@
     "chat": "All channel routes, long messages, incoming/outgoing tells and private window",
     "information": "Mouse-driven tabs, inventory/equipment/who, quests and sorted ship contacts",
     "maps": "Zone/wilderness, zoom, cache, delayed/malformed/HTTP errors and reload recovery",
+    "map-colors": "Wilderness foreground/background transitions, resets, movement/look redraws and subsequent console output",
     "controls": "Numpad input, aliases, toggles, menu click, timer cancellation and settings",
     "login": "One time query per character login, renewed after connection event",
     "text": "Artwork fallback, scan summary, alert banners, ANSI and long-line wrapping",
