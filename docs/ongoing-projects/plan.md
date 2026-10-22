@@ -1,6 +1,6 @@
 # Issue #4: compact Duris header implementation plan
 
-Date: 2026-10-22. Status: implementation and acceptance complete; PR #7 ready for review.
+Date: 2026-10-22. Status: implementation, acceptance and review repair complete; PR #7 ready for review.
 
 Work item: [#4 — Reduce the Duris banner height or offer a compact header option](https://github.com/LuminariMUD/duris-client/issues/4).
 Parent context: [#1 — Voodoo client feedback index](https://github.com/LuminariMUD/duris-client/issues/1).
@@ -39,7 +39,7 @@ Implementation branch: `branch/issue-4-compact-header`, based on `master` at
   change was required.
 - Lua 5.1 syntax/build, the eight controller unit tests and release-file
   validation pass. The required final suite passed all **20** cases at
-  `/home/aiwithapex/.local/share/duris-client-dev/issue-4-suite`.
+  `/home/aiwithapex/.local/share/duris-client-dev/issue-4-final-suite`.
   Controls passed at all four requested size/scale combinations; all positive
   suite runs and matrix runs have recorded screenshot/Errors reviews.
   Real **4.22.0** portable/offline controls and lifecycle/resize/reopen checks
@@ -54,8 +54,10 @@ Implementation branch: `branch/issue-4-compact-header`, based on `master` at
   source/fixture hashes, suite/matrix results, measured bounds and selected
   screenshots. Detailed results are in the
   [testing log](mudlet-local-testing.md#140-compact-header--2026-10-22).
-  The final proof-only commit can reuse this exact runtime payload; do not
-  rerun the suite for documentation/evidence changes.
+  The initial evidence commit was `d35c525`; master-sync commit `43ec2e4`
+  incorporated the user's `.env.example` changes without changing the package.
+  The subsequent one-condition review fix has its own final payload and suite
+  evidence below. Do not rerun green checks for evidence-only changes.
 - The user added ignored `.env` credentials and supplied the live endpoint
   `mud.duris.sbs:7777`. A dedicated profile without the offline companion is
   used for actual output/header switching with automation off. The local
@@ -68,7 +70,21 @@ Implementation branch: `branch/issue-4-compact-header`, based on `master` at
   disconnected; the dedicated desktop closed normally. No player messages,
   movement, combat, ship control or server/website changes were needed.
 - All three issue acceptance criteria passed in real built-package imports.
-  No implementation work remains. The declared minimum/physical-DPI limits
+  Final review identified one additional state interaction: `mapper off`
+  ignores incoming maps, but Mudlet still replaces `gmcp.Room.Map`, allowing
+  layout's direct renderer call to display a paused payload. The new real
+  command-path regression failed against the original implementation, and
+  passes with the guard in real **5.0.1 and 4.22.0**. The ablated repair gates
+  layout redraw on the existing `state.enabled` flag; no new accepted-map
+  cache or renderer API was needed. Final 20-case suite and controller/release
+  checks passed; paused/resumed and Errors-view screenshots were reviewed.
+  Final payload:
+  `8de8a5fc0aef8ebef20c8ac646856719096a75df460890520d3b6f78ef8d60ba`.
+  The evidence file preserves earlier payload identities and explicitly
+  reuses the unchanged geometry/enabled-map matrix, reopen and live proof.
+  No implementation work remains. The repair is included in the existing PR;
+  final closeout resolves the verified review finding.
+  The declared minimum/physical-DPI limits
   above remain explicit review considerations, not implied passes. Next
   action is reviewer approval and a separately authorized merge/release;
   do not merge this PR or create tags as part of this implementation task.

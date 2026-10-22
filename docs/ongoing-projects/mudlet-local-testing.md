@@ -11,7 +11,7 @@ The implementation was committed as `091d0a9` after merging master `72efad6`.
 **PASS:** Lua 5.1.5 syntax for all three scripts, `python3 build.py --check`,
 the version 1.4.0 build, eight controller unit tests, and local release-file
 validation. `python3 scripts/mudlet_suite.py --root
-/home/aiwithapex/.local/share/duris-client-dev/issue-4-suite --jobs 3` passed
+/home/aiwithapex/.local/share/duris-client-dev/issue-4-final-suite --jobs 3` passed
 all **20** registered expectations (14 positive scenarios and six intentional
 failure/startup-fault cases). Every positive run closed normally, cleaned up
 its processes, and recorded no Lua exceptions. Deliberate zero-maxima inputs
@@ -52,15 +52,37 @@ fixture passed uninstall/reinstall, native resize in compact mode, normal
 save/close and a full process reopen; screenshots and Errors views reviewed.
 No unsupported 5.x startup/isolation flags were passed to the 4.x executable.
 
+**PASS — review regression:** the automated PR review found that layout's
+direct wilderness renderer call could bypass `mapper off`, because Mudlet
+still replaces `gmcp.Room.Map` while the package ignores its event. The new
+`maps.lua` command-path sequence reproduced the failure before the fix, then
+passed against the rebuilt archive in **5.0.1 and 4.22.0**. The repair gates
+layout redraw on the existing mapper `state.enabled` flag. It preserves the
+accepted display through full/compact changes, resize and hide/show while
+paused; `mapper on` resumes accepting maps. No new state/cache is needed.
+Final paused/resumed and Errors-view captures were inspected, and the required
+20-case suite, eight controller tests and release validation passed again.
+
 Evidence: [manifest and measured bounds](../testing/issue-4/evidence.json),
 [full](../testing/issue-4/full-5.0.1.png),
 [compact](../testing/issue-4/compact-5.0.1.png),
 [Errors view](../testing/issue-4/errors-5.0.1.png), and
-[4.22 reopened compact](../testing/issue-4/reopened-4.22.png).
-All recorded runs match package payload SHA-256
-`845104dcd0069f4466d1a3925e6901d5d50d6f1039959b74b2287321033e2046`;
-the committed archive is SHA-256
-`8c27a97a15d2b0ee2a0672e71197b3799b369ab630bfc62565b16043e560427d`.
+[4.22 reopened compact](../testing/issue-4/reopened-4.22.png), plus
+[paused map in final 4.22 archive](../testing/issue-4/paused-map-4.22.png).
+The final archive is SHA-256
+`cf20f25c4605b3e67cdeaa070997ba3fcad30c02035702a4f4f5d493187b7dfc`,
+with payload SHA-256
+`8de8a5fc0aef8ebef20c8ac646856719096a75df460890520d3b6f78ef8d60ba`.
+It passed the final 20-case suite and 4.22 maps scenario. Initial matrix,
+4.22 controls/reopen and live checks used payload
+`845104dcd0069f4466d1a3925e6901d5d50d6f1039959b74b2287321033e2046`.
+Those results are retained with their own identities: the only subsequent
+runtime change is the mapper-enabled guard, leaving geometry, settings,
+styles, lifecycle and enabled-map rendering unchanged. Final 1366x768
+controls also remeasured the same gain. Original positive-suite visuals are
+reused for unchanged paths; final controls/maps and paused-state captures
+have additional explicit reviews. The evidence file distinguishes every
+candidate instead of relabeling older runs as final-archive checks.
 Complete profiles, manifests, fixture hashes and original captures remain
 outside the checkout under the per-run paths in the evidence file.
 

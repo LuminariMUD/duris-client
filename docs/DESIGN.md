@@ -45,6 +45,8 @@ proportions, the main console gains about **5.94%** of that window height.
 `ArjUI:headerHeightPct()` supplies the same decision to startup and
 `ArjUI:layout()`, which recalculates the root/footer and redraws the active
 map from current-session data on header changes, show, and resize.
+When `mapper off` pauses updates, those layout changes retain the displayed
+map; they must not render the incoming GMCP payloads ignored by the mapper.
 
 These are the current content-root proportions. They describe the implemented
 arrangement, not a user-selectable layout system.

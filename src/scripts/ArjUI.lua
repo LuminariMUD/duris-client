@@ -995,7 +995,7 @@ function ArjUI:layout()
 
   -- Map contents use pixel positions/padding inside the percentage-sized root.
   -- Redraw only the active map from this session, without requesting new data.
-  if ArjMapper and ArjMapper.state and ArjMapper.ui then
+  if ArjMapper and ArjMapper.state and ArjMapper.state.enabled and ArjMapper.ui then
     if ArjMapper.state.lastDisplayMode == "zone" then
       ArjMapper:renderZoneMap()
     elseif ArjMapper.state.lastDisplayMode == "wilderness" and gmcp and gmcp.Room then
