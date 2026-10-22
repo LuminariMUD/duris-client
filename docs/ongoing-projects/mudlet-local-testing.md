@@ -2,55 +2,49 @@
 
 ## 2026-10-22 - Issue #3 SHIP readability, 1.3.7
 
-Structured ship sections replace the generic field dump. Numeric weapon slots,
-separate ammo/damage/timer readiness, signed crew modifiers, condition colors,
-crate units, empty lists and partial/older payloads are covered by the existing
-`connections` and mouse-driven `information` fixtures. Navigation, locks,
-text fallback, replacement clearing and ArjAuto's relative heading stay intact.
-The observed refresh jump was fixed locally by restoring the viewed section
-after Mudlet settles its split scrollback geometry.
+Ordered identity/navigation, condition, numeric-slot weapons, crew, equipment,
+cargo and contacts replace the generic dump. Separate ammo/damage/timer status,
+signed modifiers and honest units retain the available facts. Text fallback,
+automation, zero/false, unknown maxima and state clearing survive.
 
-Candidate SHA-256: `efbf2d0d4524448076d61ab480ef8c00b85f5987060edbc14e7ef3f429e69d0d`. Source/archive
-and fixture identities, run locations and representative screenshots are in
-[offline evidence](../testing/issue-3/offline-evidence.json).
+Final archive SHA-256: `1fac6f343a6ec27f2cf55399315cd6b75286ab08dec196fe74fca22233584431`.
+Core `8c8810e`, controller `2c43b68`; review order PR #9, #11, #10.
 
-- `python3 build.py --check`: PASS with actual Lua 5.1.5.
-- `python3 scripts/mudlet_suite.py --root /tmp/duris-issue3-final-suite`:
-  **20/20** expected outcomes PASS, including wire decoding, lifecycle/reopen,
-  deliberate errors/faults and normal cleanup. Automated results are separate
-  from screenshot review.
-- `connections` at 1280x720, 1366x768, 1920x1080 and 2732x1536 scale 2:
-  PASS. Reviewed populated identity, weapon/crew/cargo scrolling, partial,
-  empty/replacement and Errors-view captures; long names wrap without lost
-  weapon status. Color/labels preserve zero values and unknown maxima.
-- `python3 scripts/release.py --output /tmp/duris-issue3-release`: PASS;
-  validates source/archive equality and prepares release files without publishing.
-- Environment: Ubuntu 24.04.4 WSL2, Mudlet 5.0.1 / Qt 6.11.1, DejaVu Sans Mono,
-  Xvfb at 96dpi. Baseline master is `72efad6` / 1.3.6.
-- **Mudlet 4.22.0 / Qt 6.9.0 PASS:** exact committed archive imported through
-  the connection dialog's Offline option in an independent portable root;
-  all 113 `connections` assertions and reviewed weapon/Errors captures pass.
-- **Live same-ship comparison PASS:** clean final import into a separate
-  Mudlet 5.0.1 profile; GallTest at dock 49090, actual bridge GMCP plus
-  `look ship`/`look crew`. Identity, navigation, all four condition arcs, sail,
-  passengers, crew/chiefs/skills/modifiers, stamina, repair, six weapon entries
-  and silk cargo agree. Decoded packets, reference/panel text, hashes and
-  inspected screenshots are in [qualification.json](../testing/issue-3/qualification.json).
-- Cargo is **5/70 crates**; `look ship`'s **80/165 load** is weight. Hull
-  weight, set orders, exact reload timers and equipment damage are absent from
-  the protocol. Additional received fields retain their honest labels.
-- Earlier sessions saw two remote-host closes. Final comparisons used fresh
-  packets after the exact archive's clean import; no cause was established.
-  Actual bridge departure cleared ship info/maxSpeed/target. Character returned
-  to the original Inn of Oceans, normal quit/account disconnect and desktop
-  shutdown completed; temporary credentials removed. No ship state was altered.
-- **4.19.1 and physical desktop DPI NOT VERIFIED.** Official 4.19.1 GitHub
-  release metadata still lists no binary assets. Windows/macOS are not claimed.
-  Live equipment/contacts were empty; their populated cases remain offline proof.
+- Eight controller checks and final **20/20** real-Mudlet suite expectations
+  PASS under `/tmp/duris-issue3-ready-suite`, including wire decoding,
+  lifecycle/reopen, editor capture and expected deliberate failures/faults.
+- A review assertion reproduced the Info-clear then empty-contacts display
+  defect before the guard. `connections` and `server-wire` now verify the
+  no-ship display; the separate text-only fixture starts with reset state.
+- Repeated editor capture failures after passing behavior exposed a 0.3-second
+  timing assumption. The separate controller PR waits up to five seconds using
+  the existing readiness helper and application-exit check. Final suite passes.
+- Original populated 1280x720, 1366x768, 1920x1080 and 2732x1536 scale-2 captures
+  remain valid for the unchanged layout. The final guard affects only the empty
+  contact footer. Source identities and the explicit reuse decision are in
+  [review-followup.json](../testing/issue-3/review-followup.json); original run
+  identities/screenshots stay in [offline-evidence.json](../testing/issue-3/offline-evidence.json).
+- **4.22.0 / Qt 6.9.0 PASS**, all **114** assertions, fresh exact-archive import
+  in a separate portable root through the connection dialog's Offline button.
+  Departure and actual Errors-view screenshots were inspected; no Lua errors.
+- **Final-archive live comparison PASS:** fresh profile, actual GallTest bridge
+  packets and `look ship`/`look crew`; identity, navigation, four condition arcs,
+  sail, passengers, crew/chiefs/skills/modifiers, stamina, repair, six weapons
+  and silk cargo agree. Captures, decoded GMCP and reference/panel text are in
+  [qualification.json](../testing/issue-3/qualification.json).
+- Cargo is **5/70 crates**, whereas the reference's **80/165 load** is weight.
+  Hull weight, set orders, exact timers and equipment damage are not supplied.
+  Live equipment/contacts were empty; populated/damaged/no-ammo cases are offline.
+- Real bridge departure clears state **and display**. Veridian was returned
+  to the original Inn of Oceans (66899), quit and disconnected normally;
+  owned desktops closed and temporary credentials removed. No ship state changed.
+- Lua 5.1.5 syntax and release source/archive equality validation PASS.
+  Environment: Ubuntu 24.04.4 WSL2, Mudlet 5.0.1 / Qt 6.11.1, Xvfb 96dpi,
+  DejaVu Sans Mono. **4.19.1, physical desktop DPI and Windows/macOS unverified.**
 
-The rich fixtures are constructed cases based on the inspected serializer,
-not captured live packets. `server-wire` retains its unchanged real serializer
-snapshot and provenance. See [plan.md](plan.md) for the current handoff.
+Rich constructed fixtures and actual live packets retain distinct provenance;
+the checked-in serializer JSON was not regenerated. The updated [plan](plan.md)
+is the continuation reference. Hosted CI is separate from local qualification.
 
 ## 1.3.6 wilderness map colors — 2026-10-22
 

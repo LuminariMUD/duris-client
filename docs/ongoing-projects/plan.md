@@ -1,7 +1,7 @@
 # Issue #3: readable SHIP panel
 
-Status: implementation ready for review in [PR #9](https://github.com/LuminariMUD/duris-client/pull/9).
-Compatibility/live qualification is complete on dependent `branch/issue-3-ship-evidence`.
+Status: implementation and scoped qualification complete; PR #9 -> #11 -> #10
+are ready for review. Issue #3 remains open pending review/merge.
 
 Date: 2026-10-22. Work item: [issue #3](https://github.com/LuminariMUD/duris-client/issues/3).
 Parent: [feedback index #1](https://github.com/LuminariMUD/duris-client/issues/1).
@@ -25,74 +25,71 @@ for the same ship.
 
 ## Current handoff (2026-10-22)
 
-- **Review follow-up in progress:** PR #9's reviewer identified the exact
-  `Ship.Info {}` -> `Ship.Contacts {contacts=[]}` departure sequence ending in
-  `Contacts: None`. Existing assertions verified state clearing but missed
-  that presentation. Add the no-ship assertion to existing scenarios and
-  gate the empty-contact footer on other displayed ship facts. Retain the
-  populated layout/matrix/live facts as valid evidence; requalify the final
-  archive's clearing path before marking delivery done.
-
-- **Implementation and qualification ready for review.** Core
-  [PR #9](https://github.com/LuminariMUD/duris-client/pull/9) targets master from
-  `branch/issue-3-ship-readability`, head `5453cee`. The evidence chunk is on
-  `branch/issue-3-ship-evidence`, based on that core branch. Current worktree is
-  `/home/aiwithapex/projects/durisclient-issue3-plan` on the evidence branch.
-- Master `eec642f` was merged without rewriting published commits. Its last
-  change was `.env.example` only; package/runtime content remains the validated
-  core candidate. Version **1.3.7**, archive SHA-256
-  `efbf2d0d4524448076d61ab480ef8c00b85f5987060edbc14e7ef3f429e69d0d`.
-  No tags were pushed; releases remain owned by master CI after review/merge.
-- Ablation reused the existing SHIP MiniConsole, state/GMCP handlers, color
-  helpers and scenarios. The generic Ship.Info walk is gone. Ship-specific
-  formatting orders identity/navigation, condition, numeric-slot weapons,
-  crew, equipment, cargo and contacts. Zero/false/unknown facts, text fallback,
-  clearing and automation inputs survive. Only the SHIP scrollbar and local,
-  coalesced restoration were needed for refresh scrolling.
-- **20/20** real-Mudlet suite expectations PASS, including deliberate failures,
-  wire decoding and lifecycle/reopen. Four size/DPI runs PASS with identical
-  canonical package payloads despite ZIP timestamps. Focused captures and the
-  suite montage were inspected; actual Errors views contain no Lua errors.
-  [offline-evidence.json](../testing/issue-3/offline-evidence.json) records exact
-  identities, assertion counts and run paths. One 1920x1080 run hit editor-window
-  capture timing after behavior passed; the bounded retry passed completely.
-- **Mudlet 4.22.0 / Qt 6.9.0 PASS**, all **113** `connections` assertions.
-  A separate portable root was opened with the connection dialog's Offline
-  button. Exact committed archive imported; weapons and Errors screenshots
-  inspected. Existing issue-2 tools/configuration were preserved.
-- **Manual same-ship comparison PASS.** A clean final live import in Mudlet
-  5.0.1 / Qt 6.11.1 received real GMCP on the bridge of existing **GallTest**.
-  Compared identity/status/captain/ID/frags, navigation, all armor/hull arcs,
-  sail, passengers, repair, stamina, crew/chiefs/skills/modifiers, six weapon
-  slots/names/positions/ammo/readiness, and silk cargo with `look ship` and
-  `look crew`. No discrepancy in supplied facts. Captures, decoded packets,
-  panel text and comparison details are in
-  [qualification.json](../testing/issue-3/qualification.json).
-- Protocol differences remain explicit: weight/load, set orders and exact
-  timers/equipment damage are not supplied. Cargo **5/70 crates** is not the
-  reference's **80/165 weight load**. The live ship had no equipment/contacts;
-  populated and damaged cases remain offline coverage.
-- Live profile had no companion, send override or injected GMCP. Earlier
-  remote closes were followed by fresh reception/captures. Actual bridge exit
-  cleared info/maxSpeed/target. Veridian was returned to the original **Inn of
-  Oceans** (via Riralin) and logged out normally; owned desktop closed and the
-  temporary credential copy removed. User `.env` stays ignored in the master
-  checkout. No ship/gameplay settings or server sources were changed.
-- Runtime is Ubuntu 24.04.4 WSL2 / Xvfb 96dpi / DejaVu Sans Mono; use a login
-  shell for `~/.local/bin/mudlet`. Raw local runs are under
-  `/tmp/duris-issue3-final-suite`, `/tmp/duris-issue3-final-*`,
-  `/tmp/duris-issue3-4.22` and `/tmp/duris-issue3-live`. Committed evidence is
-  sufficient if those temporary directories disappear.
-- `build.py --check` used Lua 5.1.5, release source/archive equality validation
-  passed, and `git diff --check` passed. This evidence-only chunk reuses the
-  unchanged runtime/package proof; do not rerun the whole suite for prose/PNG/JSON.
-- All three original issue acceptance items now have evidence. Keep #3 open
-  for PR review. Remaining limits: declared **4.19.1** (official release still
-  has no binary assets), physical desktop DPI, Windows/macOS are unverified;
-  do not claim them. Hosted checks are separate from the completed local proof.
-- Next session: review/resolve any feedback on the two PRs, integrate the core
-  first, then retarget the evidence PR to master using the repository's normal
-  squash-stack workflow. No implementation work remains in this scoped chunk.
+- **All implementation and scoped qualification complete; ready for review.**
+  Merge order is [PR #9](https://github.com/LuminariMUD/duris-client/pull/9)
+  (SHIP), [PR #11](https://github.com/LuminariMUD/duris-client/pull/11)
+  (controller readiness), then [PR #10](https://github.com/LuminariMUD/duris-client/pull/10)
+  (qualification evidence). Retarget each successor after its parent merges.
+  Core head `8c8810e`; controller head `2c43b68`; evidence branch is
+  `branch/issue-3-ship-evidence` in `/home/aiwithapex/projects/durisclient-issue3-plan`.
+- Master `eec642f` was merged without rewriting published commits. Its final
+  change was `.env.example` only. Final version **1.3.7**, archive SHA-256
+  `1fac6f343a6ec27f2cf55399315cd6b75286ab08dec196fe74fca22233584431`.
+  No tags were pushed; release publication stays with master CI after review.
+- Ablation reused the existing panel, handlers, state, color helpers and
+  fixtures. The generic info walk was replaced by local ship-specific sections.
+  Numeric slots, separate ammo/damage/timer facts, honest units, zero/false,
+  missing maxima, contacts/automation, text fallback and clearing are preserved.
+  Only the SHIP scrollbar and coalesced scroll restoration were added locally.
+- PR review reproduced an omitted display assertion: `Ship.Info {}` followed
+  by `Ship.Contacts {contacts=[]}` used to show Contacts: None after departure.
+  The footer now requires other displayed ship facts. The added assertion failed
+  before this guard, then passed; `server-wire` also checks the authoritative
+  sequence. The text-only fixture resets its session after the GMCP case.
+  Review thread is resolved. See [review-followup.json](../testing/issue-3/review-followup.json).
+- A separate controller defect reproduced several Errors-editor capture
+  failures after successful behavior. PR #11 uses the existing bounded wait
+  helper (five seconds and application-exit detection), replacing a fixed
+  0.3-second delay. Eight controller checks and the final **20/20** suite pass
+  at `/tmp/duris-issue3-ready-suite`, including wire, lifecycle/reopen,
+  ordinary captures and expected negative/fault outcomes.
+- Original four-size/DPI populated coverage remains valid: only the empty
+  footer condition changed in the review fix. The final archive was qualified
+  again on Mudlet 5.0.1, Mudlet **4.22.0 / Qt 6.9.0** (**114** assertions), and
+  in a fresh live profile. Exact payload/source identities and coverage reuse
+  are recorded in [offline-evidence.json](../testing/issue-3/offline-evidence.json)
+  and the review follow-up. Reviewed departure/Errors captures show no Lua errors.
+- **Manual same-ship comparison PASS for the final archive.** Actual GallTest
+  bridge packets and `look ship`/`look crew` agree on identity/status/ID/frags,
+  navigation, four armor/hull arcs, sail, passengers, repair, stamina,
+  crew/chiefs/skills/modifiers, all six weapon entries and silk cargo.
+  [qualification.json](../testing/issue-3/qualification.json) includes decoded
+  packets, text, inspected screenshots, hashes and exact import provenance.
+- Weight/load, set orders and exact reload timers/equipment damage are not in
+  the received contract. Cargo **5/70 crates** is distinct from **80/165 weight
+  load**. Live equipment/contacts were empty; their populated, damaged and
+  no-ammo cases remain offline coverage. No missing values were inferred.
+- Final live profile had no companion, send override or injected GMCP.
+  Real bridge departure cleared info/maxSpeed/target **and the display**.
+  Veridian returned to the original Inn of Oceans (66899), quit and disconnected
+  normally. Owned desktops are closed and temporary credential copies removed.
+  User `.env` remains ignored in the master checkout. No ship/gameplay settings
+  or server sources were changed.
+- Runtime: Ubuntu 24.04.4 WSL2, Xvfb 96dpi, DejaVu Sans Mono. Raw final runs:
+  `/tmp/duris-issue3-ready-suite`, `/tmp/duris-issue3-ready-4.22`,
+  `/tmp/duris-issue3-live-final`; earlier evidence remains under the other
+  `/tmp/duris-issue3-*` directories. Use a login shell for `~/.local/bin/mudlet`.
+  Committed evidence remains useful if those temporary directories disappear.
+- Lua 5.1 syntax, source/archive release validation and `git diff --check`
+  pass. This evidence-only update reuses final runtime results; no further
+  regression run is needed for prose, PNG or JSON changes.
+- All three original acceptance items have evidence. Keep #3 open for PR
+  review. Declared **4.19.1** (official release has no binary assets), physical
+  desktop DPI and Windows/macOS remain unverified; do not claim them. Hosted
+  checks remain separate from the completed local proof.
+- Next session: address new review feedback, then integrate the above stack
+  in order. No scoped implementation work remains. Preserve the source/package
+  pairing and let the existing master workflow create the eventual tag/release.
 
 The original audit/specification below remains the source and comparison
 reference. Historical setup/progress statements are superseded by this handoff

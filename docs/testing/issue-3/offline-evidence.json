@@ -213,5 +213,6 @@
     "Offline constructed scenarios; real serializer provenance remains separate.",
     "Manual live same-ship comparison pending.",
     "4.22 import pending; 4.19.1 and physical desktop DPI unverified."
-  ]
+  ],
+  "final_package_followup": "review-followup.json"
 }

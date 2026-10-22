@@ -283,8 +283,10 @@ def session(run):
             if result["errors"]:
                 result["status"] = result["error_review"] = "FAIL"
         xdo("key", "alt+e")
-        time.sleep(.3)
-        editor = xdo("search", "--onlyvisible", "--name", "Duris-Visual - Editor").splitlines()[-1]
+        editors = wait_for(lambda: subprocess.run(
+            ["xdotool", "search", "--onlyvisible", "--name", "Duris-Visual - Editor"],
+            text=True, capture_output=True, timeout=2).stdout.strip(), 5, app)
+        editor = editors.splitlines()[-1]
         xdo("windowsize", "--sync", editor, str(1100 * config["scale"]), str(850 * config["scale"]))
         xdo("windowactivate", "--sync", editor)
         xdo("key", "ctrl+8")

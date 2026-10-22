@@ -1,0 +1,179 @@
+{
+  "date": "2026-10-22",
+  "candidate": {
+    "version": "1.3.7",
+    "sha256": "1fac6f343a6ec27f2cf55399315cd6b75286ab08dec196fe74fca22233584431",
+    "payload_sha256": "7876f9d50b7a8abdb22e36a0cf658f03366ba485dc51f0ce86341963a5c25453"
+  },
+  "core_commit": "8c8810e73cc6fd5ebb1adb796b17ac041b5dae2e",
+  "controller_commit": "2c43b6821a330ec46540c328a1263e3cc0d6738e",
+  "red": {
+    "run": "/tmp/duris-issue3-review-red/20261022T202019Z-694e7761-connections",
+    "assertion": {
+      "description": "departure contact clear keeps the no-ship display",
+      "passed": false
+    }
+  },
+  "repair": "Only render the empty-contact footer when other displayed facts establish a ship; no field/state/protocol changes.",
+  "tests": "connections now asserts the exact Info {} -> Contacts {contacts=[]} sequence, and starts a separate text-only session. server-wire asserts the actual serializer departure display.",
+  "controller_repair": "Use existing wait_for for the editor (five seconds, process-exit detection) instead of assuming 0.3 seconds is enough.",
+  "controller_unit_checks": 8,
+  "suite": [
+    {
+      "case": "lowhp",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/lowhp/20261022T202450Z-d3f51d71-lowhp",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "vitals",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/vitals/20261022T202450Z-e007720f-vitals",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "crowded",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/crowded/20261022T202500Z-584a95e9-crowded",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "combat",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/combat/20261022T202502Z-1c610727-combat",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "chat",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/chat/20261022T202510Z-c6d621aa-chat",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "information",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/information/20261022T202511Z-a7390bae-information",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "maps",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/maps/20261022T202523Z-5ab5214b-maps",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "map-colors",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/map-colors/20261022T202529Z-7c345ad1-map-colors",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "controls",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/controls/20261022T202541Z-f57eac65-controls",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "login",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/login/20261022T202558Z-9c10dbba-login",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "text",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/text/20261022T202600Z-85df1f44-text",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "lifecycle",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/lifecycle/20261022T202613Z-25a98ef0-lifecycle",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "connections",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/connections/20261022T202613Z-1867b74f-connections",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "server-wire",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/server-wire/20261022T202635Z-7d76223f-server-wire",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "case": "assertion-error",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/assertion-error/20261022T202641Z-3be9d01c-assertion-error",
+      "exit_code": 1,
+      "stderr": ""
+    },
+    {
+      "case": "timer-error",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/timer-error/20261022T202648Z-e21f636d-timer-error",
+      "exit_code": 1,
+      "stderr": ""
+    },
+    {
+      "case": "event-error",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/event-error/20261022T202652Z-16a5d6c1-event-error",
+      "exit_code": 1,
+      "stderr": ""
+    },
+    {
+      "case": "wrong-profile",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/wrong-profile/20261022T202655Z-c15e25c4-lowhp",
+      "exit_code": 1,
+      "stderr": ""
+    },
+    {
+      "case": "wrong-candidate",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/wrong-candidate/20261022T202658Z-02a1e4cf-lowhp",
+      "exit_code": 1,
+      "stderr": ""
+    },
+    {
+      "case": "no-readiness",
+      "passed": true,
+      "run": "/tmp/duris-issue3-ready-suite/no-readiness/20261022T202706Z-f4bc1676-lowhp",
+      "exit_code": 1,
+      "stderr": ""
+    }
+  ],
+  "legacy_assertions": 114,
+  "layout_evidence_reuse": {
+    "prior_candidate": {
+      "version": "1.3.7",
+      "sha256": "efbf2d0d4524448076d61ab480ef8c00b85f5987060edbc14e7ef3f429e69d0d",
+      "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+    },
+    "file": "offline-evidence.json",
+    "reason": "The only renderer follow-up adds and shown to the empty-contact footer condition. Populated field formatting and geometry are unchanged, so the four-size/DPI evidence remains applicable. Final departure rendering is additionally checked in real 5.0.1, 4.22.0 and live Mudlet."
+  },
+  "source_sha256": {
+    "src/scripts/ArjUI.lua": "a6ef13b882ca8e9e201efdcfd89502b1238a24d618505745d1071ea8c74fa142",
+    "scripts/mudlet_test.py": "139548d54cdbbb25cf01b7f21e4138b93900e2c4ac5b5170d1afb8df2824318a",
+    "tests/mudlet/fixtures/connections.lua": "6efed24650ef7260d7a3fb8f968ee2cab01561d7d81c049e9ab39f813d54b487",
+    "tests/mudlet/fixtures/server-wire.lua": "dbea8814ebcdc945a2a221d0976b20329de9b9014ade993a2cba5ca9934bc61a"
+  }
+}
