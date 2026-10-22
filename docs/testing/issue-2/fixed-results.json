@@ -1,0 +1,125 @@
+{
+  "commands": [],
+  "scenario": "map-colors",
+  "status": "PASS",
+  "run_id": "issue-2-4.22-clean",
+  "assertions": [
+    {
+      "description": "requested scenario matches this run",
+      "passed": true
+    },
+    {
+      "description": "isolated profile",
+      "passed": true
+    },
+    {
+      "description": "disconnected",
+      "passed": true
+    },
+    {
+      "description": "candidate version",
+      "passed": true
+    },
+    {
+      "description": "black-background ocean has blue foreground",
+      "passed": true
+    },
+    {
+      "description": "black-background ocean has black background",
+      "passed": true
+    },
+    {
+      "description": "combined code keeps yellow mountain foreground",
+      "passed": true
+    },
+    {
+      "description": "combined code keeps blue mountain background",
+      "passed": true
+    },
+    {
+      "description": "foreground-only terrain clears preceding background",
+      "passed": true
+    },
+    {
+      "description": "background-only code colors a space",
+      "passed": true
+    },
+    {
+      "description": "background-only code clears previous foreground",
+      "passed": true
+    },
+    {
+      "description": "foreground after background-only code resets background",
+      "passed": true
+    },
+    {
+      "description": "reset clears map background",
+      "passed": true
+    },
+    {
+      "description": "real and legacy newlines clear map background",
+      "passed": true
+    },
+    {
+      "description": "lowercase black is distinct from bright black",
+      "passed": true
+    },
+    {
+      "description": "real water-to-plains glyph transition clears blue background",
+      "passed": true
+    },
+    {
+      "description": "plain console output after initial map stays black",
+      "passed": true
+    },
+    {
+      "description": "movement redraw clears terrain background",
+      "passed": true
+    },
+    {
+      "description": "movement replaces previous map",
+      "passed": true
+    },
+    {
+      "description": "unterminated colored map leaves following text at default background",
+      "passed": true
+    },
+    {
+      "description": "console after movement stays black",
+      "passed": true
+    },
+    {
+      "description": "look redraw does not inherit old map colors",
+      "passed": true
+    },
+    {
+      "description": "console after look stays black",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "error_review": "PASS",
+  "visual_review": "PASS",
+  "geometry": {
+    "WINDOW": "4194311",
+    "X": "2",
+    "Y": "44",
+    "WIDTH": "1366",
+    "HEIGHT": "768",
+    "SCREEN": "0"
+  },
+  "normal_shutdown": true,
+  "cleanup": true,
+  "processes": [
+    {
+      "pid": 1811943,
+      "exit_code": 0
+    },
+    {
+      "pid": 1811944,
+      "exit_code": 0
+    }
+  ],
+  "automated_status": "PASS",
+  "review_note": "Reviewed 01-colored-map.png, 03-movement.png, 04-look.png and errors-view.png in Mudlet 4.22.0. Backgrounds stay in intended cells; movement/look and later console output are clean; no Lua errors."
+}

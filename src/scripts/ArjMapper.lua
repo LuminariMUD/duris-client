@@ -91,7 +91,7 @@ ArjMapper.fgRGB = {
     m = "128,0,128",   M = "255,0,255",
     y = "128,128,0",   Y = "255,255,0",
     w = "192,192,192", W = "255,255,255",
-    L = "96,96,96",    l = "96,96,96",
+    L = "96,96,96",    l = "0,0,0",
 }
 
 ArjMapper.bgRGB = {
@@ -102,7 +102,7 @@ ArjMapper.bgRGB = {
     m = "60,0,60",     M = "100,0,100",
     y = "60,60,0",     Y = "100,100,0",
     w = "60,60,60",    W = "100,100,100",
-    L = "32,32,32",    l = "32,32,32",
+    L = "32,32,32",    l = "0,0,0",
 }
 
 -- ============================================================
@@ -132,22 +132,36 @@ function ArjMapper:parseWildernessMap(rawMap)
         local ch = rawMap:sub(i, i)
         if ch == "&" and i < len then
             local nxt = rawMap:sub(i+1, i+1)
-            if nxt == "+" and i + 2 <= len then
+            -- Duris color codes replace the whole attribute, rather than
+            -- independently changing ANSI foreground/background state.
+            if nxt == "+" and self.fgRGB[rawMap:sub(i+2, i+2)] then
                 currentFg = self.fgRGB[rawMap:sub(i+2, i+2)]
+                currentBg = nil
                 i = i + 3
-            elseif nxt == "=" and i + 3 <= len then
-                local fgCode = rawMap:sub(i+2, i+2)
-                local bgCode = rawMap:sub(i+3, i+3)
-                if self.fgRGB[fgCode] then currentFg = self.fgRGB[fgCode] end
-                currentBg = self.bgRGB[bgCode]
+            elseif nxt == "-" and self.bgRGB[rawMap:sub(i+2, i+2)] then
+                currentFg = nil
+                currentBg = self.bgRGB[rawMap:sub(i+2, i+2)]
+                i = i + 3
+            elseif nxt == "=" and self.bgRGB[rawMap:sub(i+2, i+2)]
+                    and self.fgRGB[rawMap:sub(i+3, i+3)] then
+                -- &=XY is background X, foreground Y (AnsiString::ansi).
+                currentBg = self.bgRGB[rawMap:sub(i+2, i+2)]
+                currentFg = self.fgRGB[rawMap:sub(i+3, i+3)]
                 i = i + 4
             elseif nxt == "n" or nxt == "N" or nxt == "]" then
                 table.insert(result, "<r>")
                 currentFg, currentBg = nil, nil
                 i = i + 2
             else
+                table.insert(result, cellChunk(ch))
                 i = i + 1
             end
+        elseif ch == "\r" then
+            i = i + 1
+        elseif ch == "\n" then
+            table.insert(result, "<r>\n")
+            currentFg, currentBg = nil, nil
+            i = i + 1
         elseif ch == "\\" and i < len and rawMap:sub(i+1, i+1) == "n" then
             table.insert(result, "<r>\n")
             currentFg, currentBg = nil, nil
@@ -157,7 +171,7 @@ function ArjMapper:parseWildernessMap(rawMap)
             i = i + 1
         end
     end
-    return table.concat(result)
+    return "<r>" .. table.concat(result) .. "<r>"
 end
 
 -- ============================================================

@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-22",
+  "source_base": "7247c9d8d2d07295ba35c70238661b7eeccb7ed8",
+  "candidate": {
+    "version": "1.3.6",
+    "sha256": "90dc405eb44276d3f0a1ce9b7f7dbea30fbb607af961d6df924569c8a6161aef",
+    "payload_sha256": "70851cbdb5cf87cb5caaeebc98013318123d10e7b7c61c1349b46aeb1396d4bf"
+  },
+  "mapper_sha256": "e4d918e03fbbc0b2b356e8ce6e6ed61d96dc5b7ecb96293daeeddb5b8e1d6103",
+  "fixture_sha256": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b",
+  "suite": {
+    "lowhp": true,
+    "vitals": true,
+    "crowded": true,
+    "combat": true,
+    "chat": true,
+    "information": true,
+    "maps": true,
+    "map-colors": true,
+    "controls": true,
+    "login": true,
+    "text": true,
+    "lifecycle": true,
+    "connections": true,
+    "server-wire": true,
+    "assertion-error": true,
+    "timer-error": true,
+    "event-error": true,
+    "wrong-profile": true,
+    "wrong-candidate": true,
+    "no-readiness": true
+  },
+  "screenshots": {
+    "errors-4.22.png": "22ac80c9757221228c3712d27de4947c9836c58963fc93a3548524f06f0fce9e",
+    "look-4.22.png": "cc469464e44bdf49f658c948f47bcc5e1bf50aff7818b2cef3eb1bfee16730d7",
+    "movement-4.22.png": "be60341cc03a5355fc28898ddc8b2b536f0da8af594881eca236bb18ec445b62",
+    "before-4.22.png": "6d31d959ccf5c280ff87d410da8e1e32d46706c3a13ac4e582b5862143e12cd0",
+    "after-4.22.png": "9ec3bc3a51e33aaf9a84ee85bd883093849dcb62bf955b6bf777e1549b483ace"
+  },
+  "environment": {
+    "os": "Ubuntu 24.04.4 / WSL2 / Xvfb",
+    "mudlet": "4.22.0 official extracted AppImage, Qt 6.9.0",
+    "archive_sha256": "8f10a78ab918d4b46b1f842c1ca7522b9c26aa8200f657bd8fd5ccba8a7c9040",
+    "scale": 1,
+    "window": "1366x768",
+    "font": "Consolas resolves to DejaVu Sans Mono; diagnostic map uses 9 pt"
+  },
+  "limitations": [
+    "Synthetic GMCP movement/look; no live server session",
+    "Mudlet 4.19.1 and physical desktop DPI not tested"
+  ]
+}
