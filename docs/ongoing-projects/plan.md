@@ -1,11 +1,51 @@
 # Issue #4: compact Duris header implementation plan
 
-Date: 2026-10-22. Status: planning complete; implementation has not started.
+Date: 2026-10-22. Status: implemented; focused runtime checks passed; final review in progress.
 
 Work item: [#4 — Reduce the Duris banner height or offer a compact header option](https://github.com/LuminariMUD/duris-client/issues/4).
 Parent context: [#1 — Voodoo client feedback index](https://github.com/LuminariMUD/duris-client/issues/1).
 Implementation branch: `branch/issue-4-compact-header`, based on `master` at
 `7247c9d8d2d07295ba35c70238661b7eeccb7ed8` (package `1.3.5`).
+
+## Implementation handoff (2026-10-22)
+
+- Reused the clean existing worktree at
+  `/home/aiwithapex/projects/durisclient-issue-4-plan`. Merged refreshed
+  `origin/master` at `72efad6` (package `1.3.6`) to retain the completed #2 map
+  color fix without rewriting the published planning commit.
+- Applied the requested ablation skill from
+  `/home/aiwithapex/projects/duris/.agents/skills/ablation/SKILL.md`; this
+  repository does not contain `.agents/skills/ablation`. The selected plan is
+  already minimal: one existing settings command, one shared percentage
+  decision, existing gradient and renderers, no new assets or dependencies.
+- `doctor` now passes with real Mudlet **5.0.1**, Qt **6.11.1**, Lua **5.1.5**,
+  Xvfb, Openbox and DejaVu Sans Mono. The earlier missing-runtime finding below
+  is historical. Baseline `controls` passed with normal shutdown and no Lua
+  errors; run directory:
+  `/home/aiwithapex/.local/share/duris-client-dev/runs/20261022T195104Z-257b015c-controls`.
+  Inspected its candidate image: full artwork and original geometry present.
+- Implemented early settings load, the persisted mode, immediate styling and
+  geometry changes, and active map redraw through the existing renderers.
+  No mapper source change or delayed-work layer was needed: real Geyser
+  resizing updates the child geometry synchronously, and the existing zone
+  renderer owns its throttled redraw. Extended the six planned fixtures;
+  README/design/help and the `1.4.0` archive are updated.
+- Focused `controls`, `maps`, `text`, and `lifecycle` checks passed, including
+  full profile restart. At physical 1366x768 / logical 1366x716, the root grew
+  from 620 to 675 logical px and the console from 478.578 to 521.0325 px;
+  width/bottom remained stable. The native-input assertion uses a temporary
+  test alias reached by physical keypress/Return: reading pending input after
+  the controller types its next command cannot prove focus. No runtime input
+  change was required.
+- Lua 5.1 syntax/build and the eight existing controller unit tests pass.
+  Required final suite is running at
+  `/home/aiwithapex/.local/share/duris-client-dev/issue-4-suite`.
+  Next: finish suite, full/compact size/scale matrix, visual/Errors review,
+  available 4.x checks, and append final identities/results to the testing log.
+- Publishing the implementation as one focused PR. Do not merge or push tags;
+  release automation owns tags
+  after a later validated `master` merge. Separate 4.x availability still
+  needs checking; physical desktop DPI remains outside Xvfb evidence.
 
 ## Outcome and boundaries
 

@@ -2,6 +2,13 @@ local T=DurisTest
 local function room(zone)
  T.emit("Room.Info",{num=90010,zone=zone,name="Bronze Gate",area="Bronze Tower",exits={north=90011,["east #"]=90012}})
 end
+local cached,roomSize,wildZoom,fullPadding
+local function centered()
+ local container=ArjMapper.ui.zoneContainer
+ local player=ArjMapper.ui.roomLabels.room_90010
+ T.check(math.abs(player:get_y()+player:get_height()/2-container:get_y()-math.floor(container:get_height()/2))<2,"zone player recenters after header change")
+ T.check(ArjMapper.state.zoneData[9001]==cached and ArjMapper.config.roomSize==roomSize,"header retains map cache and zoom")
+end
 T.steps({
  {name="zone",wait=.8,run=function() room(9001) end,verify=function()
   T.check(ArjMapper.state.zoneData[9001] and ArjMapper.state.lastDisplayMode=="zone","zone fetched and shown")
@@ -11,6 +18,17 @@ T.steps({
   local widget=ArjMapper.ui.roomLabels.room_90010
   return {{type="hover",x=widget:get_x()+widget:get_width()/2,y=widget:get_y()+widget:get_height()/2}}
  end},
+ {name="zone-compact",wait=.5,run=function()
+  cached=ArjMapper.state.zoneData[9001]
+  roomSize=ArjMapper.config.roomSize
+  expandAlias("ui set compactHeader on")
+ end,verify=centered,actions=function()
+  local widget=ArjMapper.ui.roomLabels.room_90010
+  return {{type="hover",x=widget:get_x()+widget:get_width()/2,y=widget:get_y()+widget:get_height()/2}}
+ end},
+ {name="zone-full",wait=.5,run=function()
+  expandAlias("ui set compactHeader off")
+ end,verify=centered},
  {name="zoom",run=function()
   for i=1,20 do ArjMapper:zoomIn() end
   T.check(ArjMapper.config.roomSize==24,"zone zoom upper bound")
@@ -25,6 +43,23 @@ T.steps({
  end,verify=function()
   T.check(ArjMapper.state.lastDisplayMode=="wilderness","late zone response preserves wilderness")
   T.check(ArjMapper.state.zoneData[9002]~=nil,"late data cached")
+ end},
+ {name="wilderness-compact",run=function()
+  local text=T.lines(ArjMapper.ui.wildConsole.name)
+  fullPadding=#(text:match("^\n*") or "")
+  wildZoom=ArjMapper.config.wildZoom
+  expandAlias("ui set compactHeader on")
+ end,verify=function()
+  local text=T.lines(ArjMapper.ui.wildConsole.name)
+  T.check(#(text:match("^\n*") or "")>fullPadding,"compact wilderness recalculates vertical padding")
+  T.check(text:find("@",1,true) and ArjMapper.state.lastDisplayMode=="wilderness","header retains wilderness content and display mode")
+  T.check(ArjMapper.config.wildZoom==wildZoom,"header retains wilderness zoom")
+ end},
+ {name="wilderness-full",run=function()
+  expandAlias("ui set compactHeader off")
+ end,verify=function()
+  local text=T.lines(ArjMapper.ui.wildConsole.name)
+  T.check(#(text:match("^\n*") or "")==fullPadding,"full wilderness restores padding")
  end},
  {name="malformed",wait=.6,run=function() room(9003) end,verify=function()
   T.check(ArjMapper.state.zoneData[9003]==nil and ArjMapper.requests[9003]==nil,"malformed response rejected and request cleaned")
