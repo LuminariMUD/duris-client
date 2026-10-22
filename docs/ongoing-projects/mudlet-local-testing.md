@@ -1,38 +1,32 @@
 # Local Mudlet testing — GUI/server connection audit
 
-## 2026-10-22 - Issue #3 SHIP readability, 1.3.7
+## 2026-10-22 - Issue #3 SHIP readability, final 1.3.7 candidate
 
-Structured ship sections replace the generic field dump. Numeric weapon slots,
-separate ammo/damage/timer readiness, signed crew modifiers, condition colors,
-crate units, empty lists and partial/older payloads are covered by the existing
-`connections` and mouse-driven `information` fixtures. Navigation, locks,
-text fallback, replacement clearing and ArjAuto's relative heading stay intact.
-The observed refresh jump was fixed locally by restoring the viewed section
-after Mudlet settles its split scrollback geometry.
+Final archive: `75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3`.
+All **20/20** real-Mudlet expectations pass under
+`/tmp/duris-issue3-navigation-suite`, after both the departure and navigation
+repairs. Every run's canonical payload equals the committed package. Eight
+controller checks pass; the local stack uses PR #11's bounded editor wait.
+The primary [manifest](../testing/issue-3/offline-evidence.json) records all
+cases and successful hosted core build/runtime checks at `26663f2`, providing
+full-suite proof within this PR itself.
 
-Candidate SHA-256: `efbf2d0d4524448076d61ab480ef8c00b85f5987060edbc14e7ef3f429e69d0d`. Source/archive
-and fixture identities, run locations and representative screenshots are in
-[offline evidence](../testing/issue-3/offline-evidence.json).
+Departure and stale Info navigation have red/green regressions. Existing
+populated size/DPI records remain explicitly historical coverage for unchanged
+formatting and geometry, rather than being mislabeled as final archives.
+Lua 5.1 syntax and release source/archive equality validation pass.
 
-- `python3 build.py --check`: PASS with actual Lua 5.1.5.
-- `python3 scripts/mudlet_suite.py --root /tmp/duris-issue3-final-suite`:
-  **20/20** expected outcomes PASS, including wire decoding, lifecycle/reopen,
-  deliberate errors/faults and normal cleanup. Automated results are separate
-  from screenshot review.
-- `connections` at 1280x720, 1366x768, 1920x1080 and 2732x1536 scale 2:
-  PASS. Reviewed populated identity, weapon/crew/cargo scrolling, partial,
-  empty/replacement and Errors-view captures; long names wrap without lost
-  weapon status. Color/labels preserve zero values and unknown maxima.
-- `python3 scripts/release.py --output /tmp/duris-issue3-release`: PASS;
-  validates source/archive equality and prepares release files without publishing.
-- Environment: Ubuntu 24.04.4 WSL2, Mudlet 5.0.1 / Qt 6.11.1, DejaVu Sans Mono,
-  Xvfb at 96dpi. Baseline master is `72efad6` / 1.3.6.
-- Manual same-ship live comparison and 4.22.0 import: in progress in separate
-  isolated profiles. **4.19.1 and physical desktop DPI NOT VERIFIED.**
+Fresh exact-archive import also passed **115** assertions in Mudlet 4.22.0 /
+Qt 6.9.0. A clean live profile compared GallTest's actual packets with
+`look ship`/`look crew`, including all six weapons and condition/crew/cargo
+facts; real bridge exit cleared state and display. Character returned to the
+original inn and logged out. Captures and protocol omissions are carried in
+dependent PR #10 and its final handoff. Cargo crates remain distinct from
+weight load; no missing protocol facts were inferred.
 
-The rich fixtures are constructed cases based on the inspected serializer,
-not captured live packets. `server-wire` retains its unchanged real serializer
-snapshot and provenance. See [plan.md](plan.md) for the current handoff.
+Mudlet 4.19.1 and physical desktop DPI remain unverified. Constructed fixtures,
+the retained serializer snapshot and actual live reception keep distinct
+provenance. No ship/server configuration was changed.
 
 ## 1.3.6 wilderness map colors — 2026-10-22
 

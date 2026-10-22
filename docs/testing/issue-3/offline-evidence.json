@@ -101,5 +101,173 @@
   "limits": [
     "Mudlet 4.19.1 and physical desktop DPI remain unverified.",
     "Original size/DPI artifacts are historical populated-layout evidence, not claims that those archives equal the final package."
-  ]
+  ],
+  "final_suite": {
+    "command": "python3 scripts/mudlet_suite.py --root /tmp/duris-issue3-navigation-suite",
+    "candidate": {
+      "version": "1.3.7",
+      "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+      "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
+    },
+    "cases": [
+      {
+        "case": "lowhp",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/lowhp/20261022T203521Z-0022ea37-lowhp",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "vitals",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/vitals/20261022T203517Z-0d1330ff-vitals",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "crowded",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/crowded/20261022T203528Z-7097966a-crowded",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "combat",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/combat/20261022T203528Z-72cb672b-combat",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "chat",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/chat/20261022T203536Z-1c547bfa-chat",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "information",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/information/20261022T203537Z-116369e7-information",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "maps",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/maps/20261022T203547Z-8cb37dc7-maps",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "map-colors",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/map-colors/20261022T203550Z-7f374fb1-map-colors",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "controls",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/controls/20261022T203601Z-1be654b7-controls",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "login",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/login/20261022T203611Z-a6bd8cdc-login",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "text",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/text/20261022T203621Z-5d8adcc1-text",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "lifecycle",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/lifecycle/20261022T203621Z-10215af4-lifecycle",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "connections",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/connections/20261022T203631Z-9e72bd96-connections",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "server-wire",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/server-wire/20261022T203637Z-64f7152e-server-wire",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "assertion-error",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/assertion-error/20261022T203648Z-7af02b0d-assertion-error",
+        "exit_code": 1,
+        "stderr": ""
+      },
+      {
+        "case": "timer-error",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/timer-error/20261022T203649Z-5a77da65-timer-error",
+        "exit_code": 1,
+        "stderr": ""
+      },
+      {
+        "case": "event-error",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/event-error/20261022T203656Z-e1b96a30-event-error",
+        "exit_code": 1,
+        "stderr": ""
+      },
+      {
+        "case": "wrong-profile",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/wrong-profile/20261022T203656Z-6bd917d8-lowhp",
+        "exit_code": 1,
+        "stderr": ""
+      },
+      {
+        "case": "wrong-candidate",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/wrong-candidate/20261022T203703Z-7d231da8-lowhp",
+        "exit_code": 1,
+        "stderr": ""
+      },
+      {
+        "case": "no-readiness",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/no-readiness/20261022T203708Z-5fe9460c-lowhp",
+        "exit_code": 1,
+        "stderr": ""
+      }
+    ],
+    "controller_revision": "d33a4e64946889233438ed115be2519b3fa6b7df",
+    "controller_unit_checks": 8,
+    "scope": "Client source, fixtures and package equal this core candidate. The local stack uses PR #11 editor readiness; hosted core CI below also passed the core branch itself.",
+    "hosted_core_ci": {
+      "head_sha": "26663f2e656f5ff4c9a73821f72364202426a77e",
+      "checks": [
+        {
+          "name": "Validate release and build",
+          "conclusion": "SUCCESS",
+          "url": "https://github.com/LuminariMUD/duris-client/actions/runs/39850110260/job/120073680600"
+        },
+        {
+          "name": "runtime / Offline behavior (visual review remains manual)",
+          "conclusion": "SUCCESS",
+          "url": "https://github.com/LuminariMUD/duris-client/actions/runs/39850110260/job/120073681363"
+        }
+      ]
+    }
+  }
 }
