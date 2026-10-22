@@ -1,13 +1,15 @@
 # Issue #3: readable SHIP panel
 
-Status: implementation plan; no package behavior changed.
+Status: implementation in progress; renderer and focused real-Mudlet fixtures
+are being qualified. Issue remains open until the manual same-ship comparison.
 
 Date: 2026-10-22. Work item: [issue #3](https://github.com/LuminariMUD/duris-client/issues/3).
 Parent: [feedback index #1](https://github.com/LuminariMUD/duris-client/issues/1).
 Implementation branch: `branch/issue-3-ship-readability`.
 
-Client baseline: `7247c9d8d2d07295ba35c70238661b7eeccb7ed8` on `origin/master`,
-package `1.3.5`. Source references below describe this baseline. Recheck the
+Client baseline: refreshed to `72efad6` on `origin/master`, package `1.3.6`;
+merged without rewriting the published planning commit. Candidate is `1.3.7`.
+Historical source references below describe `7247c9d` (package `1.3.5`). Recheck the
 affected paths against master before implementation, particularly if other
 feedback work has merged.
 
@@ -20,6 +22,52 @@ adapt it to the existing narrow panel. Keep useful information available through
 scrolling, with clear labels, recognizable weapon entries and condition colors.
 Verify the built package in real Mudlet and manually compare it with `look ship`
 for the same ship.
+
+## Current handoff (2026-10-22)
+
+- Worktree `/home/aiwithapex/projects/durisclient-issue3-plan`, branch
+  `branch/issue-3-ship-readability`. Refreshed master `72efad6` was merged
+  without rewriting the planning commit. Source/build candidate is **1.3.7**.
+- Applied `/home/aiwithapex/projects/duris/.agents/skills/ablation/SKILL.md`
+  because this client checkout has no copy. The existing panel/handlers remain;
+  the generic info walk is replaced by ship-specific local formatting, and the
+  existing `connections`/`information` scenarios supply behavioral proof.
+- Implemented ordered identity/navigation, condition, numeric-slot weapons,
+  crew with signed modifiers, equipment, crate-labeled cargo and contacts.
+  Zero/false and unknown values, text fallback, state clearing and automation
+  inputs survive. Names strip Duris and cecho colors. SHIP has a scrollbar;
+  its local deferred restoration coalesces consecutive updates and preserves
+  the viewed section, clamping to the end when shorter data replaces it.
+- Baseline `connections` PASS and raw-field screenshot inspected:
+  `/tmp/duris-issue3-baseline/20261022T195125Z-494055c9-connections`.
+- Final **20/20** suite expectations PASS, including deliberate failures,
+  wire protocol, lifecycle/reopen and cleanup: `/tmp/duris-issue3-final-suite`.
+  All four requested sizes/DPI PASS. Exact archive/source hashes, assertion
+  counts, run paths and representative reviewed captures are in
+  [offline-evidence.json](../testing/issue-3/offline-evidence.json).
+  `build.py --check` used Lua 5.1.5; `scripts/release.py` validated source/archive
+  equality under `/tmp/duris-issue3-release`; `git diff --check` passes.
+- Runtime: Ubuntu 24.04.4 WSL2, Mudlet 5.0.1 / Qt 6.11.1, DejaVu Sans Mono.
+  Use `bash -lc` so `~/.local/bin/mudlet` is on PATH. Tests use isolated profiles.
+- Next delivery chunk: independent portable **4.22.0** import/scenario run
+  under `/tmp/duris-issue3-4.22`, then the manual same-ship live comparison.
+  Its runtime is hardlinked into a separate tools directory, leaving the
+  existing issue-2 runtime's portable configuration untouched.
+- User supplied test credentials and local source paths in the master
+  checkout's ignored `.env`; do not copy that file into Git or publish credentials.
+  Separate live profile `/tmp/duris-issue3-live` has no test companion, send
+  override or injected fixture. Veridian is logged into the confirmed listener
+  `74.208.126.44:7777`; no ship access yet. Manual comparison remains **NOT RUN**.
+  Local helper/desktop/control scripts are `/tmp/duris-issue3-live-*.py` and
+  `/tmp/duris-issue3-live-helper.lua`; stop the owned desktop with its `stop` file
+  after normal character logout. Never use offline GMCP injection as live proof.
+- Mudlet **4.19.1** and physical desktop DPI remain unverified. Earlier tests
+  found no official 4.19.1 binary assets. Do not raise compatibility claims or
+  close issue #3 until its actual acceptance evidence exists.
+
+The original audit/specification below is retained as the implementation and
+manual comparison reference. Its historical environment/setup statements are
+superseded by this handoff and the testing log.
 
 All three issue acceptance items remain required:
 
@@ -323,8 +371,8 @@ currently absent. Waiting for bridge access or a compatible test environment is
 additional elapsed time. A demonstrated server-contract blocker would require
 a revised estimate rather than silently broadening this client presentation task.
 
-This delivery publishes only this plan on the issue-linked branch. No package
-version bump, build-output change, implementation, PR merge, release or manual
-tag belongs to the planning commit. Subsequent implementation should remain a
-focused change for #3, with validation evidence attached before merge. Releases
-follow [RELEASING.md](../RELEASING.md) through master CI; never push a tag manually.
+The planning commit remains in history. Publish the renderer, existing-fixture
+proof, design notes and rebuilt 1.3.7 package as the first focused PR, then stack
+the compatibility/live evidence chunk as it is ready. Leave PRs ready for review;
+do not merge or close #3 before acceptance. Releases follow
+[RELEASING.md](../RELEASING.md) through master CI; never push a tag manually.

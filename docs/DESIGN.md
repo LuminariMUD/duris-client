@@ -64,8 +64,19 @@ column, character tabs occupy 0–45%, players 46–72%, and chat 73–100%.
 The character tabs are **GROUP / STATS / INV / EQ / WHO / SHIP**, with GROUP
 selected initially. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
 with ALL selected initially. STATS includes identity, coins, and bartender
-quest information. SHIP is a text view of navigation, ship details, and
-contacts sorted by range.
+quest information. SHIP is a narrow, scrollable text view ordered by identity
+and navigation, Condition, Weapons, Crew and supplies, Equipment, Cargo, then
+Contacts sorted by range. Condition lists Forward/Port/Starboard/Rear armor
+and hull current/max values, plus sail; red/amber/green accents supplement
+the labels. Unknown or zero maxima stay neutral. Weapons sort by numeric slot
+with named entries and separate position, ammo, damage and timer readiness;
+a ready timer does not imply a usable weapon. Crew skills remain integers
+with separate signed modifiers, and cargo capacity is labeled in crates.
+Known empty lists show None; absent fields stay unknown or are omitted.
+Server/text colors are stripped from names. Updates preserve the reader's
+scroll position. GMCP facts take precedence over the smaller text fallback;
+bridge departure clears the display. Weight, set orders and exact reload
+timers are absent from the inspected GMCP contract and are not inferred.
 
 The bottom strip puts HP, MP, movement, and position below the left column.
 Tank and target displays split the space below the console. **BUFFS and

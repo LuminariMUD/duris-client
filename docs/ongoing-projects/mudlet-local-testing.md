@@ -1,5 +1,39 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## 2026-10-22 - Issue #3 SHIP readability, 1.3.7
+
+Structured ship sections replace the generic field dump. Numeric weapon slots,
+separate ammo/damage/timer readiness, signed crew modifiers, condition colors,
+crate units, empty lists and partial/older payloads are covered by the existing
+`connections` and mouse-driven `information` fixtures. Navigation, locks,
+text fallback, replacement clearing and ArjAuto's relative heading stay intact.
+The observed refresh jump was fixed locally by restoring the viewed section
+after Mudlet settles its split scrollback geometry.
+
+Candidate SHA-256: `efbf2d0d4524448076d61ab480ef8c00b85f5987060edbc14e7ef3f429e69d0d`. Source/archive
+and fixture identities, run locations and representative screenshots are in
+[offline evidence](../testing/issue-3/offline-evidence.json).
+
+- `python3 build.py --check`: PASS with actual Lua 5.1.5.
+- `python3 scripts/mudlet_suite.py --root /tmp/duris-issue3-final-suite`:
+  **20/20** expected outcomes PASS, including wire decoding, lifecycle/reopen,
+  deliberate errors/faults and normal cleanup. Automated results are separate
+  from screenshot review.
+- `connections` at 1280x720, 1366x768, 1920x1080 and 2732x1536 scale 2:
+  PASS. Reviewed populated identity, weapon/crew/cargo scrolling, partial,
+  empty/replacement and Errors-view captures; long names wrap without lost
+  weapon status. Color/labels preserve zero values and unknown maxima.
+- `python3 scripts/release.py --output /tmp/duris-issue3-release`: PASS;
+  validates source/archive equality and prepares release files without publishing.
+- Environment: Ubuntu 24.04.4 WSL2, Mudlet 5.0.1 / Qt 6.11.1, DejaVu Sans Mono,
+  Xvfb at 96dpi. Baseline master is `72efad6` / 1.3.6.
+- Manual same-ship live comparison and 4.22.0 import: in progress in separate
+  isolated profiles. **4.19.1 and physical desktop DPI NOT VERIFIED.**
+
+The rich fixtures are constructed cases based on the inspected serializer,
+not captured live packets. `server-wire` retains its unchanged real serializer
+snapshot and provenance. See [plan.md](plan.md) for the current handoff.
+
 ## 1.3.6 wilderness map colors — 2026-10-22
 
 [Issue #2 investigation and evidence](map-color-bleeding.md) records the
