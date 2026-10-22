@@ -102,8 +102,13 @@
     "Mudlet 4.19.1 and physical desktop DPI remain unverified.",
     "Original size/DPI artifacts are historical populated-layout evidence, not claims that those archives equal the final package."
   ],
-  "final_package_followup": "review-followup.json",
   "final_suite": {
+    "command": "python3 scripts/mudlet_suite.py --root /tmp/duris-issue3-navigation-suite",
+    "candidate": {
+      "version": "1.3.7",
+      "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+      "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
+    },
     "cases": [
       {
         "case": "lowhp",
@@ -246,7 +251,24 @@
         "stderr": ""
       }
     ],
+    "controller_revision": "d33a4e64946889233438ed115be2519b3fa6b7df",
     "controller_unit_checks": 8,
-    "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
-  }
+    "scope": "Client source, fixtures and package equal this core candidate. The local stack uses PR #11 editor readiness; hosted core CI below also passed the core branch itself.",
+    "hosted_core_ci": {
+      "head_sha": "26663f2e656f5ff4c9a73821f72364202426a77e",
+      "checks": [
+        {
+          "name": "Validate release and build",
+          "conclusion": "SUCCESS",
+          "url": "https://github.com/LuminariMUD/duris-client/actions/runs/39850110260/job/120073680600"
+        },
+        {
+          "name": "runtime / Offline behavior (visual review remains manual)",
+          "conclusion": "SUCCESS",
+          "url": "https://github.com/LuminariMUD/duris-client/actions/runs/39850110260/job/120073681363"
+        }
+      ]
+    }
+  },
+  "final_package_followup": "review-followup.json"
 }

@@ -25,6 +25,11 @@ for the same ship.
 
 ## Current handoff (2026-10-22)
 
+- Primary core evidence now includes the full final-candidate 20-case suite
+  and successful hosted core build/runtime checks. This final metadata sync
+  leaves runtime, fixtures and package unchanged; all qualification remains
+  valid and no further regression run is needed for the documentation merge.
+
 - **All implementation and scoped qualification complete; ready for review.**
   Merge order is [PR #9](https://github.com/LuminariMUD/duris-client/pull/9)
   (SHIP), [PR #11](https://github.com/LuminariMUD/duris-client/pull/11)
