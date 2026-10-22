@@ -20,6 +20,18 @@ ordinary fixtures and separately observed in `login`. `send` is recorded only
 in the offline companion. Downloads are restricted to its loopback map server.
 The live profile never imports this companion.
 
+`map-colors` uses invented diagnostic glyphs with the actual Duris color
+contract, checked on 2026-10-22 against server revision
+`ca548bae11cab98490fd5e4e954785630b3a07da`, `src/net/ansi.c`
+(`AnsiString::set`, `put_ansi`, `AnsiString::ansi`) and `src/world/map.c`
+(`display_map_room`). Combined codes are background first; foreground-only
+codes clear the background, background-only codes clear the foreground, and
+LF resets both. Real map glyphs include `&=bB ` water followed by `&+g.`
+plains: the latter must not inherit the blue background. The scenario checks
+rendered character colors in Mudlet, synthetic movement/look GMCP redraws,
+and later ordinary console output. It is not a captured live session or a
+reconstruction of the report's exact map.
+
 `server-gmcp.json` contains all eleven consumed packages emitted by production
 Duris serializers against isolated world/mechanics fixtures. Its provenance
 includes the server commit and hashes of the modified source and test harness.

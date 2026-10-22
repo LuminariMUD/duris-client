@@ -1,5 +1,20 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## 1.3.6 wilderness map colors — 2026-10-22
+
+[Issue #2 investigation and evidence](map-color-bleeding.md) records the
+server color contract, reproduced 1.3.5 failure, fixed 1.3.6 result and
+reviewed screenshots. The same diagnostic fixture fails in the original
+archive and passes all 23 checks in real Mudlet **4.22.0**, using fresh
+portable profiles and the connection dialog's Offline button.
+
+Mudlet 5.0.1 passed all **20** suite expectations. Focused map-color checks
+also passed at 1280×720, 1920×1080 and scale 2 / 2732×1536, with initial-map
+and Errors-view captures inspected at each size. Source/package validation,
+8 controller tests and 15 release tests passed. Movement/`look` coverage is
+synthetic GMCP; live wilderness, 4.19.1 and physical desktop DPI remain
+unverified. Hosted CI is separate from these local checks.
+
 ## 1.3.4 primary feed background — 2026-10-15
 
 The primary output console and its surrounding panel now use opaque black,

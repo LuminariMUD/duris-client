@@ -231,7 +231,12 @@ and up/down indicators distinguish navigation features. Room hover labels
 show identifying information within the map's bounds; decorative markers
 allow mouse events to reach the rooms below them.
 
-Wilderness uses the server's `Room.Map` text and color codes. The map's zoom
+Wilderness uses the server's `Room.Map` text and Duris color codes:
+`&=XY` sets background X and foreground Y, `&+X` sets foreground X and clears
+the background, and `&-X` sets background X with default foreground. Colors
+reset on newlines, explicit resets and each map update so terrain backgrounds
+stay with their intended cells. The map retains its muted background palette.
+The map's zoom
 buttons affect its text size in this mode. In zone mode, buttons adjust room
 size from 8 to 24; the separate `mapper size` command accepts 8–20.
 
