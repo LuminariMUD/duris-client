@@ -1,12 +1,12 @@
-Name: GallTest                            
+Name: GallTest
 -========================================================================-
 Captain: Zahm                 Frags: 0         Status: DOCKED       ID[**]
 
          81/88       Speed Range: 0-50       Crew: Corwell Sea Dogs
-                          Weight: 330,000                              
+                          Weight: 330,000
            ||               Load:  80/165          Master Gunner
           /..\        Passengers:  0/20            Expert Engineer
-         /.44.\        
+         /.44.\
         /..--..\        Num  Name                 Position   Ammo   Status
         |..44..|        [ 0] Large Catapult       Forward     12    Ready
         |......| 130    [ 1] Large Catapult       Rear        12    Ready
@@ -15,19 +15,19 @@ Captain: Zahm                 Frags: 0         Status: DOCKED       ID[**]
         |....../        [ 4] Large Ballista       Port        24    Ready
         |...../|        [ 5] Large Ballista       Port        25    Ready
         |..../.|        [ 6] Silk Cloth (5 crates)
-     76 |52./55|  91     
-    --- |--/\--| ---     
-    110 |55\/55| 110     
-        |......|         
-        |__||__|         
-        /......\         
-        |......|         
-        |..27..|         
-        |..--..|         
+     76 |52./55|  91
+    --- |--/\--| ---
+    110 |55\/55| 110
+        |......|
+        |__||__|
+        /......\
+        |......|
+        |..27..|
+        |..--..|
         |..27..|
         \______/    Set Heading: 0    Set Speed: 0     Crew Stamina: 800
                         Heading: 0        Speed: 0     Repair Stock: 330
-         41/55 
+         41/55
 
 < 762h/762H 170v/170V Pos: standing >
 <>

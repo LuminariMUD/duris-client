@@ -3723,8 +3723,8 @@ function ArjUI:renderShip()
   row("Status", info.status or s.status)
   row("Captain", info.captain or s.captain)
   row("Frags", info.frags)
-  local heading = pick(info, "heading", "course") or s.heading
-  local speed = info.speed or s.speed
+  local heading = s.heading or pick(info, "heading", "course")
+  local speed = s.speed or info.speed
   local maximum = pick(info, "maxSpeed", "max_speed", "speedMax") or s.maxSpeed
   if heading ~= nil or speed ~= nil or maximum ~= nil then
     box:cecho("<yellow>H:" .. text(heading) .. "  S:" .. text(speed) .. "/" .. text(maximum) .. "\n")

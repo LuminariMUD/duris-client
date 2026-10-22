@@ -30,11 +30,11 @@ for the same ship.
   (SHIP), [PR #11](https://github.com/LuminariMUD/duris-client/pull/11)
   (controller readiness), then [PR #10](https://github.com/LuminariMUD/duris-client/pull/10)
   (qualification evidence). Retarget each successor after its parent merges.
-  Core head `8c8810e`; controller head `2c43b68`; evidence branch is
+  Core head `26663f2`; controller head `d33a4e6`; evidence branch is
   `branch/issue-3-ship-evidence` in `/home/aiwithapex/projects/durisclient-issue3-plan`.
 - Master `eec642f` was merged without rewriting published commits. Its final
   change was `.env.example` only. Final version **1.3.7**, archive SHA-256
-  `1fac6f343a6ec27f2cf55399315cd6b75286ab08dec196fe74fca22233584431`.
+  `75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3`.
   No tags were pushed; release publication stays with master CI after review.
 - Ablation reused the existing panel, handlers, state, color helpers and
   fixtures. The generic info walk was replaced by local ship-specific sections.
@@ -47,15 +47,20 @@ for the same ship.
   before this guard, then passed; `server-wire` also checks the authoritative
   sequence. The text-only fixture resets its session after the GMCP case.
   Review thread is resolved. See [review-followup.json](../testing/issue-3/review-followup.json).
+- A later review caught cached Info heading/speed masking fresh Contacts.
+  The added zero-navigation assertion failed before the two-line precedence
+  repair and now passes. The primary manifest identifies the current source,
+  archive and fresh run; historical size/DPI evidence is explicitly separate.
 - A separate controller defect reproduced several Errors-editor capture
   failures after successful behavior. PR #11 uses the existing bounded wait
   helper (five seconds and application-exit detection), replacing a fixed
   0.3-second delay. Eight controller checks and the final **20/20** suite pass
-  at `/tmp/duris-issue3-ready-suite`, including wire, lifecycle/reopen,
+  at `/tmp/duris-issue3-navigation-suite`, including wire, lifecycle/reopen,
   ordinary captures and expected negative/fault outcomes.
-- Original four-size/DPI populated coverage remains valid: only the empty
-  footer condition changed in the review fix. The final archive was qualified
-  again on Mudlet 5.0.1, Mudlet **4.22.0 / Qt 6.9.0** (**114** assertions), and
+- Original four-size/DPI populated coverage remains valid: review changed
+  the empty footer and optional cached-navigation precedence, leaving that
+  fixture's populated formatting/geometry intact. The final archive passed
+  Mudlet 5.0.1, Mudlet **4.22.0 / Qt 6.9.0** (**115** assertions), and
   in a fresh live profile. Exact payload/source identities and coverage reuse
   are recorded in [offline-evidence.json](../testing/issue-3/offline-evidence.json)
   and the review follow-up. Reviewed departure/Errors captures show no Lua errors.
@@ -76,13 +81,15 @@ for the same ship.
   User `.env` remains ignored in the master checkout. No ship/gameplay settings
   or server sources were changed.
 - Runtime: Ubuntu 24.04.4 WSL2, Xvfb 96dpi, DejaVu Sans Mono. Raw final runs:
-  `/tmp/duris-issue3-ready-suite`, `/tmp/duris-issue3-ready-4.22`,
-  `/tmp/duris-issue3-live-final`; earlier evidence remains under the other
+  `/tmp/duris-issue3-navigation-suite`, `/tmp/duris-issue3-navigation-4.22`,
+  `/tmp/duris-issue3-nav-clean`; earlier evidence remains under the other
   `/tmp/duris-issue3-*` directories. Use a login shell for `~/.local/bin/mudlet`.
   Committed evidence remains useful if those temporary directories disappear.
 - Lua 5.1 syntax, source/archive release validation and `git diff --check`
   pass. This evidence-only update reuses final runtime results; no further
   regression run is needed for prose, PNG or JSON changes.
+- Published reference text removes trailing line padding so the complete PR
+  diff passes its whitespace check; original capture hashes are preserved.
 - All three original acceptance items have evidence. Keep #3 open for PR
   review. Declared **4.19.1** (official release has no binary assets), physical
   desktop DPI and Windows/macOS remain unverified; do not claim them. Hosted

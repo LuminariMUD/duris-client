@@ -7,24 +7,27 @@ cargo and contacts replace the generic dump. Separate ammo/damage/timer status,
 signed modifiers and honest units retain the available facts. Text fallback,
 automation, zero/false, unknown maxima and state clearing survive.
 
-Final archive SHA-256: `1fac6f343a6ec27f2cf55399315cd6b75286ab08dec196fe74fca22233584431`.
-Core `8c8810e`, controller `2c43b68`; review order PR #9, #11, #10.
+Final archive SHA-256: `75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3`.
+Core `26663f2`, controller `d33a4e6`; review order PR #9, #11, #10.
 
 - Eight controller checks and final **20/20** real-Mudlet suite expectations
-  PASS under `/tmp/duris-issue3-ready-suite`, including wire decoding,
+  PASS under `/tmp/duris-issue3-navigation-suite`, including wire decoding,
   lifecycle/reopen, editor capture and expected deliberate failures/faults.
 - A review assertion reproduced the Info-clear then empty-contacts display
   defect before the guard. `connections` and `server-wire` now verify the
   no-ship display; the separate text-only fixture starts with reset state.
+- Fresh zero Contacts navigation also overrides optional cached Info fields;
+  this regression failed before the two-line repair and passes after it.
 - Repeated editor capture failures after passing behavior exposed a 0.3-second
   timing assumption. The separate controller PR waits up to five seconds using
   the existing readiness helper and application-exit check. Final suite passes.
 - Original populated 1280x720, 1366x768, 1920x1080 and 2732x1536 scale-2 captures
-  remain valid for the unchanged layout. The final guard affects only the empty
-  contact footer. Source identities and the explicit reuse decision are in
+  remain valid for the populated layout, whose inputs and formatting are
+  unchanged by the empty-footer/navigation repairs. Exact final identities and
+  the explicit reuse decision are in
   [review-followup.json](../testing/issue-3/review-followup.json); original run
   identities/screenshots stay in [offline-evidence.json](../testing/issue-3/offline-evidence.json).
-- **4.22.0 / Qt 6.9.0 PASS**, all **114** assertions, fresh exact-archive import
+- **4.22.0 / Qt 6.9.0 PASS**, all **115** assertions, fresh exact-archive import
   in a separate portable root through the connection dialog's Offline button.
   Departure and actual Errors-view screenshots were inspected; no Lua errors.
 - **Final-archive live comparison PASS:** fresh profile, actual GallTest bridge
@@ -35,6 +38,8 @@ Core `8c8810e`, controller `2c43b68`; review order PR #9, #11, #10.
 - Cargo is **5/70 crates**, whereas the reference's **80/165 load** is weight.
   Hull weight, set orders, exact timers and equipment damage are not supplied.
   Live equipment/contacts were empty; populated/damaged/no-ammo cases are offline.
+- Published reference transcripts remove trailing line padding while retaining
+  interior diagram alignment; untrimmed capture hashes remain in qualification.
 - Real bridge departure clears state **and display**. Veridian was returned
   to the original Inn of Oceans (66899), quit and disconnected normally;
   owned desktops closed and temporary credentials removed. No ship state changed.

@@ -17,7 +17,7 @@ T.steps({
  end},
  {name="readable-ship",run=function()
   T.emit("Ship.Info", {
-   name="&+WThe Bronze Voyager of the Far Northern Sea&n",id="AA",status="under way",captain="Tester",frags=0,maxSpeed=18,contactRange=35,
+   name="&+WThe Bronze Voyager of the Far Northern Sea&n",id="AA",status="under way",captain="Tester",frags=0,maxSpeed=18,contactRange=35,heading=270,speed=7,
    armor={bow={80,100},port={25,100},starboard={50,100},stern={0,0}},internal={bow={40,50},port={10,50},starboard={30,50},stern={0,0}},sail=0,maxSail=100,
    crewType="Human",crewStamina=65,maxCrewStamina=100,people=0,maxPeople=20,repairStock=0,
    chiefs={sail="",guns="&+RGunner&n",repair=""},skills={sail=15,guns=20,repair=0},skillMods={sail=2,guns=-3,repair=0},
@@ -69,6 +69,7 @@ T.steps({
   T.shipTop=ArjUI.shipBox:getScroll()-getRowCount("ArjUI_ShipBox")
   T.check(T.shipTop>0,"lower ship sections are reachable by scrolling")
   T.emit("Ship.Contacts",{heading=0,speed=0,contacts=ArjUI.state.ship.contacts})
+  T.check(T.lines("ArjUI_ShipBox"):find("H:0  S:0/18",1,true),"fresh zero Contacts navigation overrides cached Info")
  end,verify=function()
   local top=ArjUI.shipBox:getScroll()-getRowCount("ArjUI_ShipBox")
   T.check(top==T.shipTop,"navigation updates preserve the viewed ship section: "..T.shipTop.." -> "..top)

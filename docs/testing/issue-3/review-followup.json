@@ -2,11 +2,11 @@
   "date": "2026-10-22",
   "candidate": {
     "version": "1.3.7",
-    "sha256": "1fac6f343a6ec27f2cf55399315cd6b75286ab08dec196fe74fca22233584431",
-    "payload_sha256": "7876f9d50b7a8abdb22e36a0cf658f03366ba485dc51f0ce86341963a5c25453"
+    "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+    "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
   },
-  "core_commit": "8c8810e73cc6fd5ebb1adb796b17ac041b5dae2e",
-  "controller_commit": "2c43b6821a330ec46540c328a1263e3cc0d6738e",
+  "core_commit": "26663f2e656f5ff4c9a73821f72364202426a77e",
+  "controller_commit": "d33a4e64946889233438ed115be2519b3fa6b7df",
   "red": {
     "run": "/tmp/duris-issue3-review-red/20261022T202019Z-694e7761-connections",
     "assertion": {
@@ -14,7 +14,7 @@
       "passed": false
     }
   },
-  "repair": "Only render the empty-contact footer when other displayed facts establish a ship; no field/state/protocol changes.",
+  "repair": "Gate the empty-contact footer on other ship facts; prefer current Contacts navigation over optional cached Info navigation. Shared state and protocol are unchanged.",
   "tests": "connections now asserts the exact Info {} -> Contacts {contacts=[]} sequence, and starts a separate text-only session. server-wire asserts the actual serializer departure display.",
   "controller_repair": "Use existing wait_for for the editor (five seconds, process-exit detection) instead of assuming 0.3 seconds is enough.",
   "controller_unit_checks": 8,
@@ -22,145 +22,150 @@
     {
       "case": "lowhp",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/lowhp/20261022T202450Z-d3f51d71-lowhp",
+      "run": "/tmp/duris-issue3-navigation-suite/lowhp/20261022T203521Z-0022ea37-lowhp",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "vitals",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/vitals/20261022T202450Z-e007720f-vitals",
+      "run": "/tmp/duris-issue3-navigation-suite/vitals/20261022T203517Z-0d1330ff-vitals",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "crowded",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/crowded/20261022T202500Z-584a95e9-crowded",
+      "run": "/tmp/duris-issue3-navigation-suite/crowded/20261022T203528Z-7097966a-crowded",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "combat",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/combat/20261022T202502Z-1c610727-combat",
+      "run": "/tmp/duris-issue3-navigation-suite/combat/20261022T203528Z-72cb672b-combat",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "chat",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/chat/20261022T202510Z-c6d621aa-chat",
+      "run": "/tmp/duris-issue3-navigation-suite/chat/20261022T203536Z-1c547bfa-chat",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "information",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/information/20261022T202511Z-a7390bae-information",
+      "run": "/tmp/duris-issue3-navigation-suite/information/20261022T203537Z-116369e7-information",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "maps",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/maps/20261022T202523Z-5ab5214b-maps",
+      "run": "/tmp/duris-issue3-navigation-suite/maps/20261022T203547Z-8cb37dc7-maps",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "map-colors",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/map-colors/20261022T202529Z-7c345ad1-map-colors",
+      "run": "/tmp/duris-issue3-navigation-suite/map-colors/20261022T203550Z-7f374fb1-map-colors",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "controls",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/controls/20261022T202541Z-f57eac65-controls",
+      "run": "/tmp/duris-issue3-navigation-suite/controls/20261022T203601Z-1be654b7-controls",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "login",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/login/20261022T202558Z-9c10dbba-login",
+      "run": "/tmp/duris-issue3-navigation-suite/login/20261022T203611Z-a6bd8cdc-login",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "text",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/text/20261022T202600Z-85df1f44-text",
+      "run": "/tmp/duris-issue3-navigation-suite/text/20261022T203621Z-5d8adcc1-text",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "lifecycle",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/lifecycle/20261022T202613Z-25a98ef0-lifecycle",
+      "run": "/tmp/duris-issue3-navigation-suite/lifecycle/20261022T203621Z-10215af4-lifecycle",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "connections",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/connections/20261022T202613Z-1867b74f-connections",
+      "run": "/tmp/duris-issue3-navigation-suite/connections/20261022T203631Z-9e72bd96-connections",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "server-wire",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/server-wire/20261022T202635Z-7d76223f-server-wire",
+      "run": "/tmp/duris-issue3-navigation-suite/server-wire/20261022T203637Z-64f7152e-server-wire",
       "exit_code": 0,
       "stderr": ""
     },
     {
       "case": "assertion-error",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/assertion-error/20261022T202641Z-3be9d01c-assertion-error",
+      "run": "/tmp/duris-issue3-navigation-suite/assertion-error/20261022T203648Z-7af02b0d-assertion-error",
       "exit_code": 1,
       "stderr": ""
     },
     {
       "case": "timer-error",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/timer-error/20261022T202648Z-e21f636d-timer-error",
+      "run": "/tmp/duris-issue3-navigation-suite/timer-error/20261022T203649Z-5a77da65-timer-error",
       "exit_code": 1,
       "stderr": ""
     },
     {
       "case": "event-error",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/event-error/20261022T202652Z-16a5d6c1-event-error",
+      "run": "/tmp/duris-issue3-navigation-suite/event-error/20261022T203656Z-e1b96a30-event-error",
       "exit_code": 1,
       "stderr": ""
     },
     {
       "case": "wrong-profile",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/wrong-profile/20261022T202655Z-c15e25c4-lowhp",
+      "run": "/tmp/duris-issue3-navigation-suite/wrong-profile/20261022T203656Z-6bd917d8-lowhp",
       "exit_code": 1,
       "stderr": ""
     },
     {
       "case": "wrong-candidate",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/wrong-candidate/20261022T202658Z-02a1e4cf-lowhp",
+      "run": "/tmp/duris-issue3-navigation-suite/wrong-candidate/20261022T203703Z-7d231da8-lowhp",
       "exit_code": 1,
       "stderr": ""
     },
     {
       "case": "no-readiness",
       "passed": true,
-      "run": "/tmp/duris-issue3-ready-suite/no-readiness/20261022T202706Z-f4bc1676-lowhp",
+      "run": "/tmp/duris-issue3-navigation-suite/no-readiness/20261022T203708Z-5fe9460c-lowhp",
       "exit_code": 1,
       "stderr": ""
     }
   ],
-  "legacy_assertions": 114,
+  "legacy_assertions": 115,
+  "navigation_red": {
+    "run": "/tmp/duris-issue3-navigation-red/20261022T203256Z-cc83aecc-connections",
+    "assertion": "fresh zero Contacts navigation overrides cached Info",
+    "result": "FAIL before the precedence fix; PASS in the final 115-assertion scenario"
+  },
   "layout_evidence_reuse": {
     "prior_candidate": {
       "version": "1.3.7",
@@ -168,12 +173,12 @@
       "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
     },
     "file": "offline-evidence.json",
-    "reason": "The only renderer follow-up adds and shown to the empty-contact footer condition. Populated field formatting and geometry are unchanged, so the four-size/DPI evidence remains applicable. Final departure rendering is additionally checked in real 5.0.1, 4.22.0 and live Mudlet."
+    "reason": "Only the empty-footer condition and navigation precedence changed. The previous populated fixtures and real live Info payload lack optional cached Info navigation, so their field formatting and geometry remain the same. Final navigation, departure, import and live comparison were requalified."
   },
   "source_sha256": {
-    "src/scripts/ArjUI.lua": "a6ef13b882ca8e9e201efdcfd89502b1238a24d618505745d1071ea8c74fa142",
+    "src/scripts/ArjUI.lua": "40bc30268148099ec77e123e1ef9636bee23792d888761c188f8f25e673aedc5",
     "scripts/mudlet_test.py": "139548d54cdbbb25cf01b7f21e4138b93900e2c4ac5b5170d1afb8df2824318a",
-    "tests/mudlet/fixtures/connections.lua": "6efed24650ef7260d7a3fb8f968ee2cab01561d7d81c049e9ab39f813d54b487",
+    "tests/mudlet/fixtures/connections.lua": "738cee5b303fb4ce65f032b2c6efd557a0c527c7d803c263a8f8e92fcd56ba45",
     "tests/mudlet/fixtures/server-wire.lua": "dbea8814ebcdc945a2a221d0976b20329de9b9014ade993a2cba5ca9934bc61a"
   }
 }
