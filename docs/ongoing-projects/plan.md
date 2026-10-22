@@ -25,14 +25,19 @@ for the same ship.
 
 ## Current handoff (2026-10-22)
 
-- **Controller follow-up:** `branch/mudlet-editor-readiness`, stacked on core
-  `8c8810e`, replaces the editor's fixed 0.3-second sleep with the existing
-  bounded `wait_for` path (five seconds, also observes application exit).
-  Earlier login/1920x1080 captures reproduced the missing-editor failure after
-  behavior had passed. Eight controller checks and the final 20-case suite at
-  `/tmp/duris-issue3-ready-suite` now pass. No package content changed in this
-  controller chunk; the final archive is the core departure-guard candidate.
-  Keep the evidence branch stacked above this fix when integrating PRs.
+- Controller PR #11 retains its bounded editor wait. This branch now includes
+  core navigation fix 26663f2 and its current manifest; the final stack suite is
+  being rerun at /tmp/duris-issue3-navigation-suite. The previous controller
+  source already passed eight unit checks and 20 expectations; no controller
+  code changed during this merge.
+
+- **Latest review fixed:** fresh Contacts navigation in shared state takes
+  precedence over cached Info heading/speed. The zero-value regression failed
+  before the two-line change and now passes (115 connection assertions).
+  The final manifest identifies this source/archive and corresponding fresh
+  run; original size/DPI records are explicitly historical layout coverage.
+  The evidence PR also needs trailing line padding removed from published
+  reference text before checking the complete PR diff.
 
 - **Review follow-up:** the server's `Ship.Info {}` then
   `Ship.Contacts {contacts=[]}` sequence now preserves `(no ship data)`.
