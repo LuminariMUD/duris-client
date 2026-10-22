@@ -1,6 +1,6 @@
 # Issue #5: adjustable client panels
 
-Date: 2026-10-22. Status: implementation plan; runtime work has not started.
+Date: 2026-10-22. Status: implementation in progress; dashboard frame integration underway.
 
 Work item: [#5 — Support resizable and/or dockable client panels](https://github.com/LuminariMUD/duris-client/issues/5).
 Parent context: [#1 — Voodoo client feedback index](https://github.com/LuminariMUD/duris-client/issues/1).
@@ -10,6 +10,47 @@ Audited package baseline: `master` at
 [`7247c9d8d2d07295ba35c70238661b7eeccb7ed8`](https://github.com/LuminariMUD/duris-client/tree/7247c9d8d2d07295ba35c70238661b7eeccb7ed8),
 `VERSION` **1.3.5**. Reconcile intervening changes before implementation,
 especially other feedback work touching the mapper or header.
+
+## Current handoff (2026-10-22)
+
+- Reused the clean worktree `/home/aiwithapex/projects/durisclient-issue-5-plan` on
+  `branch/issue-5-adjustable-panels`; merged `origin/master` at `72efad6` to retain
+  the released map color fix (1.3.6). The planning commit remains in history.
+- Applying the requested ablation skill from the existing sibling copy
+  `/home/aiwithapex/projects/duris/.agents/skills/ablation/SKILL.md`; no skill copy
+  exists in this client checkout. No separate planning approval is needed for
+  this implementation request.
+- First reviewable chunk implemented: sibling dashboard frames, common commands/recovery,
+  normalized persistence and actual pointer proof. Next chunk: private chats,
+  cached map redraw and complete lifecycle/geometry qualification. Publish the
+  first PR as soon as its built-package checks pass; stack dependent work.
+- Simplification from source inspection: call the bundled frame's gesture
+  callbacks directly, then capture/clamp the owned frame and save on release.
+  This removes the proposed global reposition subscription and save debounce
+  timer; programmatic/root resizing cannot be mistaken for a gesture.
+- Use release automation for tags only. Leave PRs open for review; do not merge
+  or publish a release as part of this task. Runtime compatibility and visual
+  acceptance are pending, and #5 remains open.
+
+### Dashboard chunk evidence
+
+Implemented dashboard commands, normalized storage, fixed recovery and physical
+frame gestures, retaining console names and existing data paths. The 2.0.0
+archive is rebuilt. Ten Python controller tests pass. The 20-case real-Mudlet
+suite initially passed 18 cases; its two failures were the new action dispatch
+rejecting existing hover and a chat assertion depending on a line-wrap boundary.
+Both are corrected. Targeted **layout (including close/reopen), chat, maps and
+lifecycle** pass after the fixes; unaffected suite results are reused.
+Screenshot inspection found and fixed explicit `Inside.hidden` surviving
+minimize/restore; the layout fixture now checks all restored panel bodies.
+Combat chrome uses the documented taller bottom strip and fixed label heights.
+Candidate hashes, exact run directories and selected screenshots are in
+[dashboard-evidence.json](../testing/issue-5/dashboard-evidence.json).
+
+Remaining work: session-only private chat frames and reset of their drafts/
+history; cached stationary-map redraw; malformed/partial layout and geometry
+matrix; 4.x runtime/desktop checks. This first chunk does not close #5. Do not
+interpret its passing command tests as proof of those remaining requirements.
 
 ## Outcome and boundaries
 
@@ -307,7 +348,10 @@ state must be relative to the content root, not the OS desktop or parent column.
   [DESIGN.md](../DESIGN.md), the
   [testing log](mudlet-local-testing.md), and test instructions for the new
   commands, interaction model, defaults, storage and coverage limits.
-- On implementation, bump the next available MINOR version, add the matching
+- Release candidate is **2.0.0**: the dashboard layout is rebuilt, which
+  [RELEASING.md](../RELEASING.md) explicitly classifies as MAJOR. Existing
+  boolean settings remain compatible. This supersedes the initial 1.4.0
+  estimate below. Add the matching
   dated [CHANGELOG](../../CHANGELOG.md) section, run the build and commit
   [duris-client.mpackage](../../duris-client.mpackage) with source. Starting
   from this audited 1.3.5 baseline, the expected version is 1.4.0. Existing

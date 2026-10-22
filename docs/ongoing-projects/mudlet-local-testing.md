@@ -366,3 +366,17 @@ Environment/baseline, repeatable execution, offline fixtures, triage and operato
 documentation are implemented. Live/compatibility has the explicit limits
 above; remote CI execution and evidence upload passed. No unresolved
 reproduced defect currently blocks ordinary use in the tested primary target.
+
+## Issue #5 dashboard chunk — 2026-10-22
+
+Candidate 2.0.0 adds ten adjustable dashboard frames. Real Mudlet 5.0.1 / Qt
+6.11.1, Xvfb 1366x768 scale 1: physical title drag, border resize, right-click
+menu, reset button, all dashboard actions, off/on and profile restart pass.
+The 20-case suite ran with 18 initial passes; fixes for hover dispatch and a
+wrap-sensitive chat assertion passed targeted chat/maps reruns. Layout/lifecycle
+also pass after restoring explicitly hidden frame bodies and clearing frame
+menu registries. Ten Python controller tests pass. Inspected default,
+resized, reset/menu, mixed-state and Errors-view images; no Lua errors.
+See [candidate evidence](../testing/issue-5/dashboard-evidence.json) for hashes,
+run paths and selected screenshots. Private chats, cached map redraw, full size/
+scale matrix and 4.x qualification remain pending in the implementation plan.

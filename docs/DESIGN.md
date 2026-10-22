@@ -41,25 +41,37 @@ top, and leaves **2.8%** at the bottom. Its width is therefore **95%** and its
 height **86.7%** of the area returned by `getMainWindowSize()`.
 `ArjUI:layout()` recalculates the root and footer on resize.
 
-These are the current content-root proportions. They describe the implemented
-arrangement, not a user-selectable layout system.
+Ten `Adjustable.Container` frames are siblings under the content root. The
+package owns one descriptor list for geometry, minimum logical sizes and reset.
+Panels default to locked, visible and docked. A title drag or border resize
+floats a panel; Dock returns its named home rectangle. Native border attachment
+and frame auto-save/load are disabled. Frame content uses a 22px title band and
+5px side/bottom clearance. Titles replace duplicate mobs/items/players headers.
 
-| Region | Placement | Contents |
-| --- | --- | --- |
-| Left column | x 0%, width 16.5%; upper 83% of root | Area/world links and map; exits and time; mobs; items |
-| Center column | x 16.7%, width 57%; upper 83% of root | Experience bar, room name, main game output |
-| Right column | x 73.9%, width 26%; full root height | Character tabs, players in the room, chat |
-| Bottom strip | y 83.5%, height 16.5%; panels occupy the left/center width | Personal vitals, tank and buffs, target and debuffs/damage |
-| Footer | Below the root, aligned with the right column | Build-injected package version and credits tooltip |
-| Command input | Mudlet's native command line | Commands, history, and completion |
+Default rectangles (x, y, width, height as percentages of the content root):
 
-The right column spans the root's full height; it does not stop above the
-bottom strip. The small gaps between columns and panels expose the frame
-without reducing text contrast.
+- Map: (0, 0, 16.5, 32), including area/world links, exits and time.
+- Mobs: (0, 33, 16.5, 21.5); items: (0, 55.5, 16.5, 23.5).
+- Output: (16.7, 0, 57, 79), including experience and room title.
+- Character: (73.9, 0, 26, 45); players: (73.9, 46, 26, 26);
+  chat: (73.9, 73, 26, 27).
+- Vitals: (0, 80, 16.5, 19.5); tank: (16.7, 80, 28.3, 19.5);
+  target: (45.5, 80, 28.2, 19.5).
 
-Within the left column, the map occupies the top 35%, exits/time share the
-36–40% band, mobs occupy 41–69%, and items occupy 70–100%. Within the right
-column, character tabs occupy 0–45%, players 46–72%, and chat 73–100%.
+The bottom strip is slightly taller to preserve combat labels below the new
+frame controls. Names/positions use 16px, HP uses 16px, affects headers 14px;
+remaining height is for affects. Character/chat tab rows retain an 18px minimum.
+Minimum full sizes are map 190x170, mobs/items 150x95, output 340x180,
+character 285x160, players 190x95, chat 285x110, vitals 150x110 and
+tank/target 220x110, in Qt logical pixels. Smaller viewports clamp displayed
+rectangles to available space without replacing saved normal rectangles.
+
+The fixed Panels and Reset layout controls sit just above the root inside the
+existing header margin. They remain outside maximized frames. Footer credits
+stay below the right column; native command input stays available. Auxiliary
+frames support hide/minimize, every dashboard frame supports maximize/restore
+and global/per-panel locking. Game output cannot hide/minimize independently.
+The common command dispatcher enforces the same capabilities as title menus.
 
 The character tabs are **GROUP / STATS / INV / EQ / WHO / SHIP**, with GROUP
 selected initially. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
@@ -250,6 +262,7 @@ or use `look` to obtain fresh room data and retry.
 
 | Storage | Contents and lifetime |
 | --- | --- |
+| `arjui_layout.json` | Versioned dashboard modes, normalized normal rectangles, locks and hidden/minimized flags; maximize is transient |
 | `arjui_settings.json` | Six display/input toggles, all on by default |
 | `arjui_custom_commands.json` | Custom context-menu actions |
 | `arjauto.json` | Automation toggles, variables, rescue list, bidscores, and login commands |
@@ -268,7 +281,11 @@ and delayed actions must not apply to the next character session.
 Each script tracks the runtime resources it creates. Package uninstall calls
 the three cleanup paths to remove aliases, triggers, keys, handlers, timers,
 and widgets. New callbacks or delayed work must join the owning script's
-cleanup path. Hiding the UI is a separate operation from teardown.
+cleanup path. Hiding the UI is a separate operation from teardown. Layout reset never calls
+`init()` or `kill()`, never sends game commands, and preserves scrollback and
+preferences. Gesture completion saves once; ordinary window resizing clamps
+only the displayed geometry. Missing/corrupt/unsupported layouts fall back to
+defaults with local diagnostics. Writes use a temporary file plus replacement.
 
 ## Packaging and design validation
 

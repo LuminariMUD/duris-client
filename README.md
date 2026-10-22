@@ -62,6 +62,9 @@ Type these into the Mudlet command input:
 | --- | --- |
 | `ui on` | Show the interface, retaining its state and widgets. |
 | `ui off` | Hide the interface and restore Mudlet's main output area; the native command line stays available. |
+| `ui layout` | Show panel IDs and saved states. `ui layout unlock` enables title dragging and border resizing; `ui layout lock` prevents movement. |
+| `ui layout reset` | Restore every dashboard panel and the default tabs without clearing game state or scrollback. The fixed **Reset layout** button does the same. |
+| `ui panel <id> <action>` | Actions: `show`, `hide`, `minimize`, `restore`, `maximize`, `dock`, `float`, `lock`, `unlock`. Right-click a panel title or use the fixed **Panels** button for mouse controls. |
 | `ui help` | List commands and numpad keys. |
 | `ui debug` | Show which core GMCP data tables have arrived. |
 | `ui damage` | Session damage report (total, hits, damage per second, current fight). `ui damage reset` clears it. Clicking the **DMG** counter in the target panel shows the same report. |
@@ -76,6 +79,13 @@ Type these into the Mudlet command input:
 | `/mapreload` | An additional shortcut to clear the map cache. |
 
 Toggles for `ui set`: `keypad` (numpad keys), `chatTimestamps`, `damageTracker`, `scanFormat`, `alerts`, and `expTracker`. All default to on and are saved to `arjui_settings.json` in your Mudlet profile folder.
+
+Panels start locked in their named home positions. Unlock to move or resize them;
+adjusting a panel makes it float. **Dock** returns it home. Only one panel can
+maximize at a time; **Restore** returns its previous state. Game output cannot
+be hidden or minimized independently. Dashboard choices are saved in
+`arjui_layout.json` in this profile and survive reconnects and restarts. A reset
+restores defaults even while `ui off`, without turning the UI on.
 
 Use the map's **+ / −** controls to zoom. Click the active **STATS**, **INV**, **EQ**, **WHO**, or **SHIP** tab to send `score`, `inv`, `eq`, `who`, or `look contacts` and refresh the corresponding information.
 

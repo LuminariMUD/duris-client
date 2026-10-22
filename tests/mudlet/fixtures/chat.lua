@@ -5,7 +5,7 @@ for _,channel in ipairs({"say","tell","gcc","gsay","nchat","jchat","petition","w
  local ch=channel
  steps[#steps+1]={name=ch,run=function()
   T.emit("Comm.Channel",{channel=ch,sender="Companion",text="MESSAGE-"..ch.." "..string.rep("Long chat text. ",18),alignment="good"})
-  T.check(T.lines(routing[ch]):find("MESSAGE-"..ch,1,true),ch.." routed")
+  T.check(T.lines(routing[ch]):gsub("\n",""):find("MESSAGE-"..ch,1,true),ch.." routed")
   local tab=({say="room",tell="tells",gcc="guild",gsay="group",nchat="nchat",jchat="nchat"})[ch] or "all"
   ArjUI:switchChatTab(tab)
  end}
