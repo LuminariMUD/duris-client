@@ -37,10 +37,11 @@ especially other feedback work touching the mapper or header.
 - [PR #8](https://github.com/LuminariMUD/duris-client/pull/8), base `master`,
   head `branch/issue-5-adjustable-panels`, source `ba29648`, archive `eb03dfb`, refreshed from master with merge `54f6bba` (only `.env.example`; runtime payload unchanged).
   PR is open for review; master and release tags are untouched.
-- Active dependent branch: `branch/issue-5-panel-integration`, based on
+- [PR #12](https://github.com/LuminariMUD/duris-client/pull/12), head
+  `branch/issue-5-panel-integration`, source/package commit `bccd84a`, based on
   `54f6bba` / PR #8. Shared private tell frames, cached viewport redraw and
-  lifecycle qualification are complete. Candidate version 2.1.0. Open this
-  chunk against `branch/issue-5-adjustable-panels`, then review/merge the
+  lifecycle qualification are complete. Candidate version 2.1.0. This
+  chunk is open against `branch/issue-5-adjustable-panels`; review/merge the
   stack in parent order; release tags remain owned by master CI.
 - User supplied `.env` in the primary checkout with server/website paths and
   test character credentials. Use it locally for separate live verification;
