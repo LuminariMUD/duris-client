@@ -25,6 +25,18 @@ for the same ship.
 
 ## Current handoff (2026-10-22)
 
+- **Review follow-up:** the server's `Ship.Info {}` then
+  `Ship.Contacts {contacts=[]}` sequence now preserves `(no ship data)`.
+  The new `connections` assertion failed before the guard and passes after;
+  `server-wire` verifies the authoritative sequence over Telnet. The text-only
+  fixture now starts a separate session after the GMCP case. Final archive was
+  freshly imported live and bridge-exit presentation also passed. Updated live
+  and compatibility evidence is being carried in dependent [PR #10](https://github.com/LuminariMUD/duris-client/pull/10).
+- A separate, repeatedly reproduced controller defect assumes the Errors
+  editor appears within 0.3 seconds. Its bounded-readiness fix is being split
+  into a test-only PR. Preserve the valid populated size/DPI evidence; no
+  layout or data formatting changed in the departure guard.
+
 - Worktree `/home/aiwithapex/projects/durisclient-issue3-plan`, branch
   `branch/issue-3-ship-readability`. Refreshed master `72efad6` was merged
   without rewriting the planning commit. Source/build candidate is **1.3.7**.

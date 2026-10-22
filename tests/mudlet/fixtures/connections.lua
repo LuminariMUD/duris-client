@@ -96,8 +96,12 @@ T.steps({
   T.check(not T.lines("ArjUI_ShipBox"):find("Ghost vessel",1,true),"empty GMCP does not revive text contacts")
   wire("Ship.Info", "{}")
   T.check(ArjUI.state.ship.maxSpeed==nil and not T.lines("ArjUI_ShipBox"):find("Bronze Voyager",1,true),"bridge departure clears ship")
+  wire("Ship.Contacts", [[{"contacts":[]}]])
+  local out=T.lines("ArjUI_ShipBox")
+  T.check(out:find("(no ship data)",1,true) and not out:find("Contacts: None",1,true),"departure contact clear keeps the no-ship display")
  end},
  {name="ship-text-fallback",run=function()
+  ArjUI:resetShip() -- Start a text-only session after the GMCP departure case.
   feedTriggers("You board &+WText Voyager&n\nCaptain: Tester\nThis ship can only go from 0 to 18.\nDeck skill: 15\nContact listing  H: 0 S: 0\n[ZZ] Text contact X: 2 Y: 3 R: 5 B: 20 H: 60 S: 4 |NE\n")
   local out=T.lines("ArjUI_ShipBox")
   for _,v in ipairs({"Text Voyager","Captain: Tester","H:0  S:0/18","Deck skill: 15","Text contact"}) do T.check(out:find(v,1,true),"text-only fallback "..v) end

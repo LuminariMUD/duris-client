@@ -3832,7 +3832,7 @@ function ArjUI:renderShip()
       box:cecho(string.format("%s%s[%s] %s%s<dim_gray> %s\n", tag, color, text(id or "-"), text(name), c.sunk and " (sunk)" or "", text(table.concat(bits, " "))))
     end
     shown = true
-  elseif type(contacts) == "table" then
+  elseif type(contacts) == "table" and shown then
     section("Contacts (0)")
     row("Contacts", "None")
   end
