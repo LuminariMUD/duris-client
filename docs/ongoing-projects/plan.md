@@ -1,6 +1,6 @@
 # Issue #5: adjustable client panels
 
-Date: 2026-10-22. Status: implementation in progress; dashboard frame integration underway.
+Date: 2026-10-22. Status: chosen feature implemented and qualified on Mudlet 5.0.1 / 4.22.0; PR stack ready for review. Minimum-version/physical-desktop verification remains open.
 
 Work item: [#5 — Support resizable and/or dockable client panels](https://github.com/LuminariMUD/duris-client/issues/5).
 Parent context: [#1 — Voodoo client feedback index](https://github.com/LuminariMUD/duris-client/issues/1).
@@ -32,12 +32,26 @@ especially other feedback work touching the mapper or header.
   or publish a release as part of this task. Runtime compatibility and visual
   acceptance are pending, and #5 remains open.
 
+### Published stack / active continuation
+
+- [PR #8](https://github.com/LuminariMUD/duris-client/pull/8), base `master`,
+  head `branch/issue-5-adjustable-panels`, source `ba29648`, archive `eb03dfb`, refreshed from master with merge `54f6bba` (only `.env.example`; runtime payload unchanged).
+  PR is open for review; master and release tags are untouched.
+- Active dependent branch: `branch/issue-5-panel-integration`, based on
+  `54f6bba` / PR #8. Shared private tell frames, cached viewport redraw and
+  lifecycle qualification are complete. Candidate version 2.1.0. Open this
+  chunk against `branch/issue-5-adjustable-panels`, then review/merge the
+  stack in parent order; release tags remain owned by master CI.
+- User supplied `.env` in the primary checkout with server/website paths and
+  test character credentials. Use it locally for separate live verification;
+  never copy secrets into test manifests, screenshots or published artifacts.
+
 ### Dashboard chunk evidence
 
 Implemented dashboard commands, normalized storage, fixed recovery and physical
 frame gestures, retaining console names and existing data paths. The 2.0.0
-archive is rebuilt. Ten Python controller tests pass. The 20-case real-Mudlet
-suite initially passed 18 cases; its two failures were the new action dispatch
+archive is rebuilt. Ten Python controller tests pass. The 21-case real-Mudlet
+suite initially passed 19 cases; its two failures were the new action dispatch
 rejecting existing hover and a chat assertion depending on a line-wrap boundary.
 Both are corrected. Targeted **layout (including close/reopen), chat, maps and
 lifecycle** pass after the fixes; unaffected suite results are reused.
@@ -47,10 +61,56 @@ Combat chrome uses the documented taller bottom strip and fixed label heights.
 Candidate hashes, exact run directories and selected screenshots are in
 [dashboard-evidence.json](../testing/issue-5/dashboard-evidence.json).
 
-Remaining work: session-only private chat frames and reset of their drafts/
-history; cached stationary-map redraw; malformed/partial layout and geometry
-matrix; 4.x runtime/desktop checks. This first chunk does not close #5. Do not
-interpret its passing command tests as proof of those remaining requirements.
+### Integration completion and exact handoff
+
+- Ten dashboard groups and session-only private tell frames implement every
+  chosen action. Existing/unopened conversations are reachable as `tell:<name>`
+  and from the fixed scrollable Panels menu. Output hide/minimize is rejected;
+  private docking is rejected. Geometry is clamped without overwriting normal
+  rectangles during temporary viewport shrinkage.
+- Reset restores all dashboard defaults, GROUP/ALL, locks and full visibility;
+  closes/reset existing tell frames while retaining draft/history/unread data;
+  works while off; preserves live state/scrollback/preferences and sends no
+  command. Gesture cancellation and file replacement share the existing owner.
+- Stationary zone/wilderness refresh uses accepted session data and one owned
+  timer; no network refresh. Leaving wilderness/session reset retires its
+  payload. Parent restore reconciles selected tabs/map mode. Removed the old
+  private drag/title/control path; no parallel frame implementation remains.
+- Fixed defects found during qualification: explicitly hidden frame interiors
+  surviving restore; hidden tell messages absent from retained consoles; stale
+  entries surviving a failed reload; duplicate menu ownership on old Mudlet;
+  unopened conversations absent from recovery. Menu item tests account for
+  ScrollBox-local coordinates. Bounded map headings remain visible at maximize.
+- Verification: Lua 5.1/XML build, **10 controller + 15 release tests**, local
+  release-payload validation, **21/21 full Mudlet suite cases**, layout/crowded
+  at 1280x720, 1920x1080 and 2732x1536 scale 2 (1366x768 in suite), targeted
+  final layout **121 assertions + 31 on reopen**, lifecycle **332 + 27**, maps
+  and controls. Actual 4.22.0 portable-profile actions and reopen pass.
+  Reviewed default/crowded/private/recovery/map-maximize/Errors screenshots.
+- Reuse: the final full suite/matrix precede the last recovery-menu/cleanup and
+  map-heading adjustments. Rerun only affected layout, controls, lifecycle and
+  map cases; their records identify exact archive hashes. Runtime geometry and
+  GMCP consumers outside those paths are unchanged. The master refresh only
+  changes `.env.example`, so it does not invalidate package proof.
+- Live check on user-confirmed `mud.duris.sbs:7777`: authenticated test account,
+  fresh Char.Status/Vitals and Room.Info, **35 passing assertions**, automation
+  off, reset/off/on preserves game data and scrollback. Character and account
+  logged out normally; socket disconnected; dedicated desktop closed. No live
+  screenshots, raw account text or credentials are published. Initial local
+  listener was a different account database; no account was created there.
+- Evidence: [integration-evidence.json](../testing/issue-5/integration-evidence.json),
+  selected images and redacted live result JSON beside it. Full runs remain
+  under `/home/aiwithapex/.local/share/duris-client-dev/issue-5-*`.
+- **Still unverified:** Mudlet 4.19.1 runtime (official binary unavailable),
+  physical-desktop DPI/input, Windows and macOS. Do not claim minimum-version
+  compatibility or close #5 on this evidence. Source compatibility inspection
+  and simulated scale 2 are distinct from those checks. No implementation
+  requirement is deferred to an unlinked future feature.
+- To continue: inspect the PR stack and review feedback first. For 4.x manual
+  checks reuse the documented portable workflow; the tested isolated 4.22
+  runtime is `.../issue-5-tools-4.22/mudlet`, the helper is `.../issue-5-legacy.py`.
+  A real 4.19.1 install is needed for its outstanding compatibility gate; do
+  not bypass the normal runner's 5.0+ guard or infer a pass from source alone.
 
 ## Outcome and boundaries
 

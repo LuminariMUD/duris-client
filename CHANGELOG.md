@@ -2,6 +2,12 @@
 
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
+## 2.1.0 - 2026-10-22
+
+- Give private tell windows the shared move, resize, minimize, maximize and recovery actions while retaining session history and drafts.
+- Redraw stationary zone and wilderness maps after panel/viewport changes without new network requests.
+- Clean up owned frame menus and old-Mudlet callback references on teardown.
+
 ## 2.0.0 - 2026-10-22
 
 - Rebuild the dashboard as ten adjustable panels with title/border gestures, named home docking, locking, minimize, hide and maximize actions.

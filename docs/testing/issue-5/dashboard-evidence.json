@@ -658,6 +658,6 @@
     }
   ],
   "earlier_suite": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-dashboard-suite/suite-results.json",
-  "reuse": "20-case suite ran: 18 passed initially; chat wrapping assertion and pointer hover failed, then corrected. Targeted layout/chat/maps/lifecycle rerun covers subsequent body restoration and menu registry cleanup changes. Other handlers, routing and failure semantics unchanged.",
+  "reuse": "21-case suite ran: 19 passed initially; chat wrapping assertion and pointer hover failed, then corrected. Targeted layout/chat/maps/lifecycle rerun covers subsequent body restoration and menu registry cleanup changes. Other handlers, routing and failure semantics unchanged.",
   "pending": "Private chat migration, stationary map viewport redraw, geometry/scaling matrix and 4.x qualification."
 }

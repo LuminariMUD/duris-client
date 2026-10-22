@@ -372,7 +372,7 @@ reproduced defect currently blocks ordinary use in the tested primary target.
 Candidate 2.0.0 adds ten adjustable dashboard frames. Real Mudlet 5.0.1 / Qt
 6.11.1, Xvfb 1366x768 scale 1: physical title drag, border resize, right-click
 menu, reset button, all dashboard actions, off/on and profile restart pass.
-The 20-case suite ran with 18 initial passes; fixes for hover dispatch and a
+The 21-case suite ran with 19 initial passes; fixes for hover dispatch and a
 wrap-sensitive chat assertion passed targeted chat/maps reruns. Layout/lifecycle
 also pass after restoring explicitly hidden frame bodies and clearing frame
 menu registries. Ten Python controller tests pass. Inspected default,
@@ -380,3 +380,32 @@ resized, reset/menu, mixed-state and Errors-view images; no Lua errors.
 See [candidate evidence](../testing/issue-5/dashboard-evidence.json) for hashes,
 run paths and selected screenshots. Private chats, cached map redraw, full size/
 scale matrix and 4.x qualification remain pending in the implementation plan.
+
+## Issue #5 integration qualification — 2026-10-22
+
+Candidate **2.1.0** completes private frame controls, fixed recovery, cached
+map redraw and teardown ownership. **21/21** full-suite cases pass on real
+Mudlet 5.0.1; all six additional layout/crowded size/scale cases pass. Targeted
+final layout/bounds (121 + 31 reopen), lifecycle (332 + 27 reopen), controls and
+maps pass after the last menu/heading changes; unaffected suite/matrix evidence
+is reused. Ten controller and fifteen release tests pass, and local release
+preparation confirms the committed candidate payload.
+
+Real **Mudlet 4.22.0**, isolated extracted portable runtime, passes physical
+pointer actions, private Send/input, right-click and fixed recovery menus,
+reset and saved-profile reopening. Inspected default/crowded/private/map-maximize
+and Errors screenshots on 5.0.1 and the 4.22 recovery/reopened/Errors captures.
+
+Live `mud.duris.sbs:7777` (user-confirmed endpoint) authenticated, received fresh
+identity/vitals/room GMCP and passed **35 layout assertions** with all automation
+off. Reset retains game state/scrollback and off/on retains customization. Normal
+quit/account disconnect completed, and the isolated desktop closed. Published
+results contain aggregate checks only; credentials and live text/screenshots
+are excluded. No server/website code or configuration changed.
+
+[Exact candidate identities and reused evidence](../testing/issue-5/integration-evidence.json).
+**4.19.1 remains unverified:** no official GitHub binary assets and no 4.19.1
+entry in the current [official archive](https://www.mudlet.org/wp-content/files/?C=M%3BO%3DD);
+the attempted old Linux URL returned 404. Physical DPI/input and Windows/macOS
+also remain NOT RUN. This is the same minimum-version limit already recorded
+for the incumbent package, not a new minimum-version claim.

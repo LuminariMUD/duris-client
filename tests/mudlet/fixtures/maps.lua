@@ -11,7 +11,15 @@ T.steps({
   local widget=ArjMapper.ui.roomLabels.room_90010
   return {{type="hover",x=widget:get_x()+widget:get_width()/2,y=widget:get_y()+widget:get_height()/2}}
  end},
+ {name="stationary-zone-resize",wait=.15,run=function()
+  T.oldRoomLabelX=ArjMapper.ui.roomLabels.room_90010:get_x()
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  T.check(ArjMapper.ui.roomLabels.room_90010:get_x()>T.oldRoomLabelX+100,"stationary zone recenters on maximize")
+  T.check(ArjMapper.ui.wildConsole.hidden,"zone restore keeps wilderness hidden")
+ end},
  {name="zoom",run=function()
+  ArjUI:panelAction("map","restore")
   for i=1,20 do ArjMapper:zoomIn() end
   T.check(ArjMapper.config.roomSize==24,"zone zoom upper bound")
   for i=1,20 do ArjMapper:zoomOut() end
@@ -26,8 +34,17 @@ T.steps({
   T.check(ArjMapper.state.lastDisplayMode=="wilderness","late zone response preserves wilderness")
   T.check(ArjMapper.state.zoneData[9002]~=nil,"late data cached")
  end},
- {name="malformed",wait=.6,run=function() room(9003) end,verify=function()
+ {name="stationary-wilderness-resize",wait=.15,run=function()
+  T.oldWildHeight=ArjMapper.ui.wildConsole:get_height()
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  T.check(ArjMapper.ui.wildConsole:get_height()>T.oldWildHeight+100,"wilderness viewport grows")
+  T.check(T.lines("ArjMapper_Wild"):find("@",1,true),"cached wilderness redraw retains marker")
+  T.check(ArjMapper.ui.zoneContainer.hidden,"wilderness restore keeps zone hidden")
+ end},
+ {name="malformed",wait=.6,run=function() ArjUI:panelAction("map","restore"); room(9003) end,verify=function()
   T.check(ArjMapper.state.zoneData[9003]==nil and ArjMapper.requests[9003]==nil,"malformed response rejected and request cleaned")
+  T.check(ArjMapper.state.lastWildernessMap==nil,"retiring wilderness clears accepted payload")
   T.check(ArjMapper.state.lastDisplayMode=="zone" and not next(ArjMapper.ui.roomLabels),"failed zone does not retain prior wilderness or room labels")
  end},
  {name="http-error",wait=.6,run=function() room(9004) end,verify=function()

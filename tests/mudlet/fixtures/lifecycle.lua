@@ -20,7 +20,17 @@ for _,id in ipairs(ArjAuto.aliases) do aliasIds[#aliasIds+1]=id end
 local triggerIds={}
 for _,id in ipairs(ArjUI.runtimeTriggers) do triggerIds[#triggerIds+1]=id end
 for _,id in ipairs(ArjAuto.triggers) do triggerIds[#triggerIds+1]=id end
+local thirdParty=Adjustable.Container:new({name="DurisTest_ThirdParty",autoSave=false,autoLoad=false,x=0,y=0,width=100,height=70})
+local ownedNames={}
+for _,panel in pairs(ArjUI.panels) do ownedNames[#ownedNames+1]=panel.frame.name end
+ArjUI:openPrivateChat("Companion")
+ownedNames[#ownedNames+1]=ArjUI.panels["tell:companion"].frame.name
+ArjMapper:refreshViewport()
 uninstallPackage("Arjinius Client")
+for _,name in ipairs(ownedNames) do T.check(Adjustable.Container.all[name]==nil,"owned frame unregistered "..name) end
+T.check(Adjustable.Container.all.DurisTest_ThirdParty==thirdParty,"uninstall preserves third party frame")
+T.check(ArjMapper.viewportTimer==nil,"uninstall cancels pending viewport redraw")
+thirdParty:delete()
 T.check(not ArjUI.main and #ArjUI.eventHandlers==0 and #ArjMapper.handlers==0, "uninstall cleans widgets and handlers")
 feedTriggers("After uninstall: ordinary text must remain in the main console.\n")
 T.async=true

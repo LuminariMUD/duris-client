@@ -72,6 +72,13 @@ stay below the right column; native command input stays available. Auxiliary
 frames support hide/minimize, every dashboard frame supports maximize/restore
 and global/per-panel locking. Game output cannot hide/minimize independently.
 The common command dispatcher enforces the same capabilities as title menus.
+Existing tell conversations appear in the scrollable Panels menu even before
+first opening. `tell:<name>` frames use the same owner, start unlocked/floating
+at 300x220 (minimum 260x160), and remain session-only. Their console and input
+sizes follow the inner frame, preserving drafts/history across full reset.
+Parent show reconciles active character/chat/map views without switching tabs
+or sending commands. Map viewport refresh coalesces through one owned timer,
+redraws accepted zone/wilderness data, and performs no network request.
 
 The character tabs are **GROUP / STATS / INV / EQ / WHO / SHIP**, with GROUP
 selected initially. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
