@@ -35,7 +35,7 @@ for the same ship.
   (SHIP), [PR #11](https://github.com/LuminariMUD/duris-client/pull/11)
   (controller readiness), then [PR #10](https://github.com/LuminariMUD/duris-client/pull/10)
   (qualification evidence). Retarget each successor after its parent merges.
-  Core head `26663f2`; controller head `d33a4e6`; evidence branch is
+  Validated core source `26663f2`; controller source `d33a4e6`; evidence branch is
   `branch/issue-3-ship-evidence` in `/home/aiwithapex/projects/durisclient-issue3-plan`.
 - Master `eec642f` was merged without rewriting published commits. Its final
   change was `.env.example` only. Final version **1.3.7**, archive SHA-256
