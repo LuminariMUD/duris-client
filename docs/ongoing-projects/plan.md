@@ -25,11 +25,19 @@ for the same ship.
 
 ## Current handoff (2026-10-22)
 
-- Controller PR #11 retains its bounded editor wait. This branch now includes
-  core navigation fix 26663f2 and its current manifest; the final stack suite is
-  being rerun at /tmp/duris-issue3-navigation-suite. The previous controller
-  source already passed eight unit checks and 20 expectations; no controller
-  code changed during this merge.
+- Controller PR #11 keeps its bounded editor wait. The final 20-case package
+  proof is now also self-contained in core PR #9. This merge changes only
+  evidence/handoff metadata; runtime, fixtures and package are unchanged.
+
+- **Final package full-suite proof recorded here:** candidate SHA-256
+  `75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3`
+  passed all 20 expected outcomes at `/tmp/duris-issue3-navigation-suite`.
+  Every run's canonical payload matches this committed package. The primary
+  `offline-evidence.json` now includes all cases and successful hosted build/
+  runtime checks at code commit `26663f2`; no dependent file is needed to
+  establish this full-suite result. The local controller's eight checks pass.
+  PR #10 retains the live/compatibility captures and final continuation notes.
+
 
 - **Latest review fixed:** fresh Contacts navigation in shared state takes
   precedence over cached Info heading/speed. The zero-value regression failed
