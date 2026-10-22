@@ -1,7 +1,7 @@
 # Issue #3: readable SHIP panel
 
-Status: implementation in progress; renderer and focused real-Mudlet fixtures
-are being qualified. Issue remains open until the manual same-ship comparison.
+Status: implementation ready for review in [PR #9](https://github.com/LuminariMUD/duris-client/pull/9).
+Compatibility/live qualification is complete on dependent `branch/issue-3-ship-evidence`.
 
 Date: 2026-10-22. Work item: [issue #3](https://github.com/LuminariMUD/duris-client/issues/3).
 Parent: [feedback index #1](https://github.com/LuminariMUD/duris-client/issues/1).
@@ -25,49 +25,78 @@ for the same ship.
 
 ## Current handoff (2026-10-22)
 
-- Worktree `/home/aiwithapex/projects/durisclient-issue3-plan`, branch
-  `branch/issue-3-ship-readability`. Refreshed master `72efad6` was merged
-  without rewriting the planning commit. Source/build candidate is **1.3.7**.
-- Applied `/home/aiwithapex/projects/duris/.agents/skills/ablation/SKILL.md`
-  because this client checkout has no copy. The existing panel/handlers remain;
-  the generic info walk is replaced by ship-specific local formatting, and the
-  existing `connections`/`information` scenarios supply behavioral proof.
-- Implemented ordered identity/navigation, condition, numeric-slot weapons,
-  crew with signed modifiers, equipment, crate-labeled cargo and contacts.
-  Zero/false and unknown values, text fallback, state clearing and automation
-  inputs survive. Names strip Duris and cecho colors. SHIP has a scrollbar;
-  its local deferred restoration coalesces consecutive updates and preserves
-  the viewed section, clamping to the end when shorter data replaces it.
-- Baseline `connections` PASS and raw-field screenshot inspected:
-  `/tmp/duris-issue3-baseline/20261022T195125Z-494055c9-connections`.
-- Final **20/20** suite expectations PASS, including deliberate failures,
-  wire protocol, lifecycle/reopen and cleanup: `/tmp/duris-issue3-final-suite`.
-  All four requested sizes/DPI PASS. Exact archive/source hashes, assertion
-  counts, run paths and representative reviewed captures are in
-  [offline-evidence.json](../testing/issue-3/offline-evidence.json).
-  `build.py --check` used Lua 5.1.5; `scripts/release.py` validated source/archive
-  equality under `/tmp/duris-issue3-release`; `git diff --check` passes.
-- Runtime: Ubuntu 24.04.4 WSL2, Mudlet 5.0.1 / Qt 6.11.1, DejaVu Sans Mono.
-  Use `bash -lc` so `~/.local/bin/mudlet` is on PATH. Tests use isolated profiles.
-- Next delivery chunk: independent portable **4.22.0** import/scenario run
-  under `/tmp/duris-issue3-4.22`, then the manual same-ship live comparison.
-  Its runtime is hardlinked into a separate tools directory, leaving the
-  existing issue-2 runtime's portable configuration untouched.
-- User supplied test credentials and local source paths in the master
-  checkout's ignored `.env`; do not copy that file into Git or publish credentials.
-  Separate live profile `/tmp/duris-issue3-live` has no test companion, send
-  override or injected fixture. Veridian is logged into the confirmed listener
-  `74.208.126.44:7777`; no ship access yet. Manual comparison remains **NOT RUN**.
-  Local helper/desktop/control scripts are `/tmp/duris-issue3-live-*.py` and
-  `/tmp/duris-issue3-live-helper.lua`; stop the owned desktop with its `stop` file
-  after normal character logout. Never use offline GMCP injection as live proof.
-- Mudlet **4.19.1** and physical desktop DPI remain unverified. Earlier tests
-  found no official 4.19.1 binary assets. Do not raise compatibility claims or
-  close issue #3 until its actual acceptance evidence exists.
+- **Review follow-up in progress:** PR #9's reviewer identified the exact
+  `Ship.Info {}` -> `Ship.Contacts {contacts=[]}` departure sequence ending in
+  `Contacts: None`. Existing assertions verified state clearing but missed
+  that presentation. Add the no-ship assertion to existing scenarios and
+  gate the empty-contact footer on other displayed ship facts. Retain the
+  populated layout/matrix/live facts as valid evidence; requalify the final
+  archive's clearing path before marking delivery done.
 
-The original audit/specification below is retained as the implementation and
-manual comparison reference. Its historical environment/setup statements are
-superseded by this handoff and the testing log.
+- **Implementation and qualification ready for review.** Core
+  [PR #9](https://github.com/LuminariMUD/duris-client/pull/9) targets master from
+  `branch/issue-3-ship-readability`, head `5453cee`. The evidence chunk is on
+  `branch/issue-3-ship-evidence`, based on that core branch. Current worktree is
+  `/home/aiwithapex/projects/durisclient-issue3-plan` on the evidence branch.
+- Master `eec642f` was merged without rewriting published commits. Its last
+  change was `.env.example` only; package/runtime content remains the validated
+  core candidate. Version **1.3.7**, archive SHA-256
+  `efbf2d0d4524448076d61ab480ef8c00b85f5987060edbc14e7ef3f429e69d0d`.
+  No tags were pushed; releases remain owned by master CI after review/merge.
+- Ablation reused the existing SHIP MiniConsole, state/GMCP handlers, color
+  helpers and scenarios. The generic Ship.Info walk is gone. Ship-specific
+  formatting orders identity/navigation, condition, numeric-slot weapons,
+  crew, equipment, cargo and contacts. Zero/false/unknown facts, text fallback,
+  clearing and automation inputs survive. Only the SHIP scrollbar and local,
+  coalesced restoration were needed for refresh scrolling.
+- **20/20** real-Mudlet suite expectations PASS, including deliberate failures,
+  wire decoding and lifecycle/reopen. Four size/DPI runs PASS with identical
+  canonical package payloads despite ZIP timestamps. Focused captures and the
+  suite montage were inspected; actual Errors views contain no Lua errors.
+  [offline-evidence.json](../testing/issue-3/offline-evidence.json) records exact
+  identities, assertion counts and run paths. One 1920x1080 run hit editor-window
+  capture timing after behavior passed; the bounded retry passed completely.
+- **Mudlet 4.22.0 / Qt 6.9.0 PASS**, all **113** `connections` assertions.
+  A separate portable root was opened with the connection dialog's Offline
+  button. Exact committed archive imported; weapons and Errors screenshots
+  inspected. Existing issue-2 tools/configuration were preserved.
+- **Manual same-ship comparison PASS.** A clean final live import in Mudlet
+  5.0.1 / Qt 6.11.1 received real GMCP on the bridge of existing **GallTest**.
+  Compared identity/status/captain/ID/frags, navigation, all armor/hull arcs,
+  sail, passengers, repair, stamina, crew/chiefs/skills/modifiers, six weapon
+  slots/names/positions/ammo/readiness, and silk cargo with `look ship` and
+  `look crew`. No discrepancy in supplied facts. Captures, decoded packets,
+  panel text and comparison details are in
+  [qualification.json](../testing/issue-3/qualification.json).
+- Protocol differences remain explicit: weight/load, set orders and exact
+  timers/equipment damage are not supplied. Cargo **5/70 crates** is not the
+  reference's **80/165 weight load**. The live ship had no equipment/contacts;
+  populated and damaged cases remain offline coverage.
+- Live profile had no companion, send override or injected GMCP. Earlier
+  remote closes were followed by fresh reception/captures. Actual bridge exit
+  cleared info/maxSpeed/target. Veridian was returned to the original **Inn of
+  Oceans** (via Riralin) and logged out normally; owned desktop closed and the
+  temporary credential copy removed. User `.env` stays ignored in the master
+  checkout. No ship/gameplay settings or server sources were changed.
+- Runtime is Ubuntu 24.04.4 WSL2 / Xvfb 96dpi / DejaVu Sans Mono; use a login
+  shell for `~/.local/bin/mudlet`. Raw local runs are under
+  `/tmp/duris-issue3-final-suite`, `/tmp/duris-issue3-final-*`,
+  `/tmp/duris-issue3-4.22` and `/tmp/duris-issue3-live`. Committed evidence is
+  sufficient if those temporary directories disappear.
+- `build.py --check` used Lua 5.1.5, release source/archive equality validation
+  passed, and `git diff --check` passed. This evidence-only chunk reuses the
+  unchanged runtime/package proof; do not rerun the whole suite for prose/PNG/JSON.
+- All three original issue acceptance items now have evidence. Keep #3 open
+  for PR review. Remaining limits: declared **4.19.1** (official release still
+  has no binary assets), physical desktop DPI, Windows/macOS are unverified;
+  do not claim them. Hosted checks are separate from the completed local proof.
+- Next session: review/resolve any feedback on the two PRs, integrate the core
+  first, then retarget the evidence PR to master using the repository's normal
+  squash-stack workflow. No implementation work remains in this scoped chunk.
+
+The original audit/specification below remains the source and comparison
+reference. Historical setup/progress statements are superseded by this handoff
+and the testing log.
 
 All three issue acceptance items remain required:
 

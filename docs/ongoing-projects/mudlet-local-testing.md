@@ -27,8 +27,26 @@ and fixture identities, run locations and representative screenshots are in
   validates source/archive equality and prepares release files without publishing.
 - Environment: Ubuntu 24.04.4 WSL2, Mudlet 5.0.1 / Qt 6.11.1, DejaVu Sans Mono,
   Xvfb at 96dpi. Baseline master is `72efad6` / 1.3.6.
-- Manual same-ship live comparison and 4.22.0 import: in progress in separate
-  isolated profiles. **4.19.1 and physical desktop DPI NOT VERIFIED.**
+- **Mudlet 4.22.0 / Qt 6.9.0 PASS:** exact committed archive imported through
+  the connection dialog's Offline option in an independent portable root;
+  all 113 `connections` assertions and reviewed weapon/Errors captures pass.
+- **Live same-ship comparison PASS:** clean final import into a separate
+  Mudlet 5.0.1 profile; GallTest at dock 49090, actual bridge GMCP plus
+  `look ship`/`look crew`. Identity, navigation, all four condition arcs, sail,
+  passengers, crew/chiefs/skills/modifiers, stamina, repair, six weapon entries
+  and silk cargo agree. Decoded packets, reference/panel text, hashes and
+  inspected screenshots are in [qualification.json](../testing/issue-3/qualification.json).
+- Cargo is **5/70 crates**; `look ship`'s **80/165 load** is weight. Hull
+  weight, set orders, exact reload timers and equipment damage are absent from
+  the protocol. Additional received fields retain their honest labels.
+- Earlier sessions saw two remote-host closes. Final comparisons used fresh
+  packets after the exact archive's clean import; no cause was established.
+  Actual bridge departure cleared ship info/maxSpeed/target. Character returned
+  to the original Inn of Oceans, normal quit/account disconnect and desktop
+  shutdown completed; temporary credentials removed. No ship state was altered.
+- **4.19.1 and physical desktop DPI NOT VERIFIED.** Official 4.19.1 GitHub
+  release metadata still lists no binary assets. Windows/macOS are not claimed.
+  Live equipment/contacts were empty; their populated cases remain offline proof.
 
 The rich fixtures are constructed cases based on the inspected serializer,
 not captured live packets. `server-wire` retains its unchanged real serializer
