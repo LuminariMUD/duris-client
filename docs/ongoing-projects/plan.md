@@ -1,6 +1,6 @@
 # Issue #4: compact Duris header implementation plan
 
-Date: 2026-10-22. Status: implemented; focused runtime checks passed; final review in progress.
+Date: 2026-10-22. Status: implementation and acceptance complete; PR #7 ready for review.
 
 Work item: [#4 — Reduce the Duris banner height or offer a compact header option](https://github.com/LuminariMUD/duris-client/issues/4).
 Parent context: [#1 — Voodoo client feedback index](https://github.com/LuminariMUD/duris-client/issues/1).
@@ -37,15 +37,41 @@ Implementation branch: `branch/issue-4-compact-header`, based on `master` at
   test alias reached by physical keypress/Return: reading pending input after
   the controller types its next command cannot prove focus. No runtime input
   change was required.
-- Lua 5.1 syntax/build and the eight existing controller unit tests pass.
-  Required final suite is running at
+- Lua 5.1 syntax/build, the eight controller unit tests and release-file
+  validation pass. The required final suite passed all **20** cases at
   `/home/aiwithapex/.local/share/duris-client-dev/issue-4-suite`.
-  Next: finish suite, full/compact size/scale matrix, visual/Errors review,
-  available 4.x checks, and append final identities/results to the testing log.
-- Publishing the implementation as one focused PR. Do not merge or push tags;
-  release automation owns tags
-  after a later validated `master` merge. Separate 4.x availability still
-  needs checking; physical desktop DPI remains outside Xvfb evidence.
+  Controls passed at all four requested size/scale combinations; all positive
+  suite runs and matrix runs have recorded screenshot/Errors reviews.
+  Real **4.22.0** portable/offline controls and lifecycle/resize/reopen checks
+  also passed. **4.19.1 NOT RUN:** no executable locally and the official
+  tagged release has no downloadable assets. Physical desktop DPI NOT RUN.
+- Published commit `091d0a9` in focused
+  [PR #7](https://github.com/LuminariMUD/duris-client/pull/7), targeting master.
+  Its hosted build/runtime/CodeQL checks passed. The source is mergeable;
+  GitHub's protected-branch status is `BLOCKED` pending review. Do not merge
+  or push tags; release automation owns tags after a later validated merge.
+- Tracked [evidence](../testing/issue-4/evidence.json) pins package payload,
+  source/fixture hashes, suite/matrix results, measured bounds and selected
+  screenshots. Detailed results are in the
+  [testing log](mudlet-local-testing.md#140-compact-header--2026-10-22).
+  The final proof-only commit can reuse this exact runtime payload; do not
+  rerun the suite for documentation/evidence changes.
+- The user added ignored `.env` credentials and supplied the live endpoint
+  `mud.duris.sbs:7777`. A dedicated profile without the offline companion is
+  used for actual output/header switching with automation off. The local
+  listener did not recognize that account; it was disconnected without
+  confirming account creation. Remote authentication and the final bounded
+  live comparison passed **24 assertions** while connected. Real room/vitals
+  data survived both header transitions; measured console gain was 42.4545
+  logical px. Full/compact/restored captures, footer hover and the clean
+  Errors view were reviewed. `quit` returned to the account menu and `0`
+  disconnected; the dedicated desktop closed normally. No player messages,
+  movement, combat, ship control or server/website changes were needed.
+- All three issue acceptance criteria passed in real built-package imports.
+  No implementation work remains. The declared minimum/physical-DPI limits
+  above remain explicit review considerations, not implied passes. Next
+  action is reviewer approval and a separately authorized merge/release;
+  do not merge this PR or create tags as part of this implementation task.
 
 ## Outcome and boundaries
 

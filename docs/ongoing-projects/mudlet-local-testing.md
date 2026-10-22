@@ -1,5 +1,96 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## 1.4.0 compact header — 2026-10-22
+
+[Issue #4 / PR #7](https://github.com/LuminariMUD/duris-client/pull/7) adds the
+saved `ui set compactHeader on|off` option. Full artwork remains the default;
+compact mode uses the existing gradient and moves the root top from 10.5% to
+2.8%. The [handoff plan](plan.md) records implementation and scope decisions.
+The implementation was committed as `091d0a9` after merging master `72efad6`.
+
+**PASS:** Lua 5.1.5 syntax for all three scripts, `python3 build.py --check`,
+the version 1.4.0 build, eight controller unit tests, and local release-file
+validation. `python3 scripts/mudlet_suite.py --root
+/home/aiwithapex/.local/share/duris-client-dev/issue-4-suite --jobs 3` passed
+all **20** registered expectations (14 positive scenarios and six intentional
+failure/startup-fault cases). Every positive run closed normally, cleaned up
+its processes, and recorded no Lua exceptions. Deliberate zero-maxima inputs
+in `vitals` retain the existing Geyser guard warnings in the Errors view.
+
+**PASS:** real Mudlet **5.0.1 / Qt 6.11.1**, Ubuntu 24.04 / WSL2, Xvfb/Openbox,
+DejaVu Sans Mono. Inspected candidate, relevant scenario/checkpoints, reopened
+profile and actual Errors-view images; used the controller's `review` command
+for all positive scenarios and the size/scale runs. Full artwork, restored
+artwork, intentional compact gradient, missing-art fallback, crowded groups,
+long output, native key input and tabs remain usable. Compact mode preserves
+widgets, scrollback, other settings and handler counts, stays hidden when
+changed under `ui off`, and survives connection/style events, reinstall and
+full profile restart. Populated zone maps recenter and retain hover targets;
+wilderness maps recompute padding without a new map request or zoom reset.
+
+The controls scenario checks both modes at the same actual font/scale. Its
+physical window sizes and measured logical content geometry were:
+
+- **1280x720, scale 1:** logical 1280x668; root height 579 -> 630 px;
+  main console 446.9301 -> 486.2970 px (**+39.37 px**).
+- **1366x768, scale 1:** logical 1366x716; root 620 -> 675 px;
+  console 478.5780 -> 521.0325 px (**+42.45 px**).
+- **1920x1080, scale 1:** logical 1920x1028; root 891 -> 970 px;
+  console 687.7629 -> 748.7430 px (**+60.98 px**).
+- **2732x1536, scale 2:** logical 1366x716; root 620 -> 675 px;
+  console 478.5780 -> 521.0325 px (**+42.45 logical px**).
+
+Root bottoms and widths remain stable; measured gains match the planned
+7.7% root / 5.94363% console increase within widget rounding. At unchanged
+font size, the compact checkpoints visibly show additional game-text rows.
+
+**PASS:** a separate official Mudlet **4.22.0 / Qt 6.9.0** extracted AppImage
+copy, isolated with `portable.txt` and the connection dialog's **Offline**
+button. The real controls fixture passed default/legacy settings, full/compact
+aliases, repeated changes, input and hidden/show behavior. The lifecycle
+fixture passed uninstall/reinstall, native resize in compact mode, normal
+save/close and a full process reopen; screenshots and Errors views reviewed.
+No unsupported 5.x startup/isolation flags were passed to the 4.x executable.
+
+Evidence: [manifest and measured bounds](../testing/issue-4/evidence.json),
+[full](../testing/issue-4/full-5.0.1.png),
+[compact](../testing/issue-4/compact-5.0.1.png),
+[Errors view](../testing/issue-4/errors-5.0.1.png), and
+[4.22 reopened compact](../testing/issue-4/reopened-4.22.png).
+All recorded runs match package payload SHA-256
+`845104dcd0069f4466d1a3925e6901d5d50d6f1039959b74b2287321033e2046`;
+the committed archive is SHA-256
+`8c27a97a15d2b0ee2a0672e71197b3799b369ab630bfc62565b16043e560427d`.
+Complete profiles, manifests, fixture hashes and original captures remain
+outside the checkout under the per-run paths in the evidence file.
+
+**NOT RUN:** Mudlet 4.19.1 (no local executable, and its official tagged
+release currently exposes no downloadable binaries); physical desktop DPI
+(scale-2/Xvfb is simulated). The declared minimum is unchanged; 4.22/5.x
+results do not establish minimum-version compatibility.
+
+**PASS — live:** after the user supplied credentials and confirmed
+`mud.duris.sbs:7777`, a separate `Duris-Live-Header` profile imported the same
+archive with no offline companion, command override or public-map restriction.
+All automation stayed off. Actual Char.Status/Vitals and Room.Info arrived;
+`look` showed real room text. A bounded full -> compact -> full comparison
+passed **24 assertions**: real connection/data, off automation, widget/state,
+tabs and handler preservation, expected 42.4545 px console gain, and full
+geometry/artwork restoration while the socket remained connected. Inspected
+all three live captures, footer hover and the actual clean Errors view.
+The character returned to its account menu with `quit`; `0` disconnected
+the account, then the dedicated desktop closed normally. No movement,
+combat, ship-control commands or messages to other players were needed.
+
+The initial local listener did not recognize the account and was disconnected
+at its unconfirmed new-account prompt without creating an account. Earlier
+remote attempts were closed by the host while navigating the login flow;
+the final bounded comparison retained its connection and explicitly logged
+out. Credentials remained in the ignored local `.env`; login prompts and
+private live captures are outside the checkout. Only sanitized live bounds,
+assertions and screenshot hashes are included in the evidence file. No
+server/website source or configuration was changed.
+
 ## 1.3.6 wilderness map colors — 2026-10-22
 
 [Issue #2 investigation and evidence](map-color-bleeding.md) records the
