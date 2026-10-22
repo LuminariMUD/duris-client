@@ -1,0 +1,54 @@
+{
+  "commands": [],
+  "scenario": "map-colors",
+  "status": "FAIL",
+  "run_id": "issue-2-4.22-baseline",
+  "assertions": [
+    {
+      "description": "requested scenario matches this run",
+      "passed": true
+    },
+    {
+      "description": "isolated profile",
+      "passed": true
+    },
+    {
+      "description": "disconnected",
+      "passed": true
+    },
+    {
+      "description": "candidate version",
+      "passed": true
+    },
+    {
+      "description": "black-background ocean has blue foreground",
+      "passed": false
+    }
+  ],
+  "error": "[string \"Script: Duris test companion\"]:17: black-background ocean has blue foreground\nstack traceback:\n\t[C]: in function 'assert'\n\t[string \"Script: Duris test companion\"]:17: in function 'check'\n\t...-Visual/Duris Test Companion/fixtures/map-colors.lua:46: in function <...-Visual/Duris Test Companion/fixtures/map-colors.lua:43>\n\t[C]: in function 'xpcall'\n\t[string \"Script: Duris test companion\"]:65: in function 'resume'\n\t[string \"DurisTest.resume()\"]:1: in main chunk\n\t[string \"Alias: Test Lua command\"]:1: in function <[string \"Alias: Test Lua command\"]:1>",
+  "errors": [],
+  "error_review": "PASS",
+  "visual_review": "FAIL",
+  "geometry": {
+    "WINDOW": "4194311",
+    "X": "2",
+    "Y": "44",
+    "WIDTH": "1366",
+    "HEIGHT": "768",
+    "SCREEN": "0"
+  },
+  "normal_shutdown": true,
+  "cleanup": true,
+  "processes": [
+    {
+      "pid": 1815245,
+      "exit_code": 0
+    },
+    {
+      "pid": 1815246,
+      "exit_code": 0
+    }
+  ],
+  "automated_status": "FAIL",
+  "review_note": "Reviewed 01-colored-map.png: v1.3.5 reverses combined colors, retains terrain backgrounds and paints the following line. Expected regression failure; normal shutdown and no Lua errors."
+}

@@ -2,6 +2,11 @@
 
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
+## 1.3.6 - 2026-10-22
+
+- Fix wilderness map background bleeding by reading Duris combined colors in background/foreground order and clearing old backgrounds on foreground-only terrain.
+- Handle background-only map colors, distinguish black from bright black, and reset colors at line and map boundaries.
+
 ## 1.3.5 - 2026-10-15
 
 - Replace the old border artwork with a custom obsidian-and-bronze atlas frame, engraved compass details, and a compact DURIS wordmark.
