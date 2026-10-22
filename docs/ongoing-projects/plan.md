@@ -25,6 +25,15 @@ for the same ship.
 
 ## Current handoff (2026-10-22)
 
+- **Controller follow-up:** `branch/mudlet-editor-readiness`, stacked on core
+  `8c8810e`, replaces the editor's fixed 0.3-second sleep with the existing
+  bounded `wait_for` path (five seconds, also observes application exit).
+  Earlier login/1920x1080 captures reproduced the missing-editor failure after
+  behavior had passed. Eight controller checks and the final 20-case suite at
+  `/tmp/duris-issue3-ready-suite` now pass. No package content changed in this
+  controller chunk; the final archive is the core departure-guard candidate.
+  Keep the evidence branch stacked above this fix when integrating PRs.
+
 - **Review follow-up:** the server's `Ship.Info {}` then
   `Ship.Contacts {contacts=[]}` sequence now preserves `(no ship data)`.
   The new `connections` assertion failed before the guard and passes after;
