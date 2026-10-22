@@ -25,6 +25,14 @@ for the same ship.
 
 ## Current handoff (2026-10-22)
 
+- **Latest review fixed:** fresh Contacts navigation in shared state takes
+  precedence over cached Info heading/speed. The zero-value regression failed
+  before the two-line change and now passes (115 connection assertions).
+  The final manifest identifies this source/archive and corresponding fresh
+  run; original size/DPI records are explicitly historical layout coverage.
+  The evidence PR also needs trailing line padding removed from published
+  reference text before checking the complete PR diff.
+
 - **Review follow-up:** the server's `Ship.Info {}` then
   `Ship.Contacts {contacts=[]}` sequence now preserves `(no ship data)`.
   The new `connections` assertion failed before the guard and passes after;
