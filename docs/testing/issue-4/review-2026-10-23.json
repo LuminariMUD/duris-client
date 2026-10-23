@@ -1,0 +1,215 @@
+{
+  "date": "2026-10-23",
+  "validated_source_parent": "b055e15f70b83d0916dcfda04b20248101d6f421",
+  "candidate": {
+    "version": "1.4.1",
+    "sha256": "59630900935d50eae404c1d0ce63749fcf4054ef6fd93fe9e8e92f7168d0418d",
+    "payload_sha256": "3ba1adc805c6bf0b9a73fb70fb3e9abd34fb811c545826041895d8f5a7ca832b"
+  },
+  "sources": {
+    "VERSION": "7d072b48526b023950e4c48db01e8c273554a6401119f5691e7589ba9bc65d9d",
+    "src/config.lua": "74ab009ad7c91e665b33ab2ae0adc967d84c9e1dccbb5c6ec8f99221068d9fe7",
+    "src/scripts/ArjAuto.lua": "5ac63ee270f0565588abd049dd91fcef0000596ff455e0ed931c7d4e45496c48",
+    "src/scripts/ArjMapper.lua": "e4d918e03fbbc0b2b356e8ce6e6ed61d96dc5b7ecb96293daeeddb5b8e1d6103",
+    "src/scripts/ArjUI.lua": "08c20266b4887d434b8d8cdd52ae306679db15e3ba39b69fb17f6bb73022cddb",
+    "tests/mudlet/fixtures/assertion-error.lua": "0fb1cd524b09681d6118214dae83ff8d759c7f4a88fc3de127e23a99aa1e0fdf",
+    "tests/mudlet/fixtures/chat.lua": "411c8358d3b78e60ccc2f5455adbbd29892a0332e3cc329a1de2fcdbdda91ff5",
+    "tests/mudlet/fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
+    "tests/mudlet/fixtures/connections.lua": "94e2c522b470cbfc6716dcdc7b76d3831d10e5cacdbc9597fe98f52c54d80c48",
+    "tests/mudlet/fixtures/controls.lua": "c10204ab29fcc6eba4b05f9d0346245d6c7456f551bc1bd652fb5c1b5388a32a",
+    "tests/mudlet/fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
+    "tests/mudlet/fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
+    "tests/mudlet/fixtures/information.lua": "f77bb2eb985b73627990656093ef59dd79b9cb6e85fc5db52f9c1b1bc688bef2",
+    "tests/mudlet/fixtures/lifecycle.lua": "4de65155e95196819845a4c56f1e25bca05bb28b8932816b1f4e290f31a29129",
+    "tests/mudlet/fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
+    "tests/mudlet/fixtures/lowhp.lua": "7c009ca0bdca1ceeb20c540a32cca3824645448a64cdd87cd239c5e4c81ffa96",
+    "tests/mudlet/fixtures/map-colors.lua": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b",
+    "tests/mudlet/fixtures/maps.lua": "17a377cfaebc0908261597e7919b2f66efcd4c75967ddb94acfd6cbc2a9fd9c9",
+    "tests/mudlet/fixtures/reopen.lua": "e8c7cb415523bfc92d6d11e382c6b7ead5ceab9e55350e00527e7f9c87100e68",
+    "tests/mudlet/fixtures/server-wire.lua": "f67f7bcbc988c0ca4ed6aefb9a96bd387f2981696d00c285756093066256d5b8",
+    "tests/mudlet/fixtures/text.lua": "97831e2917ae7b6b35abc289a25219bd703335f99e0323aa7fbd33657bb3e091",
+    "tests/mudlet/fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
+    "tests/mudlet/fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082",
+    "scripts/mudlet_test.py": "e3ab3d83841f38922ae9edc24fd7b99f49e0a7a75a31649fb3e9eb04a1a9a033"
+  },
+  "suite_root": "/tmp/duris-pr7-final",
+  "cases": [
+    {
+      "case": "lowhp",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/lowhp/20261023T093209Z-29bfa98e-lowhp",
+      "assertions": 29,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "vitals",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/vitals/20261023T093207Z-cf03f7c3-vitals",
+      "assertions": 10,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "crowded",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/crowded/20261023T093207Z-b9b97c5d-crowded",
+      "assertions": 7,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "combat",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/combat/20261023T093216Z-bc9714c3-combat",
+      "assertions": 14,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "chat",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/chat/20261023T093216Z-93b2fdde-chat",
+      "assertions": 17,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "information",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/information/20261023T093217Z-dec04db3-information",
+      "assertions": 18,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "maps",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/maps/20261023T093225Z-344b264b-maps",
+      "assertions": 31,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "map-colors",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/map-colors/20261023T093228Z-c4047a34-map-colors",
+      "assertions": 23,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "controls",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/controls/20261023T093231Z-23f7097c-controls",
+      "assertions": 131,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "login",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/login/20261023T093236Z-07bc79c4-login",
+      "assertions": 6,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "text",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/text/20261023T093246Z-70a8cc4d-text",
+      "assertions": 15,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "lifecycle",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/lifecycle/20261023T093246Z-f703001f-lifecycle",
+      "assertions": 324,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "connections",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/connections/20261023T093255Z-c482e1c1-connections",
+      "assertions": 55,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "server-wire",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/server-wire/20261023T093259Z-f4792371-server-wire",
+      "assertions": 26,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "assertion-error",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/assertion-error/20261023T093300Z-3c647d9d-assertion-error",
+      "assertions": 5,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "timer-error",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/timer-error/20261023T093306Z-3f1b02d7-timer-error",
+      "assertions": 4,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "event-error",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/event-error/20261023T093307Z-5f618c6f-event-error",
+      "assertions": 4,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "wrong-profile",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/wrong-profile/20261023T093312Z-6e66f22b-lowhp",
+      "assertions": 0,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "wrong-candidate",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/wrong-candidate/20261023T093313Z-877e575f-lowhp",
+      "assertions": 0,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "no-readiness",
+      "passed": true,
+      "run": "/tmp/duris-pr7-final/no-readiness/20261023T093314Z-804ceb15-lowhp",
+      "assertions": 0,
+      "normal_shutdown": true,
+      "cleanup": true
+    }
+  ],
+  "limits": [
+    "Offline Mudlet 5.0.1 / Qt 6.11.1 on Linux/WSL; no fresh live check",
+    "Mudlet 4.19.1, physical DPI/input and Windows/macOS remain unverified",
+    "Earlier evidence files retain their historical source/archive identities; this record identifies the integrated review candidate."
+  ],
+  "visual_review": [
+    {
+      "path": "/tmp/duris-pr7-final/chat/20261023T093216Z-93b2fdde-chat/10-tell-while-ui-off.png",
+      "sha256": "f8776c06db11bc97fe00e8f7f731163f4153fb73c272e0236cab406e6223ab45",
+      "status": "inspected"
+    },
+    {
+      "path": "/tmp/duris-pr7-final/chat/20261023T093216Z-93b2fdde-chat/errors-view.png",
+      "sha256": "c79fee05d8014d743a5a02975acc044de34bd42334fc155a67df27ef67950ded",
+      "status": "inspected"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-23",
+  "controller_sha256": "a3c184780d51a137a471e6559233ddb07674e7e8e001a60f749e2b798748070f",
+  "run": "/tmp/duris-pr11-final/20261023T094640Z-a0ed3f2e-connections",
+  "candidate": {
+    "version": "2.0.1",
+    "sha256": "b77851be90a53a22ba9fec40b6f8540ffdf87046c90ef034f38049ef036a3d35",
+    "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+  },
+  "assertions": 115,
+  "status": "PASS",
+  "visual_review": {
+    "path": "/tmp/duris-pr11-final/20261023T094640Z-a0ed3f2e-connections/errors-view.png",
+    "sha256": "1cf5e54acf019f43ef046753d3ba353f44a2b50735ce655ee29b7e4988bfaea2",
+    "status": "inspected"
+  },
+  "reused_runtime_suite": "review-2026-10-23.json",
+  "reuse_reason": "src/, VERSION, and committed archive are byte-identical to PR #9; only bounded controller readiness and handoff text differ."
+}

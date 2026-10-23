@@ -1,6 +1,10 @@
 local T=DurisTest
 assert(loadfile(getMudletHomeDir().."/Duris Test Companion/fixtures/lowhp.lua"))()
 local main, state, handlers = ArjUI.main, ArjUI.state, #ArjUI.eventHandlers
+expandAlias("ui off")
+expandAlias("ui set compactHeader on")
+T.check(ArjUI.hidden and ArjUI.main.hidden and ArjUI.bg.hidden,"compact selection while hidden stays hidden")
+expandAlias("ui on")
 for i=1,3 do
  expandAlias("ui off")
  T.check(ArjUI.hidden and ArjUI.main.hidden, "hide "..i)
@@ -38,6 +42,7 @@ tempTimer(1.3,function()
   local ok,err=xpcall(function()
    T.check(ArjUI.main and ArjMapper.ui.zoneContainer,"reinstall initializes UI and mapper")
    T.check(#ArjUI.eventHandlers==handlers,"replacement has exactly one set of handlers")
+   T.check(ArjUI.settings.compactHeader==true,"reinstall loads saved compact preference before layout")
    assert(loadfile(getMudletHomeDir().."/Duris Test Companion/fixtures/lowhp.lua"))()
   end,debug.traceback)
   T.finish(ok,err)

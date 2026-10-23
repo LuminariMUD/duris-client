@@ -1,6 +1,47 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Qualification evidence carry-forward — 2026-10-23
+
+PR #10 remains documentation/evidence only relative to #11. Runtime source,
+controller, VERSION and archive are byte-identical to that parent. The inherited
+hidden-tell finding is fixed in the carried stack. Published reference text has
+no trailing whitespace; the entire current PR diff passes git diff --check.
+
+Current 2.0.1 source/archive identities and offline 21-case proof are in
+[review-2026-10-23.json](../testing/issue-3/review-2026-10-23.json), with the
+fresh 115-assertion editor-capture run in editor-review-2026-10-23.json.
+Historical live/4.22 evidence retains its original hashes under explicit
+historical fields. It establishes the recorded ship facts and old archive,
+not fresh qualification of the integrated dashboard. Earlier qualification
+handoff is preserved in [plan-ship-qualification.md](plan-ship-qualification.md).
+No release version bump or runtime rerun is needed for this evidence-only delta.
+
+
 ## 2026-10-22 - Issue #3 SHIP readability, 1.3.7
+
+## Integrated SHIP review completion — 2026-10-23
+
+PR #9 is stacked on #8, retaining #7 and both layout review repairs. Version
+2.0.1 prevents a downgrade to the former standalone 1.3.7 candidate. The prior
+layout handoff is preserved in [plan-issue-5.md](plan-issue-5.md).
+
+All four existing review findings remain valid and addressed: authoritative
+bridge departure stays empty; fresh zero Contacts navigation beats cached Info;
+the manifest now identifies this integrated candidate; all 21 final-package
+Mudlet suite expectations pass. The inherited hidden-tell defect is fixed by
+#7 and retained. Integration exposed a one-row SHIP scroll drift (22 to 21);
+the existing absolute scrollTo path repairs it, with the failing and passing
+connection runs recorded. The 1280x720 connection case also passes 115 assertions.
+
+Local build/release payload validation, 15 release and ten controller tests pass.
+Weapon/refresh/Errors screenshots were inspected. Current source, archive and
+per-run payload identities: [review record](../testing/issue-3/review-2026-10-23.json).
+The old 1.3.7 live, 4.22 and size/DPI evidence is historical; the new combined
+layout is not qualified by those captures. No live/minimum-version/hardware-DPI/
+other-platform rerun is claimed. No merge or manual tag was performed.
+
+
+## 2026-10-22 - Issue #3 SHIP readability, final 1.3.7 candidate
 
 Ordered identity/navigation, condition, numeric-slot weapons, crew, equipment,
 cargo and contacts replace the generic dump. Separate ammo/damage/timer status,
@@ -50,6 +91,158 @@ Core `26663f2`, controller `d33a4e6`; review order PR #9, #11, #10.
 Rich constructed fixtures and actual live packets retain distinct provenance;
 the checked-in serializer JSON was not regenerated. The updated [plan](plan.md)
 is the continuation reference. Hosted CI is separate from local qualification.
+
+## Integrated review repair — 2026-10-23
+
+PR #8 now carries #7 (compact header and hidden-tell repair). Merge #7 before
+#8; dependent branches will carry the combined runtime forward. Published
+history is preserved through a merge, with no manual release tags.
+The prior header plan is preserved in [plan-issue-4.md](plan-issue-4.md).
+
+The map-over-maximized-output finding is valid. Covered dashboard frame trees
+are hidden without changing saved normal state. The mapper checks effective
+body visibility before event/deferred paints, retains accepted room updates,
+and reveals the latest room when output is restored. No new timer or renderer
+was introduced. The hidden-tell regression from #7 remains passing.
+
+Local release validation, 15 release tests, ten controller tests and all 21
+Mudlet 5.0.1 suite expectations pass after the affected maps rerun. That rerun
+corrects a fixture assumption: compact geometry can grow without adding a full
+blank text row. The regression checks Geyser's hidden OR auto_hidden state;
+covered output, restored latest-room map, reset layout and Errors images were
+inspected. [Current source/payload and per-run archive hashes](../testing/issue-5/review-2026-10-23.json)
+identify the integrated package. Earlier manifests remain historical evidence;
+no fresh live, 4.22, minimum-version, hardware-DPI or other-OS claim is made.
+
+
+## Review follow-up — 2026-10-23
+
+The inherited private-chat visibility finding is valid. `ui off` now clears the
+visibility flag for every conversation, including contacts without a window.
+Unread tells remain unread until that conversation is explicitly opened.
+The extended command-path chat fixture fails on b055e15 and passes after repair.
+Version 1.4.1 includes this fix and the rebuilt package.
+
+Local release validation, 15 release tests, eight controller tests, and all
+20 real Mudlet 5.0.1 suite expectations pass. The chat/reopen screenshot and
+Errors view were inspected. Exact source/archive identities and run directories
+are in [the review record](../testing/issue-4/review-2026-10-23.json).
+Earlier matrix/live/4.22 captures retain their historical identities; their
+unchanged compact-header geometry and enabled-map behavior are reused.
+No new live/minimum-version/physical-DPI/platform qualification is claimed.
+
+## 1.4.0 compact header — 2026-10-22
+
+[Issue #4 / PR #7](https://github.com/LuminariMUD/duris-client/pull/7) adds the
+saved `ui set compactHeader on|off` option. Full artwork remains the default;
+compact mode uses the existing gradient and moves the root top from 10.5% to
+2.8%. The [handoff plan](plan.md) records implementation and scope decisions.
+The implementation was committed as `091d0a9` after merging master `72efad6`.
+
+**PASS:** Lua 5.1.5 syntax for all three scripts, `python3 build.py --check`,
+the version 1.4.0 build, eight controller unit tests, and local release-file
+validation. `python3 scripts/mudlet_suite.py --root
+/home/aiwithapex/.local/share/duris-client-dev/issue-4-final-suite --jobs 3` passed
+all **20** registered expectations (14 positive scenarios and six intentional
+failure/startup-fault cases). Every positive run closed normally, cleaned up
+its processes, and recorded no Lua exceptions. Deliberate zero-maxima inputs
+in `vitals` retain the existing Geyser guard warnings in the Errors view.
+
+**PASS:** real Mudlet **5.0.1 / Qt 6.11.1**, Ubuntu 24.04 / WSL2, Xvfb/Openbox,
+DejaVu Sans Mono. Inspected candidate, relevant scenario/checkpoints, reopened
+profile and actual Errors-view images; used the controller's `review` command
+for all positive scenarios and the size/scale runs. Full artwork, restored
+artwork, intentional compact gradient, missing-art fallback, crowded groups,
+long output, native key input and tabs remain usable. Compact mode preserves
+widgets, scrollback, other settings and handler counts, stays hidden when
+changed under `ui off`, and survives connection/style events, reinstall and
+full profile restart. Populated zone maps recenter and retain hover targets;
+wilderness maps recompute padding without a new map request or zoom reset.
+
+The controls scenario checks both modes at the same actual font/scale. Its
+physical window sizes and measured logical content geometry were:
+
+- **1280x720, scale 1:** logical 1280x668; root height 579 -> 630 px;
+  main console 446.9301 -> 486.2970 px (**+39.37 px**).
+- **1366x768, scale 1:** logical 1366x716; root 620 -> 675 px;
+  console 478.5780 -> 521.0325 px (**+42.45 px**).
+- **1920x1080, scale 1:** logical 1920x1028; root 891 -> 970 px;
+  console 687.7629 -> 748.7430 px (**+60.98 px**).
+- **2732x1536, scale 2:** logical 1366x716; root 620 -> 675 px;
+  console 478.5780 -> 521.0325 px (**+42.45 logical px**).
+
+Root bottoms and widths remain stable; measured gains match the planned
+7.7% root / 5.94363% console increase within widget rounding. At unchanged
+font size, the compact checkpoints visibly show additional game-text rows.
+
+**PASS:** a separate official Mudlet **4.22.0 / Qt 6.9.0** extracted AppImage
+copy, isolated with `portable.txt` and the connection dialog's **Offline**
+button. The real controls fixture passed default/legacy settings, full/compact
+aliases, repeated changes, input and hidden/show behavior. The lifecycle
+fixture passed uninstall/reinstall, native resize in compact mode, normal
+save/close and a full process reopen; screenshots and Errors views reviewed.
+No unsupported 5.x startup/isolation flags were passed to the 4.x executable.
+
+**PASS — review regression:** the automated PR review found that layout's
+direct wilderness renderer call could bypass `mapper off`, because Mudlet
+still replaces `gmcp.Room.Map` while the package ignores its event. The new
+`maps.lua` command-path sequence reproduced the failure before the fix, then
+passed against the rebuilt archive in **5.0.1 and 4.22.0**. The repair gates
+layout redraw on the existing mapper `state.enabled` flag. It preserves the
+accepted display through full/compact changes, resize and hide/show while
+paused; `mapper on` resumes accepting maps. No new state/cache is needed.
+Final paused/resumed and Errors-view captures were inspected, and the required
+20-case suite, eight controller tests and release validation passed again.
+
+Evidence: [manifest and measured bounds](../testing/issue-4/evidence.json),
+[full](../testing/issue-4/full-5.0.1.png),
+[compact](../testing/issue-4/compact-5.0.1.png),
+[Errors view](../testing/issue-4/errors-5.0.1.png), and
+[4.22 reopened compact](../testing/issue-4/reopened-4.22.png), plus
+[paused map in final 4.22 archive](../testing/issue-4/paused-map-4.22.png).
+The final archive is SHA-256
+`cf20f25c4605b3e67cdeaa070997ba3fcad30c02035702a4f4f5d493187b7dfc`,
+with payload SHA-256
+`8de8a5fc0aef8ebef20c8ac646856719096a75df460890520d3b6f78ef8d60ba`.
+It passed the final 20-case suite and 4.22 maps scenario. Initial matrix,
+4.22 controls/reopen and live checks used payload
+`845104dcd0069f4466d1a3925e6901d5d50d6f1039959b74b2287321033e2046`.
+Those results are retained with their own identities: the only subsequent
+runtime change is the mapper-enabled guard, leaving geometry, settings,
+styles, lifecycle and enabled-map rendering unchanged. Final 1366x768
+controls also remeasured the same gain. Original positive-suite visuals are
+reused for unchanged paths; final controls/maps and paused-state captures
+have additional explicit reviews. The evidence file distinguishes every
+candidate instead of relabeling older runs as final-archive checks.
+Complete profiles, manifests, fixture hashes and original captures remain
+outside the checkout under the per-run paths in the evidence file.
+
+**NOT RUN:** Mudlet 4.19.1 (no local executable, and its official tagged
+release currently exposes no downloadable binaries); physical desktop DPI
+(scale-2/Xvfb is simulated). The declared minimum is unchanged; 4.22/5.x
+results do not establish minimum-version compatibility.
+
+**PASS — live:** after the user supplied credentials and confirmed
+`mud.duris.sbs:7777`, a separate `Duris-Live-Header` profile imported the same
+archive with no offline companion, command override or public-map restriction.
+All automation stayed off. Actual Char.Status/Vitals and Room.Info arrived;
+`look` showed real room text. A bounded full -> compact -> full comparison
+passed **24 assertions**: real connection/data, off automation, widget/state,
+tabs and handler preservation, expected 42.4545 px console gain, and full
+geometry/artwork restoration while the socket remained connected. Inspected
+all three live captures, footer hover and the actual clean Errors view.
+The character returned to its account menu with `quit`; `0` disconnected
+the account, then the dedicated desktop closed normally. No movement,
+combat, ship-control commands or messages to other players were needed.
+
+The initial local listener did not recognize the account and was disconnected
+at its unconfirmed new-account prompt without creating an account. Earlier
+remote attempts were closed by the host while navigating the login flow;
+the final bounded comparison retained its connection and explicitly logged
+out. Credentials remained in the ignored local `.env`; login prompts and
+private live captures are outside the checkout. Only sanitized live bounds,
+assertions and screenshot hashes are included in the evidence file. No
+server/website source or configuration was changed.
 
 ## 1.3.6 wilderness map colors — 2026-10-22
 
@@ -417,3 +610,17 @@ Environment/baseline, repeatable execution, offline fixtures, triage and operato
 documentation are implemented. Live/compatibility has the explicit limits
 above; remote CI execution and evidence upload passed. No unresolved
 reproduced defect currently blocks ordinary use in the tested primary target.
+
+## Issue #5 dashboard chunk — 2026-10-22
+
+Candidate 2.0.0 adds ten adjustable dashboard frames. Real Mudlet 5.0.1 / Qt
+6.11.1, Xvfb 1366x768 scale 1: physical title drag, border resize, right-click
+menu, reset button, all dashboard actions, off/on and profile restart pass.
+The 20-case suite ran with 18 initial passes; fixes for hover dispatch and a
+wrap-sensitive chat assertion passed targeted chat/maps reruns. Layout/lifecycle
+also pass after restoring explicitly hidden frame bodies and clearing frame
+menu registries. Ten Python controller tests pass. Inspected default,
+resized, reset/menu, mixed-state and Errors-view images; no Lua errors.
+See [candidate evidence](../testing/issue-5/dashboard-evidence.json) for hashes,
+run paths and selected screenshots. Private chats, cached map redraw, full size/
+scale matrix and 4.x qualification remain pending in the implementation plan.
