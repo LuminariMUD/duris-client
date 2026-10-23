@@ -94,7 +94,7 @@ be hidden or minimized independently. Dashboard choices are saved in
 `arjui_layout.json` in this profile and survive reconnects and restarts. A reset
 restores defaults even while `ui off`, without turning the UI on.
 
-Use the map's **+ / −** controls to zoom. Click the active **STATS**, **INV**, **EQ**, **WHO**, or **SHIP** tab to send `score`, `inv`, `eq`, `who`, or `look contacts` and refresh the corresponding information.
+Use the map's **+ / −** controls to zoom. Click the active **STATS**, **INV**, **EQ**, **WHO**, or **SHIP** tab to send `score`, `inv`, `eq`, `who`, or `look ship` and refresh the corresponding information.
 
 ## How it works
 
@@ -154,7 +154,9 @@ See the [design guide](docs/DESIGN.md) for panel proportions, visual conventions
 - **Missing tank, inventory, equipment, who, or time information:** these displays depend on recognized text and prompt formats. Custom prompts or changed server output can affect capture even when GMCP panels work.
 - **Need to restore the main console:** use `ui off`; `ui on` shows the existing interface again without rebuilding it.
 
-The **SHIP** tab lists contacts sorted by range and colored by side when the server sends `Ship.Info`/`Ship.Contacts` or when you look at contacts; it is a text panel, not a drawn radar. Quest-map rendering and the server's structured chat color runs are not implemented. Alignment coloring for other players in the room is limited by the fields the server supplies. The [server study and implementation log](docs/ongoing-projects/updates-upgrades.md) records the protocol details, completed work, and remaining candidates.
+The **SHIP** tab opens the **Captain's Table**: spatial armor/internal gauges, actual/ordered helm instruments, arc badges, a numbered manifest, crew watch and a contact bearing glass. Resize or maximize Character for the expanded composition. Narrow frames stack the sections; **Plot** expands the bearing glass locally. **Details** retains the complete selectable ledger, and **Copy** exports it. Your Bridge/Details preference is remembered. Ship data stays session-local.
+
+Markers and badges inspect locally. **Look ship**, **Look crew** and **Contacts** each send their named reference command once. Timers are server counters; timer-ready does not mean a weapon can fire. The contact plot uses reported bearing/range, including altitude, with north at the top; X/Y remain tactical coordinates around our 50/50 reference. Updated servers supply weight/load, orders and richer slot/stamina/target facts. Older servers remain usable with unavailable facts shown as unknown. Quest-map rendering and structured chat color runs remain unimplemented. The [Captain's Table plan](docs/ongoing-projects/plan-ship-bridge.md) records qualification and remaining limits.
 
 ## Build and contribute
 

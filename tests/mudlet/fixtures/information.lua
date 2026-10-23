@@ -33,7 +33,7 @@ T.steps({
   T.check(ArjUI.state.quest==nil,"quest completion clears panel")
  end,actions=function() return {T.click(ArjUI.tabButtons.ship)} end},
  {name="ship-contacts",run=function()
-  T.check(ArjUI.activeTab=="ship" and T.commands[#T.commands].command=="look contacts","SHIP click request")
+  T.check(ArjUI.activeTab=="ship" and T.commands[#T.commands].command=="look ship","SHIP click requests the bridge reference")
   T.emit("Ship.Info",{name="Bronze Voyager",heading=90,speed=12,maxSpeed=20,captain="VisualTester",weapons={
    {slot=10,name="Port cannon",position="port",ammo=0,maxAmmo=10,damage=1,ready=false},
    {slot=2,name="Forward cannon",position="bow",ammo=8,maxAmmo=10,damage=0,ready=true}}})

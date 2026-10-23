@@ -26,6 +26,9 @@ function T.emit(event, data)
 end
 
 function T.lines(name)
+  -- Reading the ledger observes the pending zero-delay paint. The dedicated
+  -- Bridge scenario checks burst coalescing before requesting any text.
+  if name=="ArjUI_ShipBox" and ArjUI.shipPaintTimer then ArjUI:renderShip() end
   return table.concat(getLines(name or "main", 0, getLastLineNumber(name or "main")+1) or {}, "\n")
 end
 

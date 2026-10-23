@@ -1,7 +1,7 @@
 # Fixture provenance
 
 Captain's Table contract (2026-10-23): `server-gmcp.json` is refreshed from
-Duris `4c3312e0657c94f68ba4e6956c5065e4fc8c40dc` (server PR #304).
+Duris `e86bf7f24c52449b1260bb378443efafd1d9c491` (merged server PR #304).
 The harness executes the production slot status/description/weight and crew
 stamina helpers, not duplicate formulas. The captured ship occupies all 16
 slots and includes contraband, damage 100, timers and negative stamina.

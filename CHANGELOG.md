@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.0 - 2026-10-23
+
+- Add the responsive Captain's Table Bridge with spatial armor/internal gauges, actual/ordered helm, arc badges, complete manifest, crew watch and contact bearing glass.
+- Retain selectable Details and a local Copy details action; persist the view preference and coalesce visible ship paints while hidden panels accept state.
+- SHIP refresh requests `look ship`; explicit Look ship, Look crew and Contacts actions send their named reference command once.
+
 ## 2.2.0 - 2026-10-23
 
 - Show bridge weight/load, ordered navigation, display/raw stamina, explicit target, slot condition/timers/destruction, contact coordinates and both arc meanings when supplied by the server.

@@ -82,6 +82,8 @@ function ArjUI:kill()
     if type(value)=="table" and type(value.name)=="string" and value.name:match("^ArjUI_") then self[key]=nil end
   end
   self.tabPanels,self.tabButtons,self.chatPanels,self.chatTabs=nil,nil,nil,nil
+  self.shipWidgets,self.shipControls,self.shipPaintTimer=nil,nil,nil
+  self.shipActionHeight,self.shipPlotOpen=nil,nil
   self.privateChats, self.tellContacts = {}, {}
   self.exitButtonsStatic, self.groupWidgets = nil, {}
   self.playerName, self.damage = nil, nil
@@ -357,6 +359,7 @@ function ArjUI:reconcilePanelViews()
   for name,widget in pairs(self.tabPanels or {}) do
     if name==self.activeTab then widget:show() else widget:hide() end
   end
+  self:reconcileShipViews()
   for name,widget in pairs(self.chatPanels or {}) do
     if name==self.activeChatTab then widget:show() else widget:hide() end
   end
@@ -470,6 +473,7 @@ function ArjUI:refreshPanelContent(id)
   if ArjMapper and ArjMapper.state.enabled and self:panelIsVisible("map") then
     ArjMapper:refreshViewport()
   end
+  if (not id or id=="character") and self.activeTab=="ship" then self:renderShipIfActive() end
 end
 
 function ArjUI:panelAction(id,action)
@@ -1037,10 +1041,15 @@ function ArjUI:init()
   self.tabPanels.who = self.whoBox
   
   -- SHIP panel (GMCP Ship.Info/Ship.Contacts, or 'look contacts' text)
-  self.shipBox = makeConsole(self.tabContent, "ArjUI_ShipBox", 0, 0, "100%", "100%", 9)
+  self.shipRoot = Geyser.Container:new({name="ArjUI_ShipRoot",x=0,y=0,width="100%",height="100%"},self.tabContent)
+  self.shipBox = makeConsole(self.shipRoot, "ArjUI_ShipBox", 0, 44, "100%", "100%-44px", 9)
   self.shipBox:enableScrollBar()
   self.shipBox:hide()
-  self.tabPanels.ship = self.shipBox
+  self.shipPage = Geyser.ScrollBox:new({name="ArjUI_ShipPage",x=0,y=44,width="100%",height="100%-44px"},self.shipRoot)
+  self.shipWidgets,self.shipControls={},{}
+  self:setupShipBridge()
+  self.shipRoot:hide()
+  self.tabPanels.ship = self.shipRoot
   
   self:updateTabStyles()
 
@@ -3473,7 +3482,7 @@ function ArjUI:requestTabData(tabName)
   elseif tabName == "eq" then
     send("eq")
   elseif tabName == "ship" then
-    send("look contacts")
+    send("look ship")
   end
 end
 
@@ -3493,6 +3502,7 @@ ArjUI.settingsDefaults = {
 
 function ArjUI:loadSettings()
   self.settings = {}
+  self.shipMode = "bridge"
   for k, v in pairs(self.settingsDefaults) do self.settings[k] = v end
   local path = getMudletHomeDir() .. "/arjui_settings.json"
   local f = io.open(path, "r")
@@ -3501,6 +3511,7 @@ function ArjUI:loadSettings()
     f:close()
     local ok, data = pcall(yajl.to_value, content)
     if ok and type(data) == "table" then
+      self.shipMode = data.shipMode=="details" and "details" or "bridge"
       for k, v in pairs(data) do
         if self.settingsDefaults[k] ~= nil then self.settings[k] = (v == true) end
       end
@@ -3510,7 +3521,9 @@ end
 
 function ArjUI:saveSettings()
   local path = getMudletHomeDir() .. "/arjui_settings.json"
-  local ok, json = pcall(yajl.to_string, self.settings or self.settingsDefaults)
+  local data = {}; for key,value in pairs(self.settings or self.settingsDefaults) do data[key]=value end
+  data.shipMode=self.shipMode or "bridge"
+  local ok, json = pcall(yajl.to_string, data)
   if ok then
     local f = io.open(path, "w")
     if f then f:write(json); f:close() end
@@ -3799,8 +3812,10 @@ end
 -- ------------------------------------------------------------
 
 function ArjUI:resetShip(departed)
+  if self.shipPaintTimer then killTimer(self.shipPaintTimer); self.timers[self.shipPaintTimer]=nil; self.shipPaintTimer=nil end
   self.state.ship = { skills = {}, departed = departed == true }
   self.shipSelection = nil
+  self.shipDirty=true
 end
 
 local function shipCopy(value)
@@ -3913,7 +3928,12 @@ function ArjUI:onShipContacts()
 end
 
 function ArjUI:renderShipIfActive()
-  if self.activeTab == "ship" and self:panelIsVisible("character") then self:renderShip() end
+  self.shipDirty=true
+  if self.shipPaintTimer or self.activeTab~="ship" or not self:panelIsVisible("character") then return end
+  self.shipPaintTimer=self:after(0,function()
+    self.shipPaintTimer=nil
+    if self.activeTab=="ship" and self:panelIsVisible("character") then self:renderShip() end
+  end)
 end
 
 local function sortedKeys(t)
@@ -3929,12 +3949,325 @@ local function shipSideColor(contact)
   if side:find("evil") then return "<indian_red>" end
   if side:find("good") then return "<khaki>" end
   if side == "undead" then return "<medium_purple>" end
+  if side == "squid" then return "<orchid>" end
   if contact.hostile == true then return "<indian_red>" end
   return "<light_gray>"
 end
 
+local function shipPlain(value)
+  return value==nil and "?" or stripColors(tostring(value))
+end
+
+local function shipHTML(value)
+  return shipPlain(value):gsub("&","&amp;"):gsub("<","&lt;"):gsub(">","&gt;"):gsub('"',"&quot;"):gsub("'","&#39;")
+end
+
+local shipArcs={{"bow","Forward"},{"port","Port"},{"starboard","Starboard"},{"stern","Rear"}}
+
+function ArjUI:setupShipBridge()
+  local actions={
+    {"Bridge",function() self.shipMode="bridge"; self:saveSettings(); self:renderShip() end},
+    {"Details",function() self.shipMode="details"; self:saveSettings(); self:renderShip() end},
+    {"Copy details",function() self:renderShip(); setClipboardText(self.shipDetailsText or "") end},
+    {"Bearing glass",function() self.shipPlotOpen=not self.shipPlotOpen; self:renderShip() end},
+    {"Look ship",function() send("look ship") end},
+    {"Look crew",function() send("look crew") end},
+    {"Contacts",function() send("look contacts") end},
+  }
+  for i,action in ipairs(actions) do
+    local button=Geyser.Label:new({name="ArjUI_ShipAction"..i,x=0,y=0,width=40,height=21},self.shipRoot)
+    button:echo("<center>"..action[1].."</center>")
+    button:setClickCallback(action[2]); self.shipControls[i]=button
+  end
+end
+
+function ArjUI:reconcileShipViews()
+  if not self.shipRoot or self.activeTab~="ship" then return end
+  if self.shipMode=="details" then self.shipPage:hide(); self.shipBox:show()
+  else
+    self.shipBox:hide(); self.shipPage:show()
+    for _,widget in pairs(self.shipWidgets or {}) do if not widget.shipUsed then widget:hide() end end
+  end
+end
+
+function ArjUI:shipView()
+  local s=self.state.ship or {}; local info=type(s.info)=="table" and s.info or {}
+  local b=type(info.bridge)=="table" and info.bridge or {}
+  local contacts={}
+  for i,c in ipairs(s.contacts or s.textContacts or {}) do
+    if type(c)=="table" then contacts[#contacts+1]={data=c,index=i} end
+  end
+  table.sort(contacts,function(a,c)
+    local ra=tonumber(pick(a.data,"range","distance","r")) or math.huge
+    local rb=tonumber(pick(c.data,"range","distance","r")) or math.huge
+    if ra~=rb then return ra<rb end
+    local ia,ib=tostring(pick(a.data,"id","num","number") or ""),tostring(pick(c.data,"id","num","number") or "")
+    if ia~=ib then return ia<ib end
+    return a.index<c.index
+  end)
+  local slots={}
+  for _,kind in ipairs({{"weapons","Weapon"},{"equipment","Equipment"}}) do
+    for _,item in ipairs(type(info[kind[1]])=="table" and info[kind[1]] or {}) do
+      if type(item)=="table" then slots[#slots+1]={kind=kind[2],data=item} end
+    end
+  end
+  for _,item in ipairs(type(info.cargo)=="table" and type(info.cargo.items)=="table" and info.cargo.items or {}) do
+    if type(item)=="table" then slots[#slots+1]={kind="Cargo",data=item} end
+  end
+  table.sort(slots,function(a,c) return (tonumber(a.data.slot) or math.huge)<(tonumber(c.data.slot) or math.huge) end)
+  local target
+  if info.bridge then target=type(b.target)=="table" and b.target or nil
+  elseif s.target then
+    target={id=s.target,name=s.targetName}
+    for _,entry in ipairs(contacts) do if entry.data.you_targeting then target={id=entry.data.id,name=entry.data.name}; break end end
+  end
+  return {state=s,info=info,bridge=b,contacts=contacts,slots=slots,target=target,
+    heading=s.heading or pick(info,"heading","course"),speed=s.speed or info.speed,
+    name=pick(info,"name","ship","shipName") or s.name,
+    maxSpeed=pick(info,"maxSpeed","max_speed","speedMax") or s.maxSpeed}
+end
+
+function ArjUI:renderShipBridge()
+  local v=self:shipView(); local info,b,s=v.info,v.bridge,v.state
+  local width=math.max(140,self.shipRoot:get_width())
+  local wide=width>=720; local contentW=width-20
+  local lineH=math.max(16,select(2,calcFontSize(9)))
+  local charW=math.max(7,(calcFontSize(9)))
+  local function pair(a,c) return shipPlain(a).."/"..shipPlain(c) end
+  local function slotText(entry)
+    local item=entry.data
+    local text="["..shipPlain(item.slot).."] "..entry.kind.." · "..shipPlain(item.name)
+    if entry.kind=="Cargo" then
+      return text.."\nCrates "..shipPlain(item.crates).." · Invoice "..shipPlain(item.invoicePrice).." · Contraband "..(item.contraband==true and "Yes" or item.contraband==false and "No" or "?")
+    end
+    if entry.kind=="Weapon" then text=text.."\nPosition "..shipPlain(item.positionLabel or item.position).." · Ammo "..pair(item.ammo,item.maxAmmo)..(tonumber(item.ammo)==0 and " · Out of ammo" or "")..(item.destroyed==true and " · Destroyed (bridge **)" or "") end
+    return text.."\nDamage "..shipPlain(item.damage).." · Server status "..shipPlain(item.statusText).."\nTimer counter "..shipPlain(item.timer).." · Timer ready "..(item.ready==true and "Yes" or item.ready==false and "No" or "?")
+  end
+  local function contactText(c)
+    local arc=c.arc or (c.facing and c.pointing and c.facing..c.pointing)
+    local ours,theirs=tostring(arc):match("^([FPRS])([FPRS])$"); local names={F="Forward",P="Port",S="Starboard",R="Rear"}
+    return "["..shipPlain(pick(c,"id","num","number")).."] "..shipPlain(pick(c,"name","ship"))..
+      "\nX/Y "..pair(c.x,c.y).." · Range "..shipPlain(pick(c,"range","distance","r")).." · Bearing "..shipPlain(pick(c,"bearing","b")).."°"..
+      "\nHeading "..shipPlain(pick(c,"heading","h")).."° · Speed "..shipPlain(pick(c,"speed","s"))..
+      "\nArc "..shipPlain(arc)..(ours and " · our "..names[ours].." / their "..names[theirs] or "")..
+      "\nAllegiance "..shipPlain(pick(c,"race","side","alignment","racewar","faction") or "unknown").." · "..shipPlain(c.status or (c.sunk and "sunk (legacy)" or ""))..
+      (c.you_targeting and " · our lock" or "")..(c.targeting_you and " · targeting us" or "")
+  end
+  local function wrapped(value,w)
+    local columns=math.max(6,math.floor((w-12)/charW)); local lines={}
+    for raw in (shipPlain(value).."\n"):gmatch("([^\n]*)\n") do
+      local line=""
+      for word in raw:gmatch("%S+") do
+        if #line>0 and #line+1+#word>columns then lines[#lines+1]=line; line="" end
+        while #word>columns do
+          -- Server names are UTF-8; break only at character boundaries.
+          local cut=columns
+          while cut>1 and word:byte(cut+1) and word:byte(cut+1)>=128 and word:byte(cut+1)<192 do cut=cut-1 end
+          lines[#lines+1]=word:sub(1,cut); word=word:sub(cut+1)
+        end
+        line=line..(#line>0 and " " or "")..word
+      end
+      lines[#lines+1]=line
+    end
+    local html={}; for _,line in ipairs(lines) do html[#html+1]=shipHTML(line) end
+    return table.concat(html,"<br>"),#lines*lineH+8
+  end
+  for _,widget in pairs(self.shipWidgets) do widget.shipUsed=false end
+  local function label(key,x,y,w,h,html,callback,css)
+    local widget=self.shipWidgets[key]
+    if not widget then
+      widget=Geyser.Label:new({name="ArjUI_Ship_"..key,x=x,y=y,width=w,height=h},self.shipPage)
+      self.shipWidgets[key]=widget
+    end
+    widget.shipUsed=true
+    local geometry=table.concat({x,y,w,h},":")
+    if widget.shipGeometry~=geometry then widget:move(x,y); widget:resize(w,h); widget.shipGeometry=geometry end
+    local style="background-color:#12110f; color:#d8cfbd; border:1px solid #443b2c; padding:3px; font-family:monospace; font-size:9pt;"..(css or "")
+    if widget.shipStyle~=style then widget:setStyleSheet(style); widget.shipStyle=style end
+    if widget.shipHTML~=html then widget:echo(html); widget.shipHTML=html end
+    widget:setClickCallback(callback or function() end); widget:show()
+    return widget
+  end
+  local function block(key,x,y,w,text,callback,css)
+    local html,h=wrapped(text,w); label(key,x,y,w,h,html,callback,css); return y+h+4
+  end
+  local function title(key,x,y,w,text) return block(key,x,y,w,text,nil,"color:#c7a76c;background-color:#211c14;font-weight:bold;") end
+  local actionH=width>=600 and 23 or 46
+  if self.shipActionHeight~=actionH then
+    self.shipPage:move(0,actionH); self.shipPage:resize("100%","100%-"..actionH.."px")
+    self.shipBox:move(0,actionH); self.shipBox:resize("100%","100%-"..actionH.."px")
+    self.shipActionHeight=actionH
+  end
+  for i,button in ipairs(self.shipControls) do
+    local x,y,w
+    if width>=600 then w=width/7; x=(i-1)*w; y=0
+    elseif i<=4 then w=width/4; x=(i-1)*w; y=0
+    else w=width/3; x=(i-5)*w; y=23 end
+    button:move(x,y); button:resize(w-2,21)
+    local captions=width>=600 and {"Bridge","Details","Copy details","Bearing glass","Look ship","Look crew","Contacts"} or {"Bridge","Details","Copy","Plot","Look ship","Look crew","Contacts"}
+    if button.shipCaption~=captions[i] then button:echo("<center>"..captions[i].."</center>"); button.shipCaption=captions[i] end
+    local active=(i==1 and self.shipMode~="details") or (i==2 and self.shipMode=="details") or (i==4 and self.shipPlotOpen)
+    button:setStyleSheet("background-color:"..(active and "#40301e" or "#15120e")..";border:1px solid #6b5433;color:#e1c894;font-size:8pt;")
+  end
+  local y=4
+  y=title("identity",0,y,contentW,v.name or "Captain's Table · no ship data")
+  y=block("identityDetails",0,y,contentW,"["..shipPlain(info.id).."]  "..shipPlain(info.status or s.status).."\nCaptain "..shipPlain(info.captain or s.captain).." · Frags "..shipPlain(info.frags)..(not s.info and "\nText-derived fallback" or ""))
+  if v.target then y=block("target",0,y,contentW,"Locked target ["..shipPlain(v.target.id).."] "..shipPlain(v.target.name)) end
+  if not v.name and next(info)==nil then
+    block("empty",0,y,contentW,"Board a ship. Look ship, Look crew and Contacts request the original read-only reference text.")
+  else
+    local top=y; local leftW=wide and math.floor((contentW-12)/2) or contentW
+    local rightX,rightW=wide and leftW+12 or 0,wide and contentW-leftW-12 or contentW
+    y=title("hullTitle",0,y,leftW,"HULL · ARMOR / INTERNAL STRUCTURE")
+    local hullY=y; local arcW=wide and math.floor(leftW*.34) or leftW
+    local positions=wide and {{leftW*.25,hullY,leftW*.5},{0,hullY+104,arcW},{leftW-arcW,hullY+104,arcW},{leftW*.25,hullY+216,leftW*.5}} or
+      {{0,hullY,leftW},{0,hullY+110,leftW},{0,hullY+220,leftW},{0,hullY+330,leftW}}
+    if wide then
+      label("hullArt",leftW*.37,hullY+86,leftW*.26,132,"<center>↑<br>BOW<br>│<br>MAST<br>│<br>STERN</center>",nil,"border:2px solid #80613c;border-radius:32px;background-color:#242016;color:#a78c60;")
+    end
+    for i,arc in ipairs(shipArcs) do
+      local a=type(info.armor)=="table" and info.armor[arc[1]] or {}
+      local h=type(info.internal)=="table" and info.internal[arc[1]] or {}
+      a,h=type(a)=="table" and a or {},type(h)=="table" and h or {}
+      local x,ay,w=unpack(positions[i]); local selected=self.shipSelection and self.shipSelection.arc==arc[1]
+      local function gauge(layer,values,gy)
+        local n,m=tonumber(values[1]),tonumber(values[2]); local color,condition="#9b968b","Unknown"
+        if n and m and m>0 then
+          color,condition="#7aa889","Sound"
+          if n<math.floor(m/3) then color,condition="#ce7974","Critical" elseif n<math.floor(m*2/3) then color,condition="#d4b56e","Damaged" end
+        end
+        local text=layer.." "..pair(values[1],values[2]).." · "..condition
+        local html=wrapped(text,w)
+        label(arc[1]..layer,x,gy,w,38,html,function() self.shipSelection={arc=arc[1]}; self:renderShip() end,"color:"..color..";border:"..(selected and "2px solid #d6b679" or "1px solid #443b2c")..";")
+        label(arc[1]..layer.."track",x,gy+38,w,3,"",nil,"padding:0;background-color:#302b24;border:none;")
+        if n and m and m>0 then label(arc[1]..layer.."fill",x,gy+38,math.max(0,math.min(1,n/m))*w,3,"",nil,"padding:0;border:none;background-color:"..color..";") end
+      end
+      label(arc[1].."name",x,ay,w,18,"<center>"..arc[2].."</center>",nil,"padding:0;color:#d6b679;border:none;")
+      gauge("Armor",a,ay+18); gauge("Hull",h,ay+59)
+    end
+    y=hullY+(wide and 320 or 440)
+    y=block("sail",0,y,leftW,"Rigging / sail "..pair(info.sail,info.maxSail))
+    label("sailTrack",0,y,leftW,4,"",nil,"padding:0;border:none;background-color:#302b24;")
+    local sail,maxSail=tonumber(info.sail),tonumber(info.maxSail)
+    if sail and maxSail and maxSail>0 then label("sailFill",0,y,math.max(0,math.min(1,sail/maxSail))*leftW,4,"",nil,"padding:0;border:none;background-color:#a58b5b;") end
+    y=y+8
+    y=title("railsTitle",0,y,leftW,"ARMAMENT ARCS · local inspection")
+    for _,entry in ipairs(v.slots) do
+      if self.shipSelection and self.shipSelection.slot==entry.data.slot then
+        y=block("slotInspector",0,y,leftW,slotText(entry),nil,"border:2px solid #d6b679;")
+      end
+    end
+    for _,arc in ipairs({{"bow","Forward"},{"port","Port"},{"starboard","Starboard"},{"stern","Rear"},{"hold","Unmapped / hold"}}) do
+      y=block("rail"..arc[1],0,y,leftW,arc[2],nil,self.shipSelection and self.shipSelection.arc==arc[1] and "border-color:#d6b679;" or nil)
+      local count=0; local perRow=math.max(1,math.floor(leftW/54))
+      for _,entry in ipairs(v.slots) do local item=entry.data
+        local position=({bow=true,port=true,starboard=true,stern=true})[item.position] and item.position or "hold"
+        if entry.kind=="Weapon" and position==arc[1] then
+          local slot=item.slot; local by=y+math.floor(count/perRow)*25
+          label("badge"..shipPlain(slot),(count%perRow)*54,by,51,22,"<center>["..shipHTML(slot).."]</center>",function() self.shipSelection={slot=slot,arc=position}; self:renderShip() end,"padding:0;color:#e1c894;"..(self.shipSelection and self.shipSelection.arc==position and "border:2px solid #d6b679;" or ""))
+          count=count+1
+        end
+      end
+      y=y+math.ceil(count/perRow)*25
+    end
+    local leftBottom=y
+    y=wide and top or y+8
+    y=title("helmTitle",rightX,y,rightW,"HELM · ACTUAL / ORDERED")
+    y=block("helmValues",rightX,y,rightW,"Heading "..shipPlain(v.heading).."° / Ordered "..shipPlain(b.setHeading).."°\nSpeed "..shipPlain(v.speed).." / Ordered "..shipPlain(b.setSpeed).." / Max "..shipPlain(v.maxSpeed).."\nContact range "..shipPlain(info.contactRange))
+    local compassY=y; local cx=rightX+rightW/2; local cy=y+68
+    label("compass",cx-64,y,128,128,"<center>N<br><br>W　 HELM　 E<br><br>S</center>",nil,"border:2px solid #80613c;border-radius:64px;color:#c2ab80;")
+    for _,marker in ipairs({{"actual",v.heading,"●"},{"ordered",b.setHeading,"◇"}}) do
+      local heading=tonumber(marker[2])
+      if heading then local angle=math.rad(heading%360)
+        label("heading"..marker[1],cx+math.sin(angle)*45-9,cy-math.cos(angle)*45-9,18,18,marker[3],nil,"padding:0;border:none;background-color:transparent;color:#eed7a3;")
+      end
+    end
+    y=compassY+134
+    y=block("helmLegend",rightX,y,rightW,"● Actual  ◇ Ordered · North up")
+    y=block("capacity",rightX,y,rightW,"Hull weight "..shipPlain(b.hullWeight).."\nWeight load "..pair(pick(b.load,"current"),pick(b.load,"max")).."\nCargo "..pair(pick(info.cargo,"current"),pick(info.cargo,"max")).." crates\nPassengers "..pair(info.people,info.maxPeople).."\nRepair stock "..shipPlain(info.repairStock))
+    y=title("bearingTitle",rightX,y,rightW,"CONTACT BEARING GLASS")
+    local showPlot=wide or self.shipPlotOpen
+    if showPlot then
+      local size=math.min(250,rightW-8); local radius=size/2; local centerX=rightX+rightW/2; local centerY=y+radius
+      local maxRange=tonumber(info.contactRange) or 1
+      for _,entry in ipairs(v.contacts) do maxRange=math.max(maxRange,tonumber(pick(entry.data,"range","distance","r")) or 0) end
+      maxRange=math.max(1,maxRange)
+      label("plot",centerX-radius,y,size,size,"<center>N<br><br><br>W　 +　 E<br><br><br>S</center>",nil,"border:1px solid #80613c;border-radius:"..radius.."px;background-color:#101613;color:#9eac9d;")
+      label("plotRing",centerX-radius/2,centerY-radius/2,radius,radius,"",nil,"border:1px solid #3c5143;border-radius:"..math.floor(radius/2).."px;background-color:transparent;")
+      local groups={}
+      for _,entry in ipairs(v.contacts) do
+        local c=entry.data; local bearing,range=tonumber(pick(c,"bearing","b")),tonumber(pick(c,"range","distance","r"))
+        if bearing and range and range>=0 then
+          local angle=math.rad(bearing); local distance=range/maxRange*(radius-14)
+          local px,py=centerX+math.sin(angle)*distance,centerY-math.cos(angle)*distance
+          local group
+          for i=#groups,1,-1 do
+            local candidate=groups[i]
+            if math.abs(candidate.x-px)<40 and math.abs(candidate.y-py)<22 then
+              if not group then group=candidate
+              else
+                for _,member in ipairs(candidate.entries) do table.insert(group.entries,member) end
+                table.remove(groups,i)
+              end
+            end
+          end
+          if not group then group={x=px,y=py,entries={}}; groups[#groups+1]=group end
+          table.insert(group.entries,entry)
+        end
+      end
+      local number=0
+      for _,group in ipairs(groups) do
+        number=number+1
+        local ids={}; for _,entry in ipairs(group.entries) do ids[#ids+1]=shipPlain(entry.data.id) end
+        local c=group.entries[1].data
+        local flags=(c.you_targeting and "◇" or "")..(c.targeting_you and "!" or "")
+        local caption=#ids>1 and tostring(#ids).."×" or ((flags~="" and flags or "·")..ids[1])
+        label("contactMarker"..number,group.x-18,group.y-10,40,22,shipHTML(caption),function()
+          local signatures={}; for _,entry in ipairs(group.entries) do signatures[#signatures+1]=shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name) end
+          self.shipSelection={contacts=signatures}; self:renderShip()
+        end,"padding:0;background-color:#26352d;border-color:#a58b5b;color:#e8dbba;")
+      end
+      y=y+size+4
+      y=block("plotRanges",rightX,y,rightW,"Rings "..string.format("%.1f / %.1f",maxRange/2,maxRange).." server range units")
+    else y=block("plotCollapsed",rightX,y,rightW,"Use Bearing glass to expand the local plot. The full contact list is below.") end
+    y=block("plotLegend",rightX,y,rightW,"North up · ◇ our lock · ! targeting us\nOverlapping markers reveal all contacts. Reported range includes altitude; this is a bearing/range diagram. X/Y are tactical coordinates about our 50/50 reference.")
+    local signatures={}; for _,entry in ipairs(v.contacts) do local key=shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name); signatures[key]=(signatures[key] or 0)+1 end
+    local selected={}
+    for _,key in ipairs(self.shipSelection and self.shipSelection.contacts or {}) do if signatures[key]==1 then selected[key]=true end end
+    if self.shipSelection and self.shipSelection.contacts and not next(selected) then self.shipSelection=nil end
+    for _,entry in ipairs(v.contacts) do
+      local signature=shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name)
+      if selected[signature] then y=block("contactInspector"..entry.index,rightX,y,rightW,contactText(entry.data),nil,"border:2px solid #d6b679;") end
+    end
+    y=math.max(y,leftBottom)+8
+    y=title("manifestTitle",0,y,contentW,"ALL SLOTS · numbered manifest")
+    local selectedSlot=self.shipSelection and self.shipSelection.slot; local selectedFound=false
+    for _,entry in ipairs(v.slots) do
+      local item=entry.data; local slot=item.slot; selectedFound=selectedFound or selectedSlot==slot
+      y=block("slot"..shipPlain(slot),0,y,contentW,slotText(entry),function() self.shipSelection={slot=slot,arc=item.position}; self:renderShip() end,selectedSlot==slot and "border:2px solid #d6b679;" or nil)
+    end
+    if selectedSlot and not selectedFound then self.shipSelection=nil end
+    y=block("timerLegend",0,y,contentW,"Timers are server counters, not seconds or firing eligibility. Equipment timers have their own meaning.")
+    y=title("crewTitle",0,y,contentW,"CREW WATCH")
+    y=block("crew",0,y,contentW,shipPlain(info.crewType).." · Stamina "..pair(b.displayCrewStamina or info.crewStamina,info.maxCrewStamina).."\nRaw stamina "..shipPlain(info.crewStamina).." · "..shipPlain(b.crewStaminaBand))
+    for _,skill in ipairs({{"sail","Deck"},{"guns","Guns"},{"repair","Repair"}}) do
+      local chief=pick(info.chiefs,skill[1]); local mod=tonumber(pick(info.skillMods,skill[1]))
+      y=block("crew"..skill[1],0,y,contentW,skill[2].." · Chief "..(chief=="" and "None" or shipPlain(chief)).."\nSkill "..shipPlain(pick(info.skills,skill[1]) or pick(s.skills,skill[2])).." · Modifier "..(mod and string.format("%+d",mod) or "?"))
+    end
+    y=title("contactsTitle",0,y,contentW,"CONTACTS ("..#v.contacts..") · full ledger")
+    for _,entry in ipairs(v.contacts) do
+      local c=entry.data; local signature=shipPlain(c.id).."\n"..shipPlain(c.name)
+      y=block("contact"..entry.index,0,y,contentW,contactText(c),function() self.shipSelection={contacts={signature}}; self:renderShip() end,selected[signature] and "border:2px solid #d6b679;" or nil)
+    end
+  end
+  for _,widget in pairs(self.shipWidgets) do if not widget.shipUsed then widget:hide() end end
+  self:reconcileShipViews()
+end
+
 function ArjUI:renderShip()
   if not self.shipBox or self.activeTab ~= "ship" or not self:panelIsVisible("character") then return end
+  if self.shipPaintTimer then killTimer(self.shipPaintTimer); self.timers[self.shipPaintTimer]=nil; self.shipPaintTimer=nil end
+  self.shipDirty=false; self.shipPaintCount=(self.shipPaintCount or 0)+1
   local box = self.shipBox
   box.shipScrollTop = box.shipScrollTop or math.max(0, box:getScroll() - getRowCount(box.name))
   box:clear()
@@ -3992,7 +4325,7 @@ function ArjUI:renderShip()
   local speed = s.speed or info.speed
   local maximum = pick(info, "maxSpeed", "max_speed", "speedMax") or s.maxSpeed
   if heading ~= nil or speed ~= nil or maximum ~= nil then
-    box:cecho("<yellow>H:" .. text(heading) .. "  S:" .. text(speed) .. "/" .. text(maximum) .. "\n")
+    box:cecho("<yellow>"); box:echo("H:" .. text(heading) .. "  S:" .. text(speed) .. "/" .. text(maximum) .. "\n")
     shown = true
   end
   row("Contact range", info.contactRange)
@@ -4026,7 +4359,7 @@ function ArjUI:renderShip()
         box:cecho("<dim_gray>Ammo: " .. pair(weapon.ammo, weapon.maxAmmo) .. (tonumber(weapon.ammo) == 0 and "<indian_red> (empty)" or "") .. "\n")
       end
       if weapon.damage ~= nil then
-        box:cecho("<dim_gray>Damage: " .. ((tonumber(weapon.damage) or 0) > 0 and "<indian_red>" or "<light_gray>") .. text(weapon.damage) .. "\n")
+        box:cecho("<dim_gray>Damage: " .. ((tonumber(weapon.damage) or 0) > 0 and "<indian_red>" or "<light_gray>")); box:echo(text(weapon.damage) .. "\n")
       end
       box:cecho(readiness(weapon))
       row("Server status", weapon.statusText)
@@ -4080,13 +4413,7 @@ function ArjUI:renderShip()
   if type(contacts) ~= "table" then contacts = s.textContacts end
   if type(contacts) == "table" and #contacts > 0 then
     local list = {}
-    for _, c in ipairs(contacts) do if type(c) == "table" then table.insert(list, c) end end
-    table.sort(list, function(a, b)
-      local ra = tonumber(pick(a, "range", "distance", "r")) or 9999
-      local rb = tonumber(pick(b, "range", "distance", "r")) or 9999
-      if ra ~= rb then return ra < rb end
-      return tostring(pick(a,"id","num","number") or "") < tostring(pick(b,"id","num","number") or "")
-    end)
+    for _,entry in ipairs(self:shipView().contacts) do list[#list+1]=entry.data end
     box:cecho(string.format("\n<dim_gray>Contacts (%d)\n", #list))
     for _, c in ipairs(list) do
       local id = pick(c, "id", "num", "number")
@@ -4127,6 +4454,8 @@ function ArjUI:renderShip()
   if not shown then
     box:cecho("<dim_gray>(no ship data)\n\nBoard a ship and click SHIP\nto look at contacts.\n")
   end
+  self.shipDetailsText=table.concat(getLines(box.name,0,getLastLineNumber(box.name)+1) or {},"\n")
+  self:renderShipBridge()
   -- A contact refresh must not pull the reader away from weapons or cargo.
   -- clear() closes Mudlet's split scrollback. Wait for its geometry to settle;
   -- coalesce consecutive Info/Contacts events into one restoration.
@@ -4175,6 +4504,7 @@ function ArjUI:showHelp()
   self:note("<white>ui layout<dim_gray>             panel controls and reset; right-click a panel title for actions")
   self:note("<white>ui set<dim_gray>                list toggles; <white>ui set <name> on|off<dim_gray> changes one")
   self:note("<white>ui set compactHeader on|off<dim_gray>  collapse or restore the illustrated header")
+  self:note("<white>SHIP: Bridge / Details<dim_gray>  local views; Copy exports Details. Look ship / Look crew / Contacts request reference text.")
   self:note("<white>mapper<dim_gray>                mapper help")
   self:note("<white>auto<dim_gray>                  automation and utility aliases (ArjAuto)")
   self:note("<dim_gray>Numpad: 8/2/4/6 move, 7/9/1/3 diagonals, - up, + down, 5 look, / scan, 0 flee")
