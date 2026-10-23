@@ -73,6 +73,10 @@ for the same ship.
 
 ## Current handoff (2026-10-22)
 
+- Controller PR #11 keeps its bounded editor wait. The final 20-case package
+  proof is now also self-contained in core PR #9. This merge changes only
+  evidence/handoff metadata; runtime, fixtures and package are unchanged.
+
 - **Final package full-suite proof recorded here:** candidate SHA-256
   `75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3`
   passed all 20 expected outcomes at `/tmp/duris-issue3-navigation-suite`.
@@ -454,3 +458,21 @@ proof, design notes and rebuilt 1.3.7 package as the first focused PR, then stac
 the compatibility/live evidence chunk as it is ready. Leave PRs ready for review;
 do not merge or close #3 before acceptance. Releases follow
 [RELEASING.md](../RELEASING.md) through master CI; never push a tag manually.
+
+## Editor readiness carry-forward — 2026-10-23
+
+PR #11 retains its bounded visible-editor wait and process-exit detection.
+Ten controller tests and 115 real Mudlet connection assertions pass, including
+the actual Errors-editor capture; that Errors image was inspected. Source,
+version and archive are byte-identical to #9, so its final 21-case runtime
+suite is reused. [Controller/run record](../testing/issue-3/editor-review-2026-10-23.json).
+The inherited hidden-tell review finding is fixed in the carried parent.
+
+## Editor readiness carry-forward — 2026-10-23
+
+PR #11 retains its bounded visible-editor wait and process-exit detection.
+Ten controller tests and 115 real Mudlet connection assertions pass, including
+the actual Errors-editor capture; that Errors image was inspected. Source,
+version and archive are byte-identical to #9, so its final 21-case runtime
+suite is reused. [Controller/run record](../testing/issue-3/editor-review-2026-10-23.json).
+The inherited hidden-tell review finding is fixed in the carried parent.
