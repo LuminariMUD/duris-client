@@ -68,8 +68,10 @@ T.steps({
   T.emit("Ship.Info",replacement);ArjUI:renderShip()
   T.check(ArjUI.shipSelection==nil and not ArjUI.shipWidgets.railstern.shipStyle:find("#d6b679",1,true),"removed slot clears its arc highlight in the same paint")
   T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts={
-   {id="**",name="Identical docked ship",bearing=90,range=2,you_targeting=true},{id="**",name="Identical docked ship",bearing=90,range=2,targeting_you=true}}})
+   {id="**",name="Identical docked ship",bearing=90,range=35,you_targeting=true},{id="**",name="Identical docked ship",bearing=90,range=35,targeting_you=true}}})
   ArjUI:renderShip();ArjUI.shipWidgets.contactMarker1.clickCallback()
+  local plot,marker=ArjUI.shipWidgets.plot,ArjUI.shipWidgets.contactMarker1
+  T.check(math.abs(marker:get_x()+18-plot:get_x()-plot:get_width())<2,"reported outer-ring range lands on the calibrated ring")
   T.check(ArjUI.shipWidgets.contactMarker1.shipHTML:find("◇!2",1,true),"grouped marker preserves both targeting flag meanings")
   T.check(ArjUI.shipWidgets.contactInspector1.shipUsed and ArjUI.shipWidgets.contactInspector2.shipUsed,"overlapping identical names reveal both current contacts")
   local duplicatePacket=gmcp.Ship.Contacts;local oldClick=ArjUI.shipWidgets.contactMarker1.clickCallback
