@@ -1,5 +1,27 @@
 # Issue #3: readable SHIP panel
 
+## Integrated SHIP review completion — 2026-10-23
+
+PR #9 is stacked on #8, retaining #7 and both layout review repairs. Version
+2.0.1 prevents a downgrade to the former standalone 1.3.7 candidate. The prior
+layout handoff is preserved in [plan-issue-5.md](plan-issue-5.md).
+
+All four existing review findings remain valid and addressed: authoritative
+bridge departure stays empty; fresh zero Contacts navigation beats cached Info;
+the manifest now identifies this integrated candidate; all 21 final-package
+Mudlet suite expectations pass. The inherited hidden-tell defect is fixed by
+#7 and retained. Integration exposed a one-row SHIP scroll drift (22 to 21);
+the existing absolute scrollTo path repairs it, with the failing and passing
+connection runs recorded. The 1280x720 connection case also passes 115 assertions.
+
+Local build/release payload validation, 15 release and ten controller tests pass.
+Weapon/refresh/Errors screenshots were inspected. Current source, archive and
+per-run payload identities: [review record](../testing/issue-3/review-2026-10-23.json).
+The old 1.3.7 live, 4.22 and size/DPI evidence is historical; the new combined
+layout is not qualified by those captures. No live/minimum-version/hardware-DPI/
+other-platform rerun is claimed. No merge or manual tag was performed.
+
+
 Status: implementation in progress; renderer and focused real-Mudlet fixtures
 are being qualified. Issue remains open until the manual same-ship comparison.
 
@@ -410,3 +432,12 @@ proof, design notes and rebuilt 1.3.7 package as the first focused PR, then stac
 the compatibility/live evidence chunk as it is ready. Leave PRs ready for review;
 do not merge or close #3 before acceptance. Releases follow
 [RELEASING.md](../RELEASING.md) through master CI; never push a tag manually.
+
+## Editor readiness carry-forward — 2026-10-23
+
+PR #11 retains its bounded visible-editor wait and process-exit detection.
+Ten controller tests and 115 real Mudlet connection assertions pass, including
+the actual Errors-editor capture; that Errors image was inspected. Source,
+version and archive are byte-identical to #9, so its final 21-case runtime
+suite is reused. [Controller/run record](../testing/issue-3/editor-review-2026-10-23.json).
+The inherited hidden-tell review finding is fixed in the carried parent.

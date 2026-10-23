@@ -25,6 +25,10 @@ ArjUI.tellContacts = {}  -- List of players we've had tells with
 -- ============================================================
 
 function ArjUI:kill()
+  if self.panelGesture then self:finishPanelGesture(self.panelGesture) end
+  if self.panels then self:saveLayout() end
+  for _,panel in pairs(self.panels or {}) do self:disposeWidget(panel.frame) end
+  self.panels=nil; self.maximizedPanel=nil
   if gmod and gmod.disableModule then
     for _, module in ipairs(self.gmcpModules or {}) do gmod.disableModule("ArjUI", module) end
   end
@@ -92,6 +96,25 @@ function ArjUI:kill()
 end
 
 function ArjUI:disposeWidget(widget)
+  -- Adjustable menus live outside the frame's child tree in older Mudlet.
+  -- Remove only this instance's menu labels and registry entries.
+  if widget.adjLabel then
+    local function disposeMenu(menu)
+      if not menu then return end
+      for _,label in pairs(menu.MenuLabels or {}) do
+        disposeMenu(label)
+        self:disposeWidget(label)
+      end
+      menu.MenuLabels={}
+    end
+    disposeMenu(widget.rCLabel)
+    if Adjustable.Container.all[widget.name]==widget then
+      Adjustable.Container.all[widget.name]=nil
+      for i=#Adjustable.Container.all_windows,1,-1 do
+        if Adjustable.Container.all_windows[i]==widget.name then table.remove(Adjustable.Container.all_windows,i) end
+      end
+    end
+  end
   -- Geyser delete() is available on newer Mudlet releases. Older releases
   -- retain hidden primitives; stable names allow them to be reused on import.
   if widget.delete then widget:delete() else widget:hide() end
@@ -122,11 +145,16 @@ function ArjUI:setVisible(visible)
     self.bg:show()
     self.main:show()
     self:layout()
+    self:applyPanelLayout()
   else
     self.main:hide()
     self.bg:hide()
     if self.currentMenu then self.currentMenu:hide() end
-    for _, chat in pairs(self.privateChats) do chat.window:hide() end
+    for _, chat in pairs(self.privateChats) do
+      if chat.window then chat.window:hide() end
+      chat.visible = false
+    end
+    if self.panelGesture then self:finishPanelGesture(self.panelGesture) end
     setBorderTop(0)
     setBorderBottom(0)
     setBorderLeft(0)
@@ -164,12 +192,12 @@ function ArjUI:applyBackground()
   end
   
   if self.bg then
-    if bgPath then
+    if bgPath and not self.settings.compactHeader then
       self.bg:setStyleSheet(string.format([[
         border-image: url("%s") 0 0 0 0 stretch stretch;
       ]], bgPath))
     else
-      -- Fallback: dark gradient background
+      -- Compact mode omits the illustrated header; also used if artwork is missing.
       self.bg:setStyleSheet([[
         background-color: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #0a0908,stop:0.5 #12100c,stop:1 #0a0908);
       ]])
@@ -212,6 +240,299 @@ local function makeConsole(parent, name, x, y, w, h, fontSize, bgColor)
   console:setFgColor(200, 200, 200)
   setBackgroundColor(console.name, bgColor[1], bgColor[2], bgColor[3], 255)
   return console
+end
+
+-- ============================================================
+-- PLAYER LAYOUT (normal rectangles are fractions of uiRoot)
+-- ============================================================
+
+ArjUI.panelDefinitions = {
+  {id="map", title="MAP", home={0,0,.165,.32}, minimum={190,170}},
+  {id="mobs", title="MOBS", home={0,.33,.165,.215}, minimum={150,95}},
+  {id="items", title="ITEMS", home={0,.555,.165,.235}, minimum={150,95}},
+  {id="output", title="GAME OUTPUT", home={.167,0,.57,.79}, minimum={340,180}, essential=true},
+  {id="character", title="CHARACTER", home={.739,0,.26,.45}, minimum={285,160}},
+  {id="players", title="PLAYERS", home={.739,.46,.26,.26}, minimum={190,95}},
+  {id="chat", title="CHAT", home={.739,.73,.26,.27}, minimum={285,110}},
+  {id="vitals", title="VITALS", home={0,.80,.165,.195}, minimum={150,110}},
+  {id="tank", title="TANK / BUFFS", home={.167,.80,.283,.195}, minimum={220,110}},
+  {id="target", title="TARGET / DEBUFFS", home={.455,.80,.282,.195}, minimum={220,110}},
+}
+
+local function copyRect(rect) return {rect[1],rect[2],rect[3],rect[4]} end
+local function panelDefault(def)
+  return {rect=copyRect(def.home), mode=def.private and "floating" or "docked",
+          locked=not def.private, hidden=false, minimized=false}
+end
+local function finite(n) return type(n)=="number" and n==n and math.abs(n)<math.huge end
+local function validRect(rect)
+  if type(rect)~="table" then return false end
+  for i=1,4 do if not finite(rect[i]) then return false end end
+  return rect[1]>=0 and rect[2]>=0 and rect[1]<1 and rect[2]<1
+    and rect[3]>0 and rect[3]<=1 and rect[4]>0 and rect[4]<=1
+end
+
+function ArjUI:loadLayout()
+  local file=io.open(getMudletHomeDir().."/arjui_layout.json","r")
+  if not file then return end
+  local text=file:read("*a"); file:close()
+  local ok,data=pcall(yajl.to_value,text)
+  if not ok or type(data)~="table" or data.version~=1 or type(data.panels)~="table" then
+    self:note("<indian_red>Saved panel layout is invalid or unsupported; using defaults.")
+    return
+  end
+  local invalid=false
+  for _,def in ipairs(self.panelDefinitions) do
+    local saved=data.panels[def.id]
+    if saved~=nil then
+      if type(saved)=="table" and validRect(saved.rect)
+        and (saved.mode=="docked" or saved.mode=="floating")
+        and type(saved.locked)=="boolean" and type(saved.hidden)=="boolean"
+        and type(saved.minimized)=="boolean" then
+        self.panels[def.id].state={rect=copyRect(saved.rect),mode=saved.mode,
+          locked=saved.locked,hidden=not def.essential and saved.hidden,
+          minimized=not def.essential and saved.minimized}
+      else invalid=true end
+    end
+  end
+  if invalid then self:note("<indian_red>Invalid saved panel entries replaced with defaults.") end
+end
+
+function ArjUI:saveLayout()
+  if not self.panels then return end
+  local data={version=1,panels={}}
+  for _,def in ipairs(self.panelDefinitions) do data.panels[def.id]=self.panels[def.id].state end
+  local path=getMudletHomeDir().."/arjui_layout.json"
+  local ok,err=pcall(function()
+    local file=assert(io.open(path..".tmp","w"))
+    local written,why=file:write(yajl.to_string(data))
+    local closed,closeError=file:close()
+    assert(written,why); assert(closed,closeError)
+    assert(os.rename(path..".tmp",path))
+  end)
+  if not ok then self:note("<indian_red>Cannot save panel layout: "..tostring(err)) end
+end
+
+function ArjUI:panelBounds(panel)
+  local w,h=math.max(1,self.uiRoot:get_width()),math.max(1,self.uiRoot:get_height())
+  local rect=panel.state.mode=="docked" and panel.def.home or panel.state.rect
+  if self.maximizedPanel==panel.def.id then return 0,0,w,h end
+  local pw=math.min(w,math.max(panel.def.minimum[1],rect[3]*w))
+  local ph=math.min(h,math.max(panel.def.minimum[2],rect[4]*h))
+  if panel.state.minimized then ph=math.min(h,22) end
+  return math.max(0,math.min(rect[1]*w,w-pw)),math.max(0,math.min(rect[2]*h,h-ph)),pw,ph
+end
+
+-- Whether the panel body can actually be read, independent of saved normal state.
+function ArjUI:panelIsVisible(id)
+  if self.hidden or (self.maximizedPanel and self.maximizedPanel~=id) then return false end
+  local panel=self.panels and self.panels[id]
+  return not panel or self.maximizedPanel==id or (not panel.state.hidden and not panel.state.minimized)
+end
+
+function ArjUI:reconcilePanelViews()
+  for name,widget in pairs(self.tabPanels or {}) do
+    if name==self.activeTab then widget:show() else widget:hide() end
+  end
+  for name,widget in pairs(self.chatPanels or {}) do
+    if name==self.activeChatTab then widget:show() else widget:hide() end
+  end
+  -- Parent show() recursively exposes inactive views. Hide them again without
+  -- switching tabs (which can send a server command or clear scrollback).
+  if self.mapper then self.mapper:hide() end
+  if ArjMapper and ArjMapper.ui then
+    local ui=ArjMapper.ui
+    if ui.hoverLabel then ui.hoverLabel:hide() end
+    if ArjMapper.state.lastDisplayMode=="wilderness" then
+      if ui.zoneContainer then ui.zoneContainer:hide() end
+    elseif ui.wildConsole then ui.wildConsole:hide() end
+  end
+  for _,panel in pairs(self.panels or {}) do
+    if self.hidden or (self.maximizedPanel and self.maximizedPanel~=panel.def.id) or (panel.state.hidden and self.maximizedPanel~=panel.def.id) then panel.frame:hide()
+    elseif panel.state.minimized and self.maximizedPanel~=panel.def.id then panel.frame.Inside:hide() end
+  end
+  if self.creditTooltip then self.creditTooltip:hide() end
+end
+
+function ArjUI:applyPanel(panel)
+  local frame,state=panel.frame,panel.state
+  local x,y,w,h=self:panelBounds(panel)
+  frame:move(x,y); frame:resize(w,h)
+  frame.locked=state.locked or self.maximizedPanel==panel.def.id
+  local maximized=self.maximizedPanel==panel.def.id
+  frame.minimized=state.minimized and not maximized
+  frame.Inside:move(5,22)
+  frame.Inside:resize("100%-10px","100%-27px")
+  if self.hidden or (self.maximizedPanel and not maximized) or (state.hidden and not maximized) then frame:hide()
+  else
+    frame:show()
+    if state.minimized and not maximized then frame.Inside:hide() else frame.Inside:show() end
+  end
+  if panel.def.essential then frame.exitLabel:hide(); frame.minimizeLabel:hide() end
+end
+
+function ArjUI:applyPanelLayout()
+  for _,panel in pairs(self.panels or {}) do self:applyPanel(panel) end
+  self:reconcilePanelViews()
+  if self.maximizedPanel and not self.hidden then self.panels[self.maximizedPanel].frame:raiseAll() end
+  if self.panelsButton then self.panelsButton:raise(); self.resetLayoutButton:raise() end
+end
+
+function ArjUI:finishPanelGesture(panel)
+  if self.panelGesture~=panel then return end
+  panel.frame:onRelease(panel.frame.adjLabel,{button="LeftButton"})
+  self.panelGesture=nil
+end
+
+function ArjUI:capturePanelGesture(panel)
+  local frame,state=panel.frame,panel.state
+  local w,h=math.max(1,self.uiRoot:get_width()),math.max(1,self.uiRoot:get_height())
+  local x=frame:get_x()-self.uiRoot:get_x()
+  local y=frame:get_y()-self.uiRoot:get_y()
+  state.mode="floating"
+  state.rect={math.max(0,x/w),math.max(0,y/h),math.min(1,frame:get_width()/w),
+    state.minimized and state.rect[4] or math.min(1,frame:get_height()/h)}
+  self:applyPanel(panel)
+  self:reconcilePanelViews()
+end
+
+function ArjUI:createPanel(def)
+  local frame=Adjustable.Container:new({name="ArjUI_Panel_"..def.id:gsub(":","_"),
+    x=0,y=0,width=200,height=180,autoSave=false,autoLoad=false,dragOut=false,
+    padding=5,buttonsize=15,titleText=def.title,titleTxtColor="tan",titleFormat="l8",
+    adjLabelstyle="background-color: #0f0e0c; border: 2px solid #5a4b37; color: #d4a855;",
+    buttonstyle="background-color: #1a1610; color: #d4a855; border: none;"},self.uiRoot)
+  local panel={def=def,frame=frame,state=panelDefault(def)}
+  self.panels[def.id]=panel
+  frame.adjLabel:setClickCallback(function(event)
+    if event.button=="RightButton" then self:showPanelMenu(def.id); return end
+    frame:raiseAll()
+    if not frame.locked and event.button=="LeftButton" then
+      -- Prime hit testing on click too: no dependence on a preceding hover.
+      frame:onMove(frame.adjLabel,event)
+      frame:onClick(frame.adjLabel,event)
+      self.panelGesture=panel
+    end
+  end)
+  frame.adjLabel:setMoveCallback(function(event)
+    frame:onMove(frame.adjLabel,event)
+    if self.panelGesture==panel then self:capturePanelGesture(panel) end
+  end)
+  frame.adjLabel:setReleaseCallback(function(event)
+    if event.button=="LeftButton" and self.panelGesture==panel then
+      self:finishPanelGesture(panel)
+      self:saveLayout()
+      self:refreshPanelContent(def.id)
+    end
+  end)
+  frame.exitLabel:setClickCallback(function() self:panelAction(def.id,"hide") end)
+  frame.minimizeLabel:setClickCallback(function()
+    self:panelAction(def.id,panel.state.minimized and "restore" or "minimize")
+  end)
+  return frame.Inside
+end
+
+function ArjUI:refreshPanelContent(id)
+  if ArjMapper and ArjMapper.state.enabled and self:panelIsVisible("map") then
+    if ArjMapper.refreshViewport then ArjMapper:refreshViewport()
+    elseif ArjMapper.state.lastDisplayMode=="zone" then ArjMapper:showZoneMap() end
+  end
+end
+
+function ArjUI:panelAction(id,action)
+  local panel=self.panels and self.panels[id]
+  if not panel then self:note("<indian_red>Unknown panel: "..tostring(id)); return false end
+  if (action=="hide" or action=="minimize") and panel.def.essential then
+    self:note("<tan>Game output stays visible. Use maximize, float or dock."); return false
+  end
+  if action=="dock" and panel.def.private then self:note("<tan>Private chats float inside the dashboard."); return false end
+  if self.panelGesture then self:finishPanelGesture(self.panelGesture) end
+  local state=panel.state
+  if action=="maximize" then
+    if self.maximizedPanel==id then self.maximizedPanel=nil else self.maximizedPanel=id end
+  elseif action=="restore" then
+    if self.maximizedPanel==id then self.maximizedPanel=nil
+    else state.hidden=false; state.minimized=false end
+  elseif action=="show" then state.hidden=false; state.minimized=false
+  elseif action=="hide" then state.hidden=true
+  elseif action=="minimize" then state.minimized=true
+  elseif action=="dock" then
+    state.mode="docked"; state.rect=copyRect(panel.def.home); state.hidden=false; state.minimized=false
+  elseif action=="float" then state.mode="floating"
+  elseif action=="lock" then state.locked=true
+  elseif action=="unlock" then state.locked=false
+  else return false end
+  if action~="maximize" and self.maximizedPanel==id and action~="lock" and action~="unlock" then self.maximizedPanel=nil end
+  self:applyPanelLayout()
+  if self:panelIsVisible(id) then panel.frame:raiseAll() end
+  self:refreshPanelContent(id)
+  self:saveLayout()
+  return true
+end
+
+function ArjUI:showPanelMenu(id)
+  local panel=self.panels[id]
+  local items={}
+  for _,action in ipairs({"show","hide","minimize","restore","maximize","dock","float","lock","unlock"}) do
+    if not ((panel.def.essential and (action=="hide" or action=="minimize")) or (panel.def.private and action=="dock")) then
+      table.insert(items,{text=action:sub(1,1):upper()..action:sub(2),callback=function() self:panelAction(id,action) end})
+    end
+  end
+  self:showContextMenu(items)
+end
+
+function ArjUI:showPanelsMenu()
+  local items={}
+  for _,def in ipairs(self.panelDefinitions) do
+    table.insert(items,{text=def.title,callback=function()
+      self:panelAction(def.id,"show"); self:showPanelMenu(def.id)
+    end})
+  end
+  for name,chat in pairs(self.privateChats) do
+    if self.panels["tell:"..name] then
+      table.insert(items,{text="Tell: "..name,callback=function() self:openPrivateChat(name); self:showPanelMenu("tell:"..name) end})
+    end
+  end
+  self:showContextMenu(items)
+end
+
+function ArjUI:resetLayout()
+  if self.panelGesture then self:finishPanelGesture(self.panelGesture) end
+  self.maximizedPanel=nil
+  if self.currentMenu then self:disposeWidget(self.currentMenu); self.currentMenu=nil end
+  if self.addCmdPopup then self:disposeWidget(self.addCmdPopup); self.addCmdPopup=nil end
+  for _,panel in pairs(self.panels) do
+    panel.state=panelDefault(panel.def)
+    if panel.def.private then panel.state.hidden=true end
+  end
+  self.activeTab="group"; self.activeChatTab="all"
+  self:updateTabStyles(); self:updateChatTabStyles()
+  self:applyPanelLayout(); self:renderActiveTab(); self:refreshPanelContent()
+  self:saveLayout()
+end
+
+function ArjUI:setupPanelControls()
+  self.panelsButton=makePanel(self.main,"ArjUI_PanelsButton",0,0,76,22,self.styles.header)
+  self.panelsButton:echo("Panels")
+  self.panelsButton:setClickCallback(function() self:showPanelsMenu() end)
+  self.resetLayoutButton=makePanel(self.main,"ArjUI_ResetLayoutButton",0,0,92,22,self.styles.header)
+  self.resetLayoutButton:echo("Reset layout")
+  self.resetLayoutButton:setClickCallback(function() self:resetLayout() end)
+end
+
+function ArjUI:layoutCommand(action)
+  if action=="reset" then self:resetLayout()
+  elseif action=="lock" or action=="unlock" then
+    for _,panel in pairs(self.panels) do panel.state.locked=action=="lock" end
+    if self.panelGesture then self:finishPanelGesture(self.panelGesture) end
+    self:applyPanelLayout(); self:saveLayout()
+  else
+    self:note("<tan>ui layout reset|lock|unlock; ui panel <id> show|hide|minimize|restore|maximize|dock|float|lock|unlock")
+    for _,def in ipairs(self.panelDefinitions) do
+      local s=self.panels[def.id].state
+      self:note(def.id..": "..s.mode..(s.locked and " locked" or " unlocked")..(s.hidden and " hidden" or "")..(s.minimized and " minimized" or ""))
+    end
+  end
 end
 
 local function toNum(x) return tonumber(x) end
@@ -432,13 +753,18 @@ function ArjUI:enableGMCP()
   sendGMCP("Core.Supports.Add " .. yajl.to_string(modules))
 end
 
+function ArjUI:headerHeightPct()
+  return self.settings.compactHeader and 2.8 or 10.5
+end
+
 function ArjUI:init()
   self:kill()
   self.hidden = false
+  self:loadSettings()
   
   -- Layout constants as percentages for DPI-independent scaling
   -- Tuned to match the decorative background frame
-  self.bannerPct = 10.5     -- top margin (below Duris banner)
+  local bannerPct = self:headerHeightPct()
   self.frameInsetXPct = 2.5 -- side margins (inside decorative frame)
   self.frameInsetBottomPct = 2.8  -- bottom margin (above bottom frame)
 
@@ -468,9 +794,9 @@ function ArjUI:init()
 
   -- Use percentage-based positioning for DPI independence
   local rootX = self.frameInsetXPct .. "%"
-  local rootY = self.bannerPct .. "%"
+  local rootY = bannerPct .. "%"
   local rootW = (100 - self.frameInsetXPct * 2) .. "%"
-  local rootH = (100 - self.bannerPct - self.frameInsetBottomPct) .. "%"
+  local rootH = (100 - bannerPct - self.frameInsetBottomPct) .. "%"
 
   self.uiRoot = Geyser.Container:new({
     name = "ArjUI_Root", x = rootX, y = rootY, width = rootW, height = rootH
@@ -537,21 +863,13 @@ function ArjUI:init()
     gaugeText = "color: #e6e6e6; font-size: 9px; font-weight: bold;",
   }
 
-  local gap = "0.2%"  -- minimal gap between panels
-  local leftW, centerW, rightW = "16.5%", "57%", "26%"  -- total ~99.5%, fills more space
-  local bottomH, topH = "16.5%", "83%"
-
-  self.topSection = makePanel(self.uiRoot, "ArjUI_TopSection", "0%", "0%", "100%", topH, self.styles.panel)
-  styleSafe(self.topSection, "background-color: transparent; border: none;")
-  self.bottomBar = makePanel(self.uiRoot, "ArjUI_BottomBar", "0%", "83.5%", "100%", bottomH, self.styles.panel)
-  styleSafe(self.bottomBar, "background-color: transparent; border: none;")
-
-  -- LEFT COLUMN (container for distinct panels with gaps)
-  self.leftCol = makePanel(self.topSection, "ArjUI_LeftCol", 0, 0, leftW, "100%", self.styles.panel)
-  styleSafe(self.leftCol, "background-color: transparent; border: none;")  -- transparent container
+  self.panels={}
+  local definitions={}
+  for _,def in ipairs(self.panelDefinitions) do definitions[def.id]=def end
+  local function panel(id) return self:createPanel(definitions[id]) end
 
   -- SECTION 1: Area + Map (0% - 35%) - Larger map section
-  self.mapSection = makePanel(self.leftCol, "ArjUI_MapSection", 0, 0, "100%", "35%", self.styles.panel)
+  self.mapSection = panel("map")
   styleSafe(self.mapSection, self.styles.panelGlass)
   
   -- Globe/World Map link (top-left, above area label)
@@ -578,14 +896,14 @@ function ArjUI:init()
   self.areaLabel:setOnLeave(function() styleSafe(self.areaLabel, self.styles.areaName); self.areaLabel:setCursor("Arrow") end)
 
   -- Map - below globe and area label (with clipping to prevent overflow)
-  self.mapWrap = makePanel(self.mapSection, "ArjUI_MapWrap", "3%", "14%", "94%", "83%", self.styles.panel)
+  self.mapWrap = makePanel(self.mapSection, "ArjUI_MapWrap", "3%", 22, "94%", "100%-44px", self.styles.panel)
   self.mapWrap:setStyleSheet("background-color: rgba(10,9,8,240); border: 2px solid #5a4b37; border-top: 2px solid #8c6e46; border-radius: 4px; overflow: hidden;")
   self.mapper = Geyser.Label:new({ name = "ArjUI_Mapper", x = "2%", y = "2%", width = "96%", height = "96%" }, self.mapWrap)
   self.mapper:setStyleSheet("background-color: #0c0b09; color: #8a8a8a; qproperty-alignment: 'AlignCenter'; font-size: 10px;")
   self.mapper:echo("Waiting for room data")
 
   -- SECTION 2: Exits + Time (36% - 40%) - Split into two halves
-  self.exitsSection = makePanel(self.leftCol, "ArjUI_ExitsSection", 0, "36%", "50%", "4%", self.styles.panel)
+  self.exitsSection = makePanel(self.mapSection, "ArjUI_ExitsSection", 0, "100%-20px", "50%", 20, self.styles.panel)
   styleSafe(self.exitsSection, self.styles.panelGlass)
   
   self.exitsWrap = Geyser.Label:new({ name = "ArjUI_ExitsWrap", x = "3%", y = "5%", width = "94%", height = "90%" }, self.exitsSection)
@@ -593,7 +911,7 @@ function ArjUI:init()
   self.exitButtons = {}
   
   -- Time of day section (right half) - clickable to send 'time' command
-  self.timeSection = makePanel(self.leftCol, "ArjUI_TimeSection", "51%", "36%", "49%", "4%", self.styles.panel)
+  self.timeSection = makePanel(self.mapSection, "ArjUI_TimeSection", "51%", "100%-20px", "49%", 20, self.styles.panel)
   styleSafe(self.timeSection, self.styles.panelGlass)
   
   self.timeLabel = Geyser.Label:new({ name = "ArjUI_TimeLabel", x = "5%", y = "5%", width = "90%", height = "90%" }, self.timeSection)
@@ -602,25 +920,19 @@ function ArjUI:init()
   self.timeLabel:setClickCallback(function() send("time") end)
 
   -- SECTION 3: Mobs (41% - 69%)
-  self.mobsSection = makePanel(self.leftCol, "ArjUI_MobsSection", 0, "41%", "100%", "28%", self.styles.panel)
+  self.mobsSection = panel("mobs")
   styleSafe(self.mobsSection, self.styles.panelGlass)
   
-  self.mobsHeader = Geyser.Label:new({ name = "ArjUI_MobsHeader", x = "3%", y = "3%", width = "94%", height = "14%" }, self.mobsSection)
-  styleSafe(self.mobsHeader, self.styles.headerCombat)
-  labelSet(self.mobsHeader, "⚔ MOBS")
-  self.mobsBox = makeConsole(self.mobsSection, "ArjUI_MobsBox", "3%", "18%", "94%", "79%", 9)
+  self.mobsBox = makeConsole(self.mobsSection, "ArjUI_MobsBox", "3%", "3%", "94%", "94%", 9)
 
   -- SECTION 4: Items (70% - 100%) - extends to match output window bottom
-  self.itemsSection = makePanel(self.leftCol, "ArjUI_ItemsSection", 0, "70%", "100%", "30%", self.styles.panel)
+  self.itemsSection = panel("items")
   styleSafe(self.itemsSection, self.styles.panelGlass)
   
-  self.objsHeader = Geyser.Label:new({ name = "ArjUI_ObjsHeader", x = "3%", y = "3%", width = "94%", height = "13%" }, self.itemsSection)
-  styleSafe(self.objsHeader, self.styles.headerTarget)
-  labelSet(self.objsHeader, "◆ ITEMS")
-  self.objsBox = makeConsole(self.itemsSection, "ArjUI_ObjsBox", "3%", "17%", "94%", "80%", 9)
+  self.objsBox = makeConsole(self.itemsSection, "ArjUI_ObjsBox", "3%", "3%", "94%", "94%", 9)
 
   -- CENTER COLUMN (with gaps on sides) - opaque black behind the main MUD feed
-  self.centerCol = makePanel(self.topSection, "ArjUI_CenterCol", "16.7%", 0, centerW, "100%", self.styles.panel)
+  self.centerCol = panel("output")
   styleSafe(self.centerCol, self.styles.panelPrimary)
 
   self.xpGauge = Geyser.Gauge:new({ name = "ArjUI_TNLTop", x = "0.5%", y = "0.5%", width = "99%", height = "2.2%" }, self.centerCol)
@@ -633,12 +945,8 @@ function ArjUI:init()
 
   self.console = makeConsole(self.centerCol, "ArjUI_Console", "0.5%", "6.5%", "99%", "93%", 10, {0, 0, 0})
 
-  -- RIGHT COLUMN (container for distinct panels with gaps) - extends to target bar bottom
-  self.rightCol = makePanel(self.uiRoot, "ArjUI_RightCol", "73.9%", "0%", rightW, "100%", self.styles.panel)
-  styleSafe(self.rightCol, "background-color: transparent; border: none;")  -- transparent container
-
   -- SECTION 1: Tabbed Pane (0% - 45%) - Info tabs fill top space
-  self.tabSection = makePanel(self.rightCol, "ArjUI_TabSection", 0, 0, "100%", "45%", self.styles.panel)
+  self.tabSection = panel("character")
   styleSafe(self.tabSection, self.styles.panelGlass)
 
   -- TABBED PANE (Group/Stats/Inv/Eq/Skills)
@@ -652,7 +960,7 @@ function ArjUI:init()
   
   for i, tabName in ipairs(tabNames) do
     local xPos = string.format("%d%%", 2 + (i-1) * tabW)
-    local btn = Geyser.Label:new({ name = "ArjUI_Tab_" .. tabName, x = xPos, y = "2%", width = (tabW - 1) .. "%", height = "5%" }, self.tabSection)
+    local btn = Geyser.Label:new({ name = "ArjUI_Tab_" .. tabName, x = xPos, y = 1, width = (tabW - 1) .. "%", height = 18 }, self.tabSection)
     btn:echo("<center>" .. tabLabels[i] .. "</center>")
     self.tabButtons[tabName] = btn
     
@@ -662,7 +970,7 @@ function ArjUI:init()
   end
   
   -- Tab content area
-  self.tabContent = Geyser.Container:new({ name = "ArjUI_TabContent", x = "3%", y = "8%", width = "94%", height = "90%" }, self.tabSection)
+  self.tabContent = Geyser.Container:new({ name = "ArjUI_TabContent", x = "3%", y = 21, width = "94%", height = "100%-23px" }, self.tabSection)
   
   -- GROUP panel (default) - Container for dynamic gauge widgets
   self.groupContainer = Geyser.ScrollBox:new({ name = "ArjUI_GroupContainer", x = 0, y = 0, width = "100%", height = "100%" }, self.tabContent)
@@ -698,16 +1006,13 @@ function ArjUI:init()
   self:updateTabStyles()
 
   -- SECTION 2: Players (46% - 72%) - Players section above chat (expanded to fill gap)
-  self.playersSection = makePanel(self.rightCol, "ArjUI_PlayersSection", 0, "46%", "100%", "26%", self.styles.panel)
+  self.playersSection = panel("players")
   styleSafe(self.playersSection, self.styles.panelGlass)
 
-  self.enemyHeader = Geyser.Label:new({ name = "ArjUI_EnemyHeader", x = "3%", y = "3%", width = "94%", height = "14%" }, self.playersSection)
-  styleSafe(self.enemyHeader, self.styles.headerCombat)
-  labelSet(self.enemyHeader, "⚔ PLAYERS")
-  self.enemyBox = makeConsole(self.playersSection, "ArjUI_EnemyBox", "3%", "18%", "94%", "79%", 9)
+  self.enemyBox = makeConsole(self.playersSection, "ArjUI_EnemyBox", "3%", "3%", "94%", "94%", 9)
 
   -- SECTION 3: Chat (73% - 100%) - Chat at bottom, sits just above credit box
-  self.chatSection = makePanel(self.rightCol, "ArjUI_ChatSection", 0, "73%", "100%", "27%", self.styles.panel)
+  self.chatSection = panel("chat")
   styleSafe(self.chatSection, self.styles.panelGlass)
 
   -- Chat tabs
@@ -721,7 +1026,7 @@ function ArjUI:init()
   
   for i, tabName in ipairs(chatTabNames) do
     local xPos = string.format("%d%%", 2 + (i-1) * chatTabW)
-    local btn = Geyser.Label:new({ name = "ArjUI_ChatTab_" .. tabName, x = xPos, y = "2%", width = (chatTabW - 1) .. "%", height = "8%" }, self.chatSection)
+    local btn = Geyser.Label:new({ name = "ArjUI_ChatTab_" .. tabName, x = xPos, y = 1, width = (chatTabW - 1) .. "%", height = 18 }, self.chatSection)
     btn:echo("<center>" .. chatTabLabels[i] .. "</center>")
     self.chatTabs[tabName] = btn
     
@@ -731,7 +1036,7 @@ function ArjUI:init()
   end
   
   -- Chat content area
-  self.chatContent = Geyser.Container:new({ name = "ArjUI_ChatContent", x = "3%", y = "12%", width = "94%", height = "86%" }, self.chatSection)
+  self.chatContent = Geyser.Container:new({ name = "ArjUI_ChatContent", x = "3%", y = 21, width = "94%", height = "100%-23px" }, self.chatSection)
   
   -- ALL chat panel (default)
   self.chatBox = makeConsole(self.chatContent, "ArjUI_ChatBox", 0, 0, "100%", "100%", 9)
@@ -766,7 +1071,7 @@ function ArjUI:init()
 
   -- Credit box (directly under chat panel, same width as right column)
   local creditX = "73.9%"  -- same as rightCol
-  local creditW = rightW   -- same width as rightCol (26%)
+  local creditW = "26%"   -- same width as rightCol (26%)
   local creditY = (100 - self.frameInsetBottomPct + 0.3) .. "%"
   self.creditBox = Geyser.Label:new({
     name = "ArjUI_CreditBox",
@@ -830,7 +1135,7 @@ function ArjUI:init()
   -- Vitals: under left column (0-16.5%)
   -- Tank: first half under output (16.7%-45.2%)
   -- Target: second half under output (45.4%-73.7%)
-  self.myVitalsWrap = makePanel(self.bottomBar, "ArjUI_MyVitalsWrap", "0%", "3%", "16.5%", "94%", self.styles.panel)
+  self.myVitalsWrap = panel("vitals")
   styleSafe(self.myVitalsWrap, self.styles.panelGlass)
 
   self.hpGauge = Geyser.Gauge:new({ name="ArjUI_HP", x="4%", y="4%", width="92%", height="19%" }, self.myVitalsWrap)
@@ -854,65 +1159,64 @@ function ArjUI:init()
 
   -- TANK (with gap from vitals) - Name as header, HP gauge, buffs below
   -- Tank: 16.7% to 45.2% (first half under output window)
-  self.tankWrap = makePanel(self.bottomBar, "ArjUI_TankWrap", "16.7%", "3%", "28.3%", "94%", self.styles.panel)
+  self.tankWrap = panel("tank")
   styleSafe(self.tankWrap, self.styles.panelGlass)
   
   -- Tank name as header (replaces "TANK" label)
-  self.tankNameLabel = Geyser.Label:new({ name="ArjUI_TankName", x="3%", y="2%", width="80%", height="14%" }, self.tankWrap)
+  self.tankNameLabel = Geyser.Label:new({ name="ArjUI_TankName", x="3%", y=0, width="80%", height=16 }, self.tankWrap)
   styleSafe(self.tankNameLabel, self.styles.tankName)
   labelSet(self.tankNameLabel, "---")
   
-  self.tankPosLabel = Geyser.Label:new({ name="ArjUI_TankPos", x="85%", y="2%", width="12%", height="14%" }, self.tankWrap)
+  self.tankPosLabel = Geyser.Label:new({ name="ArjUI_TankPos", x="85%", y=0, width="12%", height=16 }, self.tankWrap)
   styleSafe(self.tankPosLabel, self.styles.pos)
   
-  self.tankHpGauge = Geyser.Gauge:new({ name="ArjUI_TankHP", x="3%", y="18%", width="94%", height="18%" }, self.tankWrap)
+  self.tankHpGauge = Geyser.Gauge:new({ name="ArjUI_TankHP", x="3%", y=18, width="94%", height=16 }, self.tankWrap)
   self.tankHpGauge.front:setStyleSheet(self.gaugeStyles.hpFront)
   self.tankHpGauge.back:setStyleSheet(self.gaugeStyles.hpBack)
   self.tankHpGauge.text:setStyleSheet("color: #d0d0d0; font-size: 10px; font-weight: bold;")
   
   -- Buffs section under tank
-  self.buffsHeader = Geyser.Label:new({ name="ArjUI_BuffsHeader", x="3%", y="38%", width="94%", height="12%" }, self.tankWrap)
+  self.buffsHeader = Geyser.Label:new({ name="ArjUI_BuffsHeader", x="3%", y=36, width="94%", height=14 }, self.tankWrap)
   styleSafe(self.buffsHeader, self.styles.headerAffects)
   labelSet(self.buffsHeader, "✦ BUFFS")
-  self.buffsBox = makeConsole(self.tankWrap, "ArjUI_BuffsBox", "3%", "51%", "94%", "46%", 8)
-
-  self.separator = Geyser.Label:new({ name = "ArjUI_Separator", x = "45.2%", y = "5%", width = "0.3%", height = "90%" }, self.bottomBar)
-  styleSafe(self.separator, self.styles.separator)
+  self.buffsBox = makeConsole(self.tankWrap, "ArjUI_BuffsBox", "3%", 52, "94%", "100%-52px", 8)
 
   -- TARGET (with gap from tank) - Name as header, HP gauge, debuffs below
   -- Target: 45.5% to 73.7% (aligned with output window right edge)
-  self.targetWrap = makePanel(self.bottomBar, "ArjUI_TargetWrap", "45.5%", "3%", "28.2%", "94%", self.styles.panel)
+  self.targetWrap = panel("target")
   styleSafe(self.targetWrap, self.styles.panelGlass)
   
   -- Target position label on left (mirrors tank layout)
-  self.targetPosLabel = Geyser.Label:new({ name="ArjUI_TargetPos", x="3%", y="2%", width="12%", height="14%" }, self.targetWrap)
+  self.targetPosLabel = Geyser.Label:new({ name="ArjUI_TargetPos", x="3%", y=0, width="12%", height=16 }, self.targetWrap)
   styleSafe(self.targetPosLabel, self.styles.pos)
   
   -- Target name as header (to the right of position)
-  self.targetNameLabel = Geyser.Label:new({ name="ArjUI_TargetName", x="17%", y="2%", width="80%", height="14%" }, self.targetWrap)
+  self.targetNameLabel = Geyser.Label:new({ name="ArjUI_TargetName", x="17%", y=0, width="80%", height=16 }, self.targetWrap)
   styleSafe(self.targetNameLabel, self.styles.targetName)
   labelSet(self.targetNameLabel, "No Target")
   
-  self.targetHpGauge = Geyser.Gauge:new({ name="ArjUI_TargetHP", x="3%", y="18%", width="94%", height="18%" }, self.targetWrap)
+  self.targetHpGauge = Geyser.Gauge:new({ name="ArjUI_TargetHP", x="3%", y=18, width="94%", height=16 }, self.targetWrap)
   self.targetHpGauge.front:setStyleSheet(self.gaugeStyles.targetFront)
   self.targetHpGauge.back:setStyleSheet(self.gaugeStyles.targetBack)
   self.targetHpGauge.text:setStyleSheet("color: #d0d0d0; font-size: 10px; font-weight: bold;")
   
   -- Debuffs section under target
-  self.debuffsHeader = Geyser.Label:new({ name="ArjUI_DebuffsHeader", x="3%", y="38%", width="62%", height="12%" }, self.targetWrap)
+  self.debuffsHeader = Geyser.Label:new({ name="ArjUI_DebuffsHeader", x="3%", y=36, width="62%", height=14 }, self.targetWrap)
   styleSafe(self.debuffsHeader, self.styles.headerCombat)
   labelSet(self.debuffsHeader, "☠ DEBUFFS")
   
   -- Damage counter for the current fight (see setupDamageTracker)
-  self.damageLabel = Geyser.Label:new({ name="ArjUI_DamageLabel", x="66%", y="38%", width="31%", height="12%" }, self.targetWrap)
+  self.damageLabel = Geyser.Label:new({ name="ArjUI_DamageLabel", x="66%", y=36, width="31%", height=14 }, self.targetWrap)
   styleSafe(self.damageLabel, self.styles.headerTarget)
   labelSet(self.damageLabel, "⚔ DMG")
   self.damageLabel:setClickCallback(function() self:reportDamage(false) end)
   self.damageLabel:setOnEnter(function() self.damageLabel:setCursor("PointingHand") end)
   self.damageLabel:setOnLeave(function() self.damageLabel:setCursor("Arrow") end)
-  self.debuffsBox = makeConsole(self.targetWrap, "ArjUI_DebuffsBox", "3%", "51%", "94%", "46%", 8)
+  self.debuffsBox = makeConsole(self.targetWrap, "ArjUI_DebuffsBox", "3%", 52, "94%", "100%-52px", 8)
 
   self:resetCharacterState()
+  self:setupPanelControls()
+  self:loadLayout()
 
   local h
   h = registerAnonymousEventHandler("sysWindowResizeEvent", function() self:layout() end)
@@ -933,7 +1237,6 @@ function ArjUI:init()
   self:layout()
 
   self:loadCustomCommands()
-  self:loadSettings()
   self:registerGMCPHandlers()
   self:setupPorted()
   self:renderAll()
@@ -960,7 +1263,7 @@ function ArjUI:layout()
   setBorderTop(h)
   
   -- Calculate pixel values from percentages for resize
-  local banner = h * (self.bannerPct or 5.5) / 100
+  local banner = h * self:headerHeightPct() / 100
   local insetX = w * (self.frameInsetXPct or 3.8) / 100
   local insetBottom = h * (self.frameInsetBottomPct or 3.5) / 100
   
@@ -976,6 +1279,13 @@ function ArjUI:layout()
   local rootH = math.max(0, h - banner - insetBottom)
   self.uiRoot:move(insetX, banner)
   self.uiRoot:resize(rootW, rootH)
+  if self.panelsButton then
+    local controlsY=math.max(0,banner-24)
+    self.panelsButton:move(insetX,controlsY)
+    self.resetLayoutButton:move(insetX+80,controlsY)
+  end
+  self:applyPanelLayout()
+  self:refreshPanelContent()
   
   -- Reposition credit box and tooltip on resize (aligned under chat/right column)
   if self.creditBox then
@@ -987,6 +1297,16 @@ function ArjUI:layout()
     if self.creditTooltip then
       self.creditTooltip:move(creditX, creditY - 38)
       self.creditTooltip:resize(creditW, 36)
+    end
+  end
+
+  -- Map contents use pixel positions/padding inside the percentage-sized root.
+  -- Redraw only the active map from this session, without requesting new data.
+  if ArjMapper and ArjMapper.state and ArjMapper.state.enabled and ArjMapper.ui then
+    if ArjMapper.state.lastDisplayMode == "zone" then
+      ArjMapper:renderZoneMap()
+    elseif ArjMapper.state.lastDisplayMode == "wilderness" and gmcp and gmcp.Room then
+      ArjMapper:updateWildernessMap(gmcp.Room.Map)
     end
   end
 end
@@ -1047,8 +1367,9 @@ function ArjUI:showContextMenu(items, x, y)
     btn:setClickCallback(function()
       menu:hide()
       self.currentMenu = nil
-      -- Check for special commands
-      if item.cmd and item.cmd:match("^arjui_add_") then
+      -- Package actions share the same menu path as existing game commands.
+      if item.callback then item.callback()
+      elseif item.cmd and item.cmd:match("^arjui_add_") then
         local category = item.cmd:gsub("^arjui_add_", "")
         self:showAddCommandPopup(category)
       elseif item.cmd and item.cmd:match("^arjui_spell_") then
@@ -3262,6 +3583,7 @@ end
 -- ============================================================
 
 ArjUI.settingsDefaults = {
+  compactHeader = false,  -- smaller header, without the illustrated frame
   keypad = true,          -- numpad movement keys
   chatTimestamps = true,  -- [hh:mm] prefix on chat lines
   damageTracker = true,   -- per-fight / session damage tracking
@@ -3301,6 +3623,10 @@ function ArjUI:setSetting(key, on)
   self.settings[key] = on
   self:saveSettings()
   if key == "keypad" then self:setupKeypad() end
+  if key == "compactHeader" then
+    self:applyBackground()
+    self:layout()
+  end
   return true
 end
 
@@ -3848,7 +4174,7 @@ function ArjUI:renderShip()
     local top = box.shipScrollTop
     box.shipScrollTop = nil
     local lines, rows = getLastLineNumber(box.name) + 1, getRowCount(box.name)
-    if lines - top > rows then box:scrollUp(lines - top - rows) end
+    if lines - top > rows then box:scrollTo(top + rows) end
   end)
 end
 
@@ -3885,7 +4211,9 @@ function ArjUI:showHelp()
   self:note("<white>ui on / ui off<dim_gray>        build or hide the interface")
   self:note("<white>ui debug<dim_gray>              show which GMCP tables have arrived")
   self:note("<white>ui damage<dim_gray>             session damage report; <white>ui damage reset<dim_gray> clears it")
+  self:note("<white>ui layout<dim_gray>             panel controls and reset; right-click a panel title for actions")
   self:note("<white>ui set<dim_gray>                list toggles; <white>ui set <name> on|off<dim_gray> changes one")
+  self:note("<white>ui set compactHeader on|off<dim_gray>  collapse or restore the illustrated header")
   self:note("<white>mapper<dim_gray>                mapper help")
   self:note("<white>auto<dim_gray>                  automation and utility aliases (ArjAuto)")
   self:note("<dim_gray>Numpad: 8/2/4/6 move, 7/9/1/3 diagonals, - up, + down, 5 look, / scan, 0 flee")
@@ -3894,6 +4222,7 @@ end
 function ArjUI:showSettings()
   self:note("<gold>══ Toggles (ui set <name> on|off) ══")
   local desc = {
+    compactHeader = "smaller header without the illustrated frame",
     keypad = "numpad movement keys", chatTimestamps = "[hh:mm] on chat lines",
     damageTracker = "damage counter in the target panel", scanFormat = "aligned, coloured scan output",
     alerts = "banners for sanc/rage/disarm/scry/skill-up", expTracker = "+exp notices with kills-to-level",
@@ -3979,6 +4308,10 @@ function ArjUI:setupAliases()
     end
   end)
   
+  table.insert(self.portAliases, tempAlias("^ui layout(?: (reset|lock|unlock))?$", function() ArjUI:layoutCommand(matches[2]) end))
+  table.insert(self.portAliases, tempAlias("^ui panel ([a-z0-9_:]+) (show|hide|minimize|restore|maximize|dock|float|lock|unlock)$", function()
+    ArjUI:panelAction(matches[2],matches[3])
+  end))
   -- ui help
   table.insert(self.portAliases, tempAlias("^/debugplayers$", function() ArjUI:debugPlayers() end))
   table.insert(self.portAliases, tempAlias("^ui help$", function() ArjUI:showHelp() end))

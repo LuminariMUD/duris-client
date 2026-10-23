@@ -62,10 +62,14 @@ Type these into the Mudlet command input:
 | --- | --- |
 | `ui on` | Show the interface, retaining its state and widgets. |
 | `ui off` | Hide the interface and restore Mudlet's main output area; the native command line stays available. |
+| `ui layout` | Show panel IDs and saved states. `ui layout unlock` enables title dragging and border resizing; `ui layout lock` prevents movement. |
+| `ui layout reset` | Restore every dashboard panel and the default tabs without clearing game state or scrollback. The fixed **Reset layout** button does the same. |
+| `ui panel <id> <action>` | Actions: `show`, `hide`, `minimize`, `restore`, `maximize`, `dock`, `float`, `lock`, `unlock`. Right-click a panel title or use the fixed **Panels** button for mouse controls. |
 | `ui help` | List commands and numpad keys. |
 | `ui debug` | Show which core GMCP data tables have arrived. |
 | `ui damage` | Session damage report (total, hits, damage per second, current fight). `ui damage reset` clears it. Clicking the **DMG** counter in the target panel shows the same report. |
 | `ui set` | List the toggles below. `ui set <name> on` or `off` changes one and remembers it. |
+| `ui set compactHeader on` / `off` | Collapse or restore the illustrated header. Compact mode gives more height to game output and panels, using the same dark palette. Full artwork is the default. |
 | `auto` | ArjAuto help: automation toggles (`auto set`, `auto <name> on\|off`), variables (`vars`), and the utility aliases. |
 | `mapper` | Show mapper help. |
 | `mapper on` / `mapper off` | Enable or pause mapper updates. |
@@ -75,7 +79,14 @@ Type these into the Mudlet command input:
 | `mapper size 14` | Set zone room size; accepts integers from **8–20**. |
 | `/mapreload` | An additional shortcut to clear the map cache. |
 
-Toggles for `ui set`: `keypad` (numpad keys), `chatTimestamps`, `damageTracker`, `scanFormat`, `alerts`, and `expTracker`. All default to on and are saved to `arjui_settings.json` in your Mudlet profile folder.
+Toggles for `ui set`: `compactHeader` (off by default), `keypad` (numpad keys), `chatTimestamps`, `damageTracker`, `scanFormat`, `alerts`, and `expTracker` (the latter six default to on). All are saved to `arjui_settings.json` in your Mudlet profile folder. Changing the header preserves your output history, selected tabs, and live state; the saved mode also applies after reopening Mudlet.
+
+Panels start locked in their named home positions. Unlock to move or resize them;
+adjusting a panel makes it float. **Dock** returns it home. Only one panel can
+maximize at a time; **Restore** returns its previous state. Game output cannot
+be hidden or minimized independently. Dashboard choices are saved in
+`arjui_layout.json` in this profile and survive reconnects and restarts. A reset
+restores defaults even while `ui off`, without turning the UI on.
 
 Use the map's **+ / −** controls to zoom. Click the active **STATS**, **INV**, **EQ**, **WHO**, or **SHIP** tab to send `score`, `inv`, `eq`, `who`, or `look contacts` and refresh the corresponding information.
 
