@@ -11,6 +11,9 @@ local ok,err=xpcall(function()
   T.check(not ArjUI.maximizedPanel,"maximize is transient")
   expandAlias("ui layout reset")
  end
+ if T.config.scenario=="lifecycle" then
+ T.check(ArjUI.settings.compactHeader==true,"full profile restart restores compact header")
+ end
  assert(loadfile(getMudletHomeDir().."/Duris Test Companion/fixtures/lowhp.lua"))()
 end,debug.traceback)
 T.finish(ok,err)

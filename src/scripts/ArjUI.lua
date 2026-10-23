@@ -150,7 +150,10 @@ function ArjUI:setVisible(visible)
     self.main:hide()
     self.bg:hide()
     if self.currentMenu then self.currentMenu:hide() end
-    for _, chat in pairs(self.privateChats) do if chat.window then chat.window:hide() end end
+    for _, chat in pairs(self.privateChats) do
+      if chat.window then chat.window:hide() end
+      chat.visible = false
+    end
     if self.panelGesture then self:finishPanelGesture(self.panelGesture) end
     setBorderTop(0)
     setBorderBottom(0)
@@ -189,12 +192,12 @@ function ArjUI:applyBackground()
   end
   
   if self.bg then
-    if bgPath then
+    if bgPath and not self.settings.compactHeader then
       self.bg:setStyleSheet(string.format([[
         border-image: url("%s") 0 0 0 0 stretch stretch;
       ]], bgPath))
     else
-      -- Fallback: dark gradient background
+      -- Compact mode omits the illustrated header; also used if artwork is missing.
       self.bg:setStyleSheet([[
         background-color: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #0a0908,stop:0.5 #12100c,stop:1 #0a0908);
       ]])
@@ -320,6 +323,13 @@ function ArjUI:panelBounds(panel)
   return math.max(0,math.min(rect[1]*w,w-pw)),math.max(0,math.min(rect[2]*h,h-ph)),pw,ph
 end
 
+-- Whether the panel body can actually be read, independent of saved normal state.
+function ArjUI:panelIsVisible(id)
+  if self.hidden or (self.maximizedPanel and self.maximizedPanel~=id) then return false end
+  local panel=self.panels and self.panels[id]
+  return not panel or self.maximizedPanel==id or (not panel.state.hidden and not panel.state.minimized)
+end
+
 function ArjUI:reconcilePanelViews()
   for name,widget in pairs(self.tabPanels or {}) do
     if name==self.activeTab then widget:show() else widget:hide() end
@@ -338,7 +348,7 @@ function ArjUI:reconcilePanelViews()
     elseif ui.wildConsole then ui.wildConsole:hide() end
   end
   for _,panel in pairs(self.panels or {}) do
-    if self.hidden or (panel.state.hidden and self.maximizedPanel~=panel.def.id) then panel.frame:hide()
+    if self.hidden or (self.maximizedPanel and self.maximizedPanel~=panel.def.id) or (panel.state.hidden and self.maximizedPanel~=panel.def.id) then panel.frame:hide()
     elseif panel.state.minimized and self.maximizedPanel~=panel.def.id then panel.frame.Inside:hide() end
   end
   if self.creditTooltip then self.creditTooltip:hide() end
@@ -353,7 +363,7 @@ function ArjUI:applyPanel(panel)
   frame.minimized=state.minimized and not maximized
   frame.Inside:move(5,22)
   frame.Inside:resize("100%-10px","100%-27px")
-  if self.hidden or (state.hidden and not maximized) then frame:hide()
+  if self.hidden or (self.maximizedPanel and not maximized) or (state.hidden and not maximized) then frame:hide()
   else
     frame:show()
     if state.minimized and not maximized then frame.Inside:hide() else frame.Inside:show() end
@@ -423,7 +433,10 @@ function ArjUI:createPanel(def)
 end
 
 function ArjUI:refreshPanelContent(id)
-  if (not id or id=="map") and ArjMapper and ArjMapper.refreshViewport then ArjMapper:refreshViewport() end
+  if ArjMapper and ArjMapper.state.enabled and self:panelIsVisible("map") then
+    if ArjMapper.refreshViewport then ArjMapper:refreshViewport()
+    elseif ArjMapper.state.lastDisplayMode=="zone" then ArjMapper:showZoneMap() end
+  end
 end
 
 function ArjUI:panelAction(id,action)
@@ -451,7 +464,7 @@ function ArjUI:panelAction(id,action)
   else return false end
   if action~="maximize" and self.maximizedPanel==id and action~="lock" and action~="unlock" then self.maximizedPanel=nil end
   self:applyPanelLayout()
-  if not self.hidden and not state.hidden then panel.frame:raiseAll() end
+  if self:panelIsVisible(id) then panel.frame:raiseAll() end
   self:refreshPanelContent(id)
   self:saveLayout()
   return true
@@ -740,13 +753,18 @@ function ArjUI:enableGMCP()
   sendGMCP("Core.Supports.Add " .. yajl.to_string(modules))
 end
 
+function ArjUI:headerHeightPct()
+  return self.settings.compactHeader and 2.8 or 10.5
+end
+
 function ArjUI:init()
   self:kill()
   self.hidden = false
+  self:loadSettings()
   
   -- Layout constants as percentages for DPI-independent scaling
   -- Tuned to match the decorative background frame
-  self.bannerPct = 10.5     -- top margin (below Duris banner)
+  local bannerPct = self:headerHeightPct()
   self.frameInsetXPct = 2.5 -- side margins (inside decorative frame)
   self.frameInsetBottomPct = 2.8  -- bottom margin (above bottom frame)
 
@@ -776,9 +794,9 @@ function ArjUI:init()
 
   -- Use percentage-based positioning for DPI independence
   local rootX = self.frameInsetXPct .. "%"
-  local rootY = self.bannerPct .. "%"
+  local rootY = bannerPct .. "%"
   local rootW = (100 - self.frameInsetXPct * 2) .. "%"
-  local rootH = (100 - self.bannerPct - self.frameInsetBottomPct) .. "%"
+  local rootH = (100 - bannerPct - self.frameInsetBottomPct) .. "%"
 
   self.uiRoot = Geyser.Container:new({
     name = "ArjUI_Root", x = rootX, y = rootY, width = rootW, height = rootH
@@ -1218,7 +1236,6 @@ function ArjUI:init()
   self:layout()
 
   self:loadCustomCommands()
-  self:loadSettings()
   self:registerGMCPHandlers()
   self:setupPorted()
   self:renderAll()
@@ -1245,7 +1262,7 @@ function ArjUI:layout()
   setBorderTop(h)
   
   -- Calculate pixel values from percentages for resize
-  local banner = h * (self.bannerPct or 5.5) / 100
+  local banner = h * self:headerHeightPct() / 100
   local insetX = w * (self.frameInsetXPct or 3.8) / 100
   local insetBottom = h * (self.frameInsetBottomPct or 3.5) / 100
   
@@ -1279,6 +1296,16 @@ function ArjUI:layout()
     if self.creditTooltip then
       self.creditTooltip:move(creditX, creditY - 38)
       self.creditTooltip:resize(creditW, 36)
+    end
+  end
+
+  -- Map contents use pixel positions/padding inside the percentage-sized root.
+  -- Redraw only the active map from this session, without requesting new data.
+  if ArjMapper and ArjMapper.state and ArjMapper.state.enabled and ArjMapper.ui then
+    if ArjMapper.state.lastDisplayMode == "zone" then
+      ArjMapper:renderZoneMap()
+    elseif ArjMapper.state.lastDisplayMode == "wilderness" and gmcp and gmcp.Room then
+      ArjMapper:updateWildernessMap(gmcp.Room.Map)
     end
   end
 end
@@ -3555,6 +3582,7 @@ end
 -- ============================================================
 
 ArjUI.settingsDefaults = {
+  compactHeader = false,  -- smaller header, without the illustrated frame
   keypad = true,          -- numpad movement keys
   chatTimestamps = true,  -- [hh:mm] prefix on chat lines
   damageTracker = true,   -- per-fight / session damage tracking
@@ -3594,6 +3622,10 @@ function ArjUI:setSetting(key, on)
   self.settings[key] = on
   self:saveSettings()
   if key == "keypad" then self:setupKeypad() end
+  if key == "compactHeader" then
+    self:applyBackground()
+    self:layout()
+  end
   return true
 end
 
@@ -4111,6 +4143,7 @@ function ArjUI:showHelp()
   self:note("<white>ui damage<dim_gray>             session damage report; <white>ui damage reset<dim_gray> clears it")
   self:note("<white>ui layout<dim_gray>             panel controls and reset; right-click a panel title for actions")
   self:note("<white>ui set<dim_gray>                list toggles; <white>ui set <name> on|off<dim_gray> changes one")
+  self:note("<white>ui set compactHeader on|off<dim_gray>  collapse or restore the illustrated header")
   self:note("<white>mapper<dim_gray>                mapper help")
   self:note("<white>auto<dim_gray>                  automation and utility aliases (ArjAuto)")
   self:note("<dim_gray>Numpad: 8/2/4/6 move, 7/9/1/3 diagonals, - up, + down, 5 look, / scan, 0 flee")
@@ -4119,6 +4152,7 @@ end
 function ArjUI:showSettings()
   self:note("<gold>══ Toggles (ui set <name> on|off) ══")
   local desc = {
+    compactHeader = "smaller header without the illustrated frame",
     keypad = "numpad movement keys", chatTimestamps = "[hh:mm] on chat lines",
     damageTracker = "damage counter in the target panel", scanFormat = "aligned, coloured scan output",
     alerts = "banners for sanc/rage/disarm/scry/skill-up", expTracker = "+exp notices with kills-to-level",

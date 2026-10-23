@@ -1,0 +1,339 @@
+{
+  "date": "2026-10-23",
+  "validated_source_parent": "54f6bbaba45b9b2b4577092bb9637698eb5495b6",
+  "candidate": {
+    "version": "2.0.0",
+    "sha256": "4ca2efc80cc589127f46e785138411eb789fe0554350124c533b2d6068f5a351",
+    "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+  },
+  "sources": {
+    "VERSION": "c28fcca53637bc88e124af1725df13cb98c69dedefd62fb3cdbe1cdb6b760624",
+    "src/config.lua": "74ab009ad7c91e665b33ab2ae0adc967d84c9e1dccbb5c6ec8f99221068d9fe7",
+    "src/scripts/ArjAuto.lua": "5ac63ee270f0565588abd049dd91fcef0000596ff455e0ed931c7d4e45496c48",
+    "src/scripts/ArjMapper.lua": "efe1c0f45556f1240a04000b0638f682ba59b85d89dd5ea1b5404cae4fc09848",
+    "src/scripts/ArjUI.lua": "28f8dbd667323bcfef95557f50ceffba87faf69c77a2e0276aca97070630cb6e",
+    "tests/mudlet/fixtures/assertion-error.lua": "0fb1cd524b09681d6118214dae83ff8d759c7f4a88fc3de127e23a99aa1e0fdf",
+    "tests/mudlet/fixtures/chat.lua": "07dfdf3477af1feceaca339059bf9e4ac3bfd995a69b35adcdb9ae2ea4fcda3f",
+    "tests/mudlet/fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
+    "tests/mudlet/fixtures/connections.lua": "94e2c522b470cbfc6716dcdc7b76d3831d10e5cacdbc9597fe98f52c54d80c48",
+    "tests/mudlet/fixtures/controls.lua": "c10204ab29fcc6eba4b05f9d0346245d6c7456f551bc1bd652fb5c1b5388a32a",
+    "tests/mudlet/fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
+    "tests/mudlet/fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
+    "tests/mudlet/fixtures/information.lua": "f77bb2eb985b73627990656093ef59dd79b9cb6e85fc5db52f9c1b1bc688bef2",
+    "tests/mudlet/fixtures/layout.lua": "5f19d73b4dc10c759569a956d15f9fa5481d9d98a183b56a2de0b7dd878b42db",
+    "tests/mudlet/fixtures/lifecycle.lua": "4de65155e95196819845a4c56f1e25bca05bb28b8932816b1f4e290f31a29129",
+    "tests/mudlet/fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
+    "tests/mudlet/fixtures/lowhp.lua": "7c009ca0bdca1ceeb20c540a32cca3824645448a64cdd87cd239c5e4c81ffa96",
+    "tests/mudlet/fixtures/map-colors.lua": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b",
+    "tests/mudlet/fixtures/maps.lua": "d8b6d45fafefda9af259e0e4d35ef86292ff3d00bcd748b625b7fda07cbda845",
+    "tests/mudlet/fixtures/reopen.lua": "8f77d0b956a468a8f063d8f94c3f056cb2eaaafcaa79fa8696594022ca303460",
+    "tests/mudlet/fixtures/server-wire.lua": "f67f7bcbc988c0ca4ed6aefb9a96bd387f2981696d00c285756093066256d5b8",
+    "tests/mudlet/fixtures/text.lua": "97831e2917ae7b6b35abc289a25219bd703335f99e0323aa7fbd33657bb3e091",
+    "tests/mudlet/fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
+    "tests/mudlet/fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082",
+    "scripts/mudlet_test.py": "aeaff49ddf7086660c4d01a1289d3cf4e790725c4593ba9ca3a928b470595a25"
+  },
+  "suite_root": "/tmp/duris-pr8-final",
+  "cases": [
+    {
+      "case": "lowhp",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "45cc77844adb9858e372f70a93eafefe121ced751080f68ee7d115efccd59e83",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/lowhp/20261023T093709Z-384840d0-lowhp",
+      "assertions": 29,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "vitals",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "9fbbf3ceb11a75c4e753455499ffade71dc0cf144e1fa5170bb350cb8c268cc3",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/vitals/20261023T093711Z-3034fa43-vitals",
+      "assertions": 10,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "crowded",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "45cc77844adb9858e372f70a93eafefe121ced751080f68ee7d115efccd59e83",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/crowded/20261023T093709Z-0326a3c4-crowded",
+      "assertions": 7,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "combat",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "a63f0a101bcd275097365891b4aae42f2e3f3aac6d4f5c0ce33f0f8e6953bd77",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/combat/20261023T093716Z-ad1273a1-combat",
+      "assertions": 14,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "chat",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "090e97f5fe3d545c79321c56f335c5d82abb18447ba88cd8055008749d2b5404",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/chat/20261023T093719Z-e8f6b6bd-chat",
+      "assertions": 17,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "information",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "090e97f5fe3d545c79321c56f335c5d82abb18447ba88cd8055008749d2b5404",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/information/20261023T093720Z-48be8157-information",
+      "assertions": 18,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "maps",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "e67f73c86ab120357b9da737fdfc812ef998297afd3a0974a9814bb99c46d5cf",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-maps-green/20261023T093926Z-12b6cb6e-maps",
+      "assertions": 45,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "map-colors",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "47c81d363f2c2d36583d21c51ed8b5aab962df86fb949020affb2ea8ff399cb1",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/map-colors/20261023T093732Z-0963bb51-map-colors",
+      "assertions": 23,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "controls",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "ea5e93437e9145712563410563c0897ceb408a51f196e9adef9de1cc5c1897ca",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/controls/20261023T093734Z-5e396474-controls",
+      "assertions": 131,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "login",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "83602950683f88300524afd8a25289b1ae6d5aac69f1009d7346bc4c6890cddb",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/login/20261023T093739Z-84578118-login",
+      "assertions": 6,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "text",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "9015b2c7a791234a6bfd0d7e0498ec87fea8ab47e8a8db474d155d77ee265999",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/text/20261023T093741Z-2faedf01-text",
+      "assertions": 15,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "lifecycle",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "a7c2d30c951d25548efad7be846357e99a00174f42eb3e2f5f0cb4d16f277458",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/lifecycle/20261023T093749Z-33ebfa6d-lifecycle",
+      "assertions": 324,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "connections",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "8bd1478f14b456b3b6e8b744f927d67a78c9180e824d5ec67eda0864bd21e11c",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/connections/20261023T093749Z-cb741c9b-connections",
+      "assertions": 55,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "server-wire",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "8bd1478f14b456b3b6e8b744f927d67a78c9180e824d5ec67eda0864bd21e11c",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/server-wire/20261023T093750Z-1a94ac97-server-wire",
+      "assertions": 26,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "layout",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "a75b9821d0d913accfb4861de4947f0545bb4a4298a757af6caade815beeb4e2",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/layout/20261023T093801Z-5bf9d52f-layout",
+      "assertions": 99,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "assertion-error",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "b188aa649279b4d1844a1432726b705c6a970bdb8336e11233e05f2aa975964a",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/assertion-error/20261023T093802Z-ee176026-assertion-error",
+      "assertions": 5,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "timer-error",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "b188aa649279b4d1844a1432726b705c6a970bdb8336e11233e05f2aa975964a",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/timer-error/20261023T093803Z-6eefa67b-timer-error",
+      "assertions": 4,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "event-error",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "9c5dcf598caa1d6b695d85c032b9a820419d9241debd9812a710a97ea3690916",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/event-error/20261023T093809Z-4bd16f68-event-error",
+      "assertions": 4,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "wrong-profile",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "74186d9416d3b58832860de4eea896a278dc3764cc7e93b65fb70d453bbd4b4a",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/wrong-profile/20261023T093810Z-77d3cb5e-lowhp",
+      "assertions": 0,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "wrong-candidate",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "09d89af39471e0d83cf2b8baa9f89f334e4181577697414b22ee0bc2d3d2d90c",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/wrong-candidate/20261023T093816Z-cb804130-lowhp",
+      "assertions": 0,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "no-readiness",
+      "candidate": {
+        "version": "2.0.0",
+        "sha256": "5a71b814bf6fe1398edfda60855654c3b5a14b9f31ab4ef8ac462f7f0b6539c0",
+        "payload_sha256": "105a9ca73b297fea3209786eaa5554eae94e3737c862669ccadd3f016293494b"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr8-final/no-readiness/20261023T093818Z-53dba991-lowhp",
+      "assertions": 0,
+      "normal_shutdown": true,
+      "cleanup": true
+    }
+  ],
+  "limits": [
+    "Offline Mudlet 5.0.1 / Qt 6.11.1 on Linux/WSL; no fresh live check",
+    "Mudlet 4.19.1, physical DPI/input and Windows/macOS remain unverified",
+    "Earlier evidence files retain their historical source/archive identities; this record identifies the integrated review candidate."
+  ],
+  "visual_review": [
+    {
+      "path": "/tmp/duris-pr8-maps-green/20261023T093926Z-12b6cb6e-maps/11-covered-zone-event.png",
+      "sha256": "aea0c4196122a3cca55f5a60c9db83e23b7e9a7c11aedc09c480e4f0fc5080ea",
+      "status": "inspected"
+    },
+    {
+      "path": "/tmp/duris-pr8-maps-green/20261023T093926Z-12b6cb6e-maps/12-reveal-updated-zone.png",
+      "sha256": "7b86360c9e31bc5fb5ede76500288ecab7469eab68bb8db8202f935e32c9172d",
+      "status": "inspected"
+    },
+    {
+      "path": "/tmp/duris-pr8-maps-green/20261023T093926Z-12b6cb6e-maps/errors-view.png",
+      "sha256": "8ce5ed45ced29024d41bc1859dd9f297ce4a6fe965c51003a517f2b79237fc6f",
+      "status": "inspected"
+    },
+    {
+      "path": "/tmp/duris-pr8-final/layout/20261023T093801Z-5bf9d52f-layout/04-fixed-reset.png",
+      "sha256": "82c0e2afb9bc6b5b4032bad58a316cf4a767bbe9cb1dab102d493a2bddaabfbe",
+      "status": "inspected"
+    }
+  ]
+}

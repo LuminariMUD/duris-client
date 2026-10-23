@@ -1,5 +1,28 @@
 # Issue #5: adjustable client panels
 
+## Integrated review repair — 2026-10-23
+
+PR #8 now carries #7 (compact header and hidden-tell repair). Merge #7 before
+#8; dependent branches will carry the combined runtime forward. Published
+history is preserved through a merge, with no manual release tags.
+The prior header plan is preserved in [plan-issue-4.md](plan-issue-4.md).
+
+The map-over-maximized-output finding is valid. Covered dashboard frame trees
+are hidden without changing saved normal state. The mapper checks effective
+body visibility before event/deferred paints, retains accepted room updates,
+and reveals the latest room when output is restored. No new timer or renderer
+was introduced. The hidden-tell regression from #7 remains passing.
+
+Local release validation, 15 release tests, ten controller tests and all 21
+Mudlet 5.0.1 suite expectations pass after the affected maps rerun. That rerun
+corrects a fixture assumption: compact geometry can grow without adding a full
+blank text row. The regression checks Geyser's hidden OR auto_hidden state;
+covered output, restored latest-room map, reset layout and Errors images were
+inspected. [Current source/payload and per-run archive hashes](../testing/issue-5/review-2026-10-23.json)
+identify the integrated package. Earlier manifests remain historical evidence;
+no fresh live, 4.22, minimum-version, hardware-DPI or other-OS claim is made.
+
+
 Date: 2026-10-22. Status: implementation in progress; dashboard frame integration underway.
 
 Work item: [#5 — Support resizable and/or dockable client panels](https://github.com/LuminariMUD/duris-client/issues/5).

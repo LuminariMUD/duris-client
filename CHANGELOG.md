@@ -7,6 +7,17 @@ Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Ve
 - Rebuild the dashboard as ten adjustable panels with title/border gestures, named home docking, locking, minimize, hide and maximize actions.
 - Add `ui layout`, `ui panel`, fixed Panels and Reset layout controls, and profile-local normalized layout persistence.
 - Keep game output visible and preserve scrollback and selected views during layout changes.
+- Keep event-driven map paints below a different maximized panel and reveal the latest accepted room on restore.
+
+## 1.4.1 - 2026-10-23
+
+- Preserve unread private tells received while the UI is hidden; opening the conversation reveals and marks them read.
+
+## 1.4.0 - 2026-10-22
+
+- Add `ui set compactHeader on|off`, a saved option that collapses the illustrated header into a dark gradient and gives the recovered height to gameplay panels. Full artwork remains the default.
+- Recenter populated zone and wilderness maps when the header or window size changes, preserving map mode, cache and zoom.
+- Keep a paused mapper's display frozen during header changes, resize, and UI hide/show.
 
 ## 1.3.6 - 2026-10-22
 

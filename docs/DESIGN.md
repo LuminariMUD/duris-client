@@ -36,10 +36,17 @@ design decisions change. Player commands are documented in the
 ## Interface layout
 
 `ArjUI:init()` creates a full-window background and a transparent UI container.
-The content root is inset **2.5%** from each side, starts **10.5%** below the
-top, and leaves **2.8%** at the bottom. Its width is therefore **95%** and its
-height **86.7%** of the area returned by `getMainWindowSize()`.
-`ArjUI:layout()` recalculates the root and footer on resize.
+The content root is inset **2.5%** from each side and leaves **2.8%** at the
+bottom. In full mode (the default), it starts **10.5%** below the top and is
+**86.7%** tall. `ui set compactHeader on` moves its top to **2.8%** and makes
+it **94.4%** tall. Width stays **95%** of `getMainWindowSize()` in both modes.
+The root gains **7.7%** of the logical window height; game output gains height according to the selected
+panel arrangement.
+`ArjUI:headerHeightPct()` supplies the same decision to startup and
+`ArjUI:layout()`, which recalculates the root/footer and redraws the active
+map from current-session data on header changes, show, and resize.
+When `mapper off` pauses updates, those layout changes retain the displayed
+map; they must not render the incoming GMCP payloads ignored by the mapper.
 
 Ten `Adjustable.Container` frames are siblings under the content root. The
 package owns one descriptor list for geometry, minimum logical sizes and reset.
@@ -72,6 +79,9 @@ stay below the right column; native command input stays available. Auxiliary
 frames support hide/minimize, every dashboard frame supports maximize/restore
 and global/per-panel locking. Game output cannot hide/minimize independently.
 The common command dispatcher enforces the same capabilities as title menus.
+A maximized frame hides all other dashboard frame trees without changing their
+saved normal state. Map event/deferred renderers use the same effective body
+visibility rule, continue accepting room data while covered, and redraw on reveal.
 
 The character tabs are **GROUP / STATS / INV / EQ / WHO / SHIP**, with GROUP
 selected initially. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
@@ -95,8 +105,12 @@ outside the content-root bounds. The frame stretches to the window, so review
 both its lettering and its alignment at different aspect ratios. The
 [artwork record](artwork/duris-frame.md) contains its generation prompts.
 
-`ArjUI:applyBackground()` locates the installed asset and uses a dark gradient
-when it is unavailable. Primary output has its own opaque black panel, so
+`ArjUI:applyBackground()` locates the installed asset in full mode and uses a
+dark gradient when it is unavailable. Compact mode intentionally uses that
+gradient without the frame/wordmark, leaving the bronze panel chrome in place.
+Changing the setting repaints and resizes existing widgets. It retains output,
+tabs, chat, character state, and map cache/zoom, and keeps a hidden UI hidden.
+Primary output has its own opaque black panel, so
 artwork cannot show through the game feed. Secondary panels use warm dark
 surfaces and softer borders. The
 [README header](assets/header-prompt.md) is separate illustrative artwork;
@@ -263,7 +277,7 @@ or use `look` to obtain fresh room data and retry.
 | Storage | Contents and lifetime |
 | --- | --- |
 | `arjui_layout.json` | Versioned dashboard modes, normalized normal rectangles, locks and hidden/minimized flags; maximize is transient |
-| `arjui_settings.json` | Six display/input toggles, all on by default |
+| `arjui_settings.json` | Seven display/input toggles: `compactHeader` defaults off; the other six default on |
 | `arjui_custom_commands.json` | Custom context-menu actions |
 | `arjauto.json` | Automation toggles, variables, rescue list, bidscores, and login commands |
 | Memory | Character state, captures, damage counters, chat/contact history, map cache and current location |
@@ -272,6 +286,9 @@ JSON files live under the active Mudlet profile directory returned by
 `getMudletHomeDir()`. Chat/contact history is not written to disk and remains
 available across a connection reset within the loaded UI. UI teardown/profile
 restart clears it. Saved settings are separate from live character state.
+Settings load before background and geometry construction. A profile without
+`compactHeader` retains full mode; compact mode persists across reinstall and
+profile restart.
 
 On account-menu return, disconnect, or a new connection, character/combat,
 group, quest, capture, ship, and current-map state is cleared, and pending
