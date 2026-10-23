@@ -98,7 +98,10 @@ T.steps({
   compact=measure("compact")
   local h=full.window.height
   T.check(math.abs(compact.root.height-full.root.height-.077*h)<2,"recovered height reaches content root")
-  T.check(math.abs(compact.console.height-full.console.height-.0594363*h)<2,"recovered height reaches game console")
+  -- Output occupies 79% of the adjustable root and its console uses 93% of the body.
+  -- Fixed frame insets cancel when comparing the two header modes.
+  local consoleGain=.077*h*.79*.93
+  T.check(math.abs(compact.console.height-full.console.height-consoleGain)<2,"recovered height reaches game console")
   T.check(math.abs(compact.console.width-full.console.width)<2,"console width and wrapping unchanged")
   retained()
   T.write("header-geometry",{full=full,compact=compact})

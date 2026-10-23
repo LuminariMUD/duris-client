@@ -16,7 +16,7 @@
     "tests/mudlet/fixtures/chat.lua": "7d00f667c783dff81681227c937b9336da8a6aa0c9f159fcc65d15e83e9cdaee",
     "tests/mudlet/fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
     "tests/mudlet/fixtures/connections.lua": "738cee5b303fb4ce65f032b2c6efd557a0c527c7d803c263a8f8e92fcd56ba45",
-    "tests/mudlet/fixtures/controls.lua": "c10204ab29fcc6eba4b05f9d0346245d6c7456f551bc1bd652fb5c1b5388a32a",
+    "tests/mudlet/fixtures/controls.lua": "5a287dfb03296ff14b693ef6f255cadfe2f883bcb830b589a82ccdc38a9a2208",
     "tests/mudlet/fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
     "tests/mudlet/fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
     "tests/mudlet/fixtures/information.lua": "4766e9e44292519a716c3f55b3c3816c0f16900b140db7336e67aa434208ed3a",
@@ -143,14 +143,15 @@
       "case": "controls",
       "candidate": {
         "version": "2.1.2",
-        "sha256": "947edb43ab238cf33a0c6983843fba09a63c8300f5ce87a1a0f9a5dc3ebcea07",
+        "sha256": "8320d2db595886264c3f78e76a932292de4ee39d07a6b7db47a877f2c22c0200",
         "payload_sha256": "15593d0128aa2dd8f874d27cd1f04d8d1410fa745c37c0caad758bd21dea7b61"
       },
       "passed": true,
-      "run": "/tmp/duris-pr12-portable-final/controls/20261023T101148Z-e8fecd33-controls",
+      "run": "/tmp/durisclient-merge-20261023/controls-after-default/20261023T103820Z-f8e3a25d-controls",
       "assertions": 131,
       "normal_shutdown": true,
-      "cleanup": true
+      "cleanup": true,
+      "previous_run": "/tmp/duris-pr12-portable-final/controls/20261023T101148Z-e8fecd33-controls"
     },
     {
       "case": "login",
@@ -333,6 +334,21 @@
     {
       "path": "/tmp/duris-pr12-portable-final/maps/20261023T101139Z-2ee9911d-maps/25-covered-deferred-map.png",
       "sha256": "aed435132bbf19758a0af6585847e0e8ef50cfc4f5922cdadd74dc8b562b766c",
+      "status": "inspected"
+    },
+    {
+      "path": "/tmp/durisclient-merge-20261023/controls-after/20261023T103720Z-4e1a0509-controls/05-header-full.png",
+      "sha256": "06574c764e498839c9582b0a84c06573d0aac946c02298c33e720d76ea78516d",
+      "status": "inspected"
+    },
+    {
+      "path": "/tmp/durisclient-merge-20261023/controls-after/20261023T103720Z-4e1a0509-controls/06-header-compact.png",
+      "sha256": "948b50141c5da74323fbf3b35bda524e88301a04731c2d55ef4faf04e50e54f2",
+      "status": "inspected"
+    },
+    {
+      "path": "/tmp/durisclient-merge-20261023/controls-after/20261023T103720Z-4e1a0509-controls/errors-view.png",
+      "sha256": "ed8bab4ad8e86c10f6e2c02c531cc28a43c383424751b510f85c87dab896c35a",
       "status": "inspected"
     }
   ],
@@ -664,5 +680,50 @@
         "status": "inspected"
       }
     ]
+  },
+  "merge_followup": {
+    "date": "2026-10-23",
+    "kind": "test-only geometry correction",
+    "source_head_before": "8b4749a0e82b9bef86bc5901f80a839f5a92d305",
+    "old_controls_sha256": "c10204ab29fcc6eba4b05f9d0346245d6c7456f551bc1bd652fb5c1b5388a32a",
+    "controls_sha256": "5a287dfb03296ff14b693ef6f255cadfe2f883bcb830b589a82ccdc38a9a2208",
+    "reason": "The pre-dashboard .0594363 coefficient no longer describes the adjustable output frame. The expected console gain is .077 * window height * .79 * .93; fixed frame insets cancel. The old expectation passes within tolerance at the local default window but fails at the hosted window and at 1366x900.",
+    "hosted_failure": {
+      "run_url": "https://github.com/LuminariMUD/duris-client/actions/runs/39938314071",
+      "artifact_id": 12494753065,
+      "assertion": "recovered height reaches game console",
+      "result": "FAIL"
+    },
+    "local_before": "/tmp/durisclient-merge-20261023/controls-before/20261023T103745Z-232fae1a-controls",
+    "after_runs": [
+      {
+        "run": "/tmp/durisclient-merge-20261023/controls-after-default/20261023T103820Z-f8e3a25d-controls",
+        "size": "1366x768",
+        "candidate": {
+          "version": "2.1.2",
+          "sha256": "8320d2db595886264c3f78e76a932292de4ee39d07a6b7db47a877f2c22c0200",
+          "payload_sha256": "15593d0128aa2dd8f874d27cd1f04d8d1410fa745c37c0caad758bd21dea7b61"
+        },
+        "assertions": 131,
+        "status": "PASS",
+        "normal_shutdown": true,
+        "cleanup": true
+      },
+      {
+        "run": "/tmp/durisclient-merge-20261023/controls-after/20261023T103720Z-4e1a0509-controls",
+        "size": "1366x900",
+        "candidate": {
+          "version": "2.1.2",
+          "sha256": "fa0fe7bf963f3977c5684db353f11a0a992478dba9b17f638502c75a74b16563",
+          "payload_sha256": "15593d0128aa2dd8f874d27cd1f04d8d1410fa745c37c0caad758bd21dea7b61"
+        },
+        "assertions": 131,
+        "status": "PASS",
+        "normal_shutdown": true,
+        "cleanup": true
+      }
+    ],
+    "reuse": "Runtime source, VERSION and committed package are byte-identical to 8b4749a. The other 20 suite expectations retain their hash-verified passing runs. Only the controls fixture changed and was rerun at both sizes.",
+    "limits": "Linux Mudlet 5.0.1 / Qt 6.11.1; hosted Qt 6.10.2 result is tracked separately."
   }
 }
