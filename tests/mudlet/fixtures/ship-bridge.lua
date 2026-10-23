@@ -5,6 +5,7 @@ T.steps({
   ArjUI:switchTab("ship")
   T.emit("Ship.Contacts",{shipKey="1:9007199254740993",heading=0,speed=0,contacts={
    {id="**",name="Dock one",x=51,y=50,range=2,bearing=90,arc="SF",you_targeting=false},
+   {id="**",name="Dock zero",x=49,y=50,range=2,bearing=270,arc="PF",you_targeting=false},
    {id="**",name="Dock two",x=50,y=49,range=2,bearing=0,arc="PS",you_targeting=true,targeting_you=true}}})
   T.check(ArjUI.state.ship.contacts==nil,"contacts-first waits for matching Info")
   T.emit("Ship.Info",{shipKey="1:9007199254740993",name="A <red> & literal ship",id="**",captain="O'Neil",frags=0,maxSpeed=50,
@@ -14,7 +15,7 @@ T.steps({
    equipment={{slot=1,name="Levistone",damage=21,timer=6,ready=false,statusText="Badly Damaged"}},cargo={current=5,max=70,items={{slot=2,name="Forbidden relics",crates=5,invoicePrice=156000,contraband=true}}}})
   local out=T.lines("ArjUI_ShipBox")
   for _,fact in ipairs({"A <red> & literal ship","Hull weight: 330000","Weight load: 80/165","Ordered heading: 359","Ordered speed: 8","Stamina: -20/800","Raw stamina: -400","Fatigue: fatigued","[ZZ] Unseen <target>","Damage: 100","Timer: Ready","Timer count: 6","Server status: Badly Damaged","bridge ammo **","Invoice price: 156000","X:51","Y:50","our Starboard / their Forward","our lock","targeting you"}) do T.check(out:find(fact,1,true),"bridge fact "..fact) end
-  T.check(#ArjUI.state.ship.contacts==2,"duplicate displayed IDs are retained")
+  T.check(#ArjUI.state.ship.contacts==3,"duplicate displayed IDs are retained")
   T.check(ArjAuto:targetContact().name=="Dock two","target flag disambiguates duplicate ID for automation")
  end},
  {name="unseen-lock",run=function()
