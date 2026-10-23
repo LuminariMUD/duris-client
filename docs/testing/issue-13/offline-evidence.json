@@ -1,11 +1,12 @@
 {
   "date": "2026-10-23",
-  "client_source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+  "client_source": "825b49bd365e92abbbe1c22cda1284dfd0d21ca4",
+  "suite_client_source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
   "server_source": "e86bf7f24c52449b1260bb378443efafd1d9c491",
   "package": {
     "version": "2.3.0",
-    "sha256": "3716294c837fb0d729317692a2be978201e04ec5f12ebf20e49ccffde5b2573e",
-    "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+    "sha256": "acd5aba8306818fb67a7e2cb59b681ee4d596ffe27529b17bb55c96d8ba5b235",
+    "payload_sha256": "d1807a062fa5ca55e6d2708d017e1fc0135941d0913a39c3f9f1cfcb539a5ba2"
   },
   "command": "python3 scripts/mudlet_suite.py --root /home/aiwithapex/.local/share/duris-captains-table-reviewed-suite",
   "suite": {
@@ -425,11 +426,23 @@
     "status": "PASS",
     "scope": "Expanded spatial diagram/helm/bearing, scrolled manifest before/after update, minimum frame, Qt scale 2 and Mudlet 4.22 screenshots inspected. Unrelated scenarios assert behavior; no blanket visual approval is implied."
   },
-  "coverage_reuse": {
-    "from_client_source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
-    "scope": "Mudlet 4.22 native API/font/visual and Qt scale-2 geometry checks; review repairs only changed target/snapshot/selection logic and no native APIs, geometry, fonts or styles. Latest logic regressions and the complete final suite run on the current archive. Each retained run records its actual package identity."
+  "final_candidate_regression": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-table-final-captain/20261023T124412Z-dc29dbed-ship-bridge",
+    "automated_status": "PASS",
+    "assertions": 44,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "57b0a5cd2edcdc6b9ac906e44989f8e36e6f247a6fa7602ee3ae220c4dafd99a",
+      "payload_sha256": "d1807a062fa5ca55e6d2708d017e1fc0135941d0913a39c3f9f1cfcb539a5ba2"
+    },
+    "scenario": "ship-bridge"
   },
-  "release_validation": "python3 scripts/release.py --output /home/aiwithapex/.local/share/duris-captains-table-reviewed-release-check passed",
+  "coverage_reuse": {
+    "scope": "The complete 23-case suite ran after all review repairs at 2e7cc5d. The final one-line empty-captain automation guard is covered by the focused final ship-bridge regression and exact-archive live check. Native API/font/visual Mudlet 4.22 and Qt scale-2 proof is retained from 03c8b2c: no native APIs, geometry, fonts or styles changed. Each retained run records its actual package identity."
+  },
+  "release_validation": "python3 scripts/release.py --output /home/aiwithapex/.local/share/duris-captains-table-final-release-check passed",
   "limits": [
     "Actual Mudlet 4.19.1 runtime not run; official-source API audit only.",
     "Native Windows/macOS and physical DPI/input checks not run.",
