@@ -9,6 +9,35 @@ local function drag(id,dx,dy,tx,ty)
  return {{type="drag",x=p.x,y=p.y,to_x=p.x+tx,to_y=p.y+ty}}
 end
 T.steps({
+ {name="portable-layout-replace",run=function()
+  local path=getMudletHomeDir().."/arjui_layout.json"
+  ArjUI:saveLayout()
+  local rename=os.rename
+  local function read() local f=assert(io.open(path,"r")); local s=f:read("*a");f:close();return s end
+  local ok,err=xpcall(function()
+   os.rename=function(from,to)
+    local f=io.open(to,"r")
+    if f then f:close();return nil,"simulated Windows existing destination" end
+    return rename(from,to)
+   end
+   ArjUI.panels.items.state.hidden=true;ArjUI:saveLayout()
+   T.check(yajl.to_value(read()).panels.items.hidden,"Windows-style replacement persists later saves")
+   local previous=read()
+   os.rename=function(from,to)
+    if from==path..".tmp" and to==path then return nil,"simulated install failure" end
+    return rename(from,to)
+   end
+   ArjUI.panels.items.state.hidden=false;ArjUI:saveLayout()
+   T.check(read()==previous,"failed replacement restores previous layout")
+   assert(rename(path,path..".bak"))
+   ArjUI:loadLayout()
+   T.check(ArjUI.panels.items.state.hidden,"interrupted replacement loads retained backup")
+   assert(rename(path..".bak",path))
+  end,debug.traceback)
+  os.rename=rename
+  assert(ok,err)
+  ArjUI:resetLayout()
+ end},
  {name="unlocked-dashboard",run=function()
   expandAlias("ui layout unlock")
   T.layoutHp=ArjUI.state.hp
