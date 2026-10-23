@@ -1,5 +1,16 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Final integrated candidate — 2026-10-23
+
+Version 2.1.2 carries every reviewed feature and the portable save/rollback/
+backup recovery repair. All 21 final-package suite expectations pass, including
+combined private unread/reveal, stationary map and Windows-semantics cases.
+Current candidate/source/per-run hashes are in ../testing/issue-5/review-2026-10-23.json.
+Top-level current SHIP qualification fields were recomputed for this exact tree;
+parent and live/4.22 evidence remains explicitly historical. No native Windows,
+minimum-version, physical-DPI/input or fresh live qualification is claimed.
+
+
 ## Integrated review completion — 2026-10-23
 
 PR #12 now follows #10 in the preserved stack: #7 → #8 → #9 → #11 → #10 → #12.
@@ -43,6 +54,16 @@ No release version bump or runtime rerun is needed for this evidence-only delta.
 
 
 ## 2026-10-22 - Issue #3 SHIP readability, 1.3.7
+
+
+## Latest parent repair carry-forward — 2026-10-23
+
+Current SHIP candidate is 2.0.2 and retains the portable save/rollback/recovery
+and wilderness repaint repair from #8. All 21 final-package suite expectations
+pass, including the new Windows-semantics fixture and SHIP scroll regression.
+Current hashes and per-run archives are in ../testing/issue-3/review-2026-10-23.json.
+The earlier 1280x720 SHIP check is reused only for unchanged renderer/geometry.
+
 
 ## Integrated SHIP review completion — 2026-10-23
 
@@ -116,6 +137,21 @@ Core `26663f2`, controller `d33a4e6`; review order PR #9, #11, #10.
 Rich constructed fixtures and actual live packets retain distinct provenance;
 the checked-in serializer JSON was not regenerated. The updated [plan](plan.md)
 is the continuation reference. Hosted CI is separate from local qualification.
+
+## Later review findings — 2026-10-23
+
+The Windows replacement finding is valid: repeated saves now retain a backup
+while replacing an existing destination, restore it on failed installation,
+and can load it after interruption. The real-Mudlet fixture fails before this
+repair and passes with simulated Windows destination semantics, rollback and
+recovery. This is not native Windows runtime qualification.
+Wilderness resize now repaints the last accepted payload; zone/session changes
+retire it. The inactive private-frame menu placeholder is removed from this
+dashboard-only parent. Registered private frames, commands and recovery are
+implemented and tested in dependent #12; no feature is dropped from the stack.
+Version 2.0.1, local release payload checks, 15 release/ten controller tests and
+all 21 suite expectations pass. Current hashes/runs are in review-2026-10-23.json;
+its predecessor record remains historical. Native-platform limits are unchanged.
 
 ## Integrated review repair — 2026-10-23
 

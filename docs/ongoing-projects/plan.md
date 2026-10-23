@@ -1,5 +1,16 @@
 # Issue #5: adjustable client panels
 
+## Final integrated candidate — 2026-10-23
+
+Version 2.1.2 carries every reviewed feature and the portable save/rollback/
+backup recovery repair. All 21 final-package suite expectations pass, including
+combined private unread/reveal, stationary map and Windows-semantics cases.
+Current candidate/source/per-run hashes are in ../testing/issue-5/review-2026-10-23.json.
+Top-level current SHIP qualification fields were recomputed for this exact tree;
+parent and live/4.22 evidence remains explicitly historical. No native Windows,
+minimum-version, physical-DPI/input or fresh live qualification is claimed.
+
+
 ## Integrated review completion — 2026-10-23
 
 PR #12 now follows #10 in the preserved stack: #7 → #8 → #9 → #11 → #10 → #12.
@@ -24,12 +35,41 @@ payload validation, 15 release tests and ten controller tests pass.
 Historical live/4.22/matrix proof retains its original identity; no fresh live,
 minimum-version, hardware-DPI/input or other-OS qualification is claimed.
 
+## Latest parent repair carry-forward — 2026-10-23
+
+Current SHIP candidate is 2.0.2 and retains the portable save/rollback/recovery
+and wilderness repaint repair from #8. All 21 final-package suite expectations
+pass, including the new Windows-semantics fixture and SHIP scroll regression.
+Current hashes and per-run archives are in ../testing/issue-3/review-2026-10-23.json.
+The earlier 1280x720 SHIP check is reused only for unchanged renderer/geometry.
+
 
 Date: 2026-10-22. Status: chosen feature implemented and qualified on Mudlet 5.0.1 / 4.22.0; PR stack ready for review. Minimum-version/physical-desktop verification remains open.
 
 Work item: [#5 — Support resizable and/or dockable client panels](https://github.com/LuminariMUD/duris-client/issues/5).
 Parent context: [#1 — Voodoo client feedback index](https://github.com/LuminariMUD/duris-client/issues/1).
 Implementation branch: `branch/issue-5-adjustable-panels`.
+
+## Later review findings — 2026-10-23
+
+The Windows replacement finding is valid: repeated saves now retain a backup
+while replacing an existing destination, restore it on failed installation,
+and can load it after interruption. The real-Mudlet fixture fails before this
+repair and passes with simulated Windows destination semantics, rollback and
+recovery. This is not native Windows runtime qualification.
+Wilderness resize now repaints the last accepted payload; zone/session changes
+retire it. The inactive private-frame menu placeholder is removed from this
+dashboard-only parent. Registered private frames, commands and recovery are
+implemented and tested in dependent #12; no feature is dropped from the stack.
+Version 2.0.1, local release payload checks, 15 release/ten controller tests and
+all 21 suite expectations pass. Current hashes/runs are in review-2026-10-23.json;
+its predecessor record remains historical. Native-platform limits are unchanged.
+
+## Integrated review repair — 2026-10-23
+
+PR #9 is stacked on #8, retaining #7 and both layout review repairs. Version
+2.0.1 prevents a downgrade to the former standalone 1.3.7 candidate. The prior
+layout handoff is preserved in [plan-issue-5.md](plan-issue-5.md).
 
 Audited package baseline: `master` at
 [`7247c9d8d2d07295ba35c70238661b7eeccb7ed8`](https://github.com/LuminariMUD/duris-client/tree/7247c9d8d2d07295ba35c70238661b7eeccb7ed8),
@@ -588,3 +628,37 @@ found; Consolas resolves to DejaVu Sans Mono here. This checks prerequisites,
 not the proposed feature. Runtime scenarios and manual 4.x checks have not
 been run for this unimplemented design. The documentation is checked for
 relative-link targets and whitespace before its plan-only commit is published.
+
+- Renderer and section formatting: 3-4 hours.
+- Existing-fixture extensions and focused regression work: 2-3 hours.
+- Size/DPI review, same-ship and 4.x import checks: 2-4 hours.
+- Documentation, version/build and final publication checks: about 1 hour.
+
+Allow another **1-3 hours** for runtime/archived-version setup; Mudlet is
+currently absent. Waiting for bridge access or a compatible test environment is
+additional elapsed time. A demonstrated server-contract blocker would require
+a revised estimate rather than silently broadening this client presentation task.
+
+The planning commit remains in history. Publish the renderer, existing-fixture
+proof, design notes and rebuilt 1.3.7 package as the first focused PR, then stack
+the compatibility/live evidence chunk as it is ready. Leave PRs ready for review;
+do not merge or close #3 before acceptance. Releases follow
+[RELEASING.md](../RELEASING.md) through master CI; never push a tag manually.
+
+## Editor readiness carry-forward — 2026-10-23
+
+PR #11 retains its bounded visible-editor wait and process-exit detection.
+Ten controller tests and 115 real Mudlet connection assertions pass, including
+the actual Errors-editor capture; that Errors image was inspected. Source,
+version and archive are byte-identical to #9, so its final 21-case runtime
+suite is reused. [Controller/run record](../testing/issue-3/editor-review-2026-10-23.json).
+The inherited hidden-tell review finding is fixed in the carried parent.
+
+## Editor readiness carry-forward — 2026-10-23
+
+PR #11 retains its bounded visible-editor wait and process-exit detection.
+Ten controller tests and 115 real Mudlet connection assertions pass, including
+the actual Errors-editor capture; that Errors image was inspected. Source,
+version and archive are byte-identical to #9, so its final 21-case runtime
+suite is reused. [Controller/run record](../testing/issue-3/editor-review-2026-10-23.json).
+The inherited hidden-tell review finding is fixed in the carried parent.

@@ -2,6 +2,14 @@
 
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
+## 2.1.2 - 2026-10-23
+
+- Give private tell windows shared move, resize, minimize, maximize and recovery actions while retaining history and drafts.
+- Redraw stationary zone/wilderness maps from accepted data, including maximized maps with saved hidden/minimized state.
+- Preserve unread tells behind covered panels and acknowledge them, including the contact indicator, only on reveal.
+- Keep deferred map paints beneath covered output and clean up owned menus/callback references.
+- Carry portable layout replacement/rollback/recovery through the complete private-panel stack.
+
 ## 2.1.1 - 2026-10-23
 
 - Preserve unread tells behind a different maximized panel and acknowledge them only on reveal.
@@ -14,11 +22,17 @@ Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Ve
 - Redraw stationary zone and wilderness maps after panel/viewport changes without new network requests.
 - Clean up owned frame menus and old-Mudlet callback references on teardown.
 
-## 2.0.1 - 2026-10-23
+## 2.0.2 - 2026-10-23
 
 - Organize SHIP into readable condition, weapon, crew, equipment, cargo and contact sections with labeled values, condition colors and separate ammunition, damage and timer status.
 - Preserve navigation, target controls, text fallback and empty-state clearing while handling older or partial ship payloads.
 - Restore the absolute SHIP scroll position after updates, including the adjustable dashboard viewport.
+
+## 2.0.1 - 2026-10-23
+
+- Replace existing saved layouts on Windows while retaining the previous file on failure.
+- Repaint stationary wilderness maps from accepted data after dashboard geometry changes.
+- Remove the inactive private-panel recovery placeholder; private frame controls arrive in the dependent integration PR.
 
 ## 2.0.0 - 2026-10-22
 

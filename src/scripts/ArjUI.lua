@@ -282,7 +282,8 @@ end
 
 function ArjUI:loadLayout()
   for _,def in ipairs(self.panelDefinitions) do self.panels[def.id].state=panelDefault(def) end
-  local file=io.open(getMudletHomeDir().."/arjui_layout.json","r")
+  local path=getMudletHomeDir().."/arjui_layout.json"
+  local file=io.open(path,"r") or io.open(path..".bak","r")
   if not file then return end
   local text=file:read("*a"); file:close()
   local ok,data=pcall(yajl.to_value,text)
@@ -317,7 +318,20 @@ function ArjUI:saveLayout()
     local written,why=file:write(yajl.to_string(data))
     local closed,closeError=file:close()
     assert(written,why); assert(closed,closeError)
-    assert(os.rename(path..".tmp",path))
+    local installed,why=os.rename(path..".tmp",path)
+    if not installed then
+      -- Windows rename cannot replace an existing destination. Retain the old
+      -- file until installation succeeds, and recover it on failure/restart.
+      local backup=path..".bak"
+      os.remove(backup)
+      assert(os.rename(path,backup),why)
+      installed,why=os.rename(path..".tmp",path)
+      if not installed then
+        local restored,restoreError=os.rename(backup,path)
+        error(tostring(why)..(restored and "" or "; previous layout retained at "..backup..": "..tostring(restoreError)))
+      end
+      os.remove(backup)
+    end
   end)
   if not ok then self:note("<indian_red>Cannot save panel layout: "..tostring(err)) end
 end
