@@ -61,6 +61,22 @@ T.steps({
   T.check(countWidgets()==T.widgets and ArjUI.shipWidgets.portArmor==T.hull,"updates retain widget identities and count")
   T.paintCount=ArjUI.shipPaintCount
  end},
+ {name="replacement-selection",run=function()
+  local originalInfo,originalContacts=ArjUI.state.ship.info,ArjUI.state.ship.contacts
+  ArjUI.shipSelection={slot=2,arc="stern"};ArjUI:renderShip()
+  local replacement=yajl.to_value(yajl.to_string(originalInfo));table.remove(replacement.weapons,1)
+  T.emit("Ship.Info",replacement);ArjUI:renderShip()
+  T.check(ArjUI.shipSelection==nil and not ArjUI.shipWidgets.railstern.shipStyle:find("#d6b679",1,true),"removed slot clears its arc highlight in the same paint")
+  T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts={
+   {id="**",name="Identical docked ship",bearing=90,range=2},{id="**",name="Identical docked ship",bearing=90,range=2}}})
+  ArjUI:renderShip();ArjUI.shipWidgets.contactMarker1.clickCallback()
+  T.check(ArjUI.shipWidgets.contactInspector1.shipUsed and ArjUI.shipWidgets.contactInspector2.shipUsed,"overlapping identical names reveal both current contacts")
+  T.emit("Ship.Contacts",gmcp.Ship.Contacts);ArjUI:renderShip()
+  T.check(ArjUI.shipSelection==nil,"ambiguous selection clears after a replacement snapshot")
+  T.emit("Ship.Info",originalInfo)
+  T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts=originalContacts})
+  ArjUI:renderShip();T.paintCount=ArjUI.shipPaintCount
+ end},
  {name="bridge-scroll",run=function() end,actions=function()
   return {{type="scroll",x=ArjUI.shipRoot:get_x()+ArjUI.shipRoot:get_width()/2,y=ArjUI.shipRoot:get_y()+200}}
  end},
@@ -93,6 +109,10 @@ T.steps({
   ArjUI:panelAction("output","restore")
  end},
  {name="mode-restore",run=function()
+  ArjUI:resetShip()
+  T.emit("Ship.Contacts",{heading=0,speed=4,contacts={{id="LEGACY",name="Contacts without Info",range=2,bearing=90}}})
+  ArjUI:renderShip()
+  T.check(ArjUI.shipWidgets.contact1.shipUsed and ArjUI.shipWidgets.contact1.shipHTML:find("Contacts without Info",1,true),"default Bridge renders contacts without ship identity")
   ArjUI.shipMode="details"; ArjUI:saveSettings(); ArjUI:setVisible(false)
   T.paintCount=ArjUI.shipPaintCount; T.emit("Ship.Info",{shipKey="3:3",name="Latest while off",id="**"})
   T.check(ArjUI.shipPaintCount==T.paintCount,"ui off accepts data without paint")

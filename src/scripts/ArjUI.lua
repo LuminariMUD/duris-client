@@ -3827,6 +3827,7 @@ end
 
 function ArjUI:acceptShipContacts(packet)
   local s = self.state.ship
+  s.contactGeneration=(s.contactGeneration or 0)+1
   s.contacts = shipCopy(type(packet.contacts) == "table" and packet.contacts or packet)
   s.heading, s.speed = packet.heading, packet.speed
   s.textContacts, s.textCapture, s.target = nil, nil, nil
@@ -3843,6 +3844,7 @@ function ArjUI:setupShipText()
     local s = fallback(); if not s then return end
     s.heading, s.speed = matches[2], matches[3]
     s.textContacts = {}
+    s.contactGeneration=(s.contactGeneration or 0)+1
     s.textCapture = true
     ArjUI:renderShipIfActive()
   end)
@@ -4016,7 +4018,7 @@ function ArjUI:shipView()
   end
   table.sort(slots,function(a,c) return (tonumber(a.data.slot) or math.huge)<(tonumber(c.data.slot) or math.huge) end)
   local target
-  if info.bridge then target=type(b.target)=="table" and b.target or nil
+  if b.target~=nil then target=type(b.target)=="table" and b.target or nil
   elseif s.target then
     target={id=s.target,name=s.targetName}
     for _,entry in ipairs(contacts) do if entry.data.you_targeting then target={id=entry.data.id,name=entry.data.name}; break end end
@@ -4029,6 +4031,11 @@ end
 
 function ArjUI:renderShipBridge()
   local v=self:shipView(); local info,b,s=v.info,v.bridge,v.state
+  if self.shipSelection and self.shipSelection.slot~=nil then
+    local selected
+    for _,entry in ipairs(v.slots) do if entry.data.slot==self.shipSelection.slot then selected=entry.data end end
+    if selected then self.shipSelection.arc=selected.position else self.shipSelection=nil end
+  end
   local width=math.max(140,self.shipRoot:get_width())
   local wide=width>=720; local contentW=width-20
   local lineH=math.max(16,select(2,calcFontSize(9)))
@@ -4110,10 +4117,11 @@ function ArjUI:renderShipBridge()
     button:setStyleSheet("background-color:"..(active and "#40301e" or "#15120e")..";border:1px solid #6b5433;color:#e1c894;font-size:8pt;")
   end
   local y=4
-  y=title("identity",0,y,contentW,v.name or "Captain's Table · no ship data")
+  y=title("identity",0,y,contentW,v.name or "Captain's Table")
   y=block("identityDetails",0,y,contentW,"["..shipPlain(info.id).."]  "..shipPlain(info.status or s.status).."\nCaptain "..shipPlain(info.captain or s.captain).." · Frags "..shipPlain(info.frags)..(not s.info and "\nText-derived fallback" or ""))
   if v.target then y=block("target",0,y,contentW,"Locked target ["..shipPlain(v.target.id).."] "..shipPlain(v.target.name)) end
-  if not v.name and next(info)==nil then
+  local populated=v.name or next(info) or v.heading~=nil or v.speed~=nil or #v.contacts>0 or next(s.skills or {}) or s.captain or s.status or v.target
+  if not populated or s.departed then
     block("empty",0,y,contentW,"Board a ship. Look ship, Look crew and Contacts request the original read-only reference text.")
   else
     local top=y; local leftW=wide and math.floor((contentW-12)/2) or contentW
@@ -4223,8 +4231,9 @@ function ArjUI:renderShipBridge()
         local flags=(c.you_targeting and "◇" or "")..(c.targeting_you and "!" or "")
         local caption=#ids>1 and tostring(#ids).."×" or ((flags~="" and flags or "·")..ids[1])
         label("contactMarker"..number,group.x-18,group.y-10,40,22,shipHTML(caption),function()
-          local signatures={}; for _,entry in ipairs(group.entries) do signatures[#signatures+1]=shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name) end
-          self.shipSelection={contacts=signatures}; self:renderShip()
+          local signatures,indices={},{}
+          for _,entry in ipairs(group.entries) do signatures[#signatures+1]=shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name); indices[#indices+1]=entry.index end
+          self.shipSelection={contacts=signatures,contactIndices=indices,contactGeneration=s.contactGeneration}; self:renderShip()
         end,"padding:0;background-color:#26352d;border-color:#a58b5b;color:#e8dbba;")
       end
       y=y+size+4
@@ -4233,20 +4242,26 @@ function ArjUI:renderShipBridge()
     y=block("plotLegend",rightX,y,rightW,"North up · ◇ our lock · ! targeting us\nOverlapping markers reveal all contacts. Reported range includes altitude; this is a bearing/range diagram. X/Y are tactical coordinates about our 50/50 reference.")
     local signatures={}; for _,entry in ipairs(v.contacts) do local key=shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name); signatures[key]=(signatures[key] or 0)+1 end
     local selected={}
-    for _,key in ipairs(self.shipSelection and self.shipSelection.contacts or {}) do if signatures[key]==1 then selected[key]=true end end
+    if self.shipSelection and self.shipSelection.contactGeneration==s.contactGeneration and self.shipSelection.contactIndices then
+      for _,index in ipairs(self.shipSelection.contactIndices) do selected[index]=true end
+    else
+      for _,key in ipairs(self.shipSelection and self.shipSelection.contacts or {}) do
+        if signatures[key]==1 then
+          for _,entry in ipairs(v.contacts) do if shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name)==key then selected[entry.index]=true end end
+        end
+      end
+    end
     if self.shipSelection and self.shipSelection.contacts and not next(selected) then self.shipSelection=nil end
     for _,entry in ipairs(v.contacts) do
-      local signature=shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name)
-      if selected[signature] then y=block("contactInspector"..entry.index,rightX,y,rightW,contactText(entry.data),nil,"border:2px solid #d6b679;") end
+      if selected[entry.index] then y=block("contactInspector"..entry.index,rightX,y,rightW,contactText(entry.data),nil,"border:2px solid #d6b679;") end
     end
     y=math.max(y,leftBottom)+8
     y=title("manifestTitle",0,y,contentW,"ALL SLOTS · numbered manifest")
-    local selectedSlot=self.shipSelection and self.shipSelection.slot; local selectedFound=false
+    local selectedSlot=self.shipSelection and self.shipSelection.slot
     for _,entry in ipairs(v.slots) do
-      local item=entry.data; local slot=item.slot; selectedFound=selectedFound or selectedSlot==slot
+      local item=entry.data; local slot=item.slot
       y=block("slot"..shipPlain(slot),0,y,contentW,slotText(entry),function() self.shipSelection={slot=slot,arc=item.position}; self:renderShip() end,selectedSlot==slot and "border:2px solid #d6b679;" or nil)
     end
-    if selectedSlot and not selectedFound then self.shipSelection=nil end
     y=block("timerLegend",0,y,contentW,"Timers are server counters, not seconds or firing eligibility. Equipment timers have their own meaning.")
     y=title("crewTitle",0,y,contentW,"CREW WATCH")
     y=block("crew",0,y,contentW,shipPlain(info.crewType).." · Stamina "..pair(b.displayCrewStamina or info.crewStamina,info.maxCrewStamina).."\nRaw stamina "..shipPlain(info.crewStamina).." · "..shipPlain(b.crewStaminaBand))
@@ -4257,7 +4272,7 @@ function ArjUI:renderShipBridge()
     y=title("contactsTitle",0,y,contentW,"CONTACTS ("..#v.contacts..") · full ledger")
     for _,entry in ipairs(v.contacts) do
       local c=entry.data; local signature=shipPlain(c.id).."\n"..shipPlain(c.name)
-      y=block("contact"..entry.index,0,y,contentW,contactText(c),function() self.shipSelection={contacts={signature}}; self:renderShip() end,selected[signature] and "border:2px solid #d6b679;" or nil)
+      y=block("contact"..entry.index,0,y,contentW,contactText(c),function() self.shipSelection={contacts={signature},contactIndices={entry.index},contactGeneration=s.contactGeneration}; self:renderShip() end,selected[entry.index] and "border:2px solid #d6b679;" or nil)
     end
   end
   for _,widget in pairs(self.shipWidgets) do if not widget.shipUsed then widget:hide() end end
