@@ -7,6 +7,7 @@
   ],
   "scale2_geometry": "2732x1536",
   "offline": {
+    "ship-bridge": "Bridge contract, keyed snapshot ordering, unseen lock, duplicate IDs, legacy fallback and authoritative departure",
     "lowhp": "Startup, assets, identity, vitals, two-member group, routing and off defaults",
     "vitals": "Full/zero health, non-mana class, zero/missing maxima and experience",
     "crowded": "Full group, scrolling, NPC/away/weakest markers, crowded room and removal",

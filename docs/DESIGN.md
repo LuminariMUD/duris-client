@@ -357,7 +357,14 @@ coverage limits in the [testing log](ongoing-projects/mudlet-local-testing.md).
 ## Current boundaries
 
 The layout has no breakpoint-driven column rearrangement or editable theme
-system. SHIP displays text rather than a graphical radar. `Quest.Map` and
+system. SHIP displays text rather than a graphical radar. Its complete ledger
+accepts optional bridge facts from the updated server: weight/load, orders,
+display/raw stamina, loaded target, slot status/timers and destruction. Timers
+are counters and timer-ready does not imply a weapon can fire. Armor/internal
+thresholds match the server's integer thirds. Both tactical coordinates and
+our/their arc meanings remain visible. Runtime vessel keys associate replacement
+snapshots; old-server fallback remains supported and names display literally.
+`Quest.Map` and
 structured `Comm.Channel.presentation` color runs are not rendered. Room
 player alignment coloring is limited by the fields the server supplies, and
 affect classification uses name patterns rather than a server-provided

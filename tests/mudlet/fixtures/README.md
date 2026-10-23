@@ -1,5 +1,14 @@
 # Fixture provenance
 
+Captain's Table contract (2026-10-23): `server-gmcp.json` is refreshed from
+Duris `4c3312e0657c94f68ba4e6956c5065e4fc8c40dc` (server PR #304).
+The harness executes the production slot status/description/weight and crew
+stamina helpers, not duplicate formulas. The captured ship occupies all 16
+slots and includes contraband, damage 100, timers and negative stamina.
+`ship-bridge.lua` additionally covers keyed packet ordering, duplicate `**`
+designations, unseen target versus automation, literal markup-like names and
+late text after departure. Source hashes are embedded in the JSON provenance.
+
 These files belong to the test companion, never the distributable package.
 They exercise actual Mudlet events, text triggers, widgets, aliases and HTTP.
 Most scenarios inject events directly. `server-wire` additionally exercises

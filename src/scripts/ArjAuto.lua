@@ -470,10 +470,15 @@ function ArjAuto:targetContact()
   if not s.target then return nil end
   local list = s.contacts
   if type(list) ~= "table" then list = s.textContacts end
+  local found
   for _, c in ipairs(list or {}) do
-    if tostring(c.id) == tostring(s.target) then return c end
+    if tostring(c.id) == tostring(s.target) and tonumber(c.bearing) then
+      if c.you_targeting==true then return c end
+      if found then return nil end
+      found=c
+    end
   end
-  return nil
+  return found
 end
 
 function ArjAuto:setupShipTriggers()
