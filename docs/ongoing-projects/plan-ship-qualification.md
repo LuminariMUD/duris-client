@@ -1,6 +1,12 @@
 # Issue #3: readable SHIP panel
 
-Status: implementation and scoped qualification complete; PR #9 -> #11 -> #10
+Follow-up — 2026-10-23: the original SHIP work is merged and issue #3 is closed.
+[Issue #13](https://github.com/LuminariMUD/duris-client/issues/13) tracks the
+[Captain's Table bridge redesign and full parity plan](plan-ship-bridge.md) on
+[branch/issue-13-ship-captains-table](https://github.com/LuminariMUD/duris-client/tree/branch/issue-13-ship-captains-table).
+The evidence and handoff below remain a historical record of the earlier scope.
+
+Historical status (2026-10-22): implementation and scoped qualification complete; PR #9 -> #11 -> #10
 are ready for review. Issue #3 remains open pending review/merge.
 
 Date: 2026-10-22. Work item: [issue #3](https://github.com/LuminariMUD/duris-client/issues/3).
