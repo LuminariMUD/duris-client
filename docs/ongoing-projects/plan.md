@@ -1,6 +1,32 @@
 # Issue #3: readable SHIP panel
 
+## Latest parent repair carry-forward — 2026-10-23
+
+Current SHIP candidate is 2.0.2 and retains the portable save/rollback/recovery
+and wilderness repaint repair from #8. All 21 final-package suite expectations
+pass, including the new Windows-semantics fixture and SHIP scroll regression.
+Current hashes and per-run archives are in ../testing/issue-3/review-2026-10-23.json.
+The earlier 1280x720 SHIP check is reused only for unchanged renderer/geometry.
+
+
 ## Integrated SHIP review completion — 2026-10-23
+
+## Later review findings — 2026-10-23
+
+The Windows replacement finding is valid: repeated saves now retain a backup
+while replacing an existing destination, restore it on failed installation,
+and can load it after interruption. The real-Mudlet fixture fails before this
+repair and passes with simulated Windows destination semantics, rollback and
+recovery. This is not native Windows runtime qualification.
+Wilderness resize now repaints the last accepted payload; zone/session changes
+retire it. The inactive private-frame menu placeholder is removed from this
+dashboard-only parent. Registered private frames, commands and recovery are
+implemented and tested in dependent #12; no feature is dropped from the stack.
+Version 2.0.1, local release payload checks, 15 release/ten controller tests and
+all 21 suite expectations pass. Current hashes/runs are in review-2026-10-23.json;
+its predecessor record remains historical. Native-platform limits are unchanged.
+
+## Integrated review repair — 2026-10-23
 
 PR #9 is stacked on #8, retaining #7 and both layout review repairs. Version
 2.0.1 prevents a downgrade to the former standalone 1.3.7 candidate. The prior

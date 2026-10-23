@@ -370,6 +370,7 @@ end
 function ArjMapper:updateWildernessMap(mapData)
     if not self.ui.wildConsole or not mapData or not mapData.map then return end
 
+    self.state.lastWildernessMap={map=mapData.map}
     local parsed = self:parseWildernessMap(mapData.map)
     local containerH = self.ui.wildConsole:get_height() or 250
     local fontSize = math.floor(self.config.wildFontSize * self.config.wildZoom)
@@ -402,6 +403,7 @@ end
 -- ============================================================
 
 function ArjMapper:showZoneMap()
+    self.state.lastWildernessMap=nil
     if not self.ui.zoneContainer and not self:setupUI() then return end
 
     if self.ui.wildConsole then self.ui.wildConsole:hide() end
@@ -1406,6 +1408,7 @@ function ArjMapper:kill()
 end
 
 function ArjMapper:resetSession()
+    self.state.lastWildernessMap=nil
     if self.renderTimer then killTimer(self.renderTimer); self.renderTimer = nil end
     for _, request in pairs(self.requests or {}) do request.finish() end
     self.requests = {}
