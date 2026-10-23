@@ -1,12 +1,12 @@
 {
   "date": "2026-10-23",
-  "client_source": "1d4381510ba05454df7641db6176eac72423164d",
+  "client_source": "2cf57f69fc8525f9b084e89d289fedcd9eeae9b1",
   "suite_client_source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
   "server_source": "e86bf7f24c52449b1260bb378443efafd1d9c491",
   "package": {
     "version": "2.3.0",
-    "sha256": "e0ac55014b4b16853dd488a819f382827d2d74a0218bf0798790e4b910d60cbb",
-    "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
+    "sha256": "cedd3627f739bd45a397bd686df516b4877f47afd253f42cda02d5ff3ddaae78",
+    "payload_sha256": "8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330"
   },
   "command": "python3 scripts/mudlet_suite.py --root /home/aiwithapex/.local/share/duris-captains-table-reviewed-suite",
   "suite": {
@@ -384,17 +384,42 @@
     "locale": "C.UTF-8"
   },
   "scale2": {
-    "run": "/home/aiwithapex/.local/share/duris-captains-scale2-qualified/20261023T131215Z-23a2e7ab-ship-table",
+    "run": "/home/aiwithapex/.local/share/duris-pr16-review-scale2/20261023T134422Z-d8cddce6-ship-table",
     "automated_status": "PASS",
-    "assertions": 50,
+    "assertions": 58,
+    "errors": [],
     "cleanup": true,
     "normal_shutdown": true,
     "candidate": {
       "version": "2.3.0",
-      "sha256": "f12675c77872dcf21dcf4116cd8b72697ea7476f3957cef653a04f066b704ece",
-      "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
+      "sha256": "af362ba9066795f4e254d4c82d235cbf927e2a13a5f136a0105b6f8c6bc5b2fa",
+      "payload_sha256": "8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330"
     },
-    "scenario": "ship-table"
+    "scenario": "ship-table",
+    "environment": {
+      "tools": {
+        "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+        "python3": "/usr/bin/python3",
+        "luac5.1": "/usr/bin/luac5.1",
+        "xvfb-run": "/usr/bin/xvfb-run",
+        "Xvfb": "/usr/bin/Xvfb",
+        "xauth": "/usr/bin/xauth",
+        "openbox": "/usr/bin/openbox",
+        "xdotool": "/usr/bin/xdotool",
+        "import": "/usr/bin/import",
+        "fc-match": "/usr/bin/fc-match"
+      },
+      "mudlet": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.config/mudlet\"\nmudlet 5.0.1  \nQt libraries 6.11.1 (compilation) 6.11.1 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+      "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+      "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+      "locale": "C.UTF-8"
+    },
+    "size": "2732x1536",
+    "scale": 2,
+    "runtime_source": "2cf57f69fc8525f9b084e89d289fedcd9eeae9b1",
+    "source_note": "Runtime and ship-table fixture match this commit; original run metadata records its base commit and working diff.",
+    "visual_review": "PASS: inspected 07-complete-slot-and-helm-state.png, 16-minimum-character.png and errors-view.png."
   },
   "mudlet4_22": {
     "run": "/home/aiwithapex/.local/share/duris-captains-table-4.22-qualified",
@@ -407,7 +432,15 @@
       "sha256": "e0ac55014b4b16853dd488a819f382827d2d74a0218bf0798790e4b910d60cbb",
       "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
     },
-    "scenario": "ship-table"
+    "scenario": "ship-table",
+    "environment": {
+      "executable": "/home/aiwithapex/.local/share/duris-client-dev/tools/captains-4.22-qualified/mudlet",
+      "executable_sha256": "7efa29e71fcf955ae74df8a0b0be0afbc8dd606587e9e7754e6a710587d538f2",
+      "command": "QT_QPA_PLATFORM=xcb xvfb-run --auto-servernum /home/aiwithapex/.local/share/duris-client-dev/tools/captains-4.22-qualified/mudlet --version",
+      "version_output": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.local/share/duris-captains-table-4.22-qualified/config/mudlet\"\nmudlet 4.22.0  \nQt libraries 6.9.0 (compilation) 6.9.0 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv2+: GNU GPL version 2 or later - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+      "launcher_source": "#!/usr/bin/python3\nimport os\nos.execv('/home/aiwithapex/.local/share/duris-client-dev/tools/captains-4.22-qualified/mudlet',['/home/aiwithapex/.local/share/duris-client-dev/tools/captains-4.22-qualified/mudlet'])\n",
+      "identity_note": "Version output rechecked on 2026-10-23 from the exact path in the retained run launcher. This attributes the retained baseline run; the three new Bridge repairs were exercised on Mudlet 5.0.1, not rerun on 4.22."
+    }
   },
   "new_server_old_client": {
     "run": "/home/aiwithapex/.local/share/duris-captains-old-client",
@@ -424,7 +457,7 @@
   },
   "visual_review": {
     "status": "PASS",
-    "scope": "Expanded spatial diagram/helm/bearing, scrolled manifest before/after update, minimum frame, Qt scale 2 and Mudlet 4.22 screenshots inspected. Unrelated scenarios assert behavior; no blanket visual approval is implied."
+    "scope": "Current scale-1 and scale-2 helm, manifest/minimum-frame and Errors screenshots inspected as listed in their run blocks. Retained 1280x720/1920x1080 and Mudlet 4.22 screenshots remain baseline geometry/API evidence. Unrelated suite cases establish behavior without blanket visual approval."
   },
   "ship_state_regressions": {
     "run": "/home/aiwithapex/.local/share/duris-captains-final-all-ship/20261023T130400Z-68a1b978-ship-bridge",
@@ -440,6 +473,64 @@
     "scenario": "ship-bridge"
   },
   "current_ui_regressions": {
+    "run": "/home/aiwithapex/.local/share/duris-pr15-review-final/20261023T134157Z-abcaea30-ship-table",
+    "automated_status": "PASS",
+    "assertions": 58,
+    "errors": [],
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "cedd3627f739bd45a397bd686df516b4877f47afd253f42cda02d5ff3ddaae78",
+      "payload_sha256": "8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330"
+    },
+    "scenario": "ship-table",
+    "environment": {
+      "tools": {
+        "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+        "python3": "/usr/bin/python3",
+        "luac5.1": "/usr/bin/luac5.1",
+        "xvfb-run": "/usr/bin/xvfb-run",
+        "Xvfb": "/usr/bin/Xvfb",
+        "xauth": "/usr/bin/xauth",
+        "openbox": "/usr/bin/openbox",
+        "xdotool": "/usr/bin/xdotool",
+        "import": "/usr/bin/import",
+        "fc-match": "/usr/bin/fc-match"
+      },
+      "mudlet": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.config/mudlet\"\nmudlet 5.0.1  \nQt libraries 6.11.1 (compilation) 6.11.1 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+      "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+      "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+      "locale": "C.UTF-8"
+    },
+    "size": "1366x768",
+    "scale": 1,
+    "runtime_source": "2cf57f69fc8525f9b084e89d289fedcd9eeae9b1",
+    "source_note": "Runtime and ship-table fixture match this commit; original run metadata records its base commit and working diff.",
+    "visual_review": "PASS: inspected 07-complete-slot-and-helm-state.png, 09-bridge-scroll-after-input.png, 16-minimum-character.png and errors-view.png."
+  },
+  "coverage_reuse": {
+    "scope": "The complete 23-case suite passed at 2e7cc5d. Existing focused ship-bridge checks cover empty captain and bare legacy navigation; empty-captain coverage comes only from the focused ship-bridge fixture, not the live run whose captain is Zahm. The current ship-table fixture passes 58 assertions at scales 1 and 2 on the current canonical payload, including mixed {A,A,B} selection invalidation, destroyed true/false/absent, and equal/nearby/separate helm markers. The changes from 1d43815 are confined to Bridge presentation/selection plus tests, docs and rebuilt archive. Info/Contacts acceptance, Details, automation, wire decoding, lifecycle and unrelated panels are unchanged. Reuse the broader suite, old-client wire test and direct live baseline only for those unchanged paths. The 4.22 block and retained live run identify their actual earlier payload; neither is an exact-current-archive run. Do not claim old-server live qualification: no self-contained evidence for that run was retained; legacy compatibility is fixture coverage."
+  },
+  "release_validation": "python3 scripts/release.py --output /tmp/duris-pr16-review-release passed; 15 release and 10 controller tests reused from #14 because those Python paths are unchanged.",
+  "limits": [
+    "Actual Mudlet 4.19.1 runtime not run; official-source API audit only.",
+    "Native Windows/macOS and physical DPI/input checks not run.",
+    "Moving orders, fatigue, damaged/reloading equipment, contraband and populated contacts use focused production-helper/wire and Mudlet fixtures; no production ship mechanics were changed.",
+    "Direct live parity and Mudlet 4.22 refer to their retained pre-review payloads; current Bridge repairs use focused offline Mudlet 5.0.1 scale-1/2 evidence.",
+    "Old-server/new-current-client live qualification is not claimed; preserved legacy compatibility evidence is fixture coverage only."
+  ],
+  "artifacts": {
+    "bridge-expanded.png": "8d066cfb1b0f1954dde9f54629fe11816859000aeb131ce8d6ab678fcb551007",
+    "bridge-scrolled.png": "4a1a42c70e71cf5b2891d0f312b2dd26d182a79117c37aaff62430a37c1d0266",
+    "bridge-refresh.png": "f836f8e51ef2b15b0eb7ea18eca542d641d3583c8aef1778fce7e14f46d197c1",
+    "bridge-minimum.png": "ec18d1e2c1f8221f9015be07556cb6e9d2753a68d177aaaf7f43dedceb1a24fb",
+    "bridge-4.22.png": "b2af5c5ca488133710c3df67e0df4d0ee6061658b331d1521b45bb576580a9e2",
+    "bridge-scale2.png": "3ec5e3263b7e634a50842349bd609f8239b27133d85483c900b5f4f6ccbc1c88",
+    "errors-primary.png": "c904554b76d0fe244144a760fd5bfce324ab193575013b5c0f66036ddf13d98a"
+  },
+  "pre_review_ui_regressions": {
     "run": "/home/aiwithapex/.local/share/duris-captains-calibrated-plot/20261023T131028Z-9ed3de74-ship-table",
     "automated_status": "PASS",
     "assertions": 50,
@@ -452,22 +543,17 @@
     },
     "scenario": "ship-table"
   },
-  "coverage_reuse": {
-    "scope": "The complete 23-case suite ran at 2e7cc5d. Subsequent focused ship-bridge and ship-table checks cover the empty captain, bare legacy arrays, rendered-generation clicks, grouped flags, truthful provenance, unknown contact state, legacy sunk state and calibrated bearing rings. The last plot calibration changes only drawing geometry; accepted-state logic retains its focused ship-bridge proof. Final Mudlet 4.22, Qt scale-2, current UI and exact-archive live checks run on the final canonical payload. Each retained run records its actual package identity."
-  },
-  "release_validation": "python3 scripts/release.py --output /home/aiwithapex/.local/share/duris-captains-release-qualified passed",
-  "limits": [
-    "Actual Mudlet 4.19.1 runtime not run; official-source API audit only.",
-    "Native Windows/macOS and physical DPI/input checks not run.",
-    "Moving orders, fatigue, damaged/reloading equipment, contraband and populated contacts use focused production-helper/wire and Mudlet fixtures; no production ship mechanics were changed."
-  ],
-  "artifacts": {
-    "bridge-expanded.png": "6026cb12f329e43ee80445fb9af9e79ad63f8691c7d2f4d5e479cbcb0379a110",
-    "bridge-scrolled.png": "4b86274efafce935e55a56a6bd59fff423946ccffe61df88fbb4ba3e9a768643",
-    "bridge-refresh.png": "b9f6044ae1437eef9f3b28478cddfba909c97fec47d83bdc2e1a5bd806e57b91",
-    "bridge-minimum.png": "ec18d1e2c1f8221f9015be07556cb6e9d2753a68d177aaaf7f43dedceb1a24fb",
-    "bridge-4.22.png": "b2af5c5ca488133710c3df67e0df4d0ee6061658b331d1521b45bb576580a9e2",
-    "bridge-scale2.png": "dee4975d008d23f1e92dd9048e6cc7d7d5e969dc0e332843a5d2ef84058ad607",
-    "errors-primary.png": "b81d1aef63ddf98b5882e65b481101ac62f74db4053f5c02cff62792c289d01d"
+  "pre_review_scale2": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-scale2-qualified/20261023T131215Z-23a2e7ab-ship-table",
+    "automated_status": "PASS",
+    "assertions": 50,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "f12675c77872dcf21dcf4116cd8b72697ea7476f3957cef653a04f066b704ece",
+      "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
+    },
+    "scenario": "ship-table"
   }
 }

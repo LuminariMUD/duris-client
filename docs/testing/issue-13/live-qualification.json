@@ -79,7 +79,8 @@
   "environment": "Mudlet 5.0.1 / Qt 6.11.1, Ubuntu 24.04 WSL2, 1920x1080, scale 1; main reference feed uses 8pt to fit the complete ASCII display, ship labels retain package defaults.",
   "limits": [
     "The live vessel was docked with no contacts, equipment or target. Populated/overlapping contacts, moving orders, damaged/reloading equipment, fatigue, destruction boundaries and contraband are production-helper/wire/Mudlet fixture coverage. No production ship orders or mechanics were changed.",
-    "Mudlet 4.19.1 runtime and native Windows/macOS/physical DPI remain unverified."
+    "Mudlet 4.19.1 runtime and native Windows/macOS/physical DPI remain unverified.",
+    "Current Bridge repairs are verified offline, not in a fresh live run; old-server/new-current-client live qualification is not claimed."
   ],
   "artifacts": {
     "live-look-ship.txt": "6b7b17699a0675f5f4811fceaaaa0a9e245ab4cd028922c8a49fe4dd608f28c4",
@@ -97,5 +98,15 @@
     "cleared": true,
     "bridge_departure": true,
     "quit_and_disconnected": true
-  }
+  },
+  "qualification_scope": "Direct same-ship evidence for the package recorded in this manifest, before the three PR #15 Bridge review repairs. No new live connection was made for those presentation/selection repairs.",
+  "current_client": {
+    "source": "2cf57f69fc8525f9b084e89d289fedcd9eeae9b1",
+    "package": {
+      "version": "2.3.0",
+      "sha256": "cedd3627f739bd45a397bd686df516b4877f47afd253f42cda02d5ff3ddaae78",
+      "payload_sha256": "8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330"
+    }
+  },
+  "coverage_reuse": "Reuse the 62 direct live checks for unchanged accepted GMCP facts, Details and reference-command paths. The current Bridge differs in contact selection invalidation, explicit destruction text and overlapping helm glyphs. Those changes pass the current ship-table fixture at scales 1 and 2; this is not fresh exact-current-archive live proof. The live captain was Zahm, so this run does not cover the empty-captain cargo-alias guard."
 }
