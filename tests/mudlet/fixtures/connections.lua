@@ -4,6 +4,7 @@ local function wire(package, json) T.emit(package, yajl.to_value(json)) end
 T.steps({
  {name="server-ship-payload",run=function()
   ArjUI:switchTab("ship")
+  ArjUI.shipMode="details"; ArjUI:renderShip()
   wire("Ship.Info", [[{"name":"&+WBronze Voyager&n","id":"AA","captain":"Tester","maxSpeed":18,"armor":{"bow":[80,100],"port":[70,100]},"internal":{"bow":[40,50]},"weapons":[{"slot":1,"name":"cannon","position":"port","ammo":8,"maxAmmo":10,"ready":true}],"equipment":[{"slot":2,"name":"levistone","ready":true}],"cargo":{"current":3,"max":50,"items":[{"slot":3,"name":"silk","crates":3,"contraband":false}]}}]])
   wire("Ship.Contacts", [[{"heading":90,"speed":12,"contacts":[{"id":"BB","name":"Far vessel","range":30,"bearing":70,"heading":50,"speed":8,"race":"evil","arc":"port","status":"flying","targeting_you":true,"you_targeting":true},{"id":"CC","name":"Near vessel","range":5,"bearing":20,"heading":60,"speed":4,"race":"good","status":"","targeting_you":false,"you_targeting":false}]}]])
   local s=ArjUI.state.ship

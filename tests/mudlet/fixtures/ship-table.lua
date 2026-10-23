@@ -1,0 +1,176 @@
+local T=DurisTest
+ArjUI.initialDataRequested=true
+local function pageClick(widget)
+ local action=T.click(widget)
+ action.x=action.x+ArjUI.shipRoot:get_x()
+ action.y=action.y+ArjUI.shipRoot:get_y()+(ArjUI.shipRoot:get_width()>=600 and 23 or 46)
+ return action
+end
+local function countWidgets() local n=0; for _ in pairs(ArjUI.shipWidgets) do n=n+1 end; return n end
+T.steps({
+ {name="expanded-bridge",run=function()
+  ArjUI:switchTab("ship")
+  local f=assert(io.open(getMudletHomeDir().."/Duris Test Companion/fixtures/server-gmcp.json"))
+  local wire=yajl.to_value(f:read("*a")); f:close()
+  for _,packet in ipairs(wire.phases.snapshot) do if packet.package:find("Ship.",1,true) then T.emit(packet.package,packet.data) end end
+  local info=gmcp.Ship.Info
+  info.armor={bow={32,100},port={33,100},starboard={65,100},stern={66,100}}
+  info.internal={bow={0,0},port={10,30},starboard={30,45},stern={27,27}}
+  T.emit("Ship.Info",info)
+  T.commands={}; ArjUI:panelAction("character","maximize")
+ end,verify=function()
+  T.check(ArjUI.shipMode=="bridge" and ArjUI.shipBox.hidden and not ArjUI.shipPage.hidden,"Bridge is the single visible mode")
+  T.check(#ArjUI:shipView().slots==16,"all sixteen occupied slots reach the numbered manifest")
+  T.check(ArjUI.shipWidgets.bowArmor.shipStyle:find("#ce7974",1,true),"32 of 100 is critical")
+  T.check(ArjUI.shipWidgets.portArmor.shipStyle:find("#d4b56e",1,true),"33 of 100 reaches damaged band")
+  T.check(ArjUI.shipWidgets.starboardArmor.shipStyle:find("#d4b56e",1,true),"65 of 100 remains damaged")
+  T.check(ArjUI.shipWidgets.sternArmor.shipStyle:find("#7aa889",1,true),"66 of 100 reaches sound band")
+  T.check(not ArjUI.shipWidgets.bowHullfill,"zero maximum produces no inferred gauge")
+  T.check(#T.commands==0,"maximizing and painting send no game command")
+  ArjUI.shipWidgets.badge2.clickCallback()
+  T.check(ArjUI.shipSelection.slot==2 and ArjUI.shipWidgets.slotInspector.shipUsed,"weapon badge opens a complete local inspector")
+  ArjUI.shipWidgets.contactMarker1.clickCallback()
+  T.check(ArjUI.shipSelection.contacts and ArjUI.shipWidgets.contactInspector1.shipUsed,"contact marker opens its complete local inspector")
+  T.check(#T.commands==0,"weapon and contact callbacks do not send orders")
+  ArjUI.shipSelection=nil; ArjUI:renderShip()
+ end,actions=function() return {pageClick(ArjUI.shipWidgets.portArmor)} end},
+ {name="arc-inspection",run=function()
+  T.check(ArjUI.shipSelection.arc=="port" and #T.commands==0,"arc click inspects locally")
+ end,actions=function() return {T.click(ArjUI.shipControls[2])} end},
+ {name="details-mode",run=function()
+  T.check(ArjUI.shipMode=="details" and ArjUI.shipPage.hidden and not ArjUI.shipBox.hidden,"Details hides Bridge")
+  T.check(ArjUI.shipDetailsText:find("Weight load: 136/165",1,true),"copy source contains the complete bridge ledger")
+ end,actions=function() return {T.click(ArjUI.shipControls[3])} end},
+ {name="copy-local",run=function()
+  T.check(getClipboardText()==ArjUI.shipDetailsText,"Copy details exports exactly the rendered ledger")
+  T.check(#T.commands==0,"view and clipboard actions send no commands")
+ end,actions=function() return {T.click(ArjUI.shipControls[5]),T.click(ArjUI.shipControls[6]),T.click(ArjUI.shipControls[7])} end},
+ {name="reference-commands",run=function()
+  T.check(#T.commands==3,"reference buttons send exactly three commands")
+  for i,value in ipairs({"look ship","look crew","look contacts"}) do T.check(T.commands[i].command==value,"explicit "..value) end
+ end,actions=function() return {T.click(ArjUI.shipControls[1])} end},
+ {name="coalesced-burst",run=function()
+  T.paintCount=ArjUI.shipPaintCount; T.widgets=countWidgets(); T.hull=ArjUI.shipWidgets.portArmor
+  for i=1,100 do
+   gmcp.Ship.Contacts={shipKey=ArjUI.state.ship.shipKey,heading=i%360,speed=0,contacts=ArjUI.state.ship.contacts}
+   raiseEvent("gmcp.Ship.Contacts")
+  end
+  T.check(ArjUI.shipPaintCount==T.paintCount and ArjUI.shipPaintTimer~=nil,"burst has one deferred paint")
+ end,verify=function()
+  T.check(ArjUI.shipPaintCount==T.paintCount+1 and ArjUI.shipPaintTimer==nil,"burst coalesces to one completed paint")
+  T.check(countWidgets()==T.widgets and ArjUI.shipWidgets.portArmor==T.hull,"updates retain widget identities and count")
+  T.paintCount=ArjUI.shipPaintCount
+ end},
+ {name="complete-slot-and-helm-state",run=function()
+  local originalInfo=ArjUI.state.ship.info
+  local info=yajl.to_value(yajl.to_string(originalInfo))
+  for _,value in ipairs({{false,"No"},{true,"Yes (bridge **)"},{nil,"?"}}) do
+   info.weapons[1].destroyed=value[1]
+   T.emit("Ship.Info",info);ArjUI:renderShip()
+   local row=ArjUI.shipWidgets["slot"..info.weapons[1].slot].shipHTML:gsub("<br>"," ")
+   T.check(row:find("Destroyed "..value[2],1,true),"Bridge preserves destroyed state "..value[2])
+  end
+  info.bridge.setHeading=360
+  T.emit("Ship.Info",info)
+  T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts=ArjUI.state.ship.contacts})
+  ArjUI:renderShip()
+  T.check(ArjUI.shipWidgets.headingactual.shipHTML=="●◇" and not ArjUI.shipWidgets.headingordered.shipUsed,"coincident headings show both actual and ordered glyphs, including 0/360")
+  info.bridge.setHeading=90;T.emit("Ship.Info",info);ArjUI:renderShip()
+  T.check(ArjUI.shipWidgets.headingactual.shipHTML=="●" and ArjUI.shipWidgets.headingordered.shipUsed,"different headings restore separate helm markers")
+  T.emit("Ship.Info",originalInfo);ArjUI:renderShip()
+  T.check(ArjUI.shipWidgets.headingactual.shipHTML=="●◇" and not ArjUI.shipWidgets.headingordered.shipUsed,"nearby 0/359 headings also retain both glyphs instead of overlapping")
+  T.paintCount=ArjUI.shipPaintCount
+ end},
+ {name="replacement-selection",run=function()
+  local originalInfo,originalContacts=ArjUI.state.ship.info,ArjUI.state.ship.contacts
+  ArjUI.shipSelection={slot=2,arc="stern"};ArjUI:renderShip()
+  local replacement=yajl.to_value(yajl.to_string(originalInfo));table.remove(replacement.weapons,1)
+  T.emit("Ship.Info",replacement);ArjUI:renderShip()
+  T.check(ArjUI.shipSelection==nil and not ArjUI.shipWidgets.railstern.shipStyle:find("#d6b679",1,true),"removed slot clears its arc highlight in the same paint")
+  T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts={
+   {id="**",name="Identical docked ship",bearing=90,range=35,you_targeting=true},{id="**",name="Identical docked ship",bearing=90,range=35,targeting_you=true}}})
+  ArjUI:renderShip();ArjUI.shipWidgets.contactMarker1.clickCallback()
+  local plot,marker=ArjUI.shipWidgets.plot,ArjUI.shipWidgets.contactMarker1
+  T.check(math.abs(marker:get_x()+18-plot:get_x()-plot:get_width())<2,"reported outer-ring range lands on the calibrated ring")
+  T.check(ArjUI.shipWidgets.contactMarker1.shipHTML:find("◇!2",1,true),"grouped marker preserves both targeting flag meanings")
+  T.check(ArjUI.shipWidgets.contactInspector1.shipUsed and ArjUI.shipWidgets.contactInspector2.shipUsed,"overlapping identical names reveal both current contacts")
+  local duplicatePacket=gmcp.Ship.Contacts;local oldClick=ArjUI.shipWidgets.contactMarker1.clickCallback
+  T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts={{id="NEW",name="Replacement contact",range=2,bearing=0}}})
+  oldClick()
+  T.check(ArjUI.shipSelection==nil and not ArjUI.shipWidgets.contactInspector1.shipUsed,"click before deferred paint cannot select replacement rows by stale index")
+  T.emit("Ship.Contacts",duplicatePacket);ArjUI:renderShip();ArjUI.shipWidgets.contactMarker1.clickCallback()
+  T.emit("Ship.Contacts",gmcp.Ship.Contacts);ArjUI:renderShip()
+  T.check(ArjUI.shipSelection==nil,"ambiguous selection clears after a replacement snapshot")
+  T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts={
+   {id="**",name="Duplicate",bearing=90,range=35},{id="**",name="Duplicate",bearing=90,range=35},{id="BB",name="Unique",bearing=90,range=35}}})
+  ArjUI:renderShip();ArjUI.shipWidgets.contactMarker1.clickCallback()
+  T.check(ArjUI.shipWidgets.contactInspector1.shipUsed and ArjUI.shipWidgets.contactInspector2.shipUsed and ArjUI.shipWidgets.contactInspector3.shipUsed,"mixed marker opens every duplicate and unique member")
+  T.emit("Ship.Contacts",gmcp.Ship.Contacts);ArjUI:renderShip()
+  T.check(ArjUI.shipSelection==nil and not ArjUI.shipWidgets.contactInspector3.shipUsed,"mixed ambiguous replacement clears the whole group, including its unique member")
+  T.emit("Ship.Info",originalInfo)
+  T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts=originalContacts})
+  ArjUI:renderShip();T.paintCount=ArjUI.shipPaintCount
+ end},
+ {name="bridge-scroll",run=function() end,actions=function()
+  return {{type="scroll",x=ArjUI.shipRoot:get_x()+ArjUI.shipRoot:get_width()/2,y=ArjUI.shipRoot:get_y()+200}}
+ end},
+ {name="scroll-refresh",run=function()
+  T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts=ArjUI.state.ship.contacts})
+ end},
+ {name="unchanged-idle",run=function()
+  T.check(ArjUI.shipPaintCount==T.paintCount+1 and ArjUI.shipPaintTimer==nil,"only the requested scroll-time update paints")
+  ArjUI:panelAction("character","restore")
+ end},
+ {name="narrow-bridge",run=function()
+  T.check(ArjUI.shipRoot:get_width()<720,"ordinary Character uses the compact column")
+ end,actions=function() return {T.click(ArjUI.shipControls[4])} end},
+ {name="narrow-bearing-toggle",run=function()
+  T.check(ArjUI.shipPlotOpen and ArjUI.shipWidgets.plot.shipUsed,"narrow Bearing glass expands locally")
+  ArjUI:panelAction("character","minimize")
+  T.paintCount=ArjUI.shipPaintCount
+  T.emit("Ship.Info",{shipKey="3:3",name="Hidden vessel",id="**"})
+ end,verify=function()
+  T.check(ArjUI.shipPaintCount==T.paintCount and ArjUI.shipPaintTimer==nil,"minimized panel accepts state without painting")
+  ArjUI:panelAction("character","restore")
+ end},
+ {name="hidden-reveal",run=function()
+  T.check(ArjUI.shipWidgets.identity.shipHTML:find("Hidden vessel",1,true),"reveal paints the latest hidden state")
+  ArjUI:panelAction("output","maximize")
+  T.paintCount=ArjUI.shipPaintCount
+  T.emit("Ship.Contacts",{shipKey="3:3",heading=0,speed=0,contacts={}})
+ end,verify=function()
+  T.check(ArjUI.shipPaintCount==T.paintCount and ArjUI.shipPaintTimer==nil,"covered Character does not paint")
+  ArjUI:panelAction("output","restore")
+ end},
+ {name="mode-restore",run=function()
+  ArjUI:resetShip()
+  T.emit("Ship.Contacts",{heading=0,speed=4,contacts={{id="LEGACY",name="Contacts without Info",range=2,bearing=90}}})
+  ArjUI:renderShip()
+  T.check(ArjUI.shipWidgets.contact1.shipUsed and ArjUI.shipWidgets.contact1.shipHTML:find("Contacts without Info",1,true),"default Bridge renders contacts without ship identity")
+  T.check(not ArjUI.shipWidgets.identityDetails.shipHTML:find("text-derived",1,true),"GMCP-only legacy state is not labeled text-derived")
+  ArjUI:resetShip();ArjUI:renderShip()
+  T.check(not ArjUI.shipWidgets.identityDetails.shipHTML:find("text-derived",1,true),"empty state has no false text provenance")
+  T.emit("Ship.Info",{name="Before contact snapshot"});ArjUI:renderShip()
+  T.check(ArjUI.shipWidgets.contactsTitle.shipHTML:find("CONTACTS (?)",1,true) and ArjUI.shipWidgets.plotUnknown.shipUsed,"absent contact snapshot remains unknown")
+  T.emit("Ship.Contacts",{heading=0,speed=0,contacts={{id="LEGACY",name="Legacy sunk",range=2,bearing=90,status="",sunk=true}}});ArjUI:renderShip()
+  T.check(ArjUI.shipWidgets.contact1.shipHTML:gsub("<br>"," "):find("sunk (legacy)",1,true),"legacy sunk flag survives an empty status string")
+  ArjUI.shipMode="details"; ArjUI:saveSettings(); ArjUI:setVisible(false)
+  T.paintCount=ArjUI.shipPaintCount; T.emit("Ship.Info",{shipKey="3:3",name="Latest while off",id="**"})
+  T.check(ArjUI.shipPaintCount==T.paintCount,"ui off accepts data without paint")
+  ArjUI:setVisible(true)
+ end,verify=function()
+  T.check(ArjUI.shipPage.hidden and not ArjUI.shipBox.hidden,"ui on restores only selected Details")
+  T.check(T.lines("ArjUI_ShipBox"):find("Latest while off",1,true),"latest data rendered on ui on")
+  ArjUI.shipMode="bridge"; ArjUI:loadSettings()
+  T.check(ArjUI.shipMode=="details","only view preference persists")
+ end},
+ {name="minimum-character",run=function()
+  local panel=ArjUI.panels.character
+  panel.state.mode="floating"; panel.state.rect={.3,.1,285/ArjUI.uiRoot:get_width(),160/ArjUI.uiRoot:get_height()}
+  ArjUI.shipMode="bridge"; ArjUI:applyPanelLayout(); ArjUI:refreshPanelContent("character")
+  panel.frame:raiseAll()
+ end,verify=function()
+  T.check(ArjUI.shipPage:get_height()>30 and ArjUI.shipControls[7]:get_width()>50,"minimum frame retains the action strip and scrollable body")
+  T.check(not ArjUI.shipPage.hidden and ArjUI.shipBox.hidden,"minimum frame reconciles Bridge mode")
+ end}
+})

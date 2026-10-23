@@ -1,6 +1,6 @@
 # SHIP redesign: the Captain's Table
 
-Date: 2026-10-23. Status: implementation in progress; server contract slice first.
+Date: 2026-10-23. Status: Details and Bridge implemented in dependent PRs #14/#15; final qualification in #16.
 
 ## Current handoff
 
@@ -14,13 +14,14 @@ Date: 2026-10-23. Status: implementation in progress; server contract slice firs
   state/layout checks during implementation, then the final offline suite and screenshot review.
   Live/minimum-version/platform evidence must be recorded separately, without treating fixtures as live proof.
 - Client starts clean at `3f9a998` on `branch/issue-13-ship-captains-table` (2.1.2).
-- Server isolated checkout: `/home/aiwithapex/projects/duris-ship-bridge`, branch
-  `branch/ship-bridge-contract`, based on current `origin/master` `fc1c94e15`.
-  The primary server checkout and its active branch are preserved.
+- Server implementation used an isolated checkout based on `fc1c94e15`;
+  the user removed that checkout and its branch after merging #304. The primary
+  server checkout and its active branch are preserved. Merged-source fixture
+  refresh uses the detached qualification checkout `/tmp/duris-ship-parity-e86`.
 - Contract fields below are selected as written. `crewStaminaBand` is
   `rested` / `fatigued` / `exhausted`, mapped from the existing stamina prefix helper.
 - Server contract: [Duris PR #304](https://github.com/LuminariMUD/Duris/pull/304),
-  commit `4c3312e0657c94f68ba4e6956c5065e4fc8c40dc`, open for review. `make -C src -j4`,
+  squash-merged by the user as `e86bf7f24c52449b1260bb378443efafd1d9c491`. `make -C src -j4`,
   executable GMCP helper/wire/lifecycle test, changed-line formatting and diff checks passed.
 - Client Details slice: 2.2.0 implements the additive rows, exact integer-third
   condition bands, separate display target, literal names, contact coordinates/arcs,
@@ -34,9 +35,45 @@ Date: 2026-10-23. Status: implementation in progress; server contract slice firs
   and `/home/aiwithapex/.local/share/duris-ship-contract-check/20261023T115217Z-e114f45f-ship-bridge`.
   Inspected lower-ledger and new-contract screenshots at 1366×768; names wrap and
   markup-like names remain literal. This qualifies Details behavior only.
-- Next: publish the Details slice, then build the native Captain's Table, add deferred
-  coalesced rendering and explicit commands, and run final package qualification.
-  Live, actual 4.19.1 and native-platform verification remain outstanding.
+- Details is published as [client PR #14](https://github.com/LuminariMUD/duris-client/pull/14),
+  commit `6a0704c38cf965c2310b109daec99992a6f97761` on the requested branch.
+- Active dependent branch: `branch/issue-13-captains-table-ui`, based on #14.
+  Package 2.3.0 adds the native Bridge, persistent Bridge/Details preference,
+  Copy details, explicit reference actions and deferred coalesced visible paints.
+  First `ship-bridge` and updated Details `connections` checks passed in Mudlet 5.0.1.
+  Visual iteration fixed compact arc spacing, font measurement and the inner bearing ring.
+  Slot and contact inspectors reuse the same complete rows as their manifests.
+  Details and Bridge share deterministic contact ordering, including duplicate IDs.
+- Mudlet 4.19.1 source audit confirms `createScrollBox`, `calcFontSize`, label callbacks,
+  label stylesheets and `setClipboardText`; source is under the external test tools
+  directory `~/.local/share/duris-client-dev/tools/4.19.1-source`. This is API evidence,
+  not a successful 4.19.1 runtime qualification.
+- Server #304 is merged; fixtures have been refreshed from its exact squash commit.
+  This does not establish deployment of that commit to the live game.
+- Fresh visual/interaction evidence: `ship-table` passed at 1280×720 and 1920×1080;
+  the corrected final 1366×768 run is under
+  `/home/aiwithapex/.local/share/duris-captains-table-reviewed/20261023T121105Z-d32c59e5-ship-table`.
+  The 1080 run is under `/home/aiwithapex/.local/share/duris-captains-table-1080/20261023T120850Z-8d8abe57-ship-table`.
+  Inspected expanded hull/helm/bearing and manifest screenshots; an incoming refresh
+  retained the scrolled manifest position. The minimum-frame fixture was corrected to
+  raise the floated Character frame before visual inspection (the original assertion
+  passed despite another frame covering it).
+- A Details review found that two unflagged duplicate IDs could hide a later flagged lock.
+  PR #14 receives the focused correction and three-duplicate regression; its real-Mudlet
+  `ship-bridge` run passed at `/home/aiwithapex/.local/share/duris-details-duplicate-followup`.
+- Review follow-up for #15: clear a contact group if any member becomes ambiguous
+  after replacement, show weapon destruction as Yes/No/unknown, and combine overlapping
+  helm glyphs while retaining both exact numeric headings. These use the existing renderer
+  and `ship-table` fixture; no new state, dependencies or compatibility paths are needed.
+  Keep unreleased 2.3.0 and rebuild its archive with the fixes.
+- Review proof: `scripts/release.py --output /tmp/duris-pr15-review-release` and
+  `git diff --check` pass. Real Mudlet 5.0.1 `ship-table` passes all 58 assertions,
+  no Lua errors and normal cleanup, under
+  `/home/aiwithapex/.local/share/duris-pr15-review-final/20261023T134157Z-abcaea30-ship-table`.
+  Inspected helm, manifest, minimum-frame and actual Errors-view screenshots.
+- Next: carry this focused review correction into #16, whose handoff owns final
+  integrated evidence and the live comparison. Actual 4.19.1 and native-platform
+  runtime verification remain unverified.
   Master CI continues to own release tags; no tags or production changes are made here.
 
 ## Tracking and navigation

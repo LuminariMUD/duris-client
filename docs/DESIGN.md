@@ -97,7 +97,25 @@ layout passes or covered open requests cannot acknowledge unseen messages.
 The character tabs are **GROUP / STATS / INV / EQ / WHO / SHIP**, with GROUP
 selected initially. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
 with ALL selected initially. STATS includes identity, coins, and bartender
-quest information. SHIP is a narrow, scrollable text view ordered by identity
+quest information. SHIP offers **Bridge** and **Details**, remembering only this
+view preference. Bridge is a native Geyser ScrollBox inside the existing frame:
+a generic hull schematic with distinct armor/internal layers for four named arcs,
+sail gauge, actual/ordered helm markers, arc badges, all occupied slots interleaved
+by number, crew watch, and bearing glass with full contact rows. Below 720 logical
+pixels the sections stack; at 720 and above hull/armament and helm/plot share the
+available body width. Narrow frames collapse the plot behind a local Plot control.
+The small action strip remains fixed; identity and every section scroll.
+Overlapping actual/ordered helm markers use a combined ●◇ glyph; the text retains both exact headings.
+Weapon rows distinguish Destroyed Yes, No and unknown.
+
+Arc, slot and contact clicks inspect locally. Overlapping markers reveal all
+their contacts. After a replacement snapshot, the whole contact selection clears
+if any member cannot be identified uniquely. A lock marker and a targeting-us marker have separate meanings.
+The plot is north-up bearing/range, includes altitude in its reported range,
+and retains X/Y as tactical coordinates about the observer's 50/50 reference.
+It contains no terrain, firing sectors or invented world positions.
+
+Details retains the stable `ArjUI_ShipBox` selectable console ordered by identity
 and navigation, Condition, Weapons, Crew and supplies, Equipment, Cargo, then
 Contacts sorted by range. Condition lists Forward/Port/Starboard/Rear armor
 and hull current/max values, plus sail; red/amber/green accents supplement
@@ -108,8 +126,17 @@ with separate signed modifiers, and cargo capacity is labeled in crates.
 Known empty lists show None; absent fields stay unknown or are omitted.
 Server/text colors are stripped from names. Updates preserve the reader's
 scroll position. GMCP facts take precedence over the smaller text fallback;
-bridge departure clears the display. Weight, set orders and exact reload
-timers are absent from the inspected GMCP contract and are not inferred.
+bridge departure clears the display. New optional bridge facts include weight/load,
+orders, display/raw stamina, target and richer slot state; older-server omissions
+remain unknown. Copy exports the same rendered ledger. Look ship / Look crew /
+Contacts send exactly the named reference command once. Ship refresh uses look ship;
+view changes and resizing never send commands. Existing opt-in ArjAuto polling is independent.
+
+Visible updates coalesce into one owned deferred paint. Hidden/minimized/covered
+Character keeps accepting snapshots without painting, then reconciles its selected
+mode on reveal. Widgets retain identities; only changed label content/styles and
+geometry update. No ship heartbeat, local timer countdown or persisted ship snapshot
+is introduced. Native labels provide the complete schematic without an image dependency.
 
 The bottom strip puts HP, MP, movement, and position below the left column.
 Tank and target displays split the space below the console. **BUFFS and
@@ -184,7 +211,7 @@ real Mudlet when changing fonts or measurements.
 | Exit label | Sends the corresponding direction. Closed and locked doors receive distinct styles. |
 | World icon / area name | Opens the world map / current zone's wiki page. |
 | Time display | Sends `time`. |
-| Character tab | Selects its view; clicking the active STATS, INV, EQ, WHO, or SHIP tab requests `score`, `inv`, `eq`, `who`, or `look contacts`. |
+| Character tab | Selects its view; clicking the active STATS, INV, EQ, WHO, or SHIP tab requests `score`, `inv`, `eq`, `who`, or `look ship`. |
 | Entity link / group member | Opens contextual actions; custom actions are saved by category. |
 | TELLS contact | Opens a private conversation window; unread counts mark new messages. |
 | DMG | Prints the session damage report. |
@@ -357,7 +384,7 @@ coverage limits in the [testing log](ongoing-projects/mudlet-local-testing.md).
 ## Current boundaries
 
 The layout has no breakpoint-driven column rearrangement or editable theme
-system. SHIP displays text rather than a graphical radar. Its complete ledger
+system. SHIP supplies its own compact/expanded composition within Character. Its complete ledger
 accepts optional bridge facts from the updated server: weight/load, orders,
 display/raw stamina, loaded target, slot status/timers and destruction. Timers
 are counters and timer-ready does not imply a weapon can fire. Armor/internal
