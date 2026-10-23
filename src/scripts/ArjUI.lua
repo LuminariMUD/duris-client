@@ -1010,6 +1010,7 @@ function ArjUI:init()
   
   -- SHIP panel (GMCP Ship.Info/Ship.Contacts, or 'look contacts' text)
   self.shipBox = makeConsole(self.tabContent, "ArjUI_ShipBox", 0, 0, "100%", "100%", 9)
+  self.shipBox:enableScrollBar()
   self.shipBox:hide()
   self.tabPanels.ship = self.shipBox
   
@@ -4011,71 +4012,127 @@ end
 function ArjUI:renderShip()
   if not self.shipBox then return end
   local box = self.shipBox
+  box.shipScrollTop = box.shipScrollTop or math.max(0, box:getScroll() - getRowCount(box.name))
   box:clear()
   local s = self.state.ship or {}
   box:cecho("<dim_gray>── Ship ──\n")
 
-  local info = s.info
+  local info = type(s.info) == "table" and s.info or {}
   local shown = false
-  if type(info) == "table" then
-    local name = pick(info, "name", "ship", "shipName")
-    if name then box:cecho(string.format("<white>%s\n", stripColors(tostring(name)))); shown = true end
-    local lineParts = {}
-    local heading = pick(info, "heading", "course")
-    local speed = pick(info, "speed")
-    local maxSpeed = pick(info, "maxSpeed", "max_speed", "speedMax")
-    if heading then table.insert(lineParts, "H:" .. tostring(heading)) end
-    if speed then table.insert(lineParts, "S:" .. tostring(speed) .. (maxSpeed and ("/" .. tostring(maxSpeed)) or "")) end
-    if #lineParts > 0 then box:cecho("<yellow>" .. table.concat(lineParts, "  ") .. "\n"); shown = true end
-    local skip = { name = true, ship = true, shipName = true, heading = true, course = true, speed = true, maxSpeed = true, max_speed = true, speedMax = true }
-    for _, k in ipairs(sortedKeys(info)) do
-      local v = info[k]
-      if not skip[k] and type(v) ~= "table" then
-        box:cecho(string.format("<dim_gray>%s: <light_gray>%s\n", k, stripColors(tostring(v))))
-        shown = true
-      elseif not skip[k] and type(v) == "table" then
-        local vals = {}
-        for _, kk in ipairs(sortedKeys(v)) do
-          local vv = v[kk]
-          if type(vv) ~= "table" then
-            table.insert(vals, kk .. "=" .. stripColors(tostring(vv)))
-          elseif #vv == 2 and type(vv[1]) == "number" and type(vv[2]) == "number" then
-            table.insert(vals, kk .. "=" .. vv[1] .. "/" .. vv[2])
-          else
-            local entries = (#vv > 0 and type(vv[1]) == "table") and vv or {vv}
-            for _, entry in ipairs(entries) do
-              local details = {}
-              for _, field in ipairs(sortedKeys(entry)) do
-                if type(entry[field]) ~= "table" then
-                  details[#details+1] = field .. "=" .. stripColors(tostring(entry[field]))
-                end
-              end
-              vals[#vals+1] = table.concat(details, " ")
-            end
-          end
-        end
-        if #vals > 0 then box:cecho(string.format("<dim_gray>%s: <light_gray>%s\n", k, table.concat(vals, " "))); shown = true end
+  -- Local presentation helpers: unknown is not zero; false is a real value.
+  -- Strip both server colors and cecho markup in supplied names and values.
+  local function text(value)
+    if value == nil then return "?" end
+    return cecho2string(stripColors(tostring(value)))
+  end
+  local function section(title)
+    box:cecho("\n<gold>" .. title .. "\n")
+    shown = true
+  end
+  local function row(label, value)
+    if value ~= nil then
+      box:cecho("<dim_gray>" .. label .. ": <light_gray>" .. text(value) .. "\n")
+      shown = true
+    end
+  end
+  local function pair(current, maximum, color)
+    local accent = "<light_gray>"
+    local n, m = tonumber(current), tonumber(maximum)
+    if color and n and m and m > 0 then
+      accent = n/m <= .25 and "<indian_red>" or (n/m <= .6 and "<khaki>" or "<dark_sea_green>")
+    end
+    return accent .. text(current) .. "/" .. text(maximum)
+  end
+  local function slots(items)
+    local list = {}
+    for _, item in ipairs(items) do if type(item) == "table" then list[#list+1] = item end end
+    table.sort(list, function(a, b) return (tonumber(a.slot) or math.huge) < (tonumber(b.slot) or math.huge) end)
+    return list
+  end
+  local function readiness(item)
+    if item.ready == true then return "<dim_gray>Timer: <dark_sea_green>Ready\n" end
+    if item.ready == false then return "<dim_gray>Timer: <khaki>Not ready\n" end
+    return ""
+  end
+  local name = pick(info, "name", "ship", "shipName") or s.name
+  if name then box:cecho("<white>" .. text(name) .. "\n"); shown = true end
+  row("ID", info.id)
+  row("Status", info.status or s.status)
+  row("Captain", info.captain or s.captain)
+  row("Frags", info.frags)
+  local heading = s.heading or pick(info, "heading", "course")
+  local speed = s.speed or info.speed
+  local maximum = pick(info, "maxSpeed", "max_speed", "speedMax") or s.maxSpeed
+  if heading ~= nil or speed ~= nil or maximum ~= nil then
+    box:cecho("<yellow>H:" .. text(heading) .. "  S:" .. text(speed) .. "/" .. text(maximum) .. "\n")
+    shown = true
+  end
+  row("Contact range", info.contactRange)
+  row("Locked on", s.target)
+
+  if info.armor or info.internal or info.sail ~= nil or info.maxSail ~= nil then
+    section("Condition")
+    for _, arc in ipairs({{"bow", "Forward"}, {"port", "Port"}, {"starboard", "Starboard"}, {"stern", "Rear"}}) do
+      local armor = type(info.armor) == "table" and info.armor[arc[1]]
+      local hull = type(info.internal) == "table" and info.internal[arc[1]]
+      if type(armor) == "table" or type(hull) == "table" then
+        armor, hull = type(armor) == "table" and armor or {}, type(hull) == "table" and hull or {}
+        box:cecho("<white>" .. arc[2] .. "<dim_gray> Armor " .. pair(armor[1], armor[2], true) .. "\n")
+        box:cecho("<dim_gray>  Hull " .. pair(hull[1], hull[2], true) .. "\n")
       end
     end
+    if info.sail ~= nil or info.maxSail ~= nil then box:cecho("<dim_gray>Sail: " .. pair(info.sail, info.maxSail, true) .. "\n") end
   end
-  if s.name or s.status or s.captain or s.maxSpeed or s.heading then
-    local bits = {}
-    if s.name then table.insert(bits, "<white>" .. s.name) end
-    if s.status then table.insert(bits, "<cyan>" .. s.status) end
-    if s.captain then table.insert(bits, "<dim_gray>Capt. <light_gray>" .. s.captain) end
-    if s.maxSpeed then table.insert(bits, "<dim_gray>max spd <light_gray>" .. s.maxSpeed) end
-    box:cecho(table.concat(bits, "<dim_gray> · ") .. "\n")
-    if s.heading or s.speed then
-      box:cecho(string.format("<yellow>H:%s  S:%s\n", tostring(s.heading or "?"), tostring(s.speed or "?")))
+  if type(info.weapons) == "table" then
+    section("Weapons")
+    if #info.weapons == 0 then row("Weapons", "None") end
+    for _, weapon in ipairs(slots(info.weapons)) do
+      box:cecho("<white>[" .. text(weapon.slot) .. "] " .. text(weapon.name) .. "\n")
+      row("Position", ({bow="Forward", stern="Rear"})[weapon.position] or weapon.position)
+      if weapon.ammo ~= nil or weapon.maxAmmo ~= nil then
+        box:cecho("<dim_gray>Ammo: " .. pair(weapon.ammo, weapon.maxAmmo) .. (tonumber(weapon.ammo) == 0 and "<indian_red> (empty)" or "") .. "\n")
+      end
+      if weapon.damage ~= nil then
+        box:cecho("<dim_gray>Damage: " .. ((tonumber(weapon.damage) or 0) > 0 and "<indian_red>" or "<light_gray>") .. text(weapon.damage) .. "\n")
+      end
+      box:cecho(readiness(weapon))
     end
-    shown = true
   end
-  if s.target then box:cecho("<indian_red>Locked on: <white>" .. s.target .. "\n"); shown = true end
-  if next(s.skills or {}) then
-    local parts = {}
-    for _, k in ipairs(sortedKeys(s.skills)) do table.insert(parts, k .. " " .. s.skills[k]) end
-    box:cecho("<dim_gray>Skills: <light_gray>" .. table.concat(parts, "  ") .. "\n")
-    shown = true
+  if info.crewType or info.crewStamina ~= nil or info.maxCrewStamina ~= nil or info.people ~= nil or info.maxPeople ~= nil
+      or info.repairStock ~= nil or info.chiefs or info.skills or info.skillMods or next(s.skills or {}) then
+    section("Crew and supplies")
+    row("Crew", info.crewType)
+    if info.crewStamina ~= nil or info.maxCrewStamina ~= nil then box:cecho("<dim_gray>Stamina: " .. pair(info.crewStamina, info.maxCrewStamina, true) .. "\n") end
+    if info.people ~= nil or info.maxPeople ~= nil then box:cecho("<dim_gray>Passengers: " .. pair(info.people, info.maxPeople) .. "\n") end
+    row("Repair stock", info.repairStock)
+    for _, skill in ipairs({{"sail", "Deck"}, {"guns", "Guns"}, {"repair", "Repair"}}) do
+      local key, label = skill[1], skill[2]
+      local chief = type(info.chiefs) == "table" and info.chiefs[key] or nil
+      row(label .. " chief", chief == "" and "None" or chief)
+      row(label .. " skill", pick(info.skills, key) or pick(s.skills, label))
+      local modifier = tonumber(pick(info.skillMods, key))
+      if modifier then row(label .. " modifier", string.format("%+d", modifier)) end
+    end
+  end
+  if type(info.equipment) == "table" then
+    section("Equipment")
+    if #info.equipment == 0 then row("Equipment", "None") end
+    for _, item in ipairs(slots(info.equipment)) do
+      box:cecho("<white>[" .. text(item.slot) .. "] " .. text(item.name) .. "\n" .. readiness(item))
+    end
+  end
+  if type(info.cargo) == "table" then
+    section("Cargo")
+    local cargo = info.cargo
+    if cargo.current ~= nil or cargo.max ~= nil then box:cecho("<dim_gray>Crates: " .. pair(cargo.current, cargo.max) .. "\n") end
+    if type(cargo.items) == "table" then
+      if #cargo.items == 0 then row("Cargo", "None") end
+      for _, item in ipairs(slots(cargo.items)) do
+        box:cecho("<white>[" .. text(item.slot) .. "] " .. text(item.name) .. (item.contraband == true and "<indian_red> (contraband)" or "") .. "\n")
+        row("Crates", item.crates)
+        row("Invoice price", item.invoicePrice)
+      end
+    end
   end
 
   local contacts = s.contacts
@@ -4109,14 +4166,27 @@ function ArjUI:renderShip()
         end
       end
       local tag = (s.target and id and tostring(id) == tostring(s.target)) and "<white>*" or ""
-      box:cecho(string.format("%s%s[%s] %s%s<dim_gray> %s\n", tag, color, tostring(id or "-"), stripColors(tostring(name)), c.sunk and " (sunk)" or "", table.concat(bits, " ")))
+      box:cecho(string.format("%s%s[%s] %s%s<dim_gray> %s\n", tag, color, text(id or "-"), text(name), c.sunk and " (sunk)" or "", text(table.concat(bits, " "))))
     end
     shown = true
+  elseif type(contacts) == "table" and shown then
+    section("Contacts (0)")
+    row("Contacts", "None")
   end
 
   if not shown then
     box:cecho("<dim_gray>(no ship data)\n\nBoard a ship and click SHIP\nto look at contacts.\n")
   end
+  -- A contact refresh must not pull the reader away from weapons or cargo.
+  -- clear() closes Mudlet's split scrollback. Wait for its geometry to settle;
+  -- coalesce consecutive Info/Contacts events into one restoration.
+  self:after(0, function()
+    if self.shipBox ~= box or box.shipScrollTop == nil then return end
+    local top = box.shipScrollTop
+    box.shipScrollTop = nil
+    local lines, rows = getLastLineNumber(box.name) + 1, getRowCount(box.name)
+    if lines - top > rows then box:scrollTo(top + rows) end
+  end)
 end
 
 -- ------------------------------------------------------------

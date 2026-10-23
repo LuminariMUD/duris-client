@@ -2,6 +2,12 @@
 
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
+## 2.0.2 - 2026-10-23
+
+- Organize SHIP into readable condition, weapon, crew, equipment, cargo and contact sections with labeled values, condition colors and separate ammunition, damage and timer status.
+- Preserve navigation, target controls, text fallback and empty-state clearing while handling older or partial ship payloads.
+- Restore the absolute SHIP scroll position after updates, including the adjustable dashboard viewport.
+
 ## 2.0.1 - 2026-10-23
 
 - Rebuild the dashboard as ten adjustable panels with title/border gestures, named home docking, locking, minimize, hide and maximize actions.

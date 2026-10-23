@@ -56,3 +56,11 @@ failure injection is provided by the controller's `--fault` options.
 created offline profile. It includes a passive Lua command alias for supported
 `installPackage()` calls. Every ordinary run copies it to a new external
 configuration root before starting Mudlet; no player profile is copied.
+
+The issue #3 `connections` additions (2026-10-22) are constructed ship cases
+checked against `json_build_ship_info()` at server revision
+`ca548bae11cab98490fd5e4e954785630b3a07da`: four condition arcs, crew/chiefs,
+integer skills and signed modifiers, unsorted numeric weapon slots, damage,
+ammo/timer status and cargo invoice/contraband fields. They also intentionally
+test omitted fields, unknown maxima, long names, empty lists and replacement.
+They do not refresh `server-gmcp.json` or establish a live-game comparison.

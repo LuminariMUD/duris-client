@@ -1,5 +1,64 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Latest parent repair carry-forward — 2026-10-23
+
+Current SHIP candidate is 2.0.2 and retains the portable save/rollback/recovery
+and wilderness repaint repair from #8. All 21 final-package suite expectations
+pass, including the new Windows-semantics fixture and SHIP scroll regression.
+Current hashes and per-run archives are in ../testing/issue-3/review-2026-10-23.json.
+The earlier 1280x720 SHIP check is reused only for unchanged renderer/geometry.
+
+
+## Integrated SHIP review completion — 2026-10-23
+
+PR #9 is stacked on #8, retaining #7 and both layout review repairs. Version
+2.0.1 prevents a downgrade to the former standalone 1.3.7 candidate. The prior
+layout handoff is preserved in [plan-issue-5.md](plan-issue-5.md).
+
+All four existing review findings remain valid and addressed: authoritative
+bridge departure stays empty; fresh zero Contacts navigation beats cached Info;
+the manifest now identifies this integrated candidate; all 21 final-package
+Mudlet suite expectations pass. The inherited hidden-tell defect is fixed by
+#7 and retained. Integration exposed a one-row SHIP scroll drift (22 to 21);
+the existing absolute scrollTo path repairs it, with the failing and passing
+connection runs recorded. The 1280x720 connection case also passes 115 assertions.
+
+Local build/release payload validation, 15 release and ten controller tests pass.
+Weapon/refresh/Errors screenshots were inspected. Current source, archive and
+per-run payload identities: [review record](../testing/issue-3/review-2026-10-23.json).
+The old 1.3.7 live, 4.22 and size/DPI evidence is historical; the new combined
+layout is not qualified by those captures. No live/minimum-version/hardware-DPI/
+other-platform rerun is claimed. No merge or manual tag was performed.
+
+
+## 2026-10-22 - Issue #3 SHIP readability, final 1.3.7 candidate
+
+Final archive: `75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3`.
+All **20/20** real-Mudlet expectations pass under
+`/tmp/duris-issue3-navigation-suite`, after both the departure and navigation
+repairs. Every run's canonical payload equals the committed package. Eight
+controller checks pass; the local stack uses PR #11's bounded editor wait.
+The primary [manifest](../testing/issue-3/offline-evidence.json) records all
+cases and successful hosted core build/runtime checks at `26663f2`, providing
+full-suite proof within this PR itself.
+
+Departure and stale Info navigation have red/green regressions. Existing
+populated size/DPI records remain explicitly historical coverage for unchanged
+formatting and geometry, rather than being mislabeled as final archives.
+Lua 5.1 syntax and release source/archive equality validation pass.
+
+Fresh exact-archive import also passed **115** assertions in Mudlet 4.22.0 /
+Qt 6.9.0. A clean live profile compared GallTest's actual packets with
+`look ship`/`look crew`, including all six weapons and condition/crew/cargo
+facts; real bridge exit cleared state and display. Character returned to the
+original inn and logged out. Captures and protocol omissions are carried in
+dependent PR #10 and its final handoff. Cargo crates remain distinct from
+weight load; no missing protocol facts were inferred.
+
+Mudlet 4.19.1 and physical desktop DPI remain unverified. Constructed fixtures,
+the retained serializer snapshot and actual live reception keep distinct
+provenance. No ship/server configuration was changed.
+
 ## Later review findings — 2026-10-23
 
 The Windows replacement finding is valid: repeated saves now retain a backup
