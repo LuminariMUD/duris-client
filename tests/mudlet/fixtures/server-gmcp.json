@@ -1,14 +1,17 @@
 {
   "provenance": {
     "description": "Production functions with isolated world/mechanics dependencies; no live player data.",
-    "server_commit": "d27e2b5ec5431d6489acd6258c264dcb1aeec29a",
+    "server_commit": "4c3312e0657c94f68ba4e6956c5065e4fc8c40dc",
     "source_sha256": {
-      "src/net/gmcp.c": "faec3bef7846c8559c3c521779be161857d4e833936d9f9e34106be9ebc985e6",
-      "src/core/json_utils.c": "450824d9df68db12b26c8de9d072a1a12a70914e511b34fa8108e8a5003d325a",
-      "src/core/structs.h": "2ac19e2dbe62ef5bf4678b5e5e7f4055a82a8a256dbe73e40b4e23556035884e",
-      "src/combat/fight.c": "896c464bf2be78b8f0b9fff5a869c922bab6473afc18fb6665a4b520ac8cb8e2",
-      "tests/async/gui_gmcp_contract_harness.cpp": "a72b4742e0b9708952bdd59fa3768292ba25aed9a05227af4356b44850c9ad3c",
-      "tests/async/test_gui_gmcp_contract.py": "a8bc11b2b21449d416849f1f7827c82c6053f19c4f1d126d591a2a1bc4c7b5fe"
+      "src/net/gmcp.c": "f8c948c69179d0bb74d4924ce3a2aacee585f22caa6bf732757af10c9fabe3a4",
+      "src/core/json_utils.c": "84bb92474c6d5d8d144bf044f19e684efce314168f109d2e75e80277f04090b1",
+      "src/core/structs.h": "1da598d39860ef98e55d154bed93f69e2f4909f91e26f5942c383ebbccb8adb5",
+      "src/combat/fight.c": "05c35ad3a98d2465b723c2ce14012333f7d095431c14ee2996e3436006cacaad",
+      "src/ships/ships.h": "abbff0dbab3e993ed7795881ec51ae287001217b67f2a94a78728f75dcaab2f5",
+      "src/ships/ship_utils.c": "280c062a18b72813ed7163cf0ea49884675fbfc7ad3fcc1c6ee897f8082e2563",
+      "src/core/utility.c": "7a12c6ad619a31f36653ae2217de8860b3b3e00c805e39edf7b6f0aadc95c8bd",
+      "tests/async/gui_gmcp_contract_harness.cpp": "3bcd949a2731dba054e1ecd1861e26be04606a3300ecce5cce9a5141e8c9859c",
+      "tests/async/test_gui_gmcp_contract.py": "30a0a423d172337d1a383afc2ea9f92c3db934f566c816d4c0171c3f79b112c7"
     }
   },
   "phases": {
@@ -16,6 +19,7 @@
       {
         "package": "Ship.Info",
         "data": {
+          "shipKey": "1:9007199254740993",
           "name": "Bronze Voyager",
           "id": "AA",
           "captain": "",
@@ -25,9 +29,24 @@
           "maxSpeed": 18,
           "contactRange": 35,
           "sail": 0,
-          "maxSail": 0,
-          "crewStamina": 0,
-          "maxCrewStamina": 0,
+          "maxSail": 130,
+          "bridge": {
+            "hullWeight": 330000,
+            "load": {
+              "current": 136,
+              "max": 165
+            },
+            "setHeading": 359,
+            "setSpeed": 8,
+            "displayCrewStamina": -20,
+            "crewStaminaBand": "fatigued",
+            "target": {
+              "id": "BB",
+              "name": "Enemy vessel"
+            }
+          },
+          "crewStamina": -400,
+          "maxCrewStamina": 800,
           "repairStock": 0,
           "chiefs": {
             "sail": "",
@@ -82,18 +101,174 @@
               0
             ]
           },
-          "weapons": [],
-          "equipment": [],
+          "weapons": [
+            {
+              "slot": 2,
+              "name": "Long cannon",
+              "position": "stern",
+              "ammo": 5,
+              "maxAmmo": 12,
+              "damage": 100,
+              "ready": true,
+              "timer": 0,
+              "destroyed": true,
+              "positionLabel": "Rear",
+              "statusText": "Badly Damaged"
+            },
+            {
+              "slot": 4,
+              "name": "Long cannon",
+              "position": "bow",
+              "ammo": 5,
+              "maxAmmo": 12,
+              "damage": 0,
+              "ready": false,
+              "timer": 6,
+              "destroyed": false,
+              "positionLabel": "Forward",
+              "statusText": "6"
+            },
+            {
+              "slot": 6,
+              "name": "Long cannon",
+              "position": "stern",
+              "ammo": 5,
+              "maxAmmo": 12,
+              "damage": 0,
+              "ready": false,
+              "timer": 6,
+              "destroyed": false,
+              "positionLabel": "Rear",
+              "statusText": "6"
+            },
+            {
+              "slot": 8,
+              "name": "Long cannon",
+              "position": "bow",
+              "ammo": 5,
+              "maxAmmo": 12,
+              "damage": 0,
+              "ready": false,
+              "timer": 6,
+              "destroyed": false,
+              "positionLabel": "Forward",
+              "statusText": "6"
+            },
+            {
+              "slot": 10,
+              "name": "Long cannon",
+              "position": "stern",
+              "ammo": 5,
+              "maxAmmo": 12,
+              "damage": 0,
+              "ready": false,
+              "timer": 6,
+              "destroyed": false,
+              "positionLabel": "Rear",
+              "statusText": "6"
+            },
+            {
+              "slot": 12,
+              "name": "Long cannon",
+              "position": "bow",
+              "ammo": 5,
+              "maxAmmo": 12,
+              "damage": 0,
+              "ready": false,
+              "timer": 6,
+              "destroyed": false,
+              "positionLabel": "Forward",
+              "statusText": "6"
+            },
+            {
+              "slot": 14,
+              "name": "Long cannon",
+              "position": "stern",
+              "ammo": 5,
+              "maxAmmo": 12,
+              "damage": 0,
+              "ready": false,
+              "timer": 6,
+              "destroyed": false,
+              "positionLabel": "Rear",
+              "statusText": "6"
+            }
+          ],
+          "equipment": [
+            {
+              "slot": 3,
+              "name": "Test equipment",
+              "ready": false,
+              "timer": 6,
+              "damage": 21,
+              "statusText": "Badly Damaged"
+            },
+            {
+              "slot": 5,
+              "name": "Test equipment",
+              "ready": false,
+              "timer": 6,
+              "damage": 0,
+              "statusText": "6"
+            },
+            {
+              "slot": 7,
+              "name": "Test equipment",
+              "ready": false,
+              "timer": 6,
+              "damage": 0,
+              "statusText": "6"
+            },
+            {
+              "slot": 9,
+              "name": "Test equipment",
+              "ready": false,
+              "timer": 6,
+              "damage": 0,
+              "statusText": "6"
+            },
+            {
+              "slot": 11,
+              "name": "Test equipment",
+              "ready": false,
+              "timer": 6,
+              "damage": 0,
+              "statusText": "6"
+            },
+            {
+              "slot": 13,
+              "name": "Test equipment",
+              "ready": false,
+              "timer": 6,
+              "damage": 0,
+              "statusText": "6"
+            },
+            {
+              "slot": 15,
+              "name": "Test equipment",
+              "ready": false,
+              "timer": 6,
+              "damage": 0,
+              "statusText": "6"
+            }
+          ],
           "cargo": {
-            "current": 3,
-            "max": 0,
+            "current": 5,
+            "max": 70,
             "items": [
               {
                 "slot": 0,
                 "name": "silk",
                 "crates": 3,
-                "invoicePrice": 0,
+                "invoicePrice": 156000,
                 "contraband": false
+              },
+              {
+                "slot": 1,
+                "name": "forbidden relics",
+                "crates": 2,
+                "invoicePrice": 56000,
+                "contraband": true
               }
             ]
           }
@@ -102,19 +277,20 @@
       {
         "package": "Ship.Contacts",
         "data": {
+          "shipKey": "1:9007199254740993",
           "heading": 90,
           "speed": 12,
           "contacts": [
             {
               "id": "BB",
               "name": "Enemy vessel",
-              "x": 0,
-              "y": 0,
+              "x": 54,
+              "y": 48,
               "range": 5,
               "bearing": 70,
               "heading": 50,
               "speed": 8,
-              "arc": "port",
+              "arc": "SF",
               "race": "evil",
               "status": "",
               "targeting_you": true,
@@ -212,7 +388,7 @@
           "sender": "Tester",
           "text": "hello",
           "alignment": "good",
-          "timestamp": 1792012178
+          "timestamp": 1792756439
         }
       },
       {

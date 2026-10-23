@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0 - 2026-10-23
+
+- Show bridge weight/load, ordered navigation, display/raw stamina, explicit target, slot condition/timers/destruction, contact coordinates and both arc meanings when supplied by the server.
+- Associate ship snapshots by runtime vessel key, preserve safe legacy fallback, handle duplicate docked designations and keep server names literal.
+
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
 ## 2.1.2 - 2026-10-23

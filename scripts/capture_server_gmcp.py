@@ -21,6 +21,7 @@ with tempfile.TemporaryDirectory(prefix='duris-gmcp-capture-') as directory:
         phase, package, data = line.split(' ', 2)
         phases.setdefault(phase, []).append({'package': package, 'data': json.loads(data)})
 files = ['src/net/gmcp.c', 'src/core/json_utils.c', 'src/core/structs.h', 'src/combat/fight.c',
+         'src/ships/ships.h', 'src/ships/ship_utils.c', 'src/core/utility.c',
          'tests/async/gui_gmcp_contract_harness.cpp', 'tests/async/test_gui_gmcp_contract.py']
 fixture = {'provenance': {
     'description': 'Production functions with isolated world/mechanics dependencies; no live player data.',

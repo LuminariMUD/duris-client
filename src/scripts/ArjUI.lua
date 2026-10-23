@@ -470,6 +470,7 @@ function ArjUI:refreshPanelContent(id)
   if ArjMapper and ArjMapper.state.enabled and self:panelIsVisible("map") then
     ArjMapper:refreshViewport()
   end
+  if (not id or id=="character") and self.activeTab=="ship" then self:renderShipIfActive() end
 end
 
 function ArjUI:panelAction(id,action)
@@ -3798,53 +3799,81 @@ end
 -- send 'look contacts'.
 -- ------------------------------------------------------------
 
-function ArjUI:resetShip()
-  self.state.ship = { info = nil, contacts = nil, textContacts = nil, skills = {} }
+function ArjUI:resetShip(departed)
+  self.state.ship = { skills = {}, departed = departed == true }
+  self.shipSelection = nil
+end
+
+local function shipCopy(value)
+  if type(value) ~= "table" then return value end
+  local copy = {}
+  for k,v in pairs(value) do copy[k] = shipCopy(v) end
+  return copy
+end
+
+function ArjUI:acceptShipContacts(packet)
+  local s = self.state.ship
+  s.contacts = shipCopy(type(packet.contacts) == "table" and packet.contacts or packet)
+  if type(packet.contacts)=="table" then s.heading, s.speed = packet.heading, packet.speed end
+  s.textContacts, s.textCapture, s.target, s.targetName = nil, nil, nil, nil
+  for _,contact in ipairs(s.contacts) do
+    if type(contact) == "table" and contact.you_targeting == true then s.target, s.targetName = contact.id, contact.name end
+  end
 end
 
 function ArjUI:setupShipText()
   if not self.state.ship then self:resetShip() end
   local ship = function() return ArjUI.state.ship end
+  local function fallback() local s=ship(); return not s.info and not s.departed and s end
   addTrigger(self, "^Contact listing\\s+H:\\s*(\\S+)\\s+S:\\s*(\\S+)", function()
-    local s = ship()
+    local s = fallback(); if not s then return end
     s.heading, s.speed = matches[2], matches[3]
     s.textContacts = {}
+    s.textCapture = true
     ArjUI:renderShipIfActive()
   end)
-  addTrigger(self, "^\\[(\\w+)\\]\\s+(.+?)\\s+X:\\s*(-?\\d+)\\s+Y:\\s*(-?\\d+)\\s+R:\\s*(\\S+)\\s+B:\\s*(\\S+)\\s+H:\\s*(\\S+)\\s+S:\\s*(\\S+)\\s*\\|(\\w)(\\w)(.*)$", function()
-    local s = ship()
+  addTrigger(self, "^\\[([^\\]]+)\\]\\s+(.+?)\\s+X:\\s*(-?\\d+)\\s+Y:\\s*(-?\\d+)\\s+R:\\s*(\\S+)\\s+B:\\s*(\\S+)\\s+H:\\s*(\\S+)\\s+S:\\s*(\\S+)\\s*\\|([FPRS*])([FPRS*])([FSDA]?)\\s*$", function()
+    local s = fallback(); if not s or not s.textCapture then return end
     s.textContacts = s.textContacts or {}
-    local side = "other"
-    selectString(matches[1], 1)
-    if isAnsiFgColor(3) then side = "evil" elseif isAnsiFgColor(7) then side = "good" end
+    local side = "unknown"
+    selectString("[", 1)
+    if isAnsiFgColor(11) then side = "good" elseif isAnsiFgColor(9) then side = "evil"
+    elseif isAnsiFgColor(8) then side = "undead" elseif isAnsiFgColor(13) then side = "squid" end
+    selectString(matches[2],1); local targeting=isAnsiFgColor(15)
+    selectString(matches[3],1); local ours=isAnsiFgColor(10)
     deselect()
     table.insert(s.textContacts, {
       id = matches[2], name = matches[3], x = matches[4], y = matches[5],
       range = tonumber(matches[6]) or matches[6], bearing = matches[7], heading = matches[8], speed = matches[9],
-      facing = matches[10], pointing = matches[11], sunk = (matches[12] or ""):find("S") ~= nil, side = side,
+      facing = matches[10], pointing = matches[11], arc=matches[10]..matches[11],
+      status=({F="flying",S="sinking",D="docked",A="anchored"})[matches[12]], side = side,
+      targeting_you=targeting,you_targeting=ours,
     })
+    if ours then s.target=matches[2] end
     ArjUI:renderShipIfActive()
   end)
-  addTrigger(self, "^You board (.+)$", function() ship().name = matches[2]; ship().status = "aboard"; ArjUI:renderShipIfActive() end)
-  addTrigger(self, "^You disembark this ship\\.$", function() ArjUI:resetShip(); ArjUI:renderShipIfActive() end)
-  addTrigger(self, "^Your ship has completed docking procedures\\.$", function() ship().status = "docked"; ArjUI:renderShipIfActive() end)
-  addTrigger(self, "^The first officer reports everything is in order and the ship is ready to go\\.$", function() ship().status = "under way"; ArjUI:renderShipIfActive() end)
-  addTrigger(self, "^Captain:\\s*(\\w+)", function() ship().captain = matches[2]; ArjUI:renderShipIfActive() end)
+  addTrigger(self, "^You board (.+)$", function() if ship().info then return end; ArjUI:resetShip(); ship().name = matches[2]; ship().status = "aboard"; ArjUI:renderShipIfActive() end)
+  addTrigger(self, "^You disembark this ship\\.$", function() ArjUI:resetShip(true); ArjUI:renderShipIfActive() end)
+  addTrigger(self, "^Your ship has completed docking procedures\\.$", function() local s=fallback(); if s then s.status = "docked"; ArjUI:renderShipIfActive() end end)
+  addTrigger(self, "^The first officer reports everything is in order and the ship is ready to go\\.$", function() local s=fallback(); if s then s.status = "under way"; ArjUI:renderShipIfActive() end end)
+  addTrigger(self, "^Captain:\\s*(\\w+)", function() local s=fallback(); if s then s.captain = matches[2]; ArjUI:renderShipIfActive() end end)
   addTrigger(self, "(?:Speed Range:\\s*0-(\\d+)|^This ship can only go from 0 to (\\d+)\\.$)", function()
+    if not fallback() then return end
     local v = matches[2]
     if not v or v == "" then v = matches[3] end
     ship().maxSpeed = v
     ArjUI:renderShipIfActive()
   end)
   addTrigger(self, "^(Deck|Guns|Repair) skill:\\s+(\\d+)", function()
+    if ship().departed then return end
     local s, name, val = ship(), matches[2], tonumber(matches[3])
     local prev = s.skills[name]
     if prev and val > prev then ArjUI:note(string.format("<cyan>[Ship] %s skill +%d (now %d)", name, val - prev, val)) end
     s.skills[name] = val
     ArjUI:renderShipIfActive()
   end)
-  addTrigger(self, "^Locked onto \\[(.+)\\]: (.+)$", function() ship().target = matches[2]; ArjUI:renderShipIfActive() end)
-  addTrigger(self, "^Target Cleared\\.$", function() ship().target = nil; ArjUI:renderShipIfActive() end)
+  addTrigger(self, "^Locked onto \\[(.+)\\]: (.+)$", function() local s=fallback(); if s then s.target = matches[2]; s.targetName=matches[3]; ArjUI:renderShipIfActive() end end)
+  addTrigger(self, "^Target Cleared\\.$", function() local s=fallback(); if s then s.target = nil; s.targetName=nil; ArjUI:renderShipIfActive() end end)
 end
 
 function ArjUI:onShipInfo()
@@ -3852,9 +3881,19 @@ function ArjUI:onShipInfo()
   if not self.state.ship then self:resetShip() end
   local info = gmcp.Ship.Info
   if type(info) ~= "table" then return end
-  if next(info) == nil then self:resetShip() else
-    self.state.ship.info = info
-    self.state.ship.maxSpeed = toNum(info.maxSpeed)
+  if next(info) == nil then self:resetShip(true) else
+    local s = self.state.ship
+    local key = type(info.shipKey) == "string" and info.shipKey or nil
+    local pending = s.pendingContacts
+    if key ~= s.shipKey or (not key and s.info and info.id ~= nil and s.info.id ~= nil and
+        (info.id ~= s.info.id or (info.id=="**" and info.name ~= s.info.name))) then
+      self:resetShip(); s = self.state.ship
+    end
+    s.info, s.shipKey, s.departed = shipCopy(info), key, false
+    s.name, s.captain, s.status = nil, info.captain~="" and info.captain or nil, nil
+    s.maxSpeed = toNum(pick(info,"maxSpeed","max_speed","speedMax"))
+    if pending and pending.shipKey == key then self:acceptShipContacts(pending) end
+    s.pendingContacts = nil
   end
   self:renderShipIfActive()
 end
@@ -3864,20 +3903,18 @@ function ArjUI:onShipContacts()
   if not self.state.ship then self:resetShip() end
   local c = gmcp.Ship.Contacts
   if type(c) ~= "table" then return end
-  local ship = self.state.ship
-  if type(c.contacts) == "table" then
-    ship.heading, ship.speed = c.heading, c.speed
-    c = c.contacts
+  local s = self.state.ship
+  if type(c.shipKey) == "string" and c.shipKey ~= s.shipKey then
+    s.pendingContacts = shipCopy(c)
+    return
   end
-  ship.contacts, ship.textContacts, ship.target = c, nil, nil
-  for _, contact in ipairs(c) do
-    if contact.you_targeting then ship.target = contact.id end
-  end
+  if s.shipKey and c.shipKey == nil and next(c.contacts or c) ~= nil then return end
+  self:acceptShipContacts(c)
   self:renderShipIfActive()
 end
 
 function ArjUI:renderShipIfActive()
-  if self.activeTab == "ship" then self:renderShip() end
+  if self.activeTab == "ship" and self:panelIsVisible("character") then self:renderShip() end
 end
 
 local function sortedKeys(t)
@@ -3898,7 +3935,7 @@ local function shipSideColor(contact)
 end
 
 function ArjUI:renderShip()
-  if not self.shipBox then return end
+  if not self.shipBox or self.activeTab ~= "ship" or not self:panelIsVisible("character") then return end
   local box = self.shipBox
   box.shipScrollTop = box.shipScrollTop or math.max(0, box:getScroll() - getRowCount(box.name))
   box:clear()
@@ -3906,12 +3943,13 @@ function ArjUI:renderShip()
   box:cecho("<dim_gray>── Ship ──\n")
 
   local info = type(s.info) == "table" and s.info or {}
+  local bridge = type(info.bridge) == "table" and info.bridge or {}
   local shown = false
   -- Local presentation helpers: unknown is not zero; false is a real value.
   -- Strip both server colors and cecho markup in supplied names and values.
   local function text(value)
     if value == nil then return "?" end
-    return cecho2string(stripColors(tostring(value)))
+    return stripColors(tostring(value))
   end
   local function section(title)
     box:cecho("\n<gold>" .. title .. "\n")
@@ -3919,17 +3957,20 @@ function ArjUI:renderShip()
   end
   local function row(label, value)
     if value ~= nil then
-      box:cecho("<dim_gray>" .. label .. ": <light_gray>" .. text(value) .. "\n")
+      box:cecho("<dim_gray>" .. label .. ": <light_gray>")
+      box:echo(text(value) .. "\n")
       shown = true
     end
   end
   local function pair(current, maximum, color)
     local accent = "<light_gray>"
+    local condition = ""
     local n, m = tonumber(current), tonumber(maximum)
     if color and n and m and m > 0 then
-      accent = n/m <= .25 and "<indian_red>" or (n/m <= .6 and "<khaki>" or "<dark_sea_green>")
+      accent = n < math.floor(m/3) and "<indian_red>" or (n < math.floor(m*2/3) and "<khaki>" or "<dark_sea_green>")
+      condition = n < math.floor(m/3) and " (Critical)" or (n < math.floor(m*2/3) and " (Damaged)" or " (Sound)")
     end
-    return accent .. text(current) .. "/" .. text(maximum)
+    return accent .. cecho2string(text(current)) .. "/" .. cecho2string(text(maximum)) .. condition
   end
   local function slots(items)
     local list = {}
@@ -3943,7 +3984,7 @@ function ArjUI:renderShip()
     return ""
   end
   local name = pick(info, "name", "ship", "shipName") or s.name
-  if name then box:cecho("<white>" .. text(name) .. "\n"); shown = true end
+  if name then box:cecho("<white>"); box:echo(text(name) .. "\n"); shown = true end
   row("ID", info.id)
   row("Status", info.status or s.status)
   row("Captain", info.captain or s.captain)
@@ -3956,7 +3997,12 @@ function ArjUI:renderShip()
     shown = true
   end
   row("Contact range", info.contactRange)
-  row("Locked on", s.target)
+  row("Ordered heading", bridge.setHeading)
+  row("Ordered speed", bridge.setSpeed)
+  local target = type(info.bridge) == "table" and bridge.target or nil
+  if type(target) == "table" then row("Locked on", "[" .. text(target.id) .. "] " .. text(target.name))
+  elseif bridge.target == nil then row("Locked on", s.target and (text(s.target) .. " " .. text(s.targetName or ""))) end
+  if not s.info and name then row("Source", "Text-derived fallback") end
 
   if info.armor or info.internal or info.sail ~= nil or info.maxSail ~= nil then
     section("Condition")
@@ -3969,14 +4015,14 @@ function ArjUI:renderShip()
         box:cecho("<dim_gray>  Hull " .. pair(hull[1], hull[2], true) .. "\n")
       end
     end
-    if info.sail ~= nil or info.maxSail ~= nil then box:cecho("<dim_gray>Sail: " .. pair(info.sail, info.maxSail, true) .. "\n") end
+    if info.sail ~= nil or info.maxSail ~= nil then box:cecho("<dim_gray>Sail: " .. pair(info.sail, info.maxSail) .. "\n") end
   end
   if type(info.weapons) == "table" then
     section("Weapons")
     if #info.weapons == 0 then row("Weapons", "None") end
     for _, weapon in ipairs(slots(info.weapons)) do
-      box:cecho("<white>[" .. text(weapon.slot) .. "] " .. text(weapon.name) .. "\n")
-      row("Position", ({bow="Forward", stern="Rear"})[weapon.position] or weapon.position)
+      box:cecho("<white>"); box:echo("[" .. text(weapon.slot) .. "] " .. text(weapon.name) .. "\n")
+      row("Position", weapon.positionLabel or ({bow="Forward", stern="Rear"})[weapon.position] or weapon.position)
       if weapon.ammo ~= nil or weapon.maxAmmo ~= nil then
         box:cecho("<dim_gray>Ammo: " .. pair(weapon.ammo, weapon.maxAmmo) .. (tonumber(weapon.ammo) == 0 and "<indian_red> (empty)" or "") .. "\n")
       end
@@ -3984,13 +4030,18 @@ function ArjUI:renderShip()
         box:cecho("<dim_gray>Damage: " .. ((tonumber(weapon.damage) or 0) > 0 and "<indian_red>" or "<light_gray>") .. text(weapon.damage) .. "\n")
       end
       box:cecho(readiness(weapon))
+      row("Server status", weapon.statusText)
+      row("Timer count", weapon.timer)
+      if weapon.destroyed ~= nil then row("Destroyed", weapon.destroyed and "Yes (bridge ammo **)" or "No") end
     end
   end
   if info.crewType or info.crewStamina ~= nil or info.maxCrewStamina ~= nil or info.people ~= nil or info.maxPeople ~= nil
       or info.repairStock ~= nil or info.chiefs or info.skills or info.skillMods or next(s.skills or {}) then
     section("Crew and supplies")
     row("Crew", info.crewType)
-    if info.crewStamina ~= nil or info.maxCrewStamina ~= nil then box:cecho("<dim_gray>Stamina: " .. pair(info.crewStamina, info.maxCrewStamina, true) .. "\n") end
+    if info.crewStamina ~= nil or info.maxCrewStamina ~= nil then box:cecho("<dim_gray>Stamina: " .. pair(bridge.displayCrewStamina or info.crewStamina, info.maxCrewStamina) .. "\n") end
+    row("Raw stamina", info.crewStamina)
+    row("Fatigue", bridge.crewStaminaBand)
     if info.people ~= nil or info.maxPeople ~= nil then box:cecho("<dim_gray>Passengers: " .. pair(info.people, info.maxPeople) .. "\n") end
     row("Repair stock", info.repairStock)
     for _, skill in ipairs({{"sail", "Deck"}, {"guns", "Guns"}, {"repair", "Repair"}}) do
@@ -4006,17 +4057,20 @@ function ArjUI:renderShip()
     section("Equipment")
     if #info.equipment == 0 then row("Equipment", "None") end
     for _, item in ipairs(slots(info.equipment)) do
-      box:cecho("<white>[" .. text(item.slot) .. "] " .. text(item.name) .. "\n" .. readiness(item))
+      box:cecho("<white>"); box:echo("[" .. text(item.slot) .. "] " .. text(item.name) .. "\n"); box:cecho(readiness(item))
+      row("Damage", item.damage); row("Server status", item.statusText); row("Timer count", item.timer)
     end
   end
-  if type(info.cargo) == "table" then
+  if type(info.cargo) == "table" or next(bridge) then
     section("Cargo")
-    local cargo = info.cargo
+    row("Hull weight", bridge.hullWeight)
+    if type(bridge.load) == "table" then row("Weight load", text(bridge.load.current).."/"..text(bridge.load.max)) end
+    local cargo = type(info.cargo) == "table" and info.cargo or {}
     if cargo.current ~= nil or cargo.max ~= nil then box:cecho("<dim_gray>Crates: " .. pair(cargo.current, cargo.max) .. "\n") end
     if type(cargo.items) == "table" then
       if #cargo.items == 0 then row("Cargo", "None") end
       for _, item in ipairs(slots(cargo.items)) do
-        box:cecho("<white>[" .. text(item.slot) .. "] " .. text(item.name) .. (item.contraband == true and "<indian_red> (contraband)" or "") .. "\n")
+        box:cecho("<white>"); box:echo("[" .. text(item.slot) .. "] " .. text(item.name) .. (item.contraband == true and " (contraband)" or "") .. "\n")
         row("Crates", item.crates)
         row("Invoice price", item.invoicePrice)
       end
@@ -4031,7 +4085,8 @@ function ArjUI:renderShip()
     table.sort(list, function(a, b)
       local ra = tonumber(pick(a, "range", "distance", "r")) or 9999
       local rb = tonumber(pick(b, "range", "distance", "r")) or 9999
-      return ra < rb
+      if ra ~= rb then return ra < rb end
+      return tostring(pick(a,"id","num","number") or "") < tostring(pick(b,"id","num","number") or "")
     end)
     box:cecho(string.format("\n<dim_gray>Contacts (%d)\n", #list))
     for _, c in ipairs(list) do
@@ -4044,17 +4099,25 @@ function ArjUI:renderShip()
       if h then table.insert(bits, "H:" .. tostring(h)) end
       if r then table.insert(bits, "R:" .. tostring(r)) end
       if sp then table.insert(bits, "S:" .. tostring(sp)) end
-      if c.arc then table.insert(bits, "arc:" .. c.arc) end
+      if c.x ~= nil then table.insert(bits, "X:" .. tostring(c.x)) end
+      if c.y ~= nil then table.insert(bits, "Y:" .. tostring(c.y)) end
+      if c.arc then
+        local ours,theirs=tostring(c.arc):match("^([FPRS])([FPRS])$")
+        local names={F="Forward",P="Port",R="Rear",S="Starboard"}
+        table.insert(bits,"arc:"..tostring(c.arc)..(ours and " (our "..names[ours].." / their "..names[theirs]..")" or ""))
+      end
+      table.insert(bits,"Allegiance:"..tostring(pick(c,"race","side","alignment","racewar","faction") or "unknown"))
       if c.status and c.status ~= "" then table.insert(bits, c.status) end
       if c.targeting_you then table.insert(bits, "targeting you") end
+      if c.you_targeting then table.insert(bits, "our lock") end
       if c.facing and c.pointing then table.insert(bits, "(" .. c.facing .. "|" .. c.pointing .. ")") end
       if #bits == 0 then
         for _, k in ipairs(sortedKeys(c)) do
           if k ~= "name" and k ~= "id" and type(c[k]) ~= "table" then table.insert(bits, k .. "=" .. tostring(c[k])) end
         end
       end
-      local tag = (s.target and id and tostring(id) == tostring(s.target)) and "<white>*" or ""
-      box:cecho(string.format("%s%s[%s] %s%s<dim_gray> %s\n", tag, color, text(id or "-"), text(name), c.sunk and " (sunk)" or "", text(table.concat(bits, " "))))
+      box:cecho(color)
+      box:echo(string.format("%s[%s] %s%s %s\n", c.you_targeting and "*" or "", text(id or "-"), text(name), c.sunk and " (sunk)" or "", text(table.concat(bits, " "))))
     end
     shown = true
   elseif type(contacts) == "table" and shown then
@@ -4073,7 +4136,7 @@ function ArjUI:renderShip()
     local top = box.shipScrollTop
     box.shipScrollTop = nil
     local lines, rows = getLastLineNumber(box.name) + 1, getRowCount(box.name)
-    if lines - top > rows then box:scrollTo(top + rows) end
+    if self:panelIsVisible("character") and self.activeTab=="ship" and lines - top > rows then box:scrollTo(top + rows) end
   end)
 end
 

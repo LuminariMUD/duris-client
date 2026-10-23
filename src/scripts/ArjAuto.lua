@@ -470,10 +470,15 @@ function ArjAuto:targetContact()
   if not s.target then return nil end
   local list = s.contacts
   if type(list) ~= "table" then list = s.textContacts end
+  local found, ambiguous
   for _, c in ipairs(list or {}) do
-    if tostring(c.id) == tostring(s.target) then return c end
+    if tostring(c.id) == tostring(s.target) then
+      if c.you_targeting==true then return tonumber(c.bearing) and c or nil end
+      if found then ambiguous=true end
+      found=c
+    end
   end
-  return nil
+  return not ambiguous and found and tonumber(found.bearing) and found or nil
 end
 
 function ArjAuto:setupShipTriggers()

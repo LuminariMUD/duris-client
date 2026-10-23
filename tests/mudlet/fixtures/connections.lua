@@ -77,7 +77,7 @@ T.steps({
  {name="ship-partial-replacement",run=function()
   T.emit("Ship.Info",{name="Partial <red>ship",armor={bow={0,0}},internal={port={10}},weapons={{slot=0,name="&+WZero gun&n",ammo=0,damage=0,ready=false}},skills={sail=0}})
   local out=T.lines("ArjUI_ShipBox")
-  for _,v in ipairs({"Partial ship","0/0","10/?","[0] Zero gun","Ammo: 0/? (empty)","Damage: 0","Timer: Not ready","Deck skill: 0","H:0  S:0/?"}) do T.check(out:find(v,1,true),"partial ship keeps "..v) end
+  for _,v in ipairs({"Partial <red>ship","0/0","10/?","[0] Zero gun","Ammo: 0/? (empty)","Damage: 0","Timer: Not ready","Deck skill: 0","H:0  S:0/?"}) do T.check(out:find(v,1,true),"partial ship keeps "..v) end
   T.check(not out:find("Voyager",1,true) and not out:find("bronze fittings",1,true) and not out:find("Silken cargo",1,true),"replacement retires old identity, weapons and cargo")
   T.check(not out:find("chief: None",1,true) and not out:find("Weapons: None",1,true),"missing lists and chiefs are not known empty")
   ArjUI.shipBox:scrollTo(0)
@@ -103,7 +103,7 @@ T.steps({
  end},
  {name="ship-text-fallback",run=function()
   ArjUI:resetShip() -- Start a text-only session after the GMCP departure case.
-  feedTriggers("You board &+WText Voyager&n\nCaptain: Tester\nThis ship can only go from 0 to 18.\nDeck skill: 15\nContact listing  H: 0 S: 0\n[ZZ] Text contact X: 2 Y: 3 R: 5 B: 20 H: 60 S: 4 |NE\n")
+  feedTriggers("You board &+WText Voyager&n\nCaptain: Tester\nThis ship can only go from 0 to 18.\nDeck skill: 15\nContact listing  H: 0 S: 0\n[**] Text contact X: 52 Y: 53 R: 5 B: 20 H: 60 S: 4 |SFS\n")
   local out=T.lines("ArjUI_ShipBox")
   for _,v in ipairs({"Text Voyager","Captain: Tester","H:0  S:0/18","Deck skill: 15","Text contact"}) do T.check(out:find(v,1,true),"text-only fallback "..v) end
   T.check(not out:find("&+W",1,true),"text fallback strips server colors")

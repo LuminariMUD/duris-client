@@ -2,6 +2,12 @@
 
 ## Duris client documentation
 
+Proposed SHIP follow-up: [Captain's Table bridge redesign](ongoing-projects/plan-ship-bridge.md)
+reconciles `look ship` with the SHIP tab and specifies a graphical hull, helm,
+contact plot and complete details ledger. This is a plan, not implemented behavior.
+Track [issue #13](https://github.com/LuminariMUD/duris-client/issues/13) on
+[branch/issue-13-ship-captains-table](https://github.com/LuminariMUD/duris-client/tree/branch/issue-13-ship-captains-table).
+
 | File | Purpose |
 | --- | --- |
 | [DESIGN.md](DESIGN.md) | Interface layout, palette, typography, interactions, runtime architecture, state ownership, and design validation. |
