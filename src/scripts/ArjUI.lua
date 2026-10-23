@@ -3814,7 +3814,7 @@ end
 function ArjUI:acceptShipContacts(packet)
   local s = self.state.ship
   s.contacts = shipCopy(type(packet.contacts) == "table" and packet.contacts or packet)
-  s.heading, s.speed = packet.heading, packet.speed
+  if type(packet.contacts)=="table" then s.heading, s.speed = packet.heading, packet.speed end
   s.textContacts, s.textCapture, s.target, s.targetName = nil, nil, nil, nil
   for _,contact in ipairs(s.contacts) do
     if type(contact) == "table" and contact.you_targeting == true then s.target, s.targetName = contact.id, contact.name end
