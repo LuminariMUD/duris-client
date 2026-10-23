@@ -10,6 +10,10 @@ Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Ve
 
 ## 2.0.1 - 2026-10-23
 
+- Rebuild the dashboard as ten adjustable panels with title/border gestures, named home docking, locking, minimize, hide and maximize actions.
+- Add `ui layout`, `ui panel`, fixed Panels and Reset layout controls, and profile-local normalized layout persistence.
+- Keep game output visible and preserve scrollback and selected views during layout changes.
+- Keep event-driven map paints below a different maximized panel and reveal the latest accepted room on restore.
 - Replace existing saved layouts on Windows while retaining the previous file on failure.
 - Repaint stationary wilderness maps from accepted data after dashboard geometry changes.
 - Remove the inactive private-panel recovery placeholder; private frame controls arrive in the dependent integration PR.
@@ -23,6 +27,9 @@ Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Ve
 
 ## 1.4.1 - 2026-10-23
 
+- Add `ui set compactHeader on|off`, a saved option that collapses the illustrated header into a dark gradient and gives the recovered height to gameplay panels. Full artwork remains the default.
+- Recenter populated zone and wilderness maps when the header or window size changes, preserving map mode, cache and zoom.
+- Keep a paused mapper's display frozen during header changes, resize, and UI hide/show.
 - Preserve unread private tells received while the UI is hidden; opening the conversation reveals and marks them read.
 
 ## 1.4.0 - 2026-10-22
