@@ -39,8 +39,25 @@ T.steps({
   T.emit("Ship.Contacts",{heading=0,speed=0,contacts={{id="**",bearing=10},{id="**",bearing=20}}})
   ArjUI.state.ship.target="**"
   T.check(ArjAuto:targetContact()==nil,"ambiguous legacy designation cannot drive relative orders")
+  T.emit("Ship.Contacts",{contacts={{id="**",bearing=10},{id="**"}}})
+  ArjUI.state.ship.target="**"
+  T.check(ArjAuto:targetContact()==nil,"missing bearing does not hide a duplicate identity")
   T.emit("Ship.Contacts",{contacts={}})
   T.check(ArjUI.state.ship.target==nil,"legacy empty Contacts clears lock")
+ end},
+ {name="optional-target-and-captain",run=function()
+  T.emit("Ship.Info",{name="Mixed contract",captain="TestCaptain",bridge={setHeading=0}})
+  T.emit("Ship.Contacts",{heading=0,speed=0,contacts={{id="BB",name="Fallback lock",bearing=20,you_targeting=true}}})
+  T.check(T.lines("ArjUI_ShipBox"):find("Locked on: BB Fallback lock",1,true),"absent optional target retains legacy ID/name lock")
+  T.commands={}; expandAlias("qkcargo")
+  T.check(T.commands[#T.commands-3].command=="enter TestCaptain" and T.commands[#T.commands].command=="order undock","GMCP captain remains available to existing cargo alias")
+  T.emit("Ship.Info",yajl.to_value([[{"name":"Mixed contract","bridge":{"target":null}}]]))
+  T.check(not T.lines("ArjUI_ShipBox"):find("Locked on:",1,true),"explicit JSON null clears display target despite existing contact")
+  ArjUI:panelAction("character","minimize")
+  T.emit("Ship.Info",{name="Fresh while minimized"})
+  ArjUI:panelAction("character","restore")
+ end,verify=function()
+  T.check(T.lines("ArjUI_ShipBox"):find("Fresh while minimized",1,true),"reveal paints accepted data without requiring another packet")
  end},
  {name="authoritative-departure",run=function()
   T.emit("Ship.Info",{})

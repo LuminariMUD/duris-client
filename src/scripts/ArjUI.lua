@@ -470,6 +470,7 @@ function ArjUI:refreshPanelContent(id)
   if ArjMapper and ArjMapper.state.enabled and self:panelIsVisible("map") then
     ArjMapper:refreshViewport()
   end
+  if (not id or id=="character") and self.activeTab=="ship" then self:renderShipIfActive() end
 end
 
 function ArjUI:panelAction(id,action)
@@ -3814,9 +3815,9 @@ function ArjUI:acceptShipContacts(packet)
   local s = self.state.ship
   s.contacts = shipCopy(type(packet.contacts) == "table" and packet.contacts or packet)
   s.heading, s.speed = packet.heading, packet.speed
-  s.textContacts, s.textCapture, s.target = nil, nil, nil
+  s.textContacts, s.textCapture, s.target, s.targetName = nil, nil, nil, nil
   for _,contact in ipairs(s.contacts) do
-    if type(contact) == "table" and contact.you_targeting == true then s.target = contact.id end
+    if type(contact) == "table" and contact.you_targeting == true then s.target, s.targetName = contact.id, contact.name end
   end
 end
 
@@ -3889,7 +3890,7 @@ function ArjUI:onShipInfo()
       self:resetShip(); s = self.state.ship
     end
     s.info, s.shipKey, s.departed = shipCopy(info), key, false
-    s.name, s.captain, s.status, s.targetName = nil, nil, nil, nil
+    s.name, s.captain, s.status = nil, info.captain, nil
     s.maxSpeed = toNum(pick(info,"maxSpeed","max_speed","speedMax"))
     if pending and pending.shipKey == key then self:acceptShipContacts(pending) end
     s.pendingContacts = nil
@@ -4000,7 +4001,7 @@ function ArjUI:renderShip()
   row("Ordered speed", bridge.setSpeed)
   local target = type(info.bridge) == "table" and bridge.target or nil
   if type(target) == "table" then row("Locked on", "[" .. text(target.id) .. "] " .. text(target.name))
-  elseif not info.bridge then row("Locked on", s.target and (text(s.target) .. " " .. text(s.targetName or ""))) end
+  elseif bridge.target == nil then row("Locked on", s.target and (text(s.target) .. " " .. text(s.targetName or ""))) end
   if not s.info and name then row("Source", "Text-derived fallback") end
 
   if info.armor or info.internal or info.sail ~= nil or info.maxSail ~= nil then
