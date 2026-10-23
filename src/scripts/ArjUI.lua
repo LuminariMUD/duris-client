@@ -126,7 +126,10 @@ function ArjUI:setVisible(visible)
     self.main:hide()
     self.bg:hide()
     if self.currentMenu then self.currentMenu:hide() end
-    for _, chat in pairs(self.privateChats) do chat.window:hide() end
+    for _, chat in pairs(self.privateChats) do
+      if chat.window then chat.window:hide() end
+      chat.visible = false
+    end
     setBorderTop(0)
     setBorderBottom(0)
     setBorderLeft(0)
@@ -164,12 +167,12 @@ function ArjUI:applyBackground()
   end
   
   if self.bg then
-    if bgPath then
+    if bgPath and not self.settings.compactHeader then
       self.bg:setStyleSheet(string.format([[
         border-image: url("%s") 0 0 0 0 stretch stretch;
       ]], bgPath))
     else
-      -- Fallback: dark gradient background
+      -- Compact mode omits the illustrated header; also used if artwork is missing.
       self.bg:setStyleSheet([[
         background-color: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #0a0908,stop:0.5 #12100c,stop:1 #0a0908);
       ]])
@@ -432,13 +435,18 @@ function ArjUI:enableGMCP()
   sendGMCP("Core.Supports.Add " .. yajl.to_string(modules))
 end
 
+function ArjUI:headerHeightPct()
+  return self.settings.compactHeader and 2.8 or 10.5
+end
+
 function ArjUI:init()
   self:kill()
   self.hidden = false
+  self:loadSettings()
   
   -- Layout constants as percentages for DPI-independent scaling
   -- Tuned to match the decorative background frame
-  self.bannerPct = 10.5     -- top margin (below Duris banner)
+  local bannerPct = self:headerHeightPct()
   self.frameInsetXPct = 2.5 -- side margins (inside decorative frame)
   self.frameInsetBottomPct = 2.8  -- bottom margin (above bottom frame)
 
@@ -468,9 +476,9 @@ function ArjUI:init()
 
   -- Use percentage-based positioning for DPI independence
   local rootX = self.frameInsetXPct .. "%"
-  local rootY = self.bannerPct .. "%"
+  local rootY = bannerPct .. "%"
   local rootW = (100 - self.frameInsetXPct * 2) .. "%"
-  local rootH = (100 - self.bannerPct - self.frameInsetBottomPct) .. "%"
+  local rootH = (100 - bannerPct - self.frameInsetBottomPct) .. "%"
 
   self.uiRoot = Geyser.Container:new({
     name = "ArjUI_Root", x = rootX, y = rootY, width = rootW, height = rootH
@@ -932,7 +940,6 @@ function ArjUI:init()
   self:layout()
 
   self:loadCustomCommands()
-  self:loadSettings()
   self:registerGMCPHandlers()
   self:setupPorted()
   self:renderAll()
@@ -959,7 +966,7 @@ function ArjUI:layout()
   setBorderTop(h)
   
   -- Calculate pixel values from percentages for resize
-  local banner = h * (self.bannerPct or 5.5) / 100
+  local banner = h * self:headerHeightPct() / 100
   local insetX = w * (self.frameInsetXPct or 3.8) / 100
   local insetBottom = h * (self.frameInsetBottomPct or 3.5) / 100
   
@@ -986,6 +993,16 @@ function ArjUI:layout()
     if self.creditTooltip then
       self.creditTooltip:move(creditX, creditY - 38)
       self.creditTooltip:resize(creditW, 36)
+    end
+  end
+
+  -- Map contents use pixel positions/padding inside the percentage-sized root.
+  -- Redraw only the active map from this session, without requesting new data.
+  if ArjMapper and ArjMapper.state and ArjMapper.state.enabled and ArjMapper.ui then
+    if ArjMapper.state.lastDisplayMode == "zone" then
+      ArjMapper:renderZoneMap()
+    elseif ArjMapper.state.lastDisplayMode == "wilderness" and gmcp and gmcp.Room then
+      ArjMapper:updateWildernessMap(gmcp.Room.Map)
     end
   end
 end
@@ -3261,6 +3278,7 @@ end
 -- ============================================================
 
 ArjUI.settingsDefaults = {
+  compactHeader = false,  -- smaller header, without the illustrated frame
   keypad = true,          -- numpad movement keys
   chatTimestamps = true,  -- [hh:mm] prefix on chat lines
   damageTracker = true,   -- per-fight / session damage tracking
@@ -3300,6 +3318,10 @@ function ArjUI:setSetting(key, on)
   self.settings[key] = on
   self:saveSettings()
   if key == "keypad" then self:setupKeypad() end
+  if key == "compactHeader" then
+    self:applyBackground()
+    self:layout()
+  end
   return true
 end
 
@@ -3816,6 +3838,7 @@ function ArjUI:showHelp()
   self:note("<white>ui debug<dim_gray>              show which GMCP tables have arrived")
   self:note("<white>ui damage<dim_gray>             session damage report; <white>ui damage reset<dim_gray> clears it")
   self:note("<white>ui set<dim_gray>                list toggles; <white>ui set <name> on|off<dim_gray> changes one")
+  self:note("<white>ui set compactHeader on|off<dim_gray>  collapse or restore the illustrated header")
   self:note("<white>mapper<dim_gray>                mapper help")
   self:note("<white>auto<dim_gray>                  automation and utility aliases (ArjAuto)")
   self:note("<dim_gray>Numpad: 8/2/4/6 move, 7/9/1/3 diagonals, - up, + down, 5 look, / scan, 0 flee")
@@ -3824,6 +3847,7 @@ end
 function ArjUI:showSettings()
   self:note("<gold>══ Toggles (ui set <name> on|off) ══")
   local desc = {
+    compactHeader = "smaller header without the illustrated frame",
     keypad = "numpad movement keys", chatTimestamps = "[hh:mm] on chat lines",
     damageTracker = "damage counter in the target panel", scanFormat = "aligned, coloured scan output",
     alerts = "banners for sanc/rage/disarm/scry/skill-up", expTracker = "+exp notices with kills-to-level",

@@ -2,6 +2,19 @@
 
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
+## 1.4.1 - 2026-10-23
+
+- Add `ui set compactHeader on|off`, a saved option that collapses the illustrated header into a dark gradient and gives the recovered height to gameplay panels. Full artwork remains the default.
+- Recenter populated zone and wilderness maps when the header or window size changes, preserving map mode, cache and zoom.
+- Keep a paused mapper's display frozen during header changes, resize, and UI hide/show.
+- Preserve unread private tells received while the UI is hidden; opening the conversation reveals and marks them read.
+
+## 1.4.0 - 2026-10-22
+
+- Add `ui set compactHeader on|off`, a saved option that collapses the illustrated header into a dark gradient and gives the recovered height to gameplay panels. Full artwork remains the default.
+- Recenter populated zone and wilderness maps when the header or window size changes, preserving map mode, cache and zoom.
+- Keep a paused mapper's display frozen during header changes, resize, and UI hide/show.
+
 ## 1.3.6 - 2026-10-22
 
 - Fix wilderness map background bleeding by reading Duris combined colors in background/foreground order and clearing old backgrounds on foreground-only terrain.
