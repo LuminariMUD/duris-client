@@ -3890,7 +3890,7 @@ function ArjUI:onShipInfo()
       self:resetShip(); s = self.state.ship
     end
     s.info, s.shipKey, s.departed = shipCopy(info), key, false
-    s.name, s.captain, s.status = nil, info.captain, nil
+    s.name, s.captain, s.status = nil, info.captain~="" and info.captain or nil, nil
     s.maxSpeed = toNum(pick(info,"maxSpeed","max_speed","speedMax"))
     if pending and pending.shipKey == key then self:acceptShipContacts(pending) end
     s.pendingContacts = nil

@@ -60,6 +60,9 @@ T.steps({
   T.check(T.lines("ArjUI_ShipBox"):find("Fresh while minimized",1,true),"reveal paints accepted data without requiring another packet")
  end},
  {name="authoritative-departure",run=function()
+  T.emit("Ship.Info",{name="Unowned ship",captain=""})
+  T.commands={};expandAlias("qkcargo")
+  T.check(ArjUI.state.ship.captain==nil and T.commands[#T.commands].command~="order undock","empty captain retains the cargo alias's unknown-captain behavior")
   T.emit("Ship.Info",{})
   feedTriggers("Captain: Ghost\nContact listing H: 99 S: 99\n[**] Ghost X: 1 Y: 2 R: 3 B: 4 H: 5 S: 6 |SFS\nLocked onto [OLD]: Ghost\n")
   T.check(not T.lines("ArjUI_ShipBox"):find("Ghost",1,true),"late fallback cannot revive cleared ship")
