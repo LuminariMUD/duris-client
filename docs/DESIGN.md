@@ -105,9 +105,12 @@ by number, crew watch, and bearing glass with full contact rows. Below 720 logic
 pixels the sections stack; at 720 and above hull/armament and helm/plot share the
 available body width. Narrow frames collapse the plot behind a local Plot control.
 The small action strip remains fixed; identity and every section scroll.
+Overlapping actual/ordered helm markers use a combined ●◇ glyph; the text retains both exact headings.
+Weapon rows distinguish Destroyed Yes, No and unknown.
 
 Arc, slot and contact clicks inspect locally. Overlapping markers reveal all
-their contacts. A lock marker and a targeting-us marker have separate meanings.
+their contacts. After a replacement snapshot, the whole contact selection clears
+if any member cannot be identified uniquely. A lock marker and a targeting-us marker have separate meanings.
 The plot is north-up bearing/range, includes altitude in its reported range,
 and retains X/Y as tactical coordinates about the observer's 50/50 reference.
 It contains no terrain, firing sectors or invented world positions.

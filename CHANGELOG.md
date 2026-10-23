@@ -5,6 +5,7 @@
 - Add the responsive Captain's Table Bridge with spatial armor/internal gauges, actual/ordered helm, arc badges, complete manifest, crew watch and contact bearing glass.
 - Retain selectable Details and a local Copy details action; persist the view preference and coalesce visible ship paints while hidden panels accept state.
 - SHIP refresh requests `look ship`; explicit Look ship, Look crew and Contacts actions send their named reference command once.
+- Clear entire ambiguous contact selections, preserve explicit weapon destruction state, and show both helm glyphs on a steady course.
 
 ## 2.2.0 - 2026-10-23
 

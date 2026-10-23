@@ -4050,7 +4050,7 @@ function ArjUI:renderShipBridge()
     if entry.kind=="Cargo" then
       return text.."\nCrates "..shipPlain(item.crates).." · Invoice "..shipPlain(item.invoicePrice).." · Contraband "..(item.contraband==true and "Yes" or item.contraband==false and "No" or "?")
     end
-    if entry.kind=="Weapon" then text=text.."\nPosition "..shipPlain(item.positionLabel or item.position).." · Ammo "..pair(item.ammo,item.maxAmmo)..(tonumber(item.ammo)==0 and " · Out of ammo" or "")..(item.destroyed==true and " · Destroyed (bridge **)" or "") end
+    if entry.kind=="Weapon" then text=text.."\nPosition "..shipPlain(item.positionLabel or item.position).." · Ammo "..pair(item.ammo,item.maxAmmo)..(tonumber(item.ammo)==0 and " · Out of ammo" or "").." · Destroyed "..(item.destroyed==true and "Yes (bridge **)" or item.destroyed==false and "No" or "?") end
     return text.."\nDamage "..shipPlain(item.damage).." · Server status "..shipPlain(item.statusText).."\nTimer counter "..shipPlain(item.timer).." · Timer ready "..(item.ready==true and "Yes" or item.ready==false and "No" or "?")
   end
   local function contactText(c)
@@ -4187,10 +4187,15 @@ function ArjUI:renderShipBridge()
     y=block("helmValues",rightX,y,rightW,"Heading "..shipPlain(v.heading).."° / Ordered "..shipPlain(b.setHeading).."°\nSpeed "..shipPlain(v.speed).." / Ordered "..shipPlain(b.setSpeed).." / Max "..shipPlain(v.maxSpeed).."\nContact range "..shipPlain(info.contactRange))
     local compassY=y; local cx=rightX+rightW/2; local cy=y+68
     label("compass",cx-64,y,128,128,"<center>N<br><br>W　 HELM　 E<br><br>S</center>",nil,"border:2px solid #80613c;border-radius:64px;color:#c2ab80;")
-    for _,marker in ipairs({{"actual",v.heading,"●"},{"ordered",b.setHeading,"◇"}}) do
+    local actual,ordered=tonumber(v.heading),tonumber(b.setHeading)
+    local overlapping=actual and ordered and
+      math.abs(math.sin(math.rad(actual))-math.sin(math.rad(ordered)))*45<18 and
+      math.abs(math.cos(math.rad(actual))-math.cos(math.rad(ordered)))*45<18
+    for _,marker in ipairs({{"actual",v.heading,overlapping and "●◇" or "●"},{"ordered",b.setHeading,"◇"}}) do
       local heading=tonumber(marker[2])
-      if heading then local angle=math.rad(heading%360)
-        label("heading"..marker[1],cx+math.sin(angle)*45-9,cy-math.cos(angle)*45-9,18,18,marker[3],nil,"padding:0;border:none;background-color:transparent;color:#eed7a3;")
+      if heading and not (overlapping and marker[1]=="ordered") then local angle=math.rad(heading%360)
+        local markerWidth=overlapping and 36 or 18
+        label("heading"..marker[1],cx+math.sin(angle)*45-markerWidth/2,cy-math.cos(angle)*45-9,markerWidth,18,marker[3],nil,"padding:0;border:none;background-color:transparent;color:#eed7a3;")
       end
     end
     y=compassY+134
@@ -4253,9 +4258,8 @@ function ArjUI:renderShipBridge()
       for _,index in ipairs(self.shipSelection.contactIndices) do selected[index]=true end
     else
       for _,key in ipairs(self.shipSelection and self.shipSelection.contacts or {}) do
-        if signatures[key]==1 then
-          for _,entry in ipairs(v.contacts) do if shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name)==key then selected[entry.index]=true end end
-        end
+        if signatures[key]~=1 then selected={}; self.shipSelection=nil; break end
+        for _,entry in ipairs(v.contacts) do if shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name)==key then selected[entry.index]=true end end
       end
     end
     if self.shipSelection and self.shipSelection.contacts and not next(selected) then self.shipSelection=nil end
