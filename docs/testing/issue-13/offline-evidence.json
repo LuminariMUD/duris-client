@@ -1,0 +1,591 @@
+{
+  "date": "2026-10-23",
+  "client_source": "2cf57f69fc8525f9b084e89d289fedcd9eeae9b1",
+  "suite_client_source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+  "server_source": "e86bf7f24c52449b1260bb378443efafd1d9c491",
+  "package": {
+    "version": "2.3.0",
+    "sha256": "cedd3627f739bd45a397bd686df516b4877f47afd253f42cda02d5ff3ddaae78",
+    "payload_sha256": "8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330"
+  },
+  "command": "python3 scripts/mudlet_suite.py --root /home/aiwithapex/.local/share/duris-captains-table-reviewed-suite",
+  "suite": {
+    "passed": 23,
+    "total": 23,
+    "cases": [
+      {
+        "case": "ship-table",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/ship-table/20261023T123439Z-52073eef-ship-table",
+        "assertions": 43,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "56a027293a3ee4a2b58b1193867087bcf3e23918a16d4a8f77d6689d6fa525d4",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "ship-bridge",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/ship-bridge/20261023T123439Z-b7330e13-ship-bridge",
+        "assertions": 43,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "56a027293a3ee4a2b58b1193867087bcf3e23918a16d4a8f77d6689d6fa525d4",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "lowhp",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/lowhp/20261023T123448Z-6baca38a-lowhp",
+        "assertions": 29,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "e6cfa79931f410783d5d33ef26acc4f1175c8f77b9482900501f62c7f01d553e",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "vitals",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/vitals/20261023T123454Z-652016c1-vitals",
+        "assertions": 10,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "267203386a3109fa78091601037b6374f246a5e93f850ca5f438416844df6b36",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "crowded",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/crowded/20261023T123457Z-5409ff2e-crowded",
+        "assertions": 7,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "3ccdb7e13e7d49dccb0d607e0d80a4c8c8cba340089a757229c086628ce27a80",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "combat",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/combat/20261023T123503Z-4b483aa8-combat",
+        "assertions": 14,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "c24c23cdaff88b9a80a0acba44ff4654f2859a8405d5021fbe633c7fb6a6133d",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "chat",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/chat/20261023T123507Z-1f2a0083-chat",
+        "assertions": 17,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "d48353feb1d01c2464d34f67623921bd893169d4528253fe12b1b64713d6d401",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "information",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/information/20261023T123513Z-225b561e-information",
+        "assertions": 20,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "08fe0e76e2c7e2cfd14aca3d89b63458362d0d330e90124753528b1e42da7456",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "maps",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/maps/20261023T123519Z-da2077f1-maps",
+        "assertions": 90,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "7e9598b7ee09bc20f114ce1c82a56154628f19f12b5d75ad916c7802bf01d3b0",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "map-colors",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/map-colors/20261023T123527Z-debed483-map-colors",
+        "assertions": 23,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "6890a72ffedf953110772210fac6623115fcd458bcfa4efad10cecc00589dbd1",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "controls",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/controls/20261023T123535Z-0a51b35e-controls",
+        "assertions": 131,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "366a6882956b8442928071acefe43694fb67f00bfb8cb926859eb54642be3e31",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "login",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/login/20261023T123551Z-f680e94c-login",
+        "assertions": 6,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "a410695591cbb5e75c7616a21ee79f528d81b6808bbb36ed936bb04ffe9c553d",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "text",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/text/20261023T123600Z-2113139d-text",
+        "assertions": 15,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "31e65a8d98d6c6c84c1c1340cc880493ba4a75fe4e8ba46424eab020bebcddf3",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "lifecycle",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/lifecycle/20261023T123607Z-f0bba1a5-lifecycle",
+        "assertions": 337,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "ad40f20def1ef9e75e127dc7f6c88f1bccf556a4ff0f43afc242672ec1dfcced",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "connections",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/connections/20261023T123609Z-a783ea4e-connections",
+        "assertions": 115,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "a1313b4245faeff577cc47aca1c5749b0fa32742a2a2d57fe1a750dd74a80297",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "server-wire",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/server-wire/20261023T123620Z-7c21023e-server-wire",
+        "assertions": 27,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "3b726ebded164c53f49ca7865ff5e003beab053b7937172faf0cc5696cb9d786",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "layout",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/layout/20261023T123625Z-02cdb6f4-layout",
+        "assertions": 132,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "15b8fe98dc8c91543915aa52c3bbd4bb09aa3098dc574a99c45af11fec7a4be7",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "assertion-error",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/assertion-error/20261023T123633Z-6022f71c-assertion-error",
+        "assertions": 5,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "26ef8ccd778e95ca80dab84bd382a34c7ca7b065b3e6e54ef894c861a4451718",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "timer-error",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/timer-error/20261023T123640Z-621d9f5c-timer-error",
+        "assertions": 4,
+        "errors": [
+          "[  LUA  ] - object: <error in anonymous Lua function> function:<no debug data available>\n            <Lua error:...Visual/Duris Test Companion/fixtures/timer-error.lua:1: "
+        ],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "9d6874416cdefdc039bcfc08c12471d2597f8f99902265e48b3057320c85d2e9",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "event-error",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/event-error/20261023T123646Z-ef6b50fb-event-error",
+        "assertions": 4,
+        "errors": [
+          "[  LUA  ] - error in event handler for DurisTestError:\n            <...Visual/Duris Test Companion/fixtures/event-error.lua:1: DELIBERATE_EVENT_FAILURE>"
+        ],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "74a7869e6ba5d7daa858b81d846033f9b94ee6ceb82b15c5a373867ec8a98772",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "wrong-profile",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/wrong-profile/20261023T123650Z-dfd89fc0-lowhp",
+        "assertions": 0,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "b012113dfa108ca1a5a91f73d58f0ddf9b5752a68889d8bc109abf24717151cc",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "wrong-candidate",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/wrong-candidate/20261023T123653Z-24e27a0c-lowhp",
+        "assertions": 0,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "f08e5f2a590e890ba85280705fd2782f829d3711c0a0bfdf71f5e5c55d84f69c",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      },
+      {
+        "case": "no-readiness",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/no-readiness/20261023T123701Z-02af09e1-lowhp",
+        "assertions": 0,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "f8fa3fc6e93a4f89bd0e560e3675ff594c8a388fce8ceae82d4d830c63d78108",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
+        }
+      }
+    ]
+  },
+  "environment": {
+    "tools": {
+      "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+      "python3": "/usr/bin/python3",
+      "luac5.1": "/usr/bin/luac5.1",
+      "xvfb-run": "/usr/bin/xvfb-run",
+      "Xvfb": "/usr/bin/Xvfb",
+      "xauth": "/usr/bin/xauth",
+      "openbox": "/usr/bin/openbox",
+      "xdotool": "/usr/bin/xdotool",
+      "import": "/usr/bin/import",
+      "fc-match": "/usr/bin/fc-match"
+    },
+    "mudlet": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.config/mudlet\"\nmudlet 5.0.1  \nQt libraries 6.11.1 (compilation) 6.11.1 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+    "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+    "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+    "locale": "C.UTF-8"
+  },
+  "scale2": {
+    "run": "/home/aiwithapex/.local/share/duris-pr16-review-scale2/20261023T134422Z-d8cddce6-ship-table",
+    "automated_status": "PASS",
+    "assertions": 58,
+    "errors": [],
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "af362ba9066795f4e254d4c82d235cbf927e2a13a5f136a0105b6f8c6bc5b2fa",
+      "payload_sha256": "8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330"
+    },
+    "scenario": "ship-table",
+    "environment": {
+      "tools": {
+        "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+        "python3": "/usr/bin/python3",
+        "luac5.1": "/usr/bin/luac5.1",
+        "xvfb-run": "/usr/bin/xvfb-run",
+        "Xvfb": "/usr/bin/Xvfb",
+        "xauth": "/usr/bin/xauth",
+        "openbox": "/usr/bin/openbox",
+        "xdotool": "/usr/bin/xdotool",
+        "import": "/usr/bin/import",
+        "fc-match": "/usr/bin/fc-match"
+      },
+      "mudlet": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.config/mudlet\"\nmudlet 5.0.1  \nQt libraries 6.11.1 (compilation) 6.11.1 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+      "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+      "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+      "locale": "C.UTF-8"
+    },
+    "size": "2732x1536",
+    "scale": 2,
+    "runtime_source": "2cf57f69fc8525f9b084e89d289fedcd9eeae9b1",
+    "source_note": "Runtime and ship-table fixture match this commit; original run metadata records its base commit and working diff.",
+    "visual_review": "PASS: inspected 07-complete-slot-and-helm-state.png, 16-minimum-character.png and errors-view.png."
+  },
+  "mudlet4_22": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-table-4.22-qualified",
+    "automated_status": "PASS",
+    "assertions": 50,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "e0ac55014b4b16853dd488a819f382827d2d74a0218bf0798790e4b910d60cbb",
+      "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
+    },
+    "scenario": "ship-table",
+    "environment": {
+      "executable": "/home/aiwithapex/.local/share/duris-client-dev/tools/captains-4.22-qualified/mudlet",
+      "executable_sha256": "7efa29e71fcf955ae74df8a0b0be0afbc8dd606587e9e7754e6a710587d538f2",
+      "command": "QT_QPA_PLATFORM=xcb xvfb-run --auto-servernum /home/aiwithapex/.local/share/duris-client-dev/tools/captains-4.22-qualified/mudlet --version",
+      "version_output": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.local/share/duris-captains-table-4.22-qualified/config/mudlet\"\nmudlet 4.22.0  \nQt libraries 6.9.0 (compilation) 6.9.0 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv2+: GNU GPL version 2 or later - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+      "launcher_source": "#!/usr/bin/python3\nimport os\nos.execv('/home/aiwithapex/.local/share/duris-client-dev/tools/captains-4.22-qualified/mudlet',['/home/aiwithapex/.local/share/duris-client-dev/tools/captains-4.22-qualified/mudlet'])\n",
+      "identity_note": "Version output rechecked on 2026-10-23 from the exact path in the retained run launcher. This attributes the retained baseline run; the three new Bridge repairs were exercised on Mudlet 5.0.1, not rerun on 4.22."
+    }
+  },
+  "new_server_old_client": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-old-client",
+    "automated_status": "PASS",
+    "assertions": 27,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.1.2",
+      "sha256": "4db36dead898d086bc44574aba6cf5ce67267c8b4197bfaf8b711653c982caa7",
+      "payload_sha256": "15593d0128aa2dd8f874d27cd1f04d8d1410fa745c37c0caad758bd21dea7b61"
+    },
+    "scenario": "server-wire"
+  },
+  "visual_review": {
+    "status": "PASS",
+    "scope": "Current scale-1 and scale-2 helm, manifest/minimum-frame and Errors screenshots inspected as listed in their run blocks. Retained 1280x720/1920x1080 and Mudlet 4.22 screenshots remain baseline geometry/API evidence. Unrelated suite cases establish behavior without blanket visual approval."
+  },
+  "ship_state_regressions": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-final-all-ship/20261023T130400Z-68a1b978-ship-bridge",
+    "automated_status": "PASS",
+    "assertions": 45,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "5b43a1938c4d50557f6e198b1e868235fc800c30a3a20dcf250a3b2f1d2e1b3f",
+      "payload_sha256": "8ceab2cfb42ef52d0c3ebb6e93db78519cb136544f8f0ac102931faf12dfd5be"
+    },
+    "scenario": "ship-bridge"
+  },
+  "current_ui_regressions": {
+    "run": "/home/aiwithapex/.local/share/duris-pr15-review-final/20261023T134157Z-abcaea30-ship-table",
+    "automated_status": "PASS",
+    "assertions": 58,
+    "errors": [],
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "cedd3627f739bd45a397bd686df516b4877f47afd253f42cda02d5ff3ddaae78",
+      "payload_sha256": "8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330"
+    },
+    "scenario": "ship-table",
+    "environment": {
+      "tools": {
+        "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+        "python3": "/usr/bin/python3",
+        "luac5.1": "/usr/bin/luac5.1",
+        "xvfb-run": "/usr/bin/xvfb-run",
+        "Xvfb": "/usr/bin/Xvfb",
+        "xauth": "/usr/bin/xauth",
+        "openbox": "/usr/bin/openbox",
+        "xdotool": "/usr/bin/xdotool",
+        "import": "/usr/bin/import",
+        "fc-match": "/usr/bin/fc-match"
+      },
+      "mudlet": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.config/mudlet\"\nmudlet 5.0.1  \nQt libraries 6.11.1 (compilation) 6.11.1 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+      "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+      "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+      "locale": "C.UTF-8"
+    },
+    "size": "1366x768",
+    "scale": 1,
+    "runtime_source": "2cf57f69fc8525f9b084e89d289fedcd9eeae9b1",
+    "source_note": "Runtime and ship-table fixture match this commit; original run metadata records its base commit and working diff.",
+    "visual_review": "PASS: inspected 07-complete-slot-and-helm-state.png, 09-bridge-scroll-after-input.png, 16-minimum-character.png and errors-view.png."
+  },
+  "coverage_reuse": {
+    "scope": "The complete 23-case suite passed at 2e7cc5d. Existing focused ship-bridge checks cover empty captain and bare legacy navigation; empty-captain coverage comes only from the focused ship-bridge fixture, not the live run whose captain is Zahm. The current ship-table fixture passes 58 assertions at scales 1 and 2 on the current canonical payload, including mixed {A,A,B} selection invalidation, destroyed true/false/absent, and equal/nearby/separate helm markers. The changes from 1d43815 are confined to Bridge presentation/selection plus tests, docs and rebuilt archive. Info/Contacts acceptance, Details, automation, wire decoding, lifecycle and unrelated panels are unchanged. Reuse the broader suite, old-client wire test and direct live baseline only for those unchanged paths. The 4.22 block and retained live run identify their actual earlier payload; neither is an exact-current-archive run. Do not claim old-server live qualification: no self-contained evidence for that run was retained; legacy compatibility is fixture coverage."
+  },
+  "release_validation": "python3 scripts/release.py --output /tmp/duris-pr16-review-release passed; 15 release and 10 controller tests reused from #14 because those Python paths are unchanged.",
+  "limits": [
+    "Actual Mudlet 4.19.1 runtime not run; official-source API audit only.",
+    "Native Windows/macOS and physical DPI/input checks not run.",
+    "Moving orders, fatigue, damaged/reloading equipment, contraband and populated contacts use focused production-helper/wire and Mudlet fixtures; no production ship mechanics were changed.",
+    "Direct live parity and Mudlet 4.22 refer to their retained pre-review payloads; current Bridge repairs use focused offline Mudlet 5.0.1 scale-1/2 evidence.",
+    "Old-server/new-current-client live qualification is not claimed; preserved legacy compatibility evidence is fixture coverage only."
+  ],
+  "artifacts": {
+    "bridge-expanded.png": "8d066cfb1b0f1954dde9f54629fe11816859000aeb131ce8d6ab678fcb551007",
+    "bridge-scrolled.png": "4a1a42c70e71cf5b2891d0f312b2dd26d182a79117c37aaff62430a37c1d0266",
+    "bridge-refresh.png": "f836f8e51ef2b15b0eb7ea18eca542d641d3583c8aef1778fce7e14f46d197c1",
+    "bridge-minimum.png": "ec18d1e2c1f8221f9015be07556cb6e9d2753a68d177aaaf7f43dedceb1a24fb",
+    "bridge-4.22.png": "b2af5c5ca488133710c3df67e0df4d0ee6061658b331d1521b45bb576580a9e2",
+    "bridge-scale2.png": "3ec5e3263b7e634a50842349bd609f8239b27133d85483c900b5f4f6ccbc1c88",
+    "errors-primary.png": "c904554b76d0fe244144a760fd5bfce324ab193575013b5c0f66036ddf13d98a"
+  },
+  "pre_review_ui_regressions": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-calibrated-plot/20261023T131028Z-9ed3de74-ship-table",
+    "automated_status": "PASS",
+    "assertions": 50,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "e0ac55014b4b16853dd488a819f382827d2d74a0218bf0798790e4b910d60cbb",
+      "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
+    },
+    "scenario": "ship-table"
+  },
+  "current_payload_ci_suite": {
+    "run": "https://github.com/LuminariMUD/duris-client/actions/runs/39964441199",
+    "runtime_job": "https://github.com/LuminariMUD/duris-client/actions/runs/39964441199/job/120450516677",
+    "artifact": "https://github.com/LuminariMUD/duris-client/actions/runs/39964441199/artifacts/12506955505",
+    "head_source": "c61895a8e680bab64133703a0ebb192c244d0677",
+    "checkout_merge": "a58a9468296d83ddde47bf34443942a6c1378159",
+    "checkout_tree": "759350116c9197745a7d41c352897e9025ce5916",
+    "tree_identity": "GitHub git-commit metadata confirms the CI checkout tree exactly equals c61895a8e680bab64133703a0ebb192c244d0677. Later integration edits affect repository documentation/evidence only.",
+    "package_sha256": "cedd3627f739bd45a397bd686df516b4877f47afd253f42cda02d5ff3ddaae78",
+    "payload_sha256": "8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330",
+    "command": "python3 scripts/mudlet_suite.py --root \"$MUDLET_ARTIFACTS\"",
+    "runtime": "Checksum-pinned Mudlet 5.0.1 on Ubuntu 26.04, configured in .github/workflows/mudlet-runtime.yml.",
+    "passed": 23,
+    "total": 23,
+    "passed_cases": [
+      "ship-bridge", "lowhp", "ship-table", "vitals", "crowded", "combat",
+      "chat", "information", "map-colors", "controls", "login", "text",
+      "maps", "lifecycle", "connections", "server-wire", "assertion-error",
+      "timer-error", "event-error", "layout", "wrong-profile", "wrong-candidate",
+      "no-readiness"
+    ],
+    "negative_cases": "Deliberate errors and fault cases passed by failing for their expected reason with normal shutdown/cleanup, as enforced by mudlet_suite.py.",
+    "controller_tests": 10,
+    "conclusion": "success",
+    "visual_review": "CI establishes automated behavior. Reuse the inspected current-payload scale-1/2 screenshots recorded in current_ui_regressions and scale2; no blanket CI screenshot review is claimed."
+  },
+  "compatibility_qualification": {
+    "status": "PARTIAL",
+    "minimum_runtime": "Mudlet 4.19.1 unverified; source API audit is not runtime certification.",
+    "native_platforms": "Windows/macOS and physical DPI/input unverified.",
+    "integration_scope": "Implementation is delivered with passing available checks; complete supported-version/platform qualification is not established."
+  },
+  "pre_review_scale2": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-scale2-qualified/20261023T131215Z-23a2e7ab-ship-table",
+    "automated_status": "PASS",
+    "assertions": 50,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "f12675c77872dcf21dcf4116cd8b72697ea7476f3957cef653a04f066b704ece",
+      "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
+    },
+    "scenario": "ship-table"
+  }
+}

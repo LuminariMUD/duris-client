@@ -1,91 +1,129 @@
 # SHIP redesign: the Captain's Table
 
-Date: 2026-10-23. Status: Details and Bridge implemented in dependent PRs #14/#15; final qualification in #16.
+Date: 2026-10-23. Status: implementation integrated; available checks pass; compatibility qualification remains partial.
 
 ## Current handoff
 
-- Outcome: full bridge parity and a responsive Captain's Table inside Character → SHIP.
-- Non-goals: ship mechanics, combat controls, polling, a new window/framework, or external dependencies.
-- Ablation: reuse production display/load helpers, ArjUI lifecycle owners and native Geyser widgets.
-  Use a code-native schematic; decorative bitmap art is optional and unnecessary for parity.
-- Files: server `src/core/json_utils.c`, `src/net/gmcp.c`, existing GMCP harness;
-  client ArjUI, existing Mudlet fixtures, DESIGN/help, VERSION/CHANGELOG and rebuilt archive.
-- Proof: focused executable server helper/wire tests and `make -C src`; focused real-Mudlet
-  state/layout checks during implementation, then the final offline suite and screenshot review.
-  Live/minimum-version/platform evidence must be recorded separately, without treating fixtures as live proof.
-- Client starts clean at `3f9a998` on `branch/issue-13-ship-captains-table` (2.1.2).
-- Server implementation used an isolated checkout based on `fc1c94e15`;
-  the user removed that checkout and its branch after merging #304. The primary
-  server checkout and its active branch are preserved. Merged-source fixture
-  refresh uses the detached qualification checkout `/tmp/duris-ship-parity-e86`.
-- Contract fields below are selected as written. `crewStaminaBand` is
-  `rested` / `fatigued` / `exhausted`, mapped from the existing stamina prefix helper.
-- Server contract: [Duris PR #304](https://github.com/LuminariMUD/Duris/pull/304),
-  squash-merged by the user as `e86bf7f24c52449b1260bb378443efafd1d9c491`. `make -C src -j4`,
-  executable GMCP helper/wire/lifecycle test, changed-line formatting and diff checks passed.
-- Client Details slice: 2.2.0 implements the additive rows, exact integer-third
-  condition bands, separate display target, literal names, contact coordinates/arcs,
-  safe duplicate-ID automation and keyed replacement snapshots. Contacts for a new key wait
-  for Info; mismatched packets never alter displayed navigation. On legacy servers an
-  explicit ordinary ID change (or changed name for `**`) clears old navigation; without
-  identity fields the replacement retains the last untagged Contacts navigation.
-- Real Mudlet 5.0.1 / Qt 6.11.1 on WSL: `connections` and `ship-bridge` passed with
-  no Lua errors and normal cleanup. Evidence roots:
-  `/home/aiwithapex/.local/share/duris-ship-details-check/20261023T115055Z-0bfbf96a-connections`
-  and `/home/aiwithapex/.local/share/duris-ship-contract-check/20261023T115217Z-e114f45f-ship-bridge`.
-  Inspected lower-ledger and new-contract screenshots at 1366×768; names wrap and
-  markup-like names remain literal. This qualifies Details behavior only.
-- Details is published as [client PR #14](https://github.com/LuminariMUD/duris-client/pull/14),
-  commit `6a0704c38cf965c2310b109daec99992a6f97761` on the requested branch.
-- Active dependent branch: `branch/issue-13-captains-table-ui`, based on #14.
-  Package 2.3.0 adds the native Bridge, persistent Bridge/Details preference,
-  Copy details, explicit reference actions and deferred coalesced visible paints.
-  First `ship-bridge` and updated Details `connections` checks passed in Mudlet 5.0.1.
-  Visual iteration fixed compact arc spacing, font measurement and the inner bearing ring.
-  Slot and contact inspectors reuse the same complete rows as their manifests.
-  Details and Bridge share deterministic contact ordering, including duplicate IDs.
-- Mudlet 4.19.1 source audit confirms `createScrollBox`, `calcFontSize`, label callbacks,
-  label stylesheets and `setClipboardText`; source is under the external test tools
-  directory `~/.local/share/duris-client-dev/tools/4.19.1-source`. This is API evidence,
-  not a successful 4.19.1 runtime qualification.
-- Server #304 is merged; fixtures have been refreshed from its exact squash commit.
-  This does not establish deployment of that commit to the live game.
-- Fresh visual/interaction evidence: `ship-table` passed at 1280×720 and 1920×1080;
-  the corrected final 1366×768 run is under
-  `/home/aiwithapex/.local/share/duris-captains-table-reviewed/20261023T121105Z-d32c59e5-ship-table`.
-  The 1080 run is under `/home/aiwithapex/.local/share/duris-captains-table-1080/20261023T120850Z-8d8abe57-ship-table`.
-  Inspected expanded hull/helm/bearing and manifest screenshots; an incoming refresh
-  retained the scrolled manifest position. The minimum-frame fixture was corrected to
-  raise the floated Character frame before visual inspection (the original assertion
-  passed despite another frame covering it).
-- A Details review found that two unflagged duplicate IDs could hide a later flagged lock.
-  PR #14 receives the focused correction and three-duplicate regression; its real-Mudlet
-  `ship-bridge` run passed at `/home/aiwithapex/.local/share/duris-details-duplicate-followup`.
-- Review follow-up for #15: clear a contact group if any member becomes ambiguous
-  after replacement, show weapon destruction as Yes/No/unknown, and combine overlapping
-  helm glyphs while retaining both exact numeric headings. These use the existing renderer
-  and `ship-table` fixture; no new state, dependencies or compatibility paths are needed.
-  Keep unreleased 2.3.0 and rebuild its archive with the fixes.
-- Review proof: `scripts/release.py --output /tmp/duris-pr15-review-release` and
-  `git diff --check` pass. Real Mudlet 5.0.1 `ship-table` passes all 58 assertions,
-  no Lua errors and normal cleanup, under
-  `/home/aiwithapex/.local/share/duris-pr15-review-final/20261023T134157Z-abcaea30-ship-table`.
-  Inspected helm, manifest, minimum-frame and actual Errors-view screenshots.
-- Next: carry this focused review correction into #16, whose handoff owns final
-  integrated evidence and the live comparison. Actual 4.19.1 and native-platform
-  runtime verification remain unverified.
-  Master CI continues to own release tags; no tags or production changes are made here.
+**Implementation is delivered on master through #14 and #15. #16 records the qualification closeout.**
+Issue #13 closes when that final evidence PR is integrated. Actual Mudlet 4.19.1 and
+native-platform certification remain incomplete; no complete supported-platform
+release-readiness claim is made. These limits do not leave implementation work open.
+
+- Integrated in order with merge commits:
+  [#14 — Details](https://github.com/LuminariMUD/duris-client/pull/14),
+  `cffab206036d5ee97d1bde5ed7465f4322a039ad`, then
+  [#15 — Captain's Table](https://github.com/LuminariMUD/duris-client/pull/15),
+  `1a9024c38ed7b61a32791f3eba1aec54b56d6331`.
+  GitHub automatically retargeted successors to master after deleting each merged
+  predecessor branch. Ancestry was preserved without rebases or conflict repairs.
+- [#16 — qualification](https://github.com/LuminariMUD/duris-client/pull/16)
+  contains documentation/evidence only relative to master. Its runtime, package,
+  fixtures and release inputs match merged #15. Keep master as the stable handoff;
+  completed stack branches can be deleted after ancestry checks. Master CI owns tags.
+- Final package: **2.3.0**, source plus rebuilt `duris-client.mpackage` in #15.
+  Archive SHA-256 `cedd3627f739bd45a397bd686df516b4877f47afd253f42cda02d5ff3ddaae78`;
+  canonical payload `8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330`.
+  [offline-evidence.json](../testing/issue-13/offline-evidence.json) and
+  [live-qualification.json](../testing/issue-13/live-qualification.json) identify the
+  exact archive and canonical payload hashes, sources, environments, inputs and proof.
+- Outcome: full bridge information preservation and a responsive Captain's Table
+  inside Character → SHIP, with complete selectable Details and Copy details.
+  Non-goals remain ship mechanics, combat controls, new polling, a new window/framework,
+  external dependencies or a change to existing typed automation.
+- Ablation reused production display/load helpers, ArjUI lifecycle owners and native
+  Geyser widgets. A code-native schematic replaces the optional bitmap dependency.
+  Slot/contact inspectors reuse the same complete rows as their manifests. No new
+  dashboard framework, image requirement, heartbeat or local timer countdown was added.
+- Server prerequisite [Duris #304](https://github.com/LuminariMUD/Duris/pull/304) was
+  squash-merged by the user as `e86bf7f24c52449b1260bb378443efafd1d9c491` and deployed
+  to `mud.duris.sbs:7777`. Production-helper/wire/lifecycle checks, server build,
+  formatting and whitespace checks passed. Client wire fixtures identify that source.
+  The protocol does not expose the deployed binary revision; live behavior is verified directly.
+- New Info/Contacts associate by opaque observing-vessel key. Contacts for another key
+  wait for matching Info; replacement snapshots do not retain omitted new-only fields.
+  Legacy explicit ordinary-ID changes, or changed names for `**`, clear navigation;
+  partial untagged Info without identity fields retains the last untagged navigation.
+  Explicit target null differs from absence. Display locks never supply an invented bearing.
+- Eighteen reported code review findings are repaired in their owning PRs:
+  optional target fallback, reveal repaint, complete duplicate-ID scans, duplicate
+  identity checks before bearing validation, captain availability to cargo automation,
+  current-snapshot inspectors for identical contacts, legacy Contacts without identity,
+  removed-slot highlight clearing, bare-array navigation, captured marker generations,
+  grouped targeting flags, truthful text provenance, unknown contact counts and independent
+  legacy sunk state. The empty-captain guard preserves the existing cargo alias's
+  unknown-captain behavior. The bearing rings and markers share a calibrated radius.
+  The latest #15 repair clears a whole mixed contact group when any member becomes
+  ambiguous, preserves destroyed Yes/No/unknown, and combines overlapping actual/ordered
+  helm glyphs while retaining both exact headings. Existing fixtures cover all cases.
+  The renderer needs no new state, framework or compatibility path for these fixes.
+- **Offline proof:** the full current-payload **23/23** suite passed in
+  [CI run 39964441199](https://github.com/LuminariMUD/duris-client/actions/runs/39964441199),
+  including expected negative/fault cases. CI checked out `a58a946`; its tree
+  exactly equals qualification head `c61895a`, with current canonical payload
+  `8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330`.
+  The evidence manifest records all case outcomes, job/artifact URLs and tree identity.
+  This supersedes the earlier broad baseline at `2e7cc5d` for current behavior proof.
+  Current `ship-table` runs also pass **58/58** assertions at scale 1
+  (`~/.local/share/duris-pr15-review-final/20261023T134157Z-abcaea30-ship-table`) and scale 2
+  (`~/.local/share/duris-pr16-review-scale2/20261023T134422Z-d8cddce6-ship-table`), with no Lua errors
+  and normal shutdown/cleanup. Reuse those inspected current-payload screenshots;
+  automated CI success does not imply blanket visual review. Release validation and
+  15 release/10 controller tests pass. Documentation-only integration edits need no
+  additional broad suite run or package/version change.
+- **Visual/native proof:** inspected 1280×720, 1366×768, 1920×1080, minimum 285×160
+  Character, scrolled manifest before/after updates, selected modes, and Errors views.
+  The current scale-1/2 helm, manifest, minimum frame and Errors views were inspected.
+  Actual **Mudlet 4.22.0 / Qt 6.9.0** proof at
+  `~/.local/share/duris-captains-table-4.22-qualified` retains its pre-review payload.
+  Its executable path/hash, original launcher and rechecked full version output are now
+  preserved in `offline-evidence.json`; the latest three Bridge repairs were not rerun
+  on 4.22. Unrelated suite cases establish behavior rather than blanket visual fidelity.
+- **Compatibility:** legacy Info/Contacts, fallback/clears and automation use the
+  retained focused Mudlet fixtures. Old-server/new-current-client live qualification
+  is not claimed because that run has no self-contained retained evidence. The original
+  **2.1.2** archive passes the focused real-wire scenario with the new additive payload.
+- **Retained new-server same-ship baseline PASS:** independent `Duris-Live-Test`, exact
+  pre-review archive recorded in `live-qualification.json`, no companion, send override
+  or injected GMCP. This is reusable baseline evidence, not a new live run of the current
+  archive. GallTest's reference text,
+  decoded packets, Bridge and Details pass **62** assertions plus screenshot inspection:
+  hull weight **330000**, load **80/165**, cargo **5/70 crates**, ordered/actual **0/0**,
+  max speed **50**, display/raw/max stamina **800/800/800**, all four armor/internal
+  arcs, sail **130/130**, six weapon rows and independent slot status/timer/destruction,
+  crew/chiefs/skills/modifiers, repairs, passengers, explicit null target and matching keys.
+  See [live-bridge.png](../testing/issue-13/live-bridge.png),
+  [live-details.png](../testing/issue-13/live-details.png), reference text and JSON beside them.
+  The three new fixes affect only Bridge presentation/selection; accepted packets,
+  Details and reference commands are unchanged. Reuse the baseline only for those
+  paths. The live captain was Zahm: empty-captain/cargo-alias proof comes exclusively
+  from the focused `ship-bridge` regression, not the 62 live assertions.
+- **Live cleanup:** real bridge departure cleared info/key/max-speed/target and the ledger.
+  Veridian returned to the original Inn of Oceans, room **66899**, quit and disconnected.
+  Owned desktops are closed and temporary credential copies removed. Raw independent
+  live evidence is retained externally at `~/.local/share/duris-captains-live-qualified`.
+  No production ship orders or mechanics were changed.
+- **Limits:** the live vessel was docked with no equipment, contacts or target. Moving
+  orders, fatigue, damaged/reloading equipment, destruction thresholds, contraband,
+  populated/overlapping contacts and all 16 occupied slots use production-helper,
+  wire and Mudlet fixtures, not invented live claims. Actual **Mudlet 4.19.1**, native
+  Windows/macOS and physical DPI/input are unverified. The 4.19.1 source API audit confirms
+  the chosen primitives; it is not runtime qualification. The declared minimum remains
+  unchanged, but its runtime qualification is incomplete.
+- Closeout: integrate #16, close completed issue #13 and remove merged stack branches.
+  Preserve source/archive pairing and the documented evidence boundaries. Full minimum-
+  version/native-platform qualification remains incomplete; available implementation
+  checks pass and no scoped implementation work remains.
+
 
 ## Tracking and navigation
 
 - Work item: [issue #13 — Captain's Table SHIP view with full look ship parity](https://github.com/LuminariMUD/duris-client/issues/13).
-- Dedicated branch: [branch/issue-13-ship-captains-table](https://github.com/LuminariMUD/duris-client/tree/branch/issue-13-ship-captains-table), linked in the issue's Development section.
-- [Published plan on that branch](https://github.com/LuminariMUD/duris-client/blob/branch/issue-13-ship-captains-table/docs/ongoing-projects/plan-ship-bridge.md).
+- [Integrated plan on master](https://github.com/LuminariMUD/duris-client/blob/master/docs/ongoing-projects/plan-ship-bridge.md).
 - Earlier work: [SHIP readability issue #3](https://github.com/LuminariMUD/duris-client/issues/3), [feedback index #1](https://github.com/LuminariMUD/duris-client/issues/1), and the [historical qualification plan](plan-ship-qualification.md).
 
 Keep the issue checklist and this plan aligned as implementation progresses.
 The earlier issues remain completed; #13 tracks the expanded bridge parity and
-graphical redesign. This branch starts with planning documents only.
+graphical redesign. The original tracking branch began with planning documents; the review stack above now carries the implementation.
 
 ## Recommendation
 

@@ -1,0 +1,184 @@
+{
+  "Info": {
+    "sail": 130,
+    "bridge": {
+      "target": null,
+      "displayCrewStamina": 800,
+      "crewStaminaBand": "rested",
+      "setHeading": 0,
+      "setSpeed": 0,
+      "load": {
+        "max": 165,
+        "current": 80
+      },
+      "hullWeight": 330000
+    },
+    "crewType": "&+WCo&+wr&+Wwe&+wl&+Wl &+CS&+ce&+Ba &+cD&+Bog&+bs",
+    "people": 0,
+    "armor": {
+      "starboard": [
+        91,
+        110
+      ],
+      "port": [
+        76,
+        110
+      ],
+      "bow": [
+        81,
+        88
+      ],
+      "stern": [
+        41,
+        55
+      ]
+    },
+    "equipment": [],
+    "status": "DOCKED",
+    "weapons": [
+      {
+        "slot": 0,
+        "ammo": 12,
+        "destroyed": false,
+        "maxAmmo": 12,
+        "ready": true,
+        "name": "Large Catapult",
+        "position": "bow",
+        "timer": 0,
+        "statusText": "Ready",
+        "positionLabel": "Forward",
+        "damage": 0
+      },
+      {
+        "slot": 1,
+        "ammo": 12,
+        "destroyed": false,
+        "maxAmmo": 12,
+        "ready": true,
+        "name": "Large Catapult",
+        "position": "stern",
+        "timer": 0,
+        "statusText": "Ready",
+        "positionLabel": "Rear",
+        "damage": 0
+      },
+      {
+        "slot": 2,
+        "ammo": 45,
+        "destroyed": false,
+        "maxAmmo": 50,
+        "ready": true,
+        "name": "Medium Ballista",
+        "position": "starboard",
+        "timer": 0,
+        "statusText": "Ready",
+        "positionLabel": "Starboard",
+        "damage": 0
+      },
+      {
+        "slot": 3,
+        "ammo": 25,
+        "destroyed": false,
+        "maxAmmo": 30,
+        "ready": true,
+        "name": "Large Ballista",
+        "position": "starboard",
+        "timer": 0,
+        "statusText": "Ready",
+        "positionLabel": "Starboard",
+        "damage": 0
+      },
+      {
+        "slot": 4,
+        "ammo": 24,
+        "destroyed": false,
+        "maxAmmo": 30,
+        "ready": true,
+        "name": "Large Ballista",
+        "position": "port",
+        "timer": 0,
+        "statusText": "Ready",
+        "positionLabel": "Port",
+        "damage": 0
+      },
+      {
+        "slot": 5,
+        "ammo": 25,
+        "destroyed": false,
+        "maxAmmo": 30,
+        "ready": true,
+        "name": "Large Ballista",
+        "position": "port",
+        "timer": 0,
+        "statusText": "Ready",
+        "positionLabel": "Port",
+        "damage": 0
+      }
+    ],
+    "maxCrewStamina": 800,
+    "chiefs": {
+      "repair": "&+cE&+wxp&+ce&+wrt &+cE&+wng&+ci&+wn&+cee&+wr",
+      "guns": "&+BMaster &+rGu&+Rnn&+rer",
+      "sail": ""
+    },
+    "internal": {
+      "starboard": [
+        55,
+        55
+      ],
+      "port": [
+        52,
+        55
+      ],
+      "bow": [
+        44,
+        44
+      ],
+      "stern": [
+        27,
+        27
+      ]
+    },
+    "shipKey": "14:14",
+    "cargo": {
+      "max": 70,
+      "current": 5,
+      "items": [
+        {
+          "name": "&+MSi&+mlk &+BCl&+Co&+Yth&N",
+          "slot": 6,
+          "contraband": false,
+          "crates": 5,
+          "invoicePrice": 156000
+        }
+      ]
+    },
+    "crewStamina": 800,
+    "id": "**",
+    "maxPeople": 20,
+    "class": 6,
+    "skillMods": {
+      "repair": 5,
+      "guns": 6,
+      "sail": 4
+    },
+    "frags": 0,
+    "repairStock": 330,
+    "name": "GallTest",
+    "captain": "Zahm",
+    "contactRange": 36,
+    "skills": {
+      "repair": 1683,
+      "guns": 1656,
+      "sail": 1586
+    },
+    "maxSpeed": 50,
+    "maxSail": 130
+  },
+  "Contacts": {
+    "speed": 0,
+    "shipKey": "14:14",
+    "contacts": [],
+    "heading": 0
+  }
+}

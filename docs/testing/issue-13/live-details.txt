@@ -1,0 +1,102 @@
+── Ship ──
+GallTest
+ID: **
+Status: DOCKED
+Captain: Zahm
+Frags: 0
+H:0  S:0/50
+Contact range: 36
+Ordered heading: 0
+Ordered speed: 0
+
+Condition
+Forward Armor 81/88 (Sound)
+  Hull 44/44 (Sound)
+Port Armor 76/110 (Sound)
+  Hull 52/55 (Sound)
+Starboard Armor 91/110 (Sound)
+  Hull 55/55 (Sound)
+Rear Armor 41/55 (Sound)
+  Hull 27/27 (Sound)
+Sail: 130/130
+
+Weapons
+[0] Large Catapult
+Position: Forward
+Ammo: 12/12
+Damage: 0
+Timer: Ready
+Server status: Ready
+Timer count: 0
+Destroyed: No
+[1] Large Catapult
+Position: Rear
+Ammo: 12/12
+Damage: 0
+Timer: Ready
+Server status: Ready
+Timer count: 0
+Destroyed: No
+[2] Medium Ballista
+Position: Starboard
+Ammo: 45/50
+Damage: 0
+Timer: Ready
+Server status: Ready
+Timer count: 0
+Destroyed: No
+[3] Large Ballista
+Position: Starboard
+Ammo: 25/30
+Damage: 0
+Timer: Ready
+Server status: Ready
+Timer count: 0
+Destroyed: No
+[4] Large Ballista
+Position: Port
+Ammo: 24/30
+Damage: 0
+Timer: Ready
+Server status: Ready
+Timer count: 0
+Destroyed: No
+[5] Large Ballista
+Position: Port
+Ammo: 25/30
+Damage: 0
+Timer: Ready
+Server status: Ready
+Timer count: 0
+Destroyed: No
+
+Crew and supplies
+Crew: Corwell Sea Dogs
+Stamina: 800/800
+Raw stamina: 800
+Fatigue: rested
+Passengers: 0/20
+Repair stock: 330
+Deck chief: None
+Deck skill: 1586
+Deck modifier: +4
+Guns chief: Master Gunner
+Guns skill: 1656
+Guns modifier: +6
+Repair chief: Expert Engineer
+Repair skill: 1683
+Repair modifier: +5
+
+Equipment
+Equipment: None
+
+Cargo
+Hull weight: 330000
+Weight load: 80/165
+Crates: 5/70
+[6] Silk Cloth
+Crates: 5
+Invoice price: 156000
+
+Contacts (0)
+Contacts: None
