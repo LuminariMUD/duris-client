@@ -1,5 +1,25 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Qualification evidence carry-forward — 2026-10-23
+
+PR #10 remains documentation/evidence only relative to #11. Runtime source,
+controller, VERSION and archive are byte-identical to that parent. The inherited
+hidden-tell finding is fixed in the carried stack. Published reference text has
+no trailing whitespace; the entire current PR diff passes git diff --check.
+
+Current 2.0.2 source/archive identities and offline 21-case proof are in
+[review-2026-10-23.json](../testing/issue-3/review-2026-10-23.json), with the
+fresh 115-assertion editor-capture run in editor-review-2026-10-23.json.
+Historical live/4.22 evidence retains its original hashes under explicit
+historical fields. It establishes the recorded ship facts and old archive,
+not fresh qualification of the integrated dashboard. Earlier qualification
+handoff is preserved in [plan-ship-qualification.md](plan-ship-qualification.md).
+No release version bump or runtime rerun is needed for this evidence-only delta.
+
+
+## 2026-10-22 - Issue #3 SHIP readability, 1.3.7
+
+
 ## Latest parent repair carry-forward — 2026-10-23
 
 Current SHIP candidate is 2.0.2 and retains the portable save/rollback/recovery
@@ -33,31 +53,54 @@ other-platform rerun is claimed. No merge or manual tag was performed.
 
 ## 2026-10-22 - Issue #3 SHIP readability, final 1.3.7 candidate
 
-Final archive: `75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3`.
-All **20/20** real-Mudlet expectations pass under
-`/tmp/duris-issue3-navigation-suite`, after both the departure and navigation
-repairs. Every run's canonical payload equals the committed package. Eight
-controller checks pass; the local stack uses PR #11's bounded editor wait.
-The primary [manifest](../testing/issue-3/offline-evidence.json) records all
-cases and successful hosted core build/runtime checks at `26663f2`, providing
-full-suite proof within this PR itself.
+Ordered identity/navigation, condition, numeric-slot weapons, crew, equipment,
+cargo and contacts replace the generic dump. Separate ammo/damage/timer status,
+signed modifiers and honest units retain the available facts. Text fallback,
+automation, zero/false, unknown maxima and state clearing survive.
 
-Departure and stale Info navigation have red/green regressions. Existing
-populated size/DPI records remain explicitly historical coverage for unchanged
-formatting and geometry, rather than being mislabeled as final archives.
-Lua 5.1 syntax and release source/archive equality validation pass.
+Final archive SHA-256: `75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3`.
+Core `26663f2`, controller `d33a4e6`; review order PR #9, #11, #10.
 
-Fresh exact-archive import also passed **115** assertions in Mudlet 4.22.0 /
-Qt 6.9.0. A clean live profile compared GallTest's actual packets with
-`look ship`/`look crew`, including all six weapons and condition/crew/cargo
-facts; real bridge exit cleared state and display. Character returned to the
-original inn and logged out. Captures and protocol omissions are carried in
-dependent PR #10 and its final handoff. Cargo crates remain distinct from
-weight load; no missing protocol facts were inferred.
+- Eight controller checks and final **20/20** real-Mudlet suite expectations
+  PASS under `/tmp/duris-issue3-navigation-suite`, including wire decoding,
+  lifecycle/reopen, editor capture and expected deliberate failures/faults.
+- A review assertion reproduced the Info-clear then empty-contacts display
+  defect before the guard. `connections` and `server-wire` now verify the
+  no-ship display; the separate text-only fixture starts with reset state.
+- Fresh zero Contacts navigation also overrides optional cached Info fields;
+  this regression failed before the two-line repair and passes after it.
+- Repeated editor capture failures after passing behavior exposed a 0.3-second
+  timing assumption. The separate controller PR waits up to five seconds using
+  the existing readiness helper and application-exit check. Final suite passes.
+- Original populated 1280x720, 1366x768, 1920x1080 and 2732x1536 scale-2 captures
+  remain valid for the populated layout, whose inputs and formatting are
+  unchanged by the empty-footer/navigation repairs. Exact final identities and
+  the explicit reuse decision are in
+  [review-followup.json](../testing/issue-3/review-followup.json); original run
+  identities/screenshots stay in [offline-evidence.json](../testing/issue-3/offline-evidence.json).
+- **4.22.0 / Qt 6.9.0 PASS**, all **115** assertions, fresh exact-archive import
+  in a separate portable root through the connection dialog's Offline button.
+  Departure and actual Errors-view screenshots were inspected; no Lua errors.
+- **Final-archive live comparison PASS:** fresh profile, actual GallTest bridge
+  packets and `look ship`/`look crew`; identity, navigation, four condition arcs,
+  sail, passengers, crew/chiefs/skills/modifiers, stamina, repair, six weapons
+  and silk cargo agree. Captures, decoded GMCP and reference/panel text are in
+  [qualification.json](../testing/issue-3/qualification.json).
+- Cargo is **5/70 crates**, whereas the reference's **80/165 load** is weight.
+  Hull weight, set orders, exact timers and equipment damage are not supplied.
+  Live equipment/contacts were empty; populated/damaged/no-ammo cases are offline.
+- Published reference transcripts remove trailing line padding while retaining
+  interior diagram alignment; untrimmed capture hashes remain in qualification.
+- Real bridge departure clears state **and display**. Veridian was returned
+  to the original Inn of Oceans (66899), quit and disconnected normally;
+  owned desktops closed and temporary credentials removed. No ship state changed.
+- Lua 5.1.5 syntax and release source/archive equality validation PASS.
+  Environment: Ubuntu 24.04.4 WSL2, Mudlet 5.0.1 / Qt 6.11.1, Xvfb 96dpi,
+  DejaVu Sans Mono. **4.19.1, physical desktop DPI and Windows/macOS unverified.**
 
-Mudlet 4.19.1 and physical desktop DPI remain unverified. Constructed fixtures,
-the retained serializer snapshot and actual live reception keep distinct
-provenance. No ship/server configuration was changed.
+Rich constructed fixtures and actual live packets retain distinct provenance;
+the checked-in serializer JSON was not regenerated. The updated [plan](plan.md)
+is the continuation reference. Hosted CI is separate from local qualification.
 
 ## Later review findings — 2026-10-23
 

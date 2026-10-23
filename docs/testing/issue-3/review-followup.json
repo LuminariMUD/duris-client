@@ -1,0 +1,222 @@
+{
+  "date": "2026-10-23",
+  "current_candidate": {
+    "version": "2.0.2",
+    "sha256": "83295b6c8e8e9fecea8f49bea4cc8b89844efd2b28d1c38fe02a599823886067",
+    "payload_sha256": "168dbc4187f6b23f43c150220822e4098ee832b00002debf84180ac777108211"
+  },
+  "current_source_sha256": {
+    "VERSION": "b4b16faea52dc04ccfe32f7b342094855923ebf599a3cac1940470a2d6d7c261",
+    "src/config.lua": "74ab009ad7c91e665b33ab2ae0adc967d84c9e1dccbb5c6ec8f99221068d9fe7",
+    "src/scripts/ArjAuto.lua": "5ac63ee270f0565588abd049dd91fcef0000596ff455e0ed931c7d4e45496c48",
+    "src/scripts/ArjMapper.lua": "4789f611a3c3fd022fcf6d084d719e7bf70b8f2e9c80f85e2e2402f2424148ed",
+    "src/scripts/ArjUI.lua": "8209f23b1d20b9f0d62340f60e1f3397b8fd9ae2b37c15984ac44e3941240409",
+    "tests/mudlet/fixtures/assertion-error.lua": "0fb1cd524b09681d6118214dae83ff8d759c7f4a88fc3de127e23a99aa1e0fdf",
+    "tests/mudlet/fixtures/chat.lua": "07dfdf3477af1feceaca339059bf9e4ac3bfd995a69b35adcdb9ae2ea4fcda3f",
+    "tests/mudlet/fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
+    "tests/mudlet/fixtures/connections.lua": "738cee5b303fb4ce65f032b2c6efd557a0c527c7d803c263a8f8e92fcd56ba45",
+    "tests/mudlet/fixtures/controls.lua": "c10204ab29fcc6eba4b05f9d0346245d6c7456f551bc1bd652fb5c1b5388a32a",
+    "tests/mudlet/fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
+    "tests/mudlet/fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
+    "tests/mudlet/fixtures/information.lua": "4766e9e44292519a716c3f55b3c3816c0f16900b140db7336e67aa434208ed3a",
+    "tests/mudlet/fixtures/layout.lua": "cf026d70d2786c9ce30f3e631bcc6b1e3b28931735ea3415baa4849ceb8f5292",
+    "tests/mudlet/fixtures/lifecycle.lua": "4de65155e95196819845a4c56f1e25bca05bb28b8932816b1f4e290f31a29129",
+    "tests/mudlet/fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
+    "tests/mudlet/fixtures/lowhp.lua": "7c009ca0bdca1ceeb20c540a32cca3824645448a64cdd87cd239c5e4c81ffa96",
+    "tests/mudlet/fixtures/map-colors.lua": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b",
+    "tests/mudlet/fixtures/maps.lua": "77980bca8e463c7ebd34e1e59d8395ab762c741bcdb5ba52c4260ce08e5b4507",
+    "tests/mudlet/fixtures/reopen.lua": "8f77d0b956a468a8f063d8f94c3f056cb2eaaafcaa79fa8696594022ca303460",
+    "tests/mudlet/fixtures/server-wire.lua": "dbea8814ebcdc945a2a221d0976b20329de9b9014ade993a2cba5ca9934bc61a",
+    "tests/mudlet/fixtures/text.lua": "97831e2917ae7b6b35abc289a25219bd703335f99e0323aa7fbd33657bb3e091",
+    "tests/mudlet/fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
+    "tests/mudlet/fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082",
+    "scripts/mudlet_test.py": "a3c184780d51a137a471e6559233ddb07674e7e8e001a60f749e2b798748070f"
+  },
+  "current_offline_evidence": "review-2026-10-23.json",
+  "current_controller_evidence": "editor-review-2026-10-23.json",
+  "historical_1_3_7_qualification": {
+    "date": "2026-10-22",
+    "candidate": {
+      "version": "1.3.7",
+      "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+      "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
+    },
+    "core_commit": "26663f2e656f5ff4c9a73821f72364202426a77e",
+    "controller_commit": "d33a4e64946889233438ed115be2519b3fa6b7df",
+    "red": {
+      "run": "/tmp/duris-issue3-review-red/20261022T202019Z-694e7761-connections",
+      "assertion": {
+        "description": "departure contact clear keeps the no-ship display",
+        "passed": false
+      }
+    },
+    "repair": "Gate the empty-contact footer on other ship facts; prefer current Contacts navigation over optional cached Info navigation. Shared state and protocol are unchanged.",
+    "tests": "connections now asserts the exact Info {} -> Contacts {contacts=[]} sequence, and starts a separate text-only session. server-wire asserts the actual serializer departure display.",
+    "controller_repair": "Use existing wait_for for the editor (five seconds, process-exit detection) instead of assuming 0.3 seconds is enough.",
+    "controller_unit_checks": 8,
+    "suite": [
+      {
+        "case": "lowhp",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/lowhp/20261022T203521Z-0022ea37-lowhp",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "vitals",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/vitals/20261022T203517Z-0d1330ff-vitals",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "crowded",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/crowded/20261022T203528Z-7097966a-crowded",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "combat",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/combat/20261022T203528Z-72cb672b-combat",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "chat",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/chat/20261022T203536Z-1c547bfa-chat",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "information",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/information/20261022T203537Z-116369e7-information",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "maps",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/maps/20261022T203547Z-8cb37dc7-maps",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "map-colors",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/map-colors/20261022T203550Z-7f374fb1-map-colors",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "controls",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/controls/20261022T203601Z-1be654b7-controls",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "login",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/login/20261022T203611Z-a6bd8cdc-login",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "text",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/text/20261022T203621Z-5d8adcc1-text",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "lifecycle",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/lifecycle/20261022T203621Z-10215af4-lifecycle",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "connections",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/connections/20261022T203631Z-9e72bd96-connections",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "server-wire",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/server-wire/20261022T203637Z-64f7152e-server-wire",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "case": "assertion-error",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/assertion-error/20261022T203648Z-7af02b0d-assertion-error",
+        "exit_code": 1,
+        "stderr": ""
+      },
+      {
+        "case": "timer-error",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/timer-error/20261022T203649Z-5a77da65-timer-error",
+        "exit_code": 1,
+        "stderr": ""
+      },
+      {
+        "case": "event-error",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/event-error/20261022T203656Z-e1b96a30-event-error",
+        "exit_code": 1,
+        "stderr": ""
+      },
+      {
+        "case": "wrong-profile",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/wrong-profile/20261022T203656Z-6bd917d8-lowhp",
+        "exit_code": 1,
+        "stderr": ""
+      },
+      {
+        "case": "wrong-candidate",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/wrong-candidate/20261022T203703Z-7d231da8-lowhp",
+        "exit_code": 1,
+        "stderr": ""
+      },
+      {
+        "case": "no-readiness",
+        "passed": true,
+        "run": "/tmp/duris-issue3-navigation-suite/no-readiness/20261022T203708Z-5fe9460c-lowhp",
+        "exit_code": 1,
+        "stderr": ""
+      }
+    ],
+    "legacy_assertions": 115,
+    "navigation_red": {
+      "run": "/tmp/duris-issue3-navigation-red/20261022T203256Z-cc83aecc-connections",
+      "assertion": "fresh zero Contacts navigation overrides cached Info",
+      "result": "FAIL before the precedence fix; PASS in the final 115-assertion scenario"
+    },
+    "layout_evidence_reuse": {
+      "prior_candidate": {
+        "version": "1.3.7",
+        "sha256": "efbf2d0d4524448076d61ab480ef8c00b85f5987060edbc14e7ef3f429e69d0d",
+        "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+      },
+      "file": "offline-evidence.json",
+      "reason": "Only the empty-footer condition and navigation precedence changed. The previous populated fixtures and real live Info payload lack optional cached Info navigation, so their field formatting and geometry remain the same. Final navigation, departure, import and live comparison were requalified."
+    },
+    "source_sha256": {
+      "src/scripts/ArjUI.lua": "40bc30268148099ec77e123e1ef9636bee23792d888761c188f8f25e673aedc5",
+      "scripts/mudlet_test.py": "139548d54cdbbb25cf01b7f21e4138b93900e2c4ac5b5170d1afb8df2824318a",
+      "tests/mudlet/fixtures/connections.lua": "738cee5b303fb4ce65f032b2c6efd557a0c527c7d803c263a8f8e92fcd56ba45",
+      "tests/mudlet/fixtures/server-wire.lua": "dbea8814ebcdc945a2a221d0976b20329de9b9014ade993a2cba5ca9934bc61a"
+    }
+  },
+  "scope": "Current 2.0.2 offline proof and bounded-editor record are distinct from historical 1.3.7 live/4.22 captures."
+}
