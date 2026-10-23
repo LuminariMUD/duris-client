@@ -1,5 +1,41 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Final integrated candidate — 2026-10-23
+
+Version 2.1.2 carries every reviewed feature and the portable save/rollback/
+backup recovery repair. All 21 final-package suite expectations pass, including
+combined private unread/reveal, stationary map and Windows-semantics cases.
+Current candidate/source/per-run hashes are in ../testing/issue-5/review-2026-10-23.json.
+Top-level current SHIP qualification fields were recomputed for this exact tree;
+parent and live/4.22 evidence remains explicitly historical. No native Windows,
+minimum-version, physical-DPI/input or fresh live qualification is claimed.
+
+
+## Integrated review completion — 2026-10-23
+
+PR #12 now follows #10 in the preserved stack: #7 → #8 → #9 → #11 → #10 → #12.
+Version 2.1.1 carries compact headers, SHIP and parent review repairs. Prior
+stack notes are in [plan-stack-through-10.md](plan-stack-through-10.md).
+
+All three original findings are valid and repaired through the existing
+panelIsVisible rule: covered private tells remain unread through layout/open
+requests, actual reveal clears the count and refreshes its indicator, and
+maximized maps redraw despite saved hidden/minimized state. Deferred paints
+check effective visibility again at callback time. Saved normal state survives
+restore; room/map data continues to be accepted while covered. Removed the
+duplicate header redraw path in favor of the existing accepted-data viewport
+callback. No new timer or renderer was introduced.
+
+Red/green runs reproduce covered unread loss, minimized-map miscentering and a
+stale contact indicator. All 21 final-package Mudlet 5.0.1 expectations pass;
+map/layout checkpoint-only follow-ups also pass and supply inspected covered,
+revealed, normal/minimized/hidden maximize and Errors images. Local release
+payload validation, 15 release tests and ten controller tests pass.
+[Current source/payload, per-run archives and regression records](../testing/issue-5/review-2026-10-23.json).
+Historical live/4.22/matrix proof retains its original identity; no fresh live,
+minimum-version, hardware-DPI/input or other-OS qualification is claimed.
+
+
 ## Qualification evidence carry-forward — 2026-10-23
 
 PR #10 remains documentation/evidence only relative to #11. Runtime source,
@@ -7,7 +43,7 @@ controller, VERSION and archive are byte-identical to that parent. The inherited
 hidden-tell finding is fixed in the carried stack. Published reference text has
 no trailing whitespace; the entire current PR diff passes git diff --check.
 
-Current 2.0.2 source/archive identities and offline 21-case proof are in
+Parent 2.0.2 source/archive identities and offline 21-case proof are in
 [review-2026-10-23.json](../testing/issue-3/review-2026-10-23.json), with the
 fresh 115-assertion editor-capture run in editor-review-2026-10-23.json.
 Historical live/4.22 evidence retains its original hashes under explicit
@@ -641,7 +677,7 @@ reproduced defect currently blocks ordinary use in the tested primary target.
 Candidate 2.0.0 adds ten adjustable dashboard frames. Real Mudlet 5.0.1 / Qt
 6.11.1, Xvfb 1366x768 scale 1: physical title drag, border resize, right-click
 menu, reset button, all dashboard actions, off/on and profile restart pass.
-The 20-case suite ran with 18 initial passes; fixes for hover dispatch and a
+The 21-case suite ran with 19 initial passes; fixes for hover dispatch and a
 wrap-sensitive chat assertion passed targeted chat/maps reruns. Layout/lifecycle
 also pass after restoring explicitly hidden frame bodies and clearing frame
 menu registries. Ten Python controller tests pass. Inspected default,
@@ -649,3 +685,32 @@ resized, reset/menu, mixed-state and Errors-view images; no Lua errors.
 See [candidate evidence](../testing/issue-5/dashboard-evidence.json) for hashes,
 run paths and selected screenshots. Private chats, cached map redraw, full size/
 scale matrix and 4.x qualification remain pending in the implementation plan.
+
+## Issue #5 integration qualification — 2026-10-22
+
+Candidate **2.1.0** completes private frame controls, fixed recovery, cached
+map redraw and teardown ownership. **21/21** full-suite cases pass on real
+Mudlet 5.0.1; all six additional layout/crowded size/scale cases pass. Targeted
+final layout/bounds (121 + 31 reopen), lifecycle (332 + 27 reopen), controls and
+maps pass after the last menu/heading changes; unaffected suite/matrix evidence
+is reused. Ten controller and fifteen release tests pass, and local release
+preparation confirms the committed candidate payload.
+
+Real **Mudlet 4.22.0**, isolated extracted portable runtime, passes physical
+pointer actions, private Send/input, right-click and fixed recovery menus,
+reset and saved-profile reopening. Inspected default/crowded/private/map-maximize
+and Errors screenshots on 5.0.1 and the 4.22 recovery/reopened/Errors captures.
+
+Live `mud.duris.sbs:7777` (user-confirmed endpoint) authenticated, received fresh
+identity/vitals/room GMCP and passed **35 layout assertions** with all automation
+off. Reset retains game state/scrollback and off/on retains customization. Normal
+quit/account disconnect completed, and the isolated desktop closed. Published
+results contain aggregate checks only; credentials and live text/screenshots
+are excluded. No server/website code or configuration changed.
+
+[Exact candidate identities and reused evidence](../testing/issue-5/integration-evidence.json).
+**4.19.1 remains unverified:** no official GitHub binary assets and no 4.19.1
+entry in the current [official archive](https://www.mudlet.org/wp-content/files/?C=M%3BO%3DD);
+the attempted old Linux URL returned 404. Physical DPI/input and Windows/macOS
+also remain NOT RUN. This is the same minimum-version limit already recorded
+for the incumbent package, not a new minimum-version claim.

@@ -4,6 +4,11 @@ local function point(id,dx,dy)
  local f=ArjUI.panels[id].frame
  return {x=f:get_x()+dx,y=f:get_y()+dy}
 end
+local function bounds(id)
+ local f,root=ArjUI.panels[id].frame,ArjUI.uiRoot
+ local x,y=f:get_x()-root:get_x(),f:get_y()-root:get_y()
+ T.check(x>=-.5 and y>=-.5 and x+f:get_width()<=root:get_width()+.5 and y+f:get_height()<=root:get_height()+.5,"frame inside content root: "..id)
+end
 local function drag(id,dx,dy,tx,ty)
  local p=point(id,dx,dy)
  return {{type="drag",x=p.x,y=p.y,to_x=p.x+tx,to_y=p.y+ty}}
@@ -47,6 +52,7 @@ T.steps({
  {name="title-drag",run=function()
   local p=ArjUI.panels.mobs
   T.check(p.state.mode=="floating" and p.state.rect[1]>.08,"physical title drag floats and moves")
+  bounds("mobs")
   T.beforeResize=p.frame:get_width()
  end,actions=function()
   local f=ArjUI.panels.mobs.frame
@@ -102,6 +108,118 @@ T.steps({
  end},
  {name="title-menu",run=function()
   T.check(ArjUI.currentMenu~=nil,"physical right click opens panel menu")
+ end,actions=function()
+  local menu=ArjUI.currentMenu
+  local entries=menu.windowList[menu.name.."_entries"]
+  local item=entries.windowList[menu.name.."_5"]
+  return {{type="click",x=menu:get_x()+2+item:get_x()+20,y=menu:get_y()+22+item:get_y()+10}}
+ end},
+ {name="title-menu-action",run=function()
+  T.check(ArjUI.maximizedPanel=="mobs","physical title menu action maximizes owned panel")
+  ArjUI:resetLayout()
+  T.emit("Comm.Channel",{channel="tell",sender="Companion",text="Before first window"})
+  expandAlias("ui panel tell:companion show")
+  T.check(ArjUI.privateChats.companion.window,"command opens an existing unopened conversation")
+  ArjUI:openPrivateChat("Watcher")
+  ArjUI:openPrivateChat("Companion")
+  local chat=ArjUI.privateChats.companion
+  chat.inputBox:print("unfinished draft")
+  T.emit("Comm.Channel",{channel="tell",sender="Companion",text="Retained private history"})
+  T.privateHistory=#chat.history
+  T.chatWidth=chat.window:get_width()
+ end,actions=function()
+  local f=ArjUI.panels["tell:companion"].frame
+  return drag("tell:companion",f:get_width()-3,f:get_height()-3,90,40)
+ end},
+ {name="private-resize",run=function()
+  local chat=ArjUI.privateChats.companion
+  T.check(chat.window:get_width()>T.chatWidth+30,"private window physically resizes")
+  bounds("tell:companion")
+  T.check(chat.inputBox:get_width()>200,"private input follows width")
+  expandAlias("ui panel tell:companion minimize")
+  T.emit("Comm.Channel",{channel="tell",sender="Companion",text="Unread while minimized"})
+  T.check(chat.unread==1,"minimized private conversation tracks unread")
+  expandAlias("ui panel tell:companion restore")
+  chat.inputBox:clear(); chat.inputBox:print("pointer send probe")
+ end,actions=function() return {T.click(ArjUI.privateChats.companion.sendButton)} end},
+ {name="private-send",run=function()
+  local chat=ArjUI.privateChats.companion
+  T.check(T.commands[#T.commands].command=="tell companion pointer send probe","private Send click uses typed message")
+  T.check(chat.inputBox:getText()=="","private Send clears draft")
+  chat.inputBox:print("unfinished draft")
+  T.commandsBeforePrivateReset=#T.commands
+  expandAlias("ui panel tell:watcher maximize")
+  expandAlias("ui layout reset")
+  T.check(chat.window.hidden and not chat.visible,"reset closes private window")
+  T.check(chat.inputBox:getText()=="unfinished draft","reset preserves private draft")
+  T.check(#chat.history==T.privateHistory+1 and chat.unread==0,"reset preserves private history/unread")
+  T.check(#T.commands==T.commandsBeforePrivateReset,"private reset sends no commands")
+  ArjUI:openPrivateChat("Companion")
+  T.check(not chat.window.hidden and not chat.window.Inside.hidden,"private window reopens after reset")
+  local _,copies=T.lines(chat.historyBox.name):gsub("\n",""):gsub("Unread while minimized","")
+  T.check(copies==1,"latest private message rendered once")
+  ArjUI:resetLayout()
+  expandAlias("ui panel items hide")
+ end,actions=function() return {T.click(ArjUI.panelsButton)} end},
+ {name="panels-recovery-menu",run=function()
+  T.check(ArjUI.currentMenu,"fixed Panels button opens recovery menu")
+ end,actions=function()
+  local menu=ArjUI.currentMenu
+  local entries=menu.windowList[menu.name.."_entries"]
+  local item=entries.windowList[menu.name.."_3"]
+  return {{type="click",x=menu:get_x()+2+item:get_x()+20,y=menu:get_y()+22+item:get_y()+10}}
+ end},
+ {name="covered-private-unread",run=function()
+  ArjUI:openPrivateChat("Readprobe")
+  expandAlias("ui panel output maximize")
+  T.emit("Comm.Channel",{channel="tell",sender="Readprobe",text="UNREAD-BEHIND-OUTPUT"})
+  ArjUI:applyPanelLayout()
+  local chat=ArjUI.privateChats.readprobe
+  T.check(not chat.visible and chat.unread==1,"covered private tell remains unread through layout")
+  ArjUI:openPrivateChat("Readprobe")
+  T.check(not chat.visible and chat.unread==1,"open request behind output does not acknowledge unseen tell")
+ end},
+ {name="reveal-private-unread",run=function()
+  expandAlias("ui panel output restore")
+  local chat=ArjUI.privateChats.readprobe
+  T.check(chat.visible and chat.unread==0,"actual reveal acknowledges private tell")
+  T.check(not T.lines(ArjUI.tellsBox.name):find("Readprobe (1 new)",1,true),"actual reveal refreshes unread indicator")
+  local _,copies=T.lines(chat.historyBox.name):gsub("UNREAD%-BEHIND%-OUTPUT","")
+  T.check(copies==1,"covered private message appears once")
+ end},
+ {name="maximize-private-from-minimized",run=function()
+  expandAlias("ui panel tell:readprobe minimize")
+  T.emit("Comm.Channel",{channel="tell",sender="Readprobe",text="UNREAD-MINIMIZED"})
+  expandAlias("ui panel tell:readprobe maximize")
+  local chat=ArjUI.privateChats.readprobe
+  T.check(chat.visible and chat.unread==0 and ArjUI.panels["tell:readprobe"].state.minimized,"maximized private reveal keeps normal minimized state")
+ end},
+ {name="restore-private-to-minimized",run=function()
+  expandAlias("ui panel tell:readprobe maximize")
+  T.check(not ArjUI.privateChats.readprobe.visible,"restore returns private window to minimized state")
+ end},
+ {name="panels-recovery",run=function()
+  T.check(not ArjUI.panels.items.state.hidden and ArjUI.currentMenu,"fixed Panels entry restores hidden panel and opens actions")
+  ArjUI:resetLayout()
+  -- A tiny viewport may clamp the display, never the saved normal rectangle.
+  expandAlias("ui panel mobs float")
+  ArjUI.panels.mobs.state.rect={.7,.7,.25,.25}
+  ArjUI.uiRoot:resize(130,80); ArjUI:applyPanelLayout()
+  T.check(ArjUI.panels.mobs.frame:get_width()<=131,"small viewport contains frame")
+  T.check(ArjUI.panels.mobs.state.rect[1]==.7,"clamp retains requested normal rectangle")
+  ArjUI:layout()
+  ArjUI:resetLayout()
+  local path=getMudletHomeDir().."/arjui_layout.json"
+  local function load(text) local f=assert(io.open(path,"w")); f:write(text); f:close(); ArjUI:loadLayout() end
+  load("{broken")
+  T.check(ArjUI.panels.output.state.mode=="docked","corrupt layout keeps defaults")
+  load(yajl.to_string({version=999,panels={}}))
+  T.check(ArjUI.panels.output.state.mode=="docked","unsupported layout keeps defaults")
+  load(yajl.to_string({version=1,panels={mobs={mode="floating",locked=false,hidden=false,minimized=false,rect={.2,.2,.22,.3}},unknown={}}}))
+  T.check(ArjUI.panels.mobs.state.mode=="floating" and ArjUI.panels.chat.state.mode=="docked","partial layout fills missing panels")
+  load(yajl.to_string({version=1,panels={mobs={mode="floating",locked=false,hidden=false,minimized=false,rect={2,0,-1,0}}}}))
+  -- Bad entries must replace even previously loaded geometry, not retain it.
+  T.check(ArjUI.panels.mobs.state.mode=="docked","invalid geometry resets affected panel")
   ArjUI:resetLayout()
   expandAlias("ui panel items hide")
   expandAlias("ui panel chat minimize")
@@ -110,4 +228,5 @@ T.steps({
   ArjUI:applyPanelLayout(); ArjUI:saveLayout()
   T.check(ArjUI.panels.items.state.hidden and ArjUI.panels.chat.state.minimized,"mixed layout saved for restart")
  end}
+
 })

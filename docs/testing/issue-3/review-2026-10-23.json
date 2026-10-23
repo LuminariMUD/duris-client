@@ -325,5 +325,6 @@
       "sha256": "ed39b06eabb80179a1b6d3073f583f17584356ceca2b0a849c55297cef2f26e8",
       "status": "inspected"
     }
-  ]
+  ],
+  "scope": "Retained parent 2.0.2 evidence; current integrated 2.1.2 candidate is recorded at ../issue-5/review-2026-10-23.json"
 }

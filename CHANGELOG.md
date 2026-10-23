@@ -2,6 +2,26 @@
 
 Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
 
+## 2.1.2 - 2026-10-23
+
+- Give private tell windows shared move, resize, minimize, maximize and recovery actions while retaining history and drafts.
+- Redraw stationary zone/wilderness maps from accepted data, including maximized maps with saved hidden/minimized state.
+- Preserve unread tells behind covered panels and acknowledge them, including the contact indicator, only on reveal.
+- Keep deferred map paints beneath covered output and clean up owned menus/callback references.
+- Carry portable layout replacement/rollback/recovery through the complete private-panel stack.
+
+## 2.1.1 - 2026-10-23
+
+- Preserve unread tells behind a different maximized panel and acknowledge them only on reveal.
+- Redraw maximized maps using effective visibility, retaining saved hidden/minimized state.
+- Keep deferred map refreshes below covered output and carry forward compact-header/SHIP fixes.
+
+## 2.1.0 - 2026-10-22
+
+- Give private tell windows the shared move, resize, minimize, maximize and recovery actions while retaining session history and drafts.
+- Redraw stationary zone and wilderness maps after panel/viewport changes without new network requests.
+- Clean up owned frame menus and old-Mudlet callback references on teardown.
+
 ## 2.0.2 - 2026-10-23
 
 - Organize SHIP into readable condition, weapon, crew, equipment, cargo and contact sections with labeled values, condition colors and separate ammunition, damage and timer status.

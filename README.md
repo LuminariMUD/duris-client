@@ -81,6 +81,12 @@ Type these into the Mudlet command input:
 
 Toggles for `ui set`: `compactHeader` (off by default), `keypad` (numpad keys), `chatTimestamps`, `damageTracker`, `scanFormat`, `alerts`, and `expTracker` (the latter six default to on). All are saved to `arjui_settings.json` in your Mudlet profile folder. Changing the header preserves your output history, selected tabs, and live state; the saved mode also applies after reopening Mudlet.
 
+Panel IDs are `map`, `mobs`, `items`, `output`, `character`, `players`, `chat`,
+`vitals`, `tank`, and `target`. Existing conversations also use `tell:<name>`.
+Private windows share move/resize and minimize/maximize controls, retain drafts
+and history through reset, and start closed after reset. Their geometry and
+history remain session-only.
+
 Panels start locked in their named home positions. Unlock to move or resize them;
 adjusting a panel makes it float. **Dock** returns it home. Only one panel can
 maximize at a time; **Restore** returns its previous state. Game output cannot

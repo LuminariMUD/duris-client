@@ -15,5 +15,6 @@
     "status": "inspected"
   },
   "reused_runtime_suite": "review-2026-10-23.json",
-  "reuse_reason": "src/, VERSION, and committed archive are byte-identical to PR #9; only bounded controller readiness and handoff text differ."
+  "reuse_reason": "src/, VERSION, and committed archive are byte-identical to PR #9; only bounded controller readiness and handoff text differ.",
+  "scope": "Retained parent 2.0.2 evidence; current integrated 2.1.2 candidate is recorded at ../issue-5/review-2026-10-23.json"
 }

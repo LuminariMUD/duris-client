@@ -385,6 +385,26 @@ function ArjMapper:updateWildernessMap(mapData)
     self.ui.wildConsole:decho(string.rep("\n", vPadding) .. parsed)
 end
 
+-- Geometry changes redraw only accepted session data; never fetch or query.
+function ArjMapper:refreshViewport()
+    if not self.ui.zoneContainer then return end
+    if self.viewportTimer then killTimer(self.viewportTimer) end
+    self.viewportTimer=tempTimer(.05,function()
+        self.viewportTimer=nil
+        if not self.state.enabled or not ArjUI or not ArjUI.panels or not ArjUI:panelIsVisible("map") then return end
+        if self.ui.hoverLabel then self.ui.hoverLabel:hide() end
+        if self.state.lastDisplayMode=="wilderness" then
+            self.ui.zoneContainer:hide()
+            self.ui.wildConsole:show()
+            if self.state.lastWildernessMap then self:updateWildernessMap(self.state.lastWildernessMap) end
+        else
+            self.ui.wildConsole:hide()
+            self.ui.zoneContainer:show()
+            self:renderZoneMap()
+        end
+    end)
+end
+
 -- ============================================================
 -- ZONE - CLEAR
 -- ============================================================
@@ -1390,6 +1410,7 @@ end
 -- ============================================================
 
 function ArjMapper:kill()
+    if self.viewportTimer then killTimer(self.viewportTimer); self.viewportTimer=nil end
     if self.initTimer then killTimer(self.initTimer); self.initTimer = nil end
     if self.renderTimer then killTimer(self.renderTimer); self.renderTimer = nil end
     for _, request in pairs(self.requests or {}) do request.finish() end
@@ -1408,6 +1429,7 @@ function ArjMapper:kill()
 end
 
 function ArjMapper:resetSession()
+    if self.viewportTimer then killTimer(self.viewportTimer); self.viewportTimer=nil end
     self.state.lastWildernessMap=nil
     if self.renderTimer then killTimer(self.renderTimer); self.renderTimer = nil end
     for _, request in pairs(self.requests or {}) do request.finish() end

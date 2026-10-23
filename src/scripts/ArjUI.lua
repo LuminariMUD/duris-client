@@ -67,14 +67,6 @@ function ArjUI:kill()
   -- Clean up popup if open
   if self.addCmdPopup then self:disposeWidget(self.addCmdPopup); self.addCmdPopup = nil end
   if self.currentMenu then self:disposeWidget(self.currentMenu); self.currentMenu = nil end
-  -- Clean up private chat windows (Label-based custom windows)
-  for pname, chat in pairs(self.privateChats or {}) do
-    if chat.window then 
-      pcall(function() 
-        self:disposeWidget(chat.window)
-      end)
-    end
-  end
   if self.bg then
     self:disposeWidget(self.bg)
     self.bg = nil
@@ -84,6 +76,12 @@ function ArjUI:kill()
     self.main = nil
   end
   self.uiRoot, self.console = nil, nil
+  -- Old Geyser retains hidden primitives. Release Lua references as well as
+  -- callback/registry ownership so a removed frame cannot remain active.
+  for key,value in pairs(self) do
+    if type(value)=="table" and type(value.name)=="string" and value.name:match("^ArjUI_") then self[key]=nil end
+  end
+  self.tabPanels,self.tabButtons,self.chatPanels,self.chatTabs=nil,nil,nil,nil
   self.privateChats, self.tellContacts = {}, {}
   self.exitButtonsStatic, self.groupWidgets = nil, {}
   self.playerName, self.damage = nil, nil
@@ -98,6 +96,7 @@ end
 function ArjUI:disposeWidget(widget)
   -- Adjustable menus live outside the frame's child tree in older Mudlet.
   -- Remove only this instance's menu labels and registry entries.
+  if widget.expiryTimer then killTimer(widget.expiryTimer); self.timers[widget.expiryTimer]=nil; widget.expiryTimer=nil end
   if widget.adjLabel then
     local function disposeMenu(menu)
       if not menu then return end
@@ -117,7 +116,16 @@ function ArjUI:disposeWidget(widget)
   end
   -- Geyser delete() is available on newer Mudlet releases. Older releases
   -- retain hidden primitives; stable names allow them to be reused on import.
-  if widget.delete then widget:delete() else widget:hide() end
+  if widget.delete then widget:delete()
+  else
+    widget:hide()
+    for _,child in pairs(widget.windowList or {}) do self:disposeWidget(child) end
+    for _,method in ipairs({"setClickCallback","setReleaseCallback","setMoveCallback","setOnEnter","setOnLeave"}) do
+      if widget[method] then widget[method](widget,function() end) end
+    end
+    if widget.setAction then widget:setAction(function() end) end
+    if widget.container then widget.container:remove(widget) end
+  end
 end
 
 function ArjUI:after(delay, callback)
@@ -273,6 +281,7 @@ local function validRect(rect)
 end
 
 function ArjUI:loadLayout()
+  for _,def in ipairs(self.panelDefinitions) do self.panels[def.id].state=panelDefault(def) end
   local path=getMudletHomeDir().."/arjui_layout.json"
   local file=io.open(path,"r") or io.open(path..".bak","r")
   if not file then return end
@@ -370,6 +379,17 @@ end
 
 function ArjUI:applyPanel(panel)
   local frame,state=panel.frame,panel.state
+  if panel.def.private then
+    local chat=self.privateChats[panel.def.id:sub(6)]
+    if chat then
+      local visible=self:panelIsVisible(panel.def.id)
+      if visible and not chat.visible then
+        chat.unread=0
+        self:renderTellContacts()
+      end
+      chat.visible=visible
+    end
+  end
   local x,y,w,h=self:panelBounds(panel)
   frame:move(x,y); frame:resize(w,h)
   frame.locked=state.locked or self.maximizedPanel==panel.def.id
@@ -448,15 +468,17 @@ end
 
 function ArjUI:refreshPanelContent(id)
   if ArjMapper and ArjMapper.state.enabled and self:panelIsVisible("map") then
-    if ArjMapper.state.lastDisplayMode=="zone" then ArjMapper:showZoneMap()
-    elseif ArjMapper.state.lastDisplayMode=="wilderness" then
-      ArjMapper:updateWildernessMap(ArjMapper.state.lastWildernessMap)
-    end
+    ArjMapper:refreshViewport()
   end
 end
 
 function ArjUI:panelAction(id,action)
   local panel=self.panels and self.panels[id]
+  local contact=type(id)=="string" and id:match("^tell:(.+)$")
+  if not panel and contact and self.privateChats[contact] then
+    self:openPrivateChat(contact)
+    panel=self.panels[id]
+  end
   if not panel then self:note("<indian_red>Unknown panel: "..tostring(id)); return false end
   if (action=="hide" or action=="minimize") and panel.def.essential then
     self:note("<tan>Game output stays visible. Use maximize, float or dock."); return false
@@ -482,6 +504,7 @@ function ArjUI:panelAction(id,action)
   self:applyPanelLayout()
   if self:panelIsVisible(id) then panel.frame:raiseAll() end
   self:refreshPanelContent(id)
+  if panel.def.private then self:renderTellContacts() end
   self:saveLayout()
   return true
 end
@@ -504,6 +527,9 @@ function ArjUI:showPanelsMenu()
       self:panelAction(def.id,"show"); self:showPanelMenu(def.id)
     end})
   end
+  for name,chat in pairs(self.privateChats) do
+    table.insert(items,{text="Tell: "..name,callback=function() self:openPrivateChat(name); self:showPanelMenu("tell:"..name) end})
+  end
   self:showContextMenu(items)
 end
 
@@ -516,6 +542,7 @@ function ArjUI:resetLayout()
     panel.state=panelDefault(panel.def)
     if panel.def.private then panel.state.hidden=true end
   end
+  for _,chat in pairs(self.privateChats) do if chat.window then chat.visible=false end end
   self.activeTab="group"; self.activeChatTab="all"
   self:updateTabStyles(); self:updateChatTabStyles()
   self:applyPanelLayout(); self:renderActiveTab(); self:refreshPanelContent()
@@ -539,6 +566,7 @@ function ArjUI:layoutCommand(action)
     self:applyPanelLayout(); self:saveLayout()
   else
     self:note("<tan>ui layout reset|lock|unlock; ui panel <id> show|hide|minimize|restore|maximize|dock|float|lock|unlock")
+    for name in pairs(self.privateChats) do self:note("tell:"..name.." (session conversation)") end
     for _,def in ipairs(self.panelDefinitions) do
       local s=self.panels[def.id].state
       self:note(def.id..": "..s.mode..(s.locked and " locked" or " unlocked")..(s.hidden and " hidden" or "")..(s.minimized and " minimized" or ""))
@@ -884,7 +912,7 @@ function ArjUI:init()
   styleSafe(self.mapSection, self.styles.panelGlass)
   
   -- Globe/World Map link (top-left, above area label)
-  self.globeBtn = Geyser.Label:new({ name = "ArjUI_GlobeBtn", x = "3%", y = "1%", width = "12%", height = "12%" }, self.mapSection)
+  self.globeBtn = Geyser.Label:new({ name = "ArjUI_GlobeBtn", x = "3%", y = 1, width = "12%", height = 18 }, self.mapSection)
   self.globeBtn:setStyleSheet([[
     QLabel { background-color: rgba(10,9,8,200); color: #7be; border: 1px solid #5a4b37; border-radius: 10px; font-size: 11px; }
     QLabel:hover { background-color: rgba(22,20,15,220); color: #9df; border-color: #8c6e46; }
@@ -895,7 +923,7 @@ function ArjUI:init()
   self.globeBtn:setOnLeave(function() self.globeBtn:setCursor("Arrow") end)
   
   -- Area label (next to globe)
-  self.areaLabel = Geyser.Label:new({ name = "ArjUI_AreaLabel", x = "16%", y = "1%", width = "81%", height = "12%" }, self.mapSection)
+  self.areaLabel = Geyser.Label:new({ name = "ArjUI_AreaLabel", x = "16%", y = 1, width = "81%", height = 18 }, self.mapSection)
   styleSafe(self.areaLabel, self.styles.areaName)
   labelSet(self.areaLabel, "Unknown Area")
   self.areaLabel:setClickCallback(function()
@@ -1311,15 +1339,6 @@ function ArjUI:layout()
     end
   end
 
-  -- Map contents use pixel positions/padding inside the percentage-sized root.
-  -- Redraw only the active map from this session, without requesting new data.
-  if ArjMapper and ArjMapper.state and ArjMapper.state.enabled and ArjMapper.ui then
-    if ArjMapper.state.lastDisplayMode == "zone" then
-      ArjMapper:renderZoneMap()
-    elseif ArjMapper.state.lastDisplayMode == "wilderness" and gmcp and gmcp.Room then
-      ArjMapper:updateWildernessMap(gmcp.Room.Map)
-    end
-  end
 end
 
 -- ============================================================
@@ -1328,7 +1347,7 @@ end
 
 function ArjUI:showContextMenu(items, x, y)
   -- Hide any existing menu
-  if self.currentMenu then self.currentMenu:hide() end
+  if self.currentMenu then self:disposeWidget(self.currentMenu); self.currentMenu=nil end
 
   -- If caller didn't pass coordinates, use the actual mouse position
   if not x or not y then
@@ -1337,8 +1356,8 @@ function ArjUI:showContextMenu(items, x, y)
 
   -- Clamp so it never spawns off-screen
   local winW, winH = getMainWindowSize()
-  local menuW = 110
-  local menuH = (#items * 22 + 26)  -- Extra space for close button
+  local menuW = 160
+  local menuH = math.min(math.max(26,winH-4),#items * 22 + 26)  -- Extra space for close button
 
   x = math.max(0, math.min(x, winW - menuW - 2))
   y = math.max(0, math.min(y, winH - menuH - 2))
@@ -1358,7 +1377,7 @@ function ArjUI:showContextMenu(items, x, y)
   closeBtn:setStyleSheet("background-color: #1a1610; color: #c05050; font-size: 10px; font-weight: bold; border: 1px solid #5a4b37; border-radius: 2px;")
   closeBtn:echo("<center>X</center>")
   closeBtn:setClickCallback(function()
-    menu:hide()
+    self:disposeWidget(menu)
     self.currentMenu = nil
   end)
   closeBtn:setOnEnter(function()
@@ -1368,15 +1387,16 @@ function ArjUI:showContextMenu(items, x, y)
     closeBtn:setStyleSheet("background-color: #1a1610; color: #c05050; font-size: 10px; font-weight: bold; border: 1px solid #5a4b37; border-radius: 2px;")
   end)
 
+  local entries=Geyser.ScrollBox:new({name=menu.name.."_entries",x=2,y=22,width=menuW-4,height=menuH-24},menu)
   for i, item in ipairs(items) do
     local btn = Geyser.Label:new({
-      name = menu.name .. "_" .. i, x = 2, y = (i-1) * 22 + 22, width = 106, height = 20,
-    }, menu)
+      name = menu.name .. "_" .. i, x = 0, y = (i-1) * 22, width = menuW-20, height = 20,
+    }, entries)
     btn:setStyleSheet("background-color: transparent; color: #c0b8a0; font-size: 10px; padding-left: 5px;")
     btn:echo(item.text)
 
     btn:setClickCallback(function()
-      menu:hide()
+      self:disposeWidget(menu)
       self.currentMenu = nil
       -- Package actions share the same menu path as existing game commands.
       if item.callback then item.callback()
@@ -1416,8 +1436,10 @@ function ArjUI:showContextMenu(items, x, y)
   end
 
   -- Auto-hide after 10 seconds so it can't get stuck
-  self:after(10, function()
-    if menu then pcall(function() menu:hide() end) end
+  menu.expiryTimer=self:after(10, function()
+    menu.expiryTimer=nil
+    if self.currentMenu==menu then self.currentMenu=nil end
+    self:disposeWidget(menu)
   end)
 
   self.currentMenu = menu
@@ -1773,167 +1795,33 @@ end
 -- ============================================================
 
 function ArjUI:openPrivateChat(playerName)
-  local name = playerName:lower()
-  local displayName = playerName:sub(1,1):upper() .. playerName:sub(2):lower()
-  
-  -- If window already exists, just show and focus it
-  if self.privateChats[name] and self.privateChats[name].window then
-    self.privateChats[name].window:show()
-    self.privateChats[name].window:raise()
-    self.privateChats[name].unread = 0
-    self.privateChats[name].visible = true
-    -- Replay all history to ensure messages are visible
-    if self.privateChats[name].historyBox then
-      self.privateChats[name].historyBox:clear()
-      for _, msg in ipairs(self.privateChats[name].history or {}) do
-        self:displayPrivateMessage(name, msg.sender, msg.text, msg.outgoing)
-      end
+  local name=playerName:lower()
+  local displayName=name:sub(1,1):upper()..name:sub(2)
+  local id="tell:"..name
+  local chat=self.privateChats[name] or {history={},unread=0}
+  self.privateChats[name]=chat
+  if not chat.window then
+    local w,h=math.max(1,self.uiRoot:get_width()),math.max(1,self.uiRoot:get_height())
+    local content=self:createPanel({id=id,title=displayName,private=true,
+      home={math.max(0,1-320/w),math.max(0,1-240/h),math.min(1,300/w),math.min(1,220/h)},
+      minimum={260,160}})
+    chat.window=self.panels[id].frame
+    chat.historyBox=makeConsole(content,"ArjUI_PrivateChat_"..name.."_history",0,0,"100%","100%-30px",9)
+    chat.inputBox=Geyser.CommandLine:new({name="ArjUI_PrivateChat_"..name.."_input",
+      x=0,y="100%-26px",width="100%-60px",height=24},content)
+    chat.inputBox:setStyleSheet(self.styles.inputBar)
+    local function submit(msg)
+      if msg and msg~="" then send("tell "..name.." "..msg); chat.inputBox:clear() end
     end
-    self:renderTellContacts()
-    return
+    chat.inputBox:setAction(submit)
+    chat.sendButton=makePanel(content,"ArjUI_PrivateChat_"..name.."_send","100%-55px","100%-26px",55,24,self.styles.header)
+    chat.sendButton:echo("Send")
+    chat.sendButton:setClickCallback(function() submit(chat.inputBox:getText()) end)
+    chat.displayName=displayName
+    for _,msg in ipairs(chat.history) do self:displayPrivateMessage(name,msg.sender,msg.text,msg.outgoing) end
   end
-  
-  -- Create new chat window
-  local w, h = getMainWindowSize()
-  local chatW, chatH = 300, 220
-  local chatX = w - chatW - 30
-  local chatY = h - chatH - 80
-  
-  -- Use Container as the main window (can hold any widget type)
-  local chatWin = Geyser.Container:new({
-    name = "ArjUI_PrivateChat_" .. name,
-    x = chatX, y = chatY, width = chatW, height = chatH
-  })
-  
-  -- Background panel
-  local bgPanel = Geyser.Label:new({
-    name = chatWin.name .. "_bg",
-    x = 0, y = 0, width = "100%", height = "100%"
-  }, chatWin)
-  bgPanel:setStyleSheet([[
-    background-color: #0f0e0c;
-    border: 2px solid #8c6e46;
-    border-radius: 4px;
-  ]])
-  
-  -- Title bar (draggable)
-  local titleBar = Geyser.Label:new({
-    name = chatWin.name .. "_title",
-    x = 0, y = 0, width = chatW - 24, height = 22
-  }, chatWin)
-  titleBar:setStyleSheet([[
-    background-color: #1a1610;
-    color: #d4a855;
-    font-size: 10px;
-    font-weight: bold;
-    padding-left: 8px;
-  ]])
-  titleBar:echo(displayName)
-  
-  -- Drag functionality
-  local isDragging = false
-  local dragStartX, dragStartY = 0, 0
-  local winStartX, winStartY = 0, 0
-  
-  titleBar:setClickCallback(function(event)
-    -- Start drag on click
-    isDragging = true
-    dragStartX, dragStartY = getMousePosition()
-    winStartX = chatWin:get_x()
-    winStartY = chatWin:get_y()
-  end)
-  
-  titleBar:setReleaseCallback(function(event)
-    isDragging = false
-  end)
-  
-  titleBar:setMoveCallback(function(event)
-    if isDragging then
-      local mouseX, mouseY = getMousePosition()
-      local newX = winStartX + (mouseX - dragStartX)
-      local newY = winStartY + (mouseY - dragStartY)
-      chatWin:move(newX, newY)
-    end
-  end)
-  
-  -- Close button
-  local closeBtn = Geyser.Label:new({
-    name = chatWin.name .. "_close",
-    x = chatW - 24, y = 0, width = 24, height = 22
-  }, chatWin)
-  closeBtn:setStyleSheet([[
-    background-color: #1a1610;
-    color: #c05050;
-    font-size: 12px;
-    font-weight: bold;
-  ]])
-  closeBtn:echo("<center>X</center>")
-  closeBtn:setClickCallback(function()
-    chatWin:hide()
-    self.privateChats[name].visible = false
-  end)
-  
-  -- Message history area
-  local historyBox = Geyser.MiniConsole:new({
-    name = chatWin.name .. "_history",
-    x = 4, y = 24, width = chatW - 8, height = chatH - 56,
-    fontSize = 9,
-    wrapAt = 40
-  }, chatWin)
-  historyBox:setBgColor(10, 9, 8)
-  historyBox:setFgColor(200, 200, 200)
-  historyBox:setWrap(40)
-  
-  -- Input field
-  local inputBox = Geyser.CommandLine:new({
-    name = chatWin.name .. "_input",
-    x = 4, y = chatH - 30, width = chatW - 68, height = 24
-  }, chatWin)
-  inputBox:setStyleSheet("background-color: #16140f; border: 1px solid #5a4b37; color: #d0d0d8; font-size: 10px;")
-  inputBox:setAction(function(msg)
-    if msg and msg ~= "" then
-      send("tell " .. name .. " " .. msg)
-      inputBox:clear()
-    end
-  end)
-  
-  -- Send button
-  local sendBtn = Geyser.Label:new({
-    name = chatWin.name .. "_send",
-    x = chatW - 60, y = chatH - 30, width = 55, height = 24
-  }, chatWin)
-  sendBtn:setStyleSheet("background-color: #1a1610; border: 1px solid #5a4b37; color: #d4a855; font-size: 10px; font-weight: bold;")
-  sendBtn:echo("<center>Send</center>")
-  sendBtn:setClickCallback(function()
-    local msg = inputBox:getText()
-    if msg and msg ~= "" then
-      send("tell " .. name .. " " .. msg)
-      inputBox:clear()
-    end
-  end)
-  
-  chatWin:raise()
-  
-  -- Store window reference
-  local existingHistory = (self.privateChats[name] and self.privateChats[name].history) or {}
-  self.privateChats[name] = {
-    window = chatWin,
-    historyBox = historyBox,
-    displayName = displayName,
-    history = existingHistory,
-    unread = 0,
-    visible = true
-  }
-  
-  -- Add to contacts
+  self:panelAction(id,"show")
   self:addTellContact(displayName)
-  
-  -- Replay history
-  for _, msg in ipairs(existingHistory) do
-    self:displayPrivateMessage(name, msg.sender, msg.text, msg.outgoing)
-  end
-  
-  -- Clear unread
   self:renderTellContacts()
 end
 
@@ -1959,9 +1847,9 @@ function ArjUI:addPrivateChatMessage(playerName, sender, text, outgoing)
   -- Check if window exists and is visible using our visible flag
   local windowOpen = self.privateChats[name].window and self.privateChats[name].visible
   
-  -- Display if window is open and visible
+  -- Retained consoles keep receiving data while hidden/minimized.
+  if self.privateChats[name].historyBox then self:displayPrivateMessage(name, sender, text, outgoing) end
   if windowOpen then
-    self:displayPrivateMessage(name, sender, text, outgoing)
     -- Window is open, so mark as read
     self.privateChats[name].unread = 0
   else
