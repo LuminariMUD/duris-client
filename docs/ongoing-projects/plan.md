@@ -1,5 +1,21 @@
 # Issue #4: compact Duris header implementation plan
 
+## Review follow-up — 2026-10-23
+
+The inherited private-chat visibility finding is valid. `ui off` now clears the
+visibility flag for every conversation, including contacts without a window.
+Unread tells remain unread until that conversation is explicitly opened.
+The extended command-path chat fixture fails on b055e15 and passes after repair.
+Version 1.4.1 includes this fix and the rebuilt package.
+
+Local release validation, 15 release tests, eight controller tests, and all
+20 real Mudlet 5.0.1 suite expectations pass. The chat/reopen screenshot and
+Errors view were inspected. Exact source/archive identities and run directories
+are in [the review record](../testing/issue-4/review-2026-10-23.json).
+Earlier matrix/live/4.22 captures retain their historical identities; their
+unchanged compact-header geometry and enabled-map behavior are reused.
+No new live/minimum-version/physical-DPI/platform qualification is claimed.
+
 Date: 2026-10-22. Status: implementation, acceptance and review repair complete; PR #7 ready for review.
 
 Work item: [#4 — Reduce the Duris banner height or offer a compact header option](https://github.com/LuminariMUD/duris-client/issues/4).

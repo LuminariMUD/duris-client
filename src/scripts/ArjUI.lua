@@ -126,7 +126,10 @@ function ArjUI:setVisible(visible)
     self.main:hide()
     self.bg:hide()
     if self.currentMenu then self.currentMenu:hide() end
-    for _, chat in pairs(self.privateChats) do chat.window:hide() end
+    for _, chat in pairs(self.privateChats) do
+      if chat.window then chat.window:hide() end
+      chat.visible = false
+    end
     setBorderTop(0)
     setBorderBottom(0)
     setBorderLeft(0)
