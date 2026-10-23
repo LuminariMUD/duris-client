@@ -7,7 +7,7 @@ controller, VERSION and archive are byte-identical to that parent. The inherited
 hidden-tell finding is fixed in the carried stack. Published reference text has
 no trailing whitespace; the entire current PR diff passes git diff --check.
 
-Current 2.0.1 source/archive identities and offline 21-case proof are in
+Current 2.0.2 source/archive identities and offline 21-case proof are in
 [review-2026-10-23.json](../testing/issue-3/review-2026-10-23.json), with the
 fresh 115-assertion editor-capture run in editor-review-2026-10-23.json.
 Historical live/4.22 evidence retains its original hashes under explicit
