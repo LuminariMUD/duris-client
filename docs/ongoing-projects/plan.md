@@ -35,6 +35,17 @@ payload validation, 15 release tests and ten controller tests pass.
 Historical live/4.22/matrix proof retains its original identity; no fresh live,
 minimum-version, hardware-DPI/input or other-OS qualification is claimed.
 
+## Retained parent qualification
+
+Parent 2.0.2 source/archive identities and offline 21-case proof are in
+[review-2026-10-23.json](../testing/issue-3/review-2026-10-23.json), with the
+fresh 115-assertion editor-capture run in editor-review-2026-10-23.json.
+Historical live/4.22 evidence retains its original hashes under explicit
+historical fields. It establishes the recorded ship facts and old archive,
+not fresh qualification of the integrated dashboard. Earlier qualification
+handoff is preserved in [plan-ship-qualification.md](plan-ship-qualification.md).
+No release version bump or runtime rerun is needed for this evidence-only delta.
+
 ## Latest parent repair carry-forward — 2026-10-23
 
 Current SHIP candidate is 2.0.2 and retains the portable save/rollback/recovery
