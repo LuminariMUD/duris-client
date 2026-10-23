@@ -3829,7 +3829,7 @@ function ArjUI:acceptShipContacts(packet)
   local s = self.state.ship
   s.contactGeneration=(s.contactGeneration or 0)+1
   s.contacts = shipCopy(type(packet.contacts) == "table" and packet.contacts or packet)
-  s.heading, s.speed = packet.heading, packet.speed
+  if type(packet.contacts)=="table" then s.heading, s.speed = packet.heading, packet.speed end
   s.textContacts, s.textCapture, s.target, s.targetName = nil, nil, nil, nil
   for _,contact in ipairs(s.contacts) do
     if type(contact) == "table" and contact.you_targeting == true then s.target, s.targetName = contact.id, contact.name end
@@ -4024,6 +4024,8 @@ function ArjUI:shipView()
     for _,entry in ipairs(contacts) do if entry.data.you_targeting then target={id=entry.data.id,name=entry.data.name}; break end end
   end
   return {state=s,info=info,bridge=b,contacts=contacts,slots=slots,target=target,
+    contactsKnown=type(s.contacts)=="table" or type(s.textContacts)=="table",
+    textDerived=not s.info and (s.name~=nil or s.status~=nil or s.textContacts~=nil or s.captain~=nil or next(s.skills or {})~=nil),
     heading=s.heading or pick(info,"heading","course"),speed=s.speed or info.speed,
     name=pick(info,"name","ship","shipName") or s.name,
     maxSpeed=pick(info,"maxSpeed","max_speed","speedMax") or s.maxSpeed}
@@ -4031,6 +4033,7 @@ end
 
 function ArjUI:renderShipBridge()
   local v=self:shipView(); local info,b,s=v.info,v.bridge,v.state
+  local renderedContactGeneration=s.contactGeneration
   if self.shipSelection and self.shipSelection.slot~=nil then
     local selected
     for _,entry in ipairs(v.slots) do if entry.data.slot==self.shipSelection.slot then selected=entry.data end end
@@ -4057,7 +4060,7 @@ function ArjUI:renderShipBridge()
       "\nX/Y "..pair(c.x,c.y).." · Range "..shipPlain(pick(c,"range","distance","r")).." · Bearing "..shipPlain(pick(c,"bearing","b")).."°"..
       "\nHeading "..shipPlain(pick(c,"heading","h")).."° · Speed "..shipPlain(pick(c,"speed","s"))..
       "\nArc "..shipPlain(arc)..(ours and " · our "..names[ours].." / their "..names[theirs] or "")..
-      "\nAllegiance "..shipPlain(pick(c,"race","side","alignment","racewar","faction") or "unknown").." · "..shipPlain(c.status or (c.sunk and "sunk (legacy)" or ""))..
+      "\nAllegiance "..shipPlain(pick(c,"race","side","alignment","racewar","faction") or "unknown").." · "..shipPlain(c.status or "")..(c.sunk and " · sunk (legacy)" or "")..
       (c.you_targeting and " · our lock" or "")..(c.targeting_you and " · targeting us" or "")
   end
   local function wrapped(value,w)
@@ -4118,7 +4121,7 @@ function ArjUI:renderShipBridge()
   end
   local y=4
   y=title("identity",0,y,contentW,v.name or "Captain's Table")
-  y=block("identityDetails",0,y,contentW,"["..shipPlain(info.id).."]  "..shipPlain(info.status or s.status).."\nCaptain "..shipPlain(info.captain or s.captain).." · Frags "..shipPlain(info.frags)..(not s.info and "\nText-derived fallback" or ""))
+  y=block("identityDetails",0,y,contentW,"["..shipPlain(info.id).."]  "..shipPlain(info.status or s.status).."\nCaptain "..shipPlain(info.captain or s.captain).." · Frags "..shipPlain(info.frags)..(v.textDerived and "\nIncludes text-derived facts" or ""))
   if v.target then y=block("target",0,y,contentW,"Locked target ["..shipPlain(v.target.id).."] "..shipPlain(v.target.name)) end
   local populated=v.name or next(info) or v.heading~=nil or v.speed~=nil or #v.contacts>0 or next(s.skills or {}) or s.captain or s.status or v.target
   if not populated or s.departed then
@@ -4194,6 +4197,7 @@ function ArjUI:renderShipBridge()
     y=block("helmLegend",rightX,y,rightW,"● Actual  ◇ Ordered · North up")
     y=block("capacity",rightX,y,rightW,"Hull weight "..shipPlain(b.hullWeight).."\nWeight load "..pair(pick(b.load,"current"),pick(b.load,"max")).."\nCargo "..pair(pick(info.cargo,"current"),pick(info.cargo,"max")).." crates\nPassengers "..pair(info.people,info.maxPeople).."\nRepair stock "..shipPlain(info.repairStock))
     y=title("bearingTitle",rightX,y,rightW,"CONTACT BEARING GLASS")
+    if not v.contactsKnown then y=block("plotUnknown",rightX,y,rightW,"Contacts not received") end
     local showPlot=wide or self.shipPlotOpen
     if showPlot then
       local size=math.min(250,rightW-8); local radius=size/2; local centerX=rightX+rightW/2; local centerY=y+radius
@@ -4227,13 +4231,15 @@ function ArjUI:renderShipBridge()
       for _,group in ipairs(groups) do
         number=number+1
         local ids={}; for _,entry in ipairs(group.entries) do ids[#ids+1]=shipPlain(entry.data.id) end
-        local c=group.entries[1].data
-        local flags=(c.you_targeting and "◇" or "")..(c.targeting_you and "!" or "")
-        local caption=#ids>1 and tostring(#ids).."×" or ((flags~="" and flags or "·")..ids[1])
+        local ours,theirs=false,false
+        for _,entry in ipairs(group.entries) do ours=ours or entry.data.you_targeting; theirs=theirs or entry.data.targeting_you end
+        local flags=(ours and "◇" or "")..(theirs and "!" or "")
+        local caption=(flags~="" and flags or "·")..(#ids>1 and tostring(#ids).."×" or ids[1])
         label("contactMarker"..number,group.x-18,group.y-10,40,22,shipHTML(caption),function()
+          if self.state.ship~=s then return end
           local signatures,indices={},{}
           for _,entry in ipairs(group.entries) do signatures[#signatures+1]=shipPlain(entry.data.id).."\n"..shipPlain(entry.data.name); indices[#indices+1]=entry.index end
-          self.shipSelection={contacts=signatures,contactIndices=indices,contactGeneration=s.contactGeneration}; self:renderShip()
+          self.shipSelection={contacts=signatures,contactIndices=indices,contactGeneration=renderedContactGeneration}; self:renderShip()
         end,"padding:0;background-color:#26352d;border-color:#a58b5b;color:#e8dbba;")
       end
       y=y+size+4
@@ -4269,10 +4275,13 @@ function ArjUI:renderShipBridge()
       local chief=pick(info.chiefs,skill[1]); local mod=tonumber(pick(info.skillMods,skill[1]))
       y=block("crew"..skill[1],0,y,contentW,skill[2].." · Chief "..(chief=="" and "None" or shipPlain(chief)).."\nSkill "..shipPlain(pick(info.skills,skill[1]) or pick(s.skills,skill[2])).." · Modifier "..(mod and string.format("%+d",mod) or "?"))
     end
-    y=title("contactsTitle",0,y,contentW,"CONTACTS ("..#v.contacts..") · full ledger")
+    y=title("contactsTitle",0,y,contentW,"CONTACTS ("..(v.contactsKnown and tostring(#v.contacts) or "?")..") · full ledger")
     for _,entry in ipairs(v.contacts) do
       local c=entry.data; local signature=shipPlain(c.id).."\n"..shipPlain(c.name)
-      y=block("contact"..entry.index,0,y,contentW,contactText(c),function() self.shipSelection={contacts={signature},contactIndices={entry.index},contactGeneration=s.contactGeneration}; self:renderShip() end,selected[entry.index] and "border:2px solid #d6b679;" or nil)
+      y=block("contact"..entry.index,0,y,contentW,contactText(c),function()
+        if self.state.ship~=s then return end
+        self.shipSelection={contacts={signature},contactIndices={entry.index},contactGeneration=renderedContactGeneration}; self:renderShip()
+      end,selected[entry.index] and "border:2px solid #d6b679;" or nil)
     end
   end
   for _,widget in pairs(self.shipWidgets) do if not widget.shipUsed then widget:hide() end end
