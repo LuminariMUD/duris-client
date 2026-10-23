@@ -34,6 +34,7 @@ T.steps({
   T.check(#ArjUI.state.group==0,"real empty group replaces populated group")
   T.check(ArjUI.state.target==nil and ArjUI.damage.fight==0 and ArjUI.damage.session==8,"real null combat end ignores subsequently flushed text damage")
   T.check(ArjAuto:targetContact()==nil and ArjUI.state.ship.maxSpeed==nil,"real bridge departure clears ship")
+  T.check(T.lines("ArjUI_ShipBox"):find("(no ship data)",1,true),"real departure sequence leaves the no-ship display")
  end},
  {name="custom-prompt-inventory",run=function()
   T.originalSend("inventory",false)

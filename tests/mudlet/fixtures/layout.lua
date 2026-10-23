@@ -140,6 +140,35 @@ T.steps({
   local item=entries.windowList[menu.name.."_3"]
   return {{type="click",x=menu:get_x()+2+item:get_x()+20,y=menu:get_y()+22+item:get_y()+10}}
  end},
+ {name="covered-private-unread",run=function()
+  ArjUI:openPrivateChat("Readprobe")
+  expandAlias("ui panel output maximize")
+  T.emit("Comm.Channel",{channel="tell",sender="Readprobe",text="UNREAD-BEHIND-OUTPUT"})
+  ArjUI:applyPanelLayout()
+  local chat=ArjUI.privateChats.readprobe
+  T.check(not chat.visible and chat.unread==1,"covered private tell remains unread through layout")
+  ArjUI:openPrivateChat("Readprobe")
+  T.check(not chat.visible and chat.unread==1,"open request behind output does not acknowledge unseen tell")
+ end},
+ {name="reveal-private-unread",run=function()
+  expandAlias("ui panel output restore")
+  local chat=ArjUI.privateChats.readprobe
+  T.check(chat.visible and chat.unread==0,"actual reveal acknowledges private tell")
+  T.check(not T.lines(ArjUI.tellsBox.name):find("Readprobe (1 new)",1,true),"actual reveal refreshes unread indicator")
+  local _,copies=T.lines(chat.historyBox.name):gsub("UNREAD%-BEHIND%-OUTPUT","")
+  T.check(copies==1,"covered private message appears once")
+ end},
+ {name="maximize-private-from-minimized",run=function()
+  expandAlias("ui panel tell:readprobe minimize")
+  T.emit("Comm.Channel",{channel="tell",sender="Readprobe",text="UNREAD-MINIMIZED"})
+  expandAlias("ui panel tell:readprobe maximize")
+  local chat=ArjUI.privateChats.readprobe
+  T.check(chat.visible and chat.unread==0 and ArjUI.panels["tell:readprobe"].state.minimized,"maximized private reveal keeps normal minimized state")
+ end},
+ {name="restore-private-to-minimized",run=function()
+  expandAlias("ui panel tell:readprobe maximize")
+  T.check(not ArjUI.privateChats.readprobe.visible,"restore returns private window to minimized state")
+ end},
  {name="panels-recovery",run=function()
   T.check(not ArjUI.panels.items.state.hidden and ArjUI.currentMenu,"fixed Panels entry restores hidden panel and opens actions")
   ArjUI:resetLayout()

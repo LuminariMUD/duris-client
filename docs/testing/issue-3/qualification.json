@@ -1,0 +1,125 @@
+{
+  "date": "2026-10-23",
+  "current_candidate": {
+    "version": "2.0.1",
+    "sha256": "563bc22c81a18e8c4c5a439c747ccabd1f4de238d56e20d15aa64dc5a3c5a9a3",
+    "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+  },
+  "current_source_sha256": {
+    "VERSION": "fe840f52fb5578d3f77eb497115eb02c6036601c3a53e60df7995c7276baa77a",
+    "src/config.lua": "74ab009ad7c91e665b33ab2ae0adc967d84c9e1dccbb5c6ec8f99221068d9fe7",
+    "src/scripts/ArjAuto.lua": "5ac63ee270f0565588abd049dd91fcef0000596ff455e0ed931c7d4e45496c48",
+    "src/scripts/ArjMapper.lua": "efe1c0f45556f1240a04000b0638f682ba59b85d89dd5ea1b5404cae4fc09848",
+    "src/scripts/ArjUI.lua": "8a3e75a8cd5df8e02ecf93798bf0b966df7e8235bc75345903db3aae095de89c",
+    "tests/mudlet/fixtures/assertion-error.lua": "0fb1cd524b09681d6118214dae83ff8d759c7f4a88fc3de127e23a99aa1e0fdf",
+    "tests/mudlet/fixtures/chat.lua": "07dfdf3477af1feceaca339059bf9e4ac3bfd995a69b35adcdb9ae2ea4fcda3f",
+    "tests/mudlet/fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
+    "tests/mudlet/fixtures/connections.lua": "738cee5b303fb4ce65f032b2c6efd557a0c527c7d803c263a8f8e92fcd56ba45",
+    "tests/mudlet/fixtures/controls.lua": "c10204ab29fcc6eba4b05f9d0346245d6c7456f551bc1bd652fb5c1b5388a32a",
+    "tests/mudlet/fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
+    "tests/mudlet/fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
+    "tests/mudlet/fixtures/information.lua": "4766e9e44292519a716c3f55b3c3816c0f16900b140db7336e67aa434208ed3a",
+    "tests/mudlet/fixtures/layout.lua": "5f19d73b4dc10c759569a956d15f9fa5481d9d98a183b56a2de0b7dd878b42db",
+    "tests/mudlet/fixtures/lifecycle.lua": "4de65155e95196819845a4c56f1e25bca05bb28b8932816b1f4e290f31a29129",
+    "tests/mudlet/fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
+    "tests/mudlet/fixtures/lowhp.lua": "7c009ca0bdca1ceeb20c540a32cca3824645448a64cdd87cd239c5e4c81ffa96",
+    "tests/mudlet/fixtures/map-colors.lua": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b",
+    "tests/mudlet/fixtures/maps.lua": "d8b6d45fafefda9af259e0e4d35ef86292ff3d00bcd748b625b7fda07cbda845",
+    "tests/mudlet/fixtures/reopen.lua": "8f77d0b956a468a8f063d8f94c3f056cb2eaaafcaa79fa8696594022ca303460",
+    "tests/mudlet/fixtures/server-wire.lua": "dbea8814ebcdc945a2a221d0976b20329de9b9014ade993a2cba5ca9934bc61a",
+    "tests/mudlet/fixtures/text.lua": "97831e2917ae7b6b35abc289a25219bd703335f99e0323aa7fbd33657bb3e091",
+    "tests/mudlet/fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
+    "tests/mudlet/fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082",
+    "scripts/mudlet_test.py": "aeaff49ddf7086660c4d01a1289d3cf4e790725c4593ba9ca3a928b470595a25"
+  },
+  "current_offline_evidence": "review-2026-10-23.json",
+  "current_controller_evidence": "editor-review-2026-10-23.json",
+  "historical_1_3_7_qualification": {
+    "date": "2026-10-22",
+    "core_commit": "26663f2e656f5ff4c9a73821f72364202426a77e",
+    "candidate": {
+      "version": "1.3.7",
+      "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+      "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
+    },
+    "source_sha256": "40bc30268148099ec77e123e1ef9636bee23792d888761c188f8f25e673aedc5",
+    "live": {
+      "endpoint": "74.208.126.44:7777",
+      "character": "Veridian",
+      "ship": "GallTest",
+      "dock_room": 49090,
+      "captured_utc": "2026-10-22T20:40:23.223526+00:00",
+      "mudlet": "5.0.1",
+      "qt": "6.11.1",
+      "geometry": "1920x1080",
+      "scale": 1,
+      "os": "Ubuntu 24.04.4 WSL2 / Xvfb 96dpi",
+      "deployed_server_commit": "Not exposed or verified; comparison uses freshly received decoded GMCP and game text.",
+      "profile": "Fresh independent live profile importing the exact final archive; no test companion, global send override or GMCP injection.",
+      "manual_comparison": {
+        "identity_navigation": "PASS",
+        "armor_hull_sail": "PASS",
+        "all_six_weapons": "PASS",
+        "crew_skills_chiefs_stamina_repair": "PASS",
+        "cargo_name_crates": "PASS",
+        "equipment_empty": "PASS",
+        "contacts_empty": "PASS"
+      },
+      "cleanup": {
+        "room_num": 66899,
+        "bridge_departure": true,
+        "restored_room": "Inn of Oceans",
+        "no_ship_display": true,
+        "ship_cleared": true,
+        "normal_logout": true
+      },
+      "errors": "Reviewed actual Errors view: no Lua errors.",
+      "transients": "Two earlier pre-review sessions were closed remotely; final review-corrected archive comparison and departure checks used a fresh isolated session and normal logout."
+    },
+    "mudlet_4_22": {
+      "mudlet": "4.22.0",
+      "qt": "6.9.0",
+      "geometry": "1366x768",
+      "scale": 1,
+      "assertions": 115,
+      "automated": "PASS",
+      "visual": "PASS",
+      "exact_archive": true,
+      "method": "Independent portable root and manual connection-dialog Offline button; imported archive, then existing connections scenario; no 5.x startup flags.",
+      "normal_shutdown": true
+    },
+    "protocol_omissions": [
+      "Hull weight and weight load/capacity are absent from Ship.Info; 5/70 crates is distinct from look ship weight load 80/165.",
+      "Set heading/speed, exact reload countdown and equipment damage are not supplied. Timer Ready does not certify weapon usability.",
+      "Weapon maximum ammo, contact range and cargo invoice price are shown from GMCP, without claiming matching text fields in look ship."
+    ],
+    "remaining_limits": [
+      "Mudlet 4.19.1 not run; official GitHub release has no binary assets at this check.",
+      "Physical desktop DPI, Windows and macOS not run.",
+      "Live ship had no equipment and no contacts; populated/damaged/empty-ammo cases use the offline fixtures."
+    ],
+    "files": {
+      "mudlet-4.22-weapons.png": "e0ded7ab0881dbfd0866ef3f1b507a07fc71de1f9667cc66d1ded1d5d0a38368",
+      "live-look-ship.png": "9cafa787d48a8b4d1c90626324c9cb9659bd7a31d9874c236d0c1b733b3d61ca",
+      "look-ship.txt": "6b7b17699a0675f5f4811fceaaaa0a9e245ab4cd028922c8a49fe4dd608f28c4",
+      "live-panel.txt": "017c5d67e3e4e365b3ec06588f82956c1d2f4b6a94fa2f507feef4d20a8c023e",
+      "live-crew.png": "a4bd6dcdfe0ec616a1f5c772f1b84e2f06fbcdadecd270239388198bb15e12a6",
+      "live-gmcp.json": "57d733787b2be9de12335f08daf796297bce6ae11d1a5bbf4748940631d109c0",
+      "live-weapons-last.png": "734a19985465feacbcdb0176765bc77dd4867ef9bf36b49835041bc6bcb6a272",
+      "live-weapons-first.png": "8a93e11f2c154b6691bf8329fba25bc2cf620a9407705742dee2401062ccca52",
+      "live-errors.png": "cff1b0846c38b60c7a822828eb3181114e83a84f9c52a59208ed8385d768217e",
+      "look-crew.txt": "c80d3ed834c223283cb09a340cc2ea5e43534e1a63bb50c593f476a3ffa0cf11",
+      "departure-4.22.png": "0c23f4fbd5f84e05871f05cc908e3f9b7ea5be64e1522294e8ad7a2f55114ccd",
+      "mudlet-4.22-errors.png": "115d5877171c384a5539db87c10380e69306ea4b1285d68b49ae88b723eccf9f"
+    },
+    "controller_commit": "d33a4e64946889233438ed115be2519b3fa6b7df",
+    "reference_normalization": {
+      "method": "Published transcripts omit trailing line padding; interior diagram alignment is preserved. Unmodified captures remain local.",
+      "untrimmed_sha256": {
+        "look-ship.txt": "98955e8001e35512d9301577b8d8038e65542bc5b6ba70e53a8d898a2c795b7e",
+        "look-crew.txt": "c80d3ed834c223283cb09a340cc2ea5e43534e1a63bb50c593f476a3ffa0cf11"
+      }
+    }
+  },
+  "scope": "Historical live/4.22 captures qualify their recorded 1.3.7 archive only. The integrated 2.0.1 package has local 5.0.1 offline proof; no fresh live/4.22/4.19.1/hardware-DPI/other-OS claim."
+}

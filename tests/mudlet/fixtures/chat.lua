@@ -15,4 +15,15 @@ steps[#steps+1]={name="outgoing-tell",run=function()
  T.check(ArjUI.privateChats.companion and #ArjUI.privateChats.companion.history==2,"incoming/outgoing tell history")
  ArjUI:openPrivateChat("Companion")
 end}
+steps[#steps+1]={name="tell-while-ui-off",run=function()
+ expandAlias("ui off")
+ T.emit("Comm.Channel",{channel="tell",sender="Companion",text="UNREAD-WHILE-OFF"})
+ local chat=ArjUI.privateChats.companion
+ T.check(not chat.visible and chat.unread==1,"hidden tell remains unread")
+ expandAlias("ui on")
+ T.check(chat.visible and chat.unread==0,"visible private frame acknowledges tell on dashboard reveal")
+ ArjUI:openPrivateChat("Companion")
+ T.check(chat.visible and chat.unread==0,"opening conversation reads hidden tell")
+ T.check(T.lines(chat.historyBox.name):find("UNREAD-WHILE-OFF",1,true),"hidden tell appears on reopen")
+end}
 T.steps(steps)

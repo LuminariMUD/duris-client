@@ -1,0 +1,146 @@
+{
+  "Info": {
+    "sail": 130,
+    "class": 6,
+    "crewType": "&+WCo&+wr&+Wwe&+wl&+Wl &+CS&+ce&+Ba &+cD&+Bog&+bs",
+    "people": 0,
+    "status": "DOCKED",
+    "internal": {
+      "starboard": [
+        55,
+        55
+      ],
+      "port": [
+        52,
+        55
+      ],
+      "bow": [
+        44,
+        44
+      ],
+      "stern": [
+        27,
+        27
+      ]
+    },
+    "maxCrewStamina": 800,
+    "chiefs": {
+      "repair": "&+cE&+wxp&+ce&+wrt &+cE&+wng&+ci&+wn&+cee&+wr",
+      "guns": "&+BMaster &+rGu&+Rnn&+rer",
+      "sail": ""
+    },
+    "equipment": [],
+    "weapons": [
+      {
+        "maxAmmo": 12,
+        "name": "Large Catapult",
+        "slot": 0,
+        "ready": true,
+        "ammo": 12,
+        "position": "bow",
+        "damage": 0
+      },
+      {
+        "maxAmmo": 12,
+        "name": "Large Catapult",
+        "slot": 1,
+        "ready": true,
+        "ammo": 12,
+        "position": "stern",
+        "damage": 0
+      },
+      {
+        "maxAmmo": 50,
+        "name": "Medium Ballista",
+        "slot": 2,
+        "ready": true,
+        "ammo": 45,
+        "position": "starboard",
+        "damage": 0
+      },
+      {
+        "maxAmmo": 30,
+        "name": "Large Ballista",
+        "slot": 3,
+        "ready": true,
+        "ammo": 25,
+        "position": "starboard",
+        "damage": 0
+      },
+      {
+        "maxAmmo": 30,
+        "name": "Large Ballista",
+        "slot": 4,
+        "ready": true,
+        "ammo": 24,
+        "position": "port",
+        "damage": 0
+      },
+      {
+        "maxAmmo": 30,
+        "name": "Large Ballista",
+        "slot": 5,
+        "ready": true,
+        "ammo": 25,
+        "position": "port",
+        "damage": 0
+      }
+    ],
+    "cargo": {
+      "max": 70,
+      "current": 5,
+      "items": [
+        {
+          "name": "&+MSi&+mlk &+BCl&+Co&+Yth&N",
+          "slot": 6,
+          "contraband": false,
+          "crates": 5,
+          "invoicePrice": 156000
+        }
+      ]
+    },
+    "crewStamina": 800,
+    "id": "**",
+    "maxPeople": 20,
+    "armor": {
+      "starboard": [
+        91,
+        110
+      ],
+      "port": [
+        76,
+        110
+      ],
+      "bow": [
+        81,
+        88
+      ],
+      "stern": [
+        41,
+        55
+      ]
+    },
+    "skillMods": {
+      "repair": 5,
+      "guns": 6,
+      "sail": 4
+    },
+    "frags": 0,
+    "maxSail": 130,
+    "maxSpeed": 50,
+    "name": "GallTest",
+    "contactRange": 36,
+    "skills": {
+      "repair": 1683,
+      "guns": 1656,
+      "sail": 1586
+    },
+    "captain": "Zahm",
+    "repairStock": 330
+  },
+  "Contacts": {
+    "speed": 0,
+    "heading": 0,
+    "contacts": []
+  }
+}

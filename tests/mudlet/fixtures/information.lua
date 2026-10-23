@@ -34,10 +34,14 @@ T.steps({
  end,actions=function() return {T.click(ArjUI.tabButtons.ship)} end},
  {name="ship-contacts",run=function()
   T.check(ArjUI.activeTab=="ship" and T.commands[#T.commands].command=="look contacts","SHIP click request")
-  T.emit("Ship.Info",{name="Bronze Voyager",heading=90,speed=12,maxSpeed=20,captain="VisualTester"})
+  T.emit("Ship.Info",{name="Bronze Voyager",heading=90,speed=12,maxSpeed=20,captain="VisualTester",weapons={
+   {slot=10,name="Port cannon",position="port",ammo=0,maxAmmo=10,damage=1,ready=false},
+   {slot=2,name="Forward cannon",position="bow",ammo=8,maxAmmo=10,damage=0,ready=true}}})
   T.emit("Ship.Contacts",{contacts={{id=1,name="Far vessel",range=300,heading=30,speed=8,side="evil"},{id=2,name="Near vessel",range=50,heading=60,speed=4,side="good"}}})
   local output=T.lines("ArjUI_ShipBox")
   T.check(output:find("Near vessel",1,true)<output:find("Far vessel",1,true),"ship contacts sorted by range")
+  T.check(output:find("Weapons",1,true)<output:find("Contacts",1,true),"mouse-reachable SHIP has ordered sections")
+  T.check(output:find("[2] Forward cannon",1,true)<output:find("[10] Port cannon",1,true),"mouse-reachable weapons sort by slot")
  end},
  {name="ship-clear",run=function()
   T.emit("Ship.Contacts",{contacts={}})

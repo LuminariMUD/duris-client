@@ -1,5 +1,30 @@
 # Issue #5: adjustable client panels
 
+## Integrated review completion — 2026-10-23
+
+PR #12 now follows #10 in the preserved stack: #7 → #8 → #9 → #11 → #10 → #12.
+Version 2.1.1 carries compact headers, SHIP and parent review repairs. Prior
+stack notes are in [plan-stack-through-10.md](plan-stack-through-10.md).
+
+All three original findings are valid and repaired through the existing
+panelIsVisible rule: covered private tells remain unread through layout/open
+requests, actual reveal clears the count and refreshes its indicator, and
+maximized maps redraw despite saved hidden/minimized state. Deferred paints
+check effective visibility again at callback time. Saved normal state survives
+restore; room/map data continues to be accepted while covered. Removed the
+duplicate header redraw path in favor of the existing accepted-data viewport
+callback. No new timer or renderer was introduced.
+
+Red/green runs reproduce covered unread loss, minimized-map miscentering and a
+stale contact indicator. All 21 final-package Mudlet 5.0.1 expectations pass;
+map/layout checkpoint-only follow-ups also pass and supply inspected covered,
+revealed, normal/minimized/hidden maximize and Errors images. Local release
+payload validation, 15 release tests and ten controller tests pass.
+[Current source/payload, per-run archives and regression records](../testing/issue-5/review-2026-10-23.json).
+Historical live/4.22/matrix proof retains its original identity; no fresh live,
+minimum-version, hardware-DPI/input or other-OS qualification is claimed.
+
+
 Date: 2026-10-22. Status: chosen feature implemented and qualified on Mudlet 5.0.1 / 4.22.0; PR stack ready for review. Minimum-version/physical-desktop verification remains open.
 
 Work item: [#5 — Support resizable and/or dockable client panels](https://github.com/LuminariMUD/duris-client/issues/5).

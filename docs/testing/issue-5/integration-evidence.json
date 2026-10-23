@@ -1,538 +1,575 @@
 {
-  "version": "2.1.0",
-  "archive_sha256": "b6343231940414b43f43c3352331e8d23f02503e1a9b3506a77a67c24d54039d",
-  "checks": {
-    "controller_tests": 10,
-    "release_tests": 15,
-    "full_mudlet_suite": {
-      "passed": 21,
-      "total": 21
-    },
-    "live_assertions": 35
+  "date": "2026-10-23",
+  "current_candidate": {
+    "version": "2.1.1",
+    "sha256": "f58f5bd86e4594710d26a6cf5d986ae2d99a9672ecfb96e9b1ec8a8db637e0d8",
+    "payload_sha256": "402fad484dba0fa2bc6ce62c8769c2e9f1f5919d3ca858503bb9145570277152"
   },
-  "runs": [
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/assertion-error/20261022T201414Z-67ba24ec-assertion-error",
-      "scenario": "assertion-error",
-      "automated_status": "FAIL",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 5,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "b34bc5d858f3684e02c21ef5da998701b7e7902d781d83f3ed0164183a8c35fc",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+  "current_sources": {
+    "VERSION": "7b3ff271f1373cfb97e9e53349794e1450f3794e4c0788c54a2060c7596da821",
+    "src/config.lua": "74ab009ad7c91e665b33ab2ae0adc967d84c9e1dccbb5c6ec8f99221068d9fe7",
+    "src/scripts/ArjAuto.lua": "5ac63ee270f0565588abd049dd91fcef0000596ff455e0ed931c7d4e45496c48",
+    "src/scripts/ArjMapper.lua": "c51c256efe0fb50c5441af09491c1d6ea8e24ee37c240d9eb30f228f7052f55c",
+    "src/scripts/ArjUI.lua": "9eeab5e648249ca63e57b4f8563b70d5b482eab4c2634b3ba3a94b9f8a2939a1",
+    "tests/mudlet/fixtures/assertion-error.lua": "0fb1cd524b09681d6118214dae83ff8d759c7f4a88fc3de127e23a99aa1e0fdf",
+    "tests/mudlet/fixtures/chat.lua": "7d00f667c783dff81681227c937b9336da8a6aa0c9f159fcc65d15e83e9cdaee",
+    "tests/mudlet/fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
+    "tests/mudlet/fixtures/connections.lua": "738cee5b303fb4ce65f032b2c6efd557a0c527c7d803c263a8f8e92fcd56ba45",
+    "tests/mudlet/fixtures/controls.lua": "c10204ab29fcc6eba4b05f9d0346245d6c7456f551bc1bd652fb5c1b5388a32a",
+    "tests/mudlet/fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
+    "tests/mudlet/fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
+    "tests/mudlet/fixtures/information.lua": "4766e9e44292519a716c3f55b3c3816c0f16900b140db7336e67aa434208ed3a",
+    "tests/mudlet/fixtures/layout.lua": "7cf8fbef110a833870e8ded892ee8d3b1e02f855f329346984f50cc8e9b58529",
+    "tests/mudlet/fixtures/lifecycle.lua": "fe0d10c280425b4c7810443fe090a69b035719577f13c7a694abeec6b7bc603c",
+    "tests/mudlet/fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
+    "tests/mudlet/fixtures/lowhp.lua": "7c009ca0bdca1ceeb20c540a32cca3824645448a64cdd87cd239c5e4c81ffa96",
+    "tests/mudlet/fixtures/map-colors.lua": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b",
+    "tests/mudlet/fixtures/maps.lua": "77980bca8e463c7ebd34e1e59d8395ab762c741bcdb5ba52c4260ce08e5b4507",
+    "tests/mudlet/fixtures/reopen.lua": "8f77d0b956a468a8f063d8f94c3f056cb2eaaafcaa79fa8696594022ca303460",
+    "tests/mudlet/fixtures/server-wire.lua": "dbea8814ebcdc945a2a221d0976b20329de9b9014ade993a2cba5ca9934bc61a",
+    "tests/mudlet/fixtures/text.lua": "97831e2917ae7b6b35abc289a25219bd703335f99e0323aa7fbd33657bb3e091",
+    "tests/mudlet/fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
+    "tests/mudlet/fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082",
+    "scripts/mudlet_test.py": "a3c184780d51a137a471e6559233ddb07674e7e8e001a60f749e2b798748070f"
+  },
+  "current_review_record": "review-2026-10-23.json",
+  "historical_2_1_0_evidence": {
+    "version": "2.1.0",
+    "archive_sha256": "b6343231940414b43f43c3352331e8d23f02503e1a9b3506a77a67c24d54039d",
+    "checks": {
+      "controller_tests": 10,
+      "release_tests": 15,
+      "full_mudlet_suite": {
+        "passed": 21,
+        "total": 21
       },
-      "visual_review": "NOT RUN"
+      "live_assertions": 35
     },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/chat/20261022T201233Z-e22d4075-chat",
-      "scenario": "chat",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 13,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "3ed22e7c4ac9d279f845982366aac372bf73d749fbe537b3bd34b011eeec901d",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+    "runs": [
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/assertion-error/20261022T201414Z-67ba24ec-assertion-error",
+        "scenario": "assertion-error",
+        "automated_status": "FAIL",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 5,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "b34bc5d858f3684e02c21ef5da998701b7e7902d781d83f3ed0164183a8c35fc",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
       },
-      "visual_review": "NOT RUN"
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/chat/20261022T201233Z-e22d4075-chat",
+        "scenario": "chat",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 13,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "3ed22e7c4ac9d279f845982366aac372bf73d749fbe537b3bd34b011eeec901d",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/combat/20261022T201227Z-98dbc56d-combat",
+        "scenario": "combat",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 14,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "0648358097504b5b9e30ecddedb7ece262454cd24650f32f73d0290ba4494d69",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/connections/20261022T201336Z-7822d860-connections",
+        "scenario": "connections",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 55,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "8b2c41fbc6b5c0562ccdc2008de1356594d0f60eb8e9ad0f47caef35237aa205",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/controls/20261022T201303Z-39b3271f-controls",
+        "scenario": "controls",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 29,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "f2c61f34c86c8d4331d240492b9231365b66c6d0da3b191334635adf55527be6",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/crowded/20261022T201223Z-d5e7de7c-crowded",
+        "scenario": "crowded",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 7,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "97debdb5e0eacdc9ec2dbcd4c11a5681ad73b50f74f2208baa8daf4492a0b9c7",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/event-error/20261022T201429Z-58b3a3d5-event-error",
+        "scenario": "event-error",
+        "automated_status": "FAIL",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 4,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "4fdd2e16b942b2780febc76406cfc68c250bd9c4ccca754b10260e0ffa188bce",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/information/20261022T201237Z-98e68d02-information",
+        "scenario": "information",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 18,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "a040c3e99ce4398d314b0292834270750d5e75fa66ed6c0357c2a50f4c2da4e3",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/layout/20261022T201356Z-e6bbd895-layout",
+        "scenario": "layout",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 115,
+        "reopen_assertions": 31,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "42d02ffb37f287a0ee442268f32e890fc1a5573bf4dbde90cb645b2817978bb0",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/lifecycle/20261022T201333Z-08eed980-lifecycle",
+        "scenario": "lifecycle",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 332,
+        "reopen_assertions": 27,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "46215087c2d4b1f7bf3e664224123a27047e10cd99f37826df0dd56a77aa0b61",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/login/20261022T201320Z-3a7ac614-login",
+        "scenario": "login",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 6,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "3bc9ded050724b2037fcb76648db69ec00b9c927e9f36a323968bff94a8ba633",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/lowhp/20261022T201215Z-6f82dea5-lowhp",
+        "scenario": "lowhp",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 28,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "af81737b64a8ae8bd71daaf5ced9c09c823bcd870596798e2fdfd091c54ce66c",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/map-colors/20261022T201253Z-9864d183-map-colors",
+        "scenario": "map-colors",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 23,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "c938dc13de0df9ff0218b1276a0c8cccc8e81bb11ef36e3be0a31b1475235ac1",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/maps/20261022T201247Z-0a7968f7-maps",
+        "scenario": "maps",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 24,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "74ef5318b7a6af7c1a08d0b629fec6b97f6a3b77ac5b0243c5c841c54b6e7515",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/no-readiness/20261022T201454Z-5f630751-lowhp",
+        "scenario": "lowhp",
+        "automated_status": "FAIL",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 0,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "bc3e130e57f568ebf62bc6b154607d9ab7efdc8fa1e723ebb389d01a949fd803",
+          "payload_sha256": "440be570af98a391d8c631f6a22062b8b1c88b0f5e372b26dd52fea76abb97aa"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/server-wire/20261022T201355Z-19bb6211-server-wire",
+        "scenario": "server-wire",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 26,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "feb9c10030c2537f78edb8e5df446206a10ad9d6a069dbd950d955d8b5fdb5e6",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/text/20261022T201323Z-b877e3bd-text",
+        "scenario": "text",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 10,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "752887f397b41c66764cfdc58526ba9fc659c8233bef247126e26e8c57614f1b",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/timer-error/20261022T201428Z-c8e3af65-timer-error",
+        "scenario": "timer-error",
+        "automated_status": "FAIL",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 4,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "5d0e45e36f245c3866b5514df49afaa1f59a047bfc7ce8d13f47447f3f12aedb",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/vitals/20261022T201217Z-ec4f7e30-vitals",
+        "scenario": "vitals",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 10,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "fcfee60e81463b87512117b0f0681fc3da63b89da60014d780a5c9f4c582c4cf",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/wrong-candidate/20261022T201441Z-1e4e4bf2-lowhp",
+        "scenario": "lowhp",
+        "automated_status": "FAIL",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 0,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "64b9f90f51b0ce460575b14d70fa817d0ca8308b141c4fd08c06ff98878cc662",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/wrong-profile/20261022T201439Z-42594eb7-lowhp",
+        "scenario": "lowhp",
+        "automated_status": "FAIL",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 0,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "f3623365b6ece0abb16abb164ea37b9b6952970bcbd0d0b3595541f842bcd9fd",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-1280/20261022T201141Z-092f8ffa-layout",
+        "scenario": "layout",
+        "automated_status": "PASS",
+        "size": "1280x720",
+        "scale": 1,
+        "assertions": 115,
+        "reopen_assertions": 31,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "d8316729ad9d8b2ff58eea3780abbee56b7c7d294643027287f2648e0e2d66ec",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "PASS"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-1280/20261022T201201Z-c18faf21-crowded",
+        "scenario": "crowded",
+        "automated_status": "PASS",
+        "size": "1280x720",
+        "scale": 1,
+        "assertions": 7,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "d1a73e8dffd2ef3c33afd0c0ce189749c0b60c0bcf32e3ab5b04fe2b90378279",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "PASS"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-1920/20261022T201141Z-d7defc1e-layout",
+        "scenario": "layout",
+        "automated_status": "PASS",
+        "size": "1920x1080",
+        "scale": 1,
+        "assertions": 115,
+        "reopen_assertions": 31,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "d8316729ad9d8b2ff58eea3780abbee56b7c7d294643027287f2648e0e2d66ec",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "PASS"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-1920/20261022T201202Z-b612cd42-crowded",
+        "scenario": "crowded",
+        "automated_status": "PASS",
+        "size": "1920x1080",
+        "scale": 1,
+        "assertions": 7,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "5144430730ebf0fefd9c56be78fb803810edb32aa24886655dbb48ae3384a0a1",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "PASS"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-scale2/20261022T201141Z-293c3bb8-layout",
+        "scenario": "layout",
+        "automated_status": "PASS",
+        "size": "2732x1536",
+        "scale": 2,
+        "assertions": 115,
+        "reopen_assertions": 31,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "d8316729ad9d8b2ff58eea3780abbee56b7c7d294643027287f2648e0e2d66ec",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "PASS"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-scale2/20261022T201207Z-38c2f32c-crowded",
+        "scenario": "crowded",
+        "automated_status": "PASS",
+        "size": "2732x1536",
+        "scale": 2,
+        "assertions": 7,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "7ec17cc0cb34cd08ec886851409bc4ae722e17be5c9759d9302ea83111b4ae31",
+          "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
+        },
+        "visual_review": "PASS"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-delivery/20261022T201850Z-1e6a9504-layout",
+        "scenario": "layout",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 119,
+        "reopen_assertions": 31,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "b29e2c533d507d86ade915da3d7af2115e9665900183edd1ce23a71aff7ff300",
+          "payload_sha256": "f0e3fcc62928544af2b3968fe2d6dc8a00f91910180aaf8a26fee9565d75c8de"
+        },
+        "visual_review": "PASS"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-delivery/20261022T201914Z-02748ec4-lifecycle",
+        "scenario": "lifecycle",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 332,
+        "reopen_assertions": 27,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "6186790167f9c687f42a4b796ba326e323d45218d4a97949deff9e2da53867b3",
+          "payload_sha256": "f0e3fcc62928544af2b3968fe2d6dc8a00f91910180aaf8a26fee9565d75c8de"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-menu-final/20261022T201449Z-438c234d-layout",
+        "scenario": "layout",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 116,
+        "reopen_assertions": 31,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "b4a2bbd76f1ddc041608d77ce63f1be92926ad58b8f6e1652c39bd9f75b851c6",
+          "payload_sha256": "440be570af98a391d8c631f6a22062b8b1c88b0f5e372b26dd52fea76abb97aa"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-menu-final/20261022T201515Z-7f6c5adc-controls",
+        "scenario": "controls",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 29,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "8c413172aabc020563fd85e2970ccaf37fb94a752968cd0bb6439373e481a1d8",
+          "payload_sha256": "440be570af98a391d8c631f6a22062b8b1c88b0f5e372b26dd52fea76abb97aa"
+        },
+        "visual_review": "NOT RUN"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-map-delivery/20261022T202402Z-6b7618b2-maps",
+        "scenario": "maps",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 24,
+        "reopen_assertions": 0,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "b6343231940414b43f43c3352331e8d23f02503e1a9b3506a77a67c24d54039d",
+          "payload_sha256": "8f34750b3bc586604d81f920011125130fab71899739354fc6bf71b255e4708d"
+        },
+        "visual_review": "PASS"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-bounds-delivery/20261022T202705Z-5707492b-layout",
+        "scenario": "layout",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 121,
+        "reopen_assertions": 31,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "f9b38f555d4c6a30f1d775d4bb4bfe4256b0d902c4389da76d23161703339df9",
+          "payload_sha256": "8f34750b3bc586604d81f920011125130fab71899739354fc6bf71b255e4708d"
+        },
+        "visual_review": "PASS"
+      },
+      {
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-4.22-20261022T201944Z",
+        "scenario": "layout",
+        "automated_status": "PASS",
+        "size": "1366x768",
+        "scale": 1,
+        "assertions": 119,
+        "reopen_assertions": 31,
+        "candidate": {
+          "version": "2.1.0",
+          "sha256": "3af92f887171f3d205642b650f0dbc84585353290050404183144f6d752e5ac7",
+          "payload_sha256": "f0e3fcc62928544af2b3968fe2d6dc8a00f91910180aaf8a26fee9565d75c8de"
+        },
+        "visual_review": "PASS"
+      }
+    ],
+    "reuse": "Full 21-case suite and six geometry runs precede the final recovery-menu ownership/scroll and bounded map-heading changes. Targeted current-candidate layout/bounds+restart, controls, lifecycle and maps checks cover all later affected behavior; no GMCP protocol or geometry-policy change followed the size/scaling matrix. Every run records its own exact archive/payload identity. Source diffs remain in the named local artifact directories.",
+    "compatibility": {
+      "4.22.0": "PASS real portable runtime, pointer actions, private input/Send, reset, menus and close/reopen; screenshots inspected",
+      "4.19.1": "NOT VERIFIED: official release has no binary assets; official archived download list excludes it and old Linux URL returned 404; source inspection only",
+      "physical_desktop": "NOT RUN: physical DPI/input and Windows/macOS require separate review"
     },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/combat/20261022T201227Z-98dbc56d-combat",
-      "scenario": "combat",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 14,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "0648358097504b5b9e30ecddedb7ece262454cd24650f32f73d0290ba4494d69",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/connections/20261022T201336Z-7822d860-connections",
-      "scenario": "connections",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 55,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "8b2c41fbc6b5c0562ccdc2008de1356594d0f60eb8e9ad0f47caef35237aa205",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/controls/20261022T201303Z-39b3271f-controls",
-      "scenario": "controls",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 29,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "f2c61f34c86c8d4331d240492b9231365b66c6d0da3b191334635adf55527be6",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/crowded/20261022T201223Z-d5e7de7c-crowded",
-      "scenario": "crowded",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 7,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "97debdb5e0eacdc9ec2dbcd4c11a5681ad73b50f74f2208baa8daf4492a0b9c7",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/event-error/20261022T201429Z-58b3a3d5-event-error",
-      "scenario": "event-error",
-      "automated_status": "FAIL",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 4,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "4fdd2e16b942b2780febc76406cfc68c250bd9c4ccca754b10260e0ffa188bce",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/information/20261022T201237Z-98e68d02-information",
-      "scenario": "information",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 18,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "a040c3e99ce4398d314b0292834270750d5e75fa66ed6c0357c2a50f4c2da4e3",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/layout/20261022T201356Z-e6bbd895-layout",
-      "scenario": "layout",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 115,
-      "reopen_assertions": 31,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "42d02ffb37f287a0ee442268f32e890fc1a5573bf4dbde90cb645b2817978bb0",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/lifecycle/20261022T201333Z-08eed980-lifecycle",
-      "scenario": "lifecycle",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 332,
-      "reopen_assertions": 27,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "46215087c2d4b1f7bf3e664224123a27047e10cd99f37826df0dd56a77aa0b61",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/login/20261022T201320Z-3a7ac614-login",
-      "scenario": "login",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 6,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "3bc9ded050724b2037fcb76648db69ec00b9c927e9f36a323968bff94a8ba633",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/lowhp/20261022T201215Z-6f82dea5-lowhp",
-      "scenario": "lowhp",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 28,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "af81737b64a8ae8bd71daaf5ced9c09c823bcd870596798e2fdfd091c54ce66c",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/map-colors/20261022T201253Z-9864d183-map-colors",
-      "scenario": "map-colors",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 23,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "c938dc13de0df9ff0218b1276a0c8cccc8e81bb11ef36e3be0a31b1475235ac1",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/maps/20261022T201247Z-0a7968f7-maps",
-      "scenario": "maps",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 24,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "74ef5318b7a6af7c1a08d0b629fec6b97f6a3b77ac5b0243c5c841c54b6e7515",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/no-readiness/20261022T201454Z-5f630751-lowhp",
-      "scenario": "lowhp",
-      "automated_status": "FAIL",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 0,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "bc3e130e57f568ebf62bc6b154607d9ab7efdc8fa1e723ebb389d01a949fd803",
-        "payload_sha256": "440be570af98a391d8c631f6a22062b8b1c88b0f5e372b26dd52fea76abb97aa"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/server-wire/20261022T201355Z-19bb6211-server-wire",
-      "scenario": "server-wire",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 26,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "feb9c10030c2537f78edb8e5df446206a10ad9d6a069dbd950d955d8b5fdb5e6",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/text/20261022T201323Z-b877e3bd-text",
-      "scenario": "text",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 10,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "752887f397b41c66764cfdc58526ba9fc659c8233bef247126e26e8c57614f1b",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/timer-error/20261022T201428Z-c8e3af65-timer-error",
-      "scenario": "timer-error",
-      "automated_status": "FAIL",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 4,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "5d0e45e36f245c3866b5514df49afaa1f59a047bfc7ce8d13f47447f3f12aedb",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/vitals/20261022T201217Z-ec4f7e30-vitals",
-      "scenario": "vitals",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 10,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "fcfee60e81463b87512117b0f0681fc3da63b89da60014d780a5c9f4c582c4cf",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/wrong-candidate/20261022T201441Z-1e4e4bf2-lowhp",
-      "scenario": "lowhp",
-      "automated_status": "FAIL",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 0,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "64b9f90f51b0ce460575b14d70fa817d0ca8308b141c4fd08c06ff98878cc662",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-final-suite/wrong-profile/20261022T201439Z-42594eb7-lowhp",
-      "scenario": "lowhp",
-      "automated_status": "FAIL",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 0,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "f3623365b6ece0abb16abb164ea37b9b6952970bcbd0d0b3595541f842bcd9fd",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-1280/20261022T201141Z-092f8ffa-layout",
-      "scenario": "layout",
-      "automated_status": "PASS",
-      "size": "1280x720",
-      "scale": 1,
-      "assertions": 115,
-      "reopen_assertions": 31,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "d8316729ad9d8b2ff58eea3780abbee56b7c7d294643027287f2648e0e2d66ec",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "PASS"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-1280/20261022T201201Z-c18faf21-crowded",
-      "scenario": "crowded",
-      "automated_status": "PASS",
-      "size": "1280x720",
-      "scale": 1,
-      "assertions": 7,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "d1a73e8dffd2ef3c33afd0c0ce189749c0b60c0bcf32e3ab5b04fe2b90378279",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "PASS"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-1920/20261022T201141Z-d7defc1e-layout",
-      "scenario": "layout",
-      "automated_status": "PASS",
-      "size": "1920x1080",
-      "scale": 1,
-      "assertions": 115,
-      "reopen_assertions": 31,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "d8316729ad9d8b2ff58eea3780abbee56b7c7d294643027287f2648e0e2d66ec",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "PASS"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-1920/20261022T201202Z-b612cd42-crowded",
-      "scenario": "crowded",
-      "automated_status": "PASS",
-      "size": "1920x1080",
-      "scale": 1,
-      "assertions": 7,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "5144430730ebf0fefd9c56be78fb803810edb32aa24886655dbb48ae3384a0a1",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "PASS"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-scale2/20261022T201141Z-293c3bb8-layout",
-      "scenario": "layout",
-      "automated_status": "PASS",
-      "size": "2732x1536",
-      "scale": 2,
-      "assertions": 115,
-      "reopen_assertions": 31,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "d8316729ad9d8b2ff58eea3780abbee56b7c7d294643027287f2648e0e2d66ec",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "PASS"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-matrix-scale2/20261022T201207Z-38c2f32c-crowded",
-      "scenario": "crowded",
-      "automated_status": "PASS",
-      "size": "2732x1536",
-      "scale": 2,
-      "assertions": 7,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "7ec17cc0cb34cd08ec886851409bc4ae722e17be5c9759d9302ea83111b4ae31",
-        "payload_sha256": "e041f682191474fa3e1ad765d44108b7499ac0e89aa414c9eb174653efd068a4"
-      },
-      "visual_review": "PASS"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-delivery/20261022T201850Z-1e6a9504-layout",
-      "scenario": "layout",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 119,
-      "reopen_assertions": 31,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "b29e2c533d507d86ade915da3d7af2115e9665900183edd1ce23a71aff7ff300",
-        "payload_sha256": "f0e3fcc62928544af2b3968fe2d6dc8a00f91910180aaf8a26fee9565d75c8de"
-      },
-      "visual_review": "PASS"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-delivery/20261022T201914Z-02748ec4-lifecycle",
-      "scenario": "lifecycle",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 332,
-      "reopen_assertions": 27,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "6186790167f9c687f42a4b796ba326e323d45218d4a97949deff9e2da53867b3",
-        "payload_sha256": "f0e3fcc62928544af2b3968fe2d6dc8a00f91910180aaf8a26fee9565d75c8de"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-menu-final/20261022T201449Z-438c234d-layout",
-      "scenario": "layout",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 116,
-      "reopen_assertions": 31,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "b4a2bbd76f1ddc041608d77ce63f1be92926ad58b8f6e1652c39bd9f75b851c6",
-        "payload_sha256": "440be570af98a391d8c631f6a22062b8b1c88b0f5e372b26dd52fea76abb97aa"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-menu-final/20261022T201515Z-7f6c5adc-controls",
-      "scenario": "controls",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 29,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "8c413172aabc020563fd85e2970ccaf37fb94a752968cd0bb6439373e481a1d8",
-        "payload_sha256": "440be570af98a391d8c631f6a22062b8b1c88b0f5e372b26dd52fea76abb97aa"
-      },
-      "visual_review": "NOT RUN"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-map-delivery/20261022T202402Z-6b7618b2-maps",
-      "scenario": "maps",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 24,
-      "reopen_assertions": 0,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "b6343231940414b43f43c3352331e8d23f02503e1a9b3506a77a67c24d54039d",
-        "payload_sha256": "8f34750b3bc586604d81f920011125130fab71899739354fc6bf71b255e4708d"
-      },
-      "visual_review": "PASS"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-bounds-delivery/20261022T202705Z-5707492b-layout",
-      "scenario": "layout",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 121,
-      "reopen_assertions": 31,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "f9b38f555d4c6a30f1d775d4bb4bfe4256b0d902c4389da76d23161703339df9",
-        "payload_sha256": "8f34750b3bc586604d81f920011125130fab71899739354fc6bf71b255e4708d"
-      },
-      "visual_review": "PASS"
-    },
-    {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-4.22-20261022T201944Z",
-      "scenario": "layout",
-      "automated_status": "PASS",
-      "size": "1366x768",
-      "scale": 1,
-      "assertions": 119,
-      "reopen_assertions": 31,
-      "candidate": {
-        "version": "2.1.0",
-        "sha256": "3af92f887171f3d205642b650f0dbc84585353290050404183144f6d752e5ac7",
-        "payload_sha256": "f0e3fcc62928544af2b3968fe2d6dc8a00f91910180aaf8a26fee9565d75c8de"
-      },
-      "visual_review": "PASS"
+    "live": {
+      "host": "mud.duris.sbs",
+      "port": 7777,
+      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-live-20261022T201643Z",
+      "result": "PASS, 35 assertions, automation disabled; fresh GMCP and layout/reset checks; normal character/account logout and disconnected socket",
+      "secrets": "Credentials loaded locally from primary .env; no live screenshots or raw game/account text published"
     }
-  ],
-  "reuse": "Full 21-case suite and six geometry runs precede the final recovery-menu ownership/scroll and bounded map-heading changes. Targeted current-candidate layout/bounds+restart, controls, lifecycle and maps checks cover all later affected behavior; no GMCP protocol or geometry-policy change followed the size/scaling matrix. Every run records its own exact archive/payload identity. Source diffs remain in the named local artifact directories.",
-  "compatibility": {
-    "4.22.0": "PASS real portable runtime, pointer actions, private input/Send, reset, menus and close/reopen; screenshots inspected",
-    "4.19.1": "NOT VERIFIED: official release has no binary assets; official archived download list excludes it and old Linux URL returned 404; source inspection only",
-    "physical_desktop": "NOT RUN: physical DPI/input and Windows/macOS require separate review"
   },
-  "live": {
-    "host": "mud.duris.sbs",
-    "port": 7777,
-    "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-live-20261022T201643Z",
-    "result": "PASS, 35 assertions, automation disabled; fresh GMCP and layout/reset checks; normal character/account logout and disconnected socket",
-    "secrets": "Credentials loaded locally from primary .env; no live screenshots or raw game/account text published"
-  }
+  "scope": "Current 2.1.1 has fresh 5.0.1 offline proof; previous matrix/live/4.22 records qualify their original payloads only."
 }

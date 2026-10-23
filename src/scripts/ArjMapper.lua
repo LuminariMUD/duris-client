@@ -362,8 +362,9 @@ function ArjMapper:showWilderness()
     if self.ui.zoneContainer then self.ui.zoneContainer:hide() end
     if ArjUI and ArjUI.mapper then ArjUI.mapper:hide() end
 
-    self.ui.wildConsole:show()
     self.state.lastDisplayMode = "wilderness"
+    if ArjUI and ArjUI.panelIsVisible and not ArjUI:panelIsVisible("map") then return end
+    self.ui.wildConsole:show()
 end
 
 function ArjMapper:updateWildernessMap(mapData)
@@ -390,9 +391,7 @@ function ArjMapper:refreshViewport()
     if self.viewportTimer then killTimer(self.viewportTimer) end
     self.viewportTimer=tempTimer(.05,function()
         self.viewportTimer=nil
-        if not ArjUI or ArjUI.hidden or not ArjUI.panels then return end
-        local panel=ArjUI.panels.map
-        if panel.state.hidden or panel.state.minimized then return end
+        if not self.state.enabled or not ArjUI or not ArjUI.panels or not ArjUI:panelIsVisible("map") then return end
         if self.ui.hoverLabel then self.ui.hoverLabel:hide() end
         if self.state.lastDisplayMode=="wilderness" then
             self.ui.zoneContainer:hide()
@@ -430,8 +429,9 @@ function ArjMapper:showZoneMap()
     if self.ui.wildConsole then self.ui.wildConsole:hide() end
     if ArjUI and ArjUI.mapper then ArjUI.mapper:hide() end
 
-    self.ui.zoneContainer:show()
     self.state.lastDisplayMode = "zone"
+    if ArjUI and ArjUI.panelIsVisible and not ArjUI:panelIsVisible("map") then return end
+    self.ui.zoneContainer:show()
 
     self:renderZoneMap()
 end
@@ -764,6 +764,7 @@ end
 -- ============================================================
 
 function ArjMapper:renderZoneMap()
+    if ArjUI and ArjUI.panelIsVisible and not ArjUI:panelIsVisible("map") then return end
     if not self.ui.zoneContainer then return end
     
     -- Coalesce rapid updates using wall time, retaining the final update.

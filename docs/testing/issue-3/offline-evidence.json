@@ -1,0 +1,863 @@
+{
+  "date": "2026-10-23",
+  "candidate": {
+    "version": "2.0.1",
+    "sha256": "563bc22c81a18e8c4c5a439c747ccabd1f4de238d56e20d15aa64dc5a3c5a9a3",
+    "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+  },
+  "source_sha256": {
+    "VERSION": "fe840f52fb5578d3f77eb497115eb02c6036601c3a53e60df7995c7276baa77a",
+    "src/config.lua": "74ab009ad7c91e665b33ab2ae0adc967d84c9e1dccbb5c6ec8f99221068d9fe7",
+    "src/scripts/ArjAuto.lua": "5ac63ee270f0565588abd049dd91fcef0000596ff455e0ed931c7d4e45496c48",
+    "src/scripts/ArjMapper.lua": "efe1c0f45556f1240a04000b0638f682ba59b85d89dd5ea1b5404cae4fc09848",
+    "src/scripts/ArjUI.lua": "8a3e75a8cd5df8e02ecf93798bf0b966df7e8235bc75345903db3aae095de89c",
+    "tests/mudlet/fixtures/assertion-error.lua": "0fb1cd524b09681d6118214dae83ff8d759c7f4a88fc3de127e23a99aa1e0fdf",
+    "tests/mudlet/fixtures/chat.lua": "07dfdf3477af1feceaca339059bf9e4ac3bfd995a69b35adcdb9ae2ea4fcda3f",
+    "tests/mudlet/fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
+    "tests/mudlet/fixtures/connections.lua": "738cee5b303fb4ce65f032b2c6efd557a0c527c7d803c263a8f8e92fcd56ba45",
+    "tests/mudlet/fixtures/controls.lua": "c10204ab29fcc6eba4b05f9d0346245d6c7456f551bc1bd652fb5c1b5388a32a",
+    "tests/mudlet/fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
+    "tests/mudlet/fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
+    "tests/mudlet/fixtures/information.lua": "4766e9e44292519a716c3f55b3c3816c0f16900b140db7336e67aa434208ed3a",
+    "tests/mudlet/fixtures/layout.lua": "5f19d73b4dc10c759569a956d15f9fa5481d9d98a183b56a2de0b7dd878b42db",
+    "tests/mudlet/fixtures/lifecycle.lua": "4de65155e95196819845a4c56f1e25bca05bb28b8932816b1f4e290f31a29129",
+    "tests/mudlet/fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
+    "tests/mudlet/fixtures/lowhp.lua": "7c009ca0bdca1ceeb20c540a32cca3824645448a64cdd87cd239c5e4c81ffa96",
+    "tests/mudlet/fixtures/map-colors.lua": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b",
+    "tests/mudlet/fixtures/maps.lua": "d8b6d45fafefda9af259e0e4d35ef86292ff3d00bcd748b625b7fda07cbda845",
+    "tests/mudlet/fixtures/reopen.lua": "8f77d0b956a468a8f063d8f94c3f056cb2eaaafcaa79fa8696594022ca303460",
+    "tests/mudlet/fixtures/server-wire.lua": "dbea8814ebcdc945a2a221d0976b20329de9b9014ade993a2cba5ca9934bc61a",
+    "tests/mudlet/fixtures/text.lua": "97831e2917ae7b6b35abc289a25219bd703335f99e0323aa7fbd33657bb3e091",
+    "tests/mudlet/fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
+    "tests/mudlet/fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082",
+    "scripts/mudlet_test.py": "aeaff49ddf7086660c4d01a1289d3cf4e790725c4593ba9ca3a928b470595a25"
+  },
+  "current_full_suite": [
+    {
+      "case": "lowhp",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "948b14a06a391d22544574357a603c0f14619f759a996eafdc6fa4da8e7d3215",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/lowhp/20261023T094344Z-2d659c70-lowhp",
+      "assertions": 29,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "vitals",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "01855f0b39f5633c6d0ad443792efd77c79a7fa6dd4150e3a3f711e30a70d547",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/vitals/20261023T094346Z-e8d1e231-vitals",
+      "assertions": 10,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "crowded",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "948b14a06a391d22544574357a603c0f14619f759a996eafdc6fa4da8e7d3215",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/crowded/20261023T094344Z-29a3016b-crowded",
+      "assertions": 7,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "combat",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "0111b03e3519e82ac52c3b2f72c017a7c0c61ee2fd3dbb67503b7e6d02c9da66",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/combat/20261023T094351Z-2de2fe95-combat",
+      "assertions": 14,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "chat",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "21c75bb618479d94a45b96331842ded8f75f9d22de2d53ab95fc54a41577c082",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/chat/20261023T094354Z-7dea3ca0-chat",
+      "assertions": 17,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "information",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "21c75bb618479d94a45b96331842ded8f75f9d22de2d53ab95fc54a41577c082",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/information/20261023T094355Z-ab87b3b4-information",
+      "assertions": 20,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "maps",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "daac81c254018f1194657b380abd62c6d4e69cd2de3e6b6c65eeb707ff9bc617",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/maps/20261023T094400Z-0a426c7d-maps",
+      "assertions": 45,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "map-colors",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "b5daf2b793cfa806ec1570c037af34e919b86c736fed0afd7311221e5d7c6572",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/map-colors/20261023T094406Z-e4f85d47-map-colors",
+      "assertions": 23,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "controls",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "f88633dff05abcedf6d45874c7be853592f2c06d945329104c2868693d2d1d3c",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/controls/20261023T094409Z-cb129a3a-controls",
+      "assertions": 131,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "login",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "75c733e15c9f6e9a5b4004851641cfd25cdf4b741337f6c2ef8063047c5de66e",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/login/20261023T094415Z-57e5cc31-login",
+      "assertions": 6,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "text",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "150975b5a6edd1ce4a7786d54bec373c87001ac6c63830db0f8c5e1f06ee0da6",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/text/20261023T094424Z-7b8e2b2e-text",
+      "assertions": 15,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "lifecycle",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "150975b5a6edd1ce4a7786d54bec373c87001ac6c63830db0f8c5e1f06ee0da6",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/lifecycle/20261023T094425Z-772857a6-lifecycle",
+      "assertions": 324,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "connections",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "d54e2d13bf3b7233d1395644cdba9081450086dc9988b1e02512b18ee7850df0",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/connections/20261023T094433Z-3513b448-connections",
+      "assertions": 115,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "server-wire",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "cf91bd5a83a55961ce94b2b0a1f73792f8b0ebe2a5733bef9708b3ad74118ff6",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/server-wire/20261023T094437Z-a8c970dc-server-wire",
+      "assertions": 27,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "layout",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "118547912d32973a4ddf2b5195dc9f240ec0703d12f9e011c9c775a55da43dd9",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/layout/20261023T094439Z-3ac06533-layout",
+      "assertions": 99,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "assertion-error",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "8ab082cea332788ee54cd25700f85509f8b2cc318f9e9e6caed3b8d472375a36",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/assertion-error/20261023T094449Z-dd5cdb63-assertion-error",
+      "assertions": 5,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "timer-error",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "acc7778019dd54902b81aa08dab0672d64079aa15e070293f7ffc76520709242",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/timer-error/20261023T094450Z-00a8ef36-timer-error",
+      "assertions": 4,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "event-error",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "8579ffa6e3dfb2290eca83ffef71466e532e2e3992f373eea329a99919d0f4df",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/event-error/20261023T094456Z-11e2f417-event-error",
+      "assertions": 4,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "wrong-profile",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "8579ffa6e3dfb2290eca83ffef71466e532e2e3992f373eea329a99919d0f4df",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/wrong-profile/20261023T094457Z-d53cd4e1-lowhp",
+      "assertions": 0,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "wrong-candidate",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "8579ffa6e3dfb2290eca83ffef71466e532e2e3992f373eea329a99919d0f4df",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/wrong-candidate/20261023T094457Z-bb70e823-lowhp",
+      "assertions": 0,
+      "normal_shutdown": true,
+      "cleanup": true
+    },
+    {
+      "case": "no-readiness",
+      "candidate": {
+        "version": "2.0.1",
+        "sha256": "092d2e99e94f3ff016b961165e2af250998d03df8c92cbd29bd3d609b31ccbc8",
+        "payload_sha256": "63df58fea373057d3cd7d7338796f9b9dc10202cb027a50508a5fe54a2f57d6c"
+      },
+      "passed": true,
+      "run": "/tmp/duris-pr9-green/no-readiness/20261023T094503Z-1b7e6e27-lowhp",
+      "assertions": 0,
+      "normal_shutdown": true,
+      "cleanup": true
+    }
+  ],
+  "current_review_record": "review-2026-10-23.json",
+  "historical_preintegration_evidence": {
+    "date": "2026-10-22",
+    "base": "eec642f",
+    "candidate": {
+      "version": "1.3.7",
+      "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+      "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
+    },
+    "source_sha256": {
+      "src/scripts/ArjUI.lua": "40bc30268148099ec77e123e1ef9636bee23792d888761c188f8f25e673aedc5",
+      "tests/mudlet/fixtures/connections.lua": "738cee5b303fb4ce65f032b2c6efd557a0c527c7d803c263a8f8e92fcd56ba45",
+      "tests/mudlet/fixtures/information.lua": "4766e9e44292519a716c3f55b3c3816c0f16900b140db7336e67aa434208ed3a",
+      "tests/mudlet/fixtures/server-wire.lua": "dbea8814ebcdc945a2a221d0976b20329de9b9014ade993a2cba5ca9934bc61a"
+    },
+    "environment": {
+      "os": "Ubuntu 24.04.4 / WSL2",
+      "mudlet": "5.0.1",
+      "qt": "6.11.1",
+      "lua": "5.1.5",
+      "font": "DejaVu Sans Mono",
+      "display": "Xvfb 96dpi"
+    },
+    "current_runtime": {
+      "scenario": "connections",
+      "run": "/tmp/duris-issue3-navigation-green/20261022T203321Z-07d016d7-connections",
+      "candidate": {
+        "version": "1.3.7",
+        "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+        "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
+      },
+      "automated_status": "PASS",
+      "assertions": 115,
+      "coverage": [
+        "Fresh zero heading/speed Contacts override cached Info navigation.",
+        "Info clear followed by empty Contacts remains the no-ship display.",
+        "Populated, partial, empty, replacement and separate text-only sessions; automation state and scrolling."
+      ]
+    },
+    "historical_populated_layout": {
+      "candidate": {
+        "version": "1.3.7",
+        "sha256": "efbf2d0d4524448076d61ab480ef8c00b85f5987060edbc14e7ef3f429e69d0d",
+        "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+      },
+      "source_sha256": {
+        "src/scripts/ArjUI.lua": "60b463a45889c630edc774d0c9801f85c3a48a274b12cb06b623923011d534cb",
+        "tests/mudlet/fixtures/connections.lua": "0b69be4b3205583e12b5aa5fab4e32d77adb0bac8b5e355fd01516f3f9665ae8",
+        "tests/mudlet/fixtures/information.lua": "4766e9e44292519a716c3f55b3c3816c0f16900b140db7336e67aa434208ed3a"
+      },
+      "matrix": {
+        "1366x768": {
+          "run": "/tmp/duris-issue3-final-focused/20261022T200152Z-a3d0382b-connections",
+          "candidate": {
+            "version": "1.3.7",
+            "sha256": "78f6e8b64af7f559b605e13c9e213c33c3e9c728ca3bfe1bb7a51be410f71f2b",
+            "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+          },
+          "automated": "PASS",
+          "assertions": 113
+        },
+        "1280x720": {
+          "run": "/tmp/duris-issue3-final-720/20261022T200318Z-e166883a-connections",
+          "candidate": {
+            "version": "1.3.7",
+            "sha256": "2a65514eed733676d96d0fc2fec5e270a2dd6b6cf4b052341c3aa93c12281116",
+            "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+          },
+          "automated": "PASS",
+          "assertions": 113
+        },
+        "1920x1080": {
+          "run": "/tmp/duris-issue3-final-1080-retry/20261022T200729Z-dbfcc442-connections",
+          "candidate": {
+            "version": "1.3.7",
+            "sha256": "90d85d82b4c6b8d1cc18fafa5c2235c00f53aceb1cbca4970af3382f3d1ac093",
+            "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+          },
+          "automated": "PASS",
+          "assertions": 113
+        },
+        "2732x1536-scale2": {
+          "run": "/tmp/duris-issue3-final-scale2/20261022T200240Z-ec635e49-connections",
+          "candidate": {
+            "version": "1.3.7",
+            "sha256": "9d27d4a05d426ec21eb7eb08bf3855dafcc4e86a487369205e0165385ffe23da",
+            "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+          },
+          "automated": "PASS",
+          "assertions": 113
+        }
+      },
+      "screenshots": {
+        "weapons-720.png": "43412767c2f4514a4c96889109495b63b25608b35318c2f8db31c51a25922f00",
+        "ship-720.png": "3c6269ffb5bfb892fd4438f26124d4ec451d8137a6f5210146c242898b8dc608",
+        "cargo-1366.png": "4755125f5bdaef3a13d293989d574e4424cdf31489eec370fce181a0b5e1d265",
+        "partial-720.png": "0343a5e8b7342f41d851262f5790ba1e7b9a3401057a2e4eba3e59765632ba76"
+      }
+    },
+    "coverage_reuse": "Historical matrix entries identify their original archives and source hashes. They remain populated-layout coverage: review changes only prefer fresh Contacts navigation and gate the empty footer. Current source/package identity and fresh runtime proof are recorded above.",
+    "final_stack_proof": "Final suite, exact-archive compatibility/live qualification and red/green review details are recorded by the dependent evidence PR in review-followup.json and qualification.json.",
+    "limits": [
+      "Mudlet 4.19.1 and physical desktop DPI remain unverified.",
+      "Original size/DPI artifacts are historical populated-layout evidence, not claims that those archives equal the final package."
+    ],
+    "final_suite": {
+      "command": "python3 scripts/mudlet_suite.py --root /tmp/duris-issue3-navigation-suite",
+      "candidate": {
+        "version": "1.3.7",
+        "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+        "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
+      },
+      "cases": [
+        {
+          "case": "lowhp",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/lowhp/20261022T203521Z-0022ea37-lowhp",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "vitals",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/vitals/20261022T203517Z-0d1330ff-vitals",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "crowded",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/crowded/20261022T203528Z-7097966a-crowded",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "combat",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/combat/20261022T203528Z-72cb672b-combat",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "chat",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/chat/20261022T203536Z-1c547bfa-chat",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "information",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/information/20261022T203537Z-116369e7-information",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "maps",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/maps/20261022T203547Z-8cb37dc7-maps",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "map-colors",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/map-colors/20261022T203550Z-7f374fb1-map-colors",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "controls",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/controls/20261022T203601Z-1be654b7-controls",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "login",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/login/20261022T203611Z-a6bd8cdc-login",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "text",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/text/20261022T203621Z-5d8adcc1-text",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "lifecycle",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/lifecycle/20261022T203621Z-10215af4-lifecycle",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "connections",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/connections/20261022T203631Z-9e72bd96-connections",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "server-wire",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/server-wire/20261022T203637Z-64f7152e-server-wire",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "assertion-error",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/assertion-error/20261022T203648Z-7af02b0d-assertion-error",
+          "exit_code": 1,
+          "stderr": ""
+        },
+        {
+          "case": "timer-error",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/timer-error/20261022T203649Z-5a77da65-timer-error",
+          "exit_code": 1,
+          "stderr": ""
+        },
+        {
+          "case": "event-error",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/event-error/20261022T203656Z-e1b96a30-event-error",
+          "exit_code": 1,
+          "stderr": ""
+        },
+        {
+          "case": "wrong-profile",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/wrong-profile/20261022T203656Z-6bd917d8-lowhp",
+          "exit_code": 1,
+          "stderr": ""
+        },
+        {
+          "case": "wrong-candidate",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/wrong-candidate/20261022T203703Z-7d231da8-lowhp",
+          "exit_code": 1,
+          "stderr": ""
+        },
+        {
+          "case": "no-readiness",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/no-readiness/20261022T203708Z-5fe9460c-lowhp",
+          "exit_code": 1,
+          "stderr": ""
+        }
+      ],
+      "controller_revision": "d33a4e64946889233438ed115be2519b3fa6b7df",
+      "controller_unit_checks": 8,
+      "scope": "Client source, fixtures and package equal this core candidate. The local stack uses PR #11 editor readiness; hosted core CI below also passed the core branch itself.",
+      "hosted_core_ci": {
+        "head_sha": "26663f2e656f5ff4c9a73821f72364202426a77e",
+        "checks": [
+          {
+            "name": "Validate release and build",
+            "conclusion": "SUCCESS",
+            "url": "https://github.com/LuminariMUD/duris-client/actions/runs/39850110260/job/120073680600"
+          },
+          {
+            "name": "runtime / Offline behavior (visual review remains manual)",
+            "conclusion": "SUCCESS",
+            "url": "https://github.com/LuminariMUD/duris-client/actions/runs/39850110260/job/120073681363"
+          }
+        ]
+      }
+    }
+  },
+  "limits": [
+    "Offline Mudlet 5.0.1 / Qt 6.11.1 on Linux/WSL; no fresh live check",
+    "Mudlet 4.19.1, physical DPI/input and Windows/macOS remain unverified",
+    "Earlier evidence files retain their historical source/archive identities; this record identifies the integrated review candidate."
+  ],
+  "historical_qualification_manifest": {
+    "date": "2026-10-22",
+    "base": "eec642f",
+    "candidate": {
+      "version": "1.3.7",
+      "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+      "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
+    },
+    "source_sha256": {
+      "src/scripts/ArjUI.lua": "40bc30268148099ec77e123e1ef9636bee23792d888761c188f8f25e673aedc5",
+      "tests/mudlet/fixtures/connections.lua": "738cee5b303fb4ce65f032b2c6efd557a0c527c7d803c263a8f8e92fcd56ba45",
+      "tests/mudlet/fixtures/information.lua": "4766e9e44292519a716c3f55b3c3816c0f16900b140db7336e67aa434208ed3a",
+      "tests/mudlet/fixtures/server-wire.lua": "dbea8814ebcdc945a2a221d0976b20329de9b9014ade993a2cba5ca9934bc61a"
+    },
+    "environment": {
+      "os": "Ubuntu 24.04.4 / WSL2",
+      "mudlet": "5.0.1",
+      "qt": "6.11.1",
+      "lua": "5.1.5",
+      "font": "DejaVu Sans Mono",
+      "display": "Xvfb 96dpi"
+    },
+    "current_runtime": {
+      "scenario": "connections",
+      "run": "/tmp/duris-issue3-navigation-green/20261022T203321Z-07d016d7-connections",
+      "candidate": {
+        "version": "1.3.7",
+        "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+        "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
+      },
+      "automated_status": "PASS",
+      "assertions": 115,
+      "coverage": [
+        "Fresh zero heading/speed Contacts override cached Info navigation.",
+        "Info clear followed by empty Contacts remains the no-ship display.",
+        "Populated, partial, empty, replacement and separate text-only sessions; automation state and scrolling."
+      ]
+    },
+    "historical_populated_layout": {
+      "candidate": {
+        "version": "1.3.7",
+        "sha256": "efbf2d0d4524448076d61ab480ef8c00b85f5987060edbc14e7ef3f429e69d0d",
+        "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+      },
+      "source_sha256": {
+        "src/scripts/ArjUI.lua": "60b463a45889c630edc774d0c9801f85c3a48a274b12cb06b623923011d534cb",
+        "tests/mudlet/fixtures/connections.lua": "0b69be4b3205583e12b5aa5fab4e32d77adb0bac8b5e355fd01516f3f9665ae8",
+        "tests/mudlet/fixtures/information.lua": "4766e9e44292519a716c3f55b3c3816c0f16900b140db7336e67aa434208ed3a"
+      },
+      "matrix": {
+        "1366x768": {
+          "run": "/tmp/duris-issue3-final-focused/20261022T200152Z-a3d0382b-connections",
+          "candidate": {
+            "version": "1.3.7",
+            "sha256": "78f6e8b64af7f559b605e13c9e213c33c3e9c728ca3bfe1bb7a51be410f71f2b",
+            "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+          },
+          "automated": "PASS",
+          "assertions": 113
+        },
+        "1280x720": {
+          "run": "/tmp/duris-issue3-final-720/20261022T200318Z-e166883a-connections",
+          "candidate": {
+            "version": "1.3.7",
+            "sha256": "2a65514eed733676d96d0fc2fec5e270a2dd6b6cf4b052341c3aa93c12281116",
+            "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+          },
+          "automated": "PASS",
+          "assertions": 113
+        },
+        "1920x1080": {
+          "run": "/tmp/duris-issue3-final-1080-retry/20261022T200729Z-dbfcc442-connections",
+          "candidate": {
+            "version": "1.3.7",
+            "sha256": "90d85d82b4c6b8d1cc18fafa5c2235c00f53aceb1cbca4970af3382f3d1ac093",
+            "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+          },
+          "automated": "PASS",
+          "assertions": 113
+        },
+        "2732x1536-scale2": {
+          "run": "/tmp/duris-issue3-final-scale2/20261022T200240Z-ec635e49-connections",
+          "candidate": {
+            "version": "1.3.7",
+            "sha256": "9d27d4a05d426ec21eb7eb08bf3855dafcc4e86a487369205e0165385ffe23da",
+            "payload_sha256": "edb6c1a552b65f900caa4388bd071ad64d7a1232937fd625a1183af1fa92a2fb"
+          },
+          "automated": "PASS",
+          "assertions": 113
+        }
+      },
+      "screenshots": {
+        "weapons-720.png": "43412767c2f4514a4c96889109495b63b25608b35318c2f8db31c51a25922f00",
+        "ship-720.png": "3c6269ffb5bfb892fd4438f26124d4ec451d8137a6f5210146c242898b8dc608",
+        "cargo-1366.png": "4755125f5bdaef3a13d293989d574e4424cdf31489eec370fce181a0b5e1d265",
+        "partial-720.png": "0343a5e8b7342f41d851262f5790ba1e7b9a3401057a2e4eba3e59765632ba76"
+      }
+    },
+    "coverage_reuse": "Historical matrix entries identify their original archives and source hashes. They remain populated-layout coverage: review changes only prefer fresh Contacts navigation and gate the empty footer. Current source/package identity and fresh runtime proof are recorded above.",
+    "final_stack_proof": "Final suite, exact-archive compatibility/live qualification and red/green review details are recorded by the dependent evidence PR in review-followup.json and qualification.json.",
+    "limits": [
+      "Mudlet 4.19.1 and physical desktop DPI remain unverified.",
+      "Original size/DPI artifacts are historical populated-layout evidence, not claims that those archives equal the final package."
+    ],
+    "final_suite": {
+      "command": "python3 scripts/mudlet_suite.py --root /tmp/duris-issue3-navigation-suite",
+      "candidate": {
+        "version": "1.3.7",
+        "sha256": "75f78b1b67df13425b6ba4da090b44d3b24229638177e75000ee5b944e97cbd3",
+        "payload_sha256": "91cbd38bc5e3a26ca7a5e906a61bf8aa6c72364f9ebfaaae5e1bed99977a8ac1"
+      },
+      "cases": [
+        {
+          "case": "lowhp",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/lowhp/20261022T203521Z-0022ea37-lowhp",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "vitals",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/vitals/20261022T203517Z-0d1330ff-vitals",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "crowded",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/crowded/20261022T203528Z-7097966a-crowded",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "combat",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/combat/20261022T203528Z-72cb672b-combat",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "chat",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/chat/20261022T203536Z-1c547bfa-chat",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "information",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/information/20261022T203537Z-116369e7-information",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "maps",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/maps/20261022T203547Z-8cb37dc7-maps",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "map-colors",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/map-colors/20261022T203550Z-7f374fb1-map-colors",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "controls",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/controls/20261022T203601Z-1be654b7-controls",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "login",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/login/20261022T203611Z-a6bd8cdc-login",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "text",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/text/20261022T203621Z-5d8adcc1-text",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "lifecycle",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/lifecycle/20261022T203621Z-10215af4-lifecycle",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "connections",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/connections/20261022T203631Z-9e72bd96-connections",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "server-wire",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/server-wire/20261022T203637Z-64f7152e-server-wire",
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "case": "assertion-error",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/assertion-error/20261022T203648Z-7af02b0d-assertion-error",
+          "exit_code": 1,
+          "stderr": ""
+        },
+        {
+          "case": "timer-error",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/timer-error/20261022T203649Z-5a77da65-timer-error",
+          "exit_code": 1,
+          "stderr": ""
+        },
+        {
+          "case": "event-error",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/event-error/20261022T203656Z-e1b96a30-event-error",
+          "exit_code": 1,
+          "stderr": ""
+        },
+        {
+          "case": "wrong-profile",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/wrong-profile/20261022T203656Z-6bd917d8-lowhp",
+          "exit_code": 1,
+          "stderr": ""
+        },
+        {
+          "case": "wrong-candidate",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/wrong-candidate/20261022T203703Z-7d231da8-lowhp",
+          "exit_code": 1,
+          "stderr": ""
+        },
+        {
+          "case": "no-readiness",
+          "passed": true,
+          "run": "/tmp/duris-issue3-navigation-suite/no-readiness/20261022T203708Z-5fe9460c-lowhp",
+          "exit_code": 1,
+          "stderr": ""
+        }
+      ],
+      "controller_revision": "d33a4e64946889233438ed115be2519b3fa6b7df",
+      "controller_unit_checks": 8,
+      "scope": "Client source, fixtures and package equal this core candidate. The local stack uses PR #11 editor readiness; hosted core CI below also passed the core branch itself.",
+      "hosted_core_ci": {
+        "head_sha": "26663f2e656f5ff4c9a73821f72364202426a77e",
+        "checks": [
+          {
+            "name": "Validate release and build",
+            "conclusion": "SUCCESS",
+            "url": "https://github.com/LuminariMUD/duris-client/actions/runs/39850110260/job/120073680600"
+          },
+          {
+            "name": "runtime / Offline behavior (visual review remains manual)",
+            "conclusion": "SUCCESS",
+            "url": "https://github.com/LuminariMUD/duris-client/actions/runs/39850110260/job/120073681363"
+          }
+        ]
+      }
+    },
+    "final_package_followup": "review-followup.json"
+  }
+}

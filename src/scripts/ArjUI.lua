@@ -158,7 +158,10 @@ function ArjUI:setVisible(visible)
     self.main:hide()
     self.bg:hide()
     if self.currentMenu then self.currentMenu:hide() end
-    for _, chat in pairs(self.privateChats) do if chat.window then chat.window:hide(); chat.visible=false end end
+    for _, chat in pairs(self.privateChats) do
+      if chat.window then chat.window:hide() end
+      chat.visible = false
+    end
     if self.panelGesture then self:finishPanelGesture(self.panelGesture) end
     setBorderTop(0)
     setBorderBottom(0)
@@ -197,12 +200,12 @@ function ArjUI:applyBackground()
   end
   
   if self.bg then
-    if bgPath then
+    if bgPath and not self.settings.compactHeader then
       self.bg:setStyleSheet(string.format([[
         border-image: url("%s") 0 0 0 0 stretch stretch;
       ]], bgPath))
     else
-      -- Fallback: dark gradient background
+      -- Compact mode omits the illustrated header; also used if artwork is missing.
       self.bg:setStyleSheet([[
         background-color: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #0a0908,stop:0.5 #12100c,stop:1 #0a0908);
       ]])
@@ -329,6 +332,13 @@ function ArjUI:panelBounds(panel)
   return math.max(0,math.min(rect[1]*w,w-pw)),math.max(0,math.min(rect[2]*h,h-ph)),pw,ph
 end
 
+-- Whether the panel body can actually be read, independent of saved normal state.
+function ArjUI:panelIsVisible(id)
+  if self.hidden or (self.maximizedPanel and self.maximizedPanel~=id) then return false end
+  local panel=self.panels and self.panels[id]
+  return not panel or self.maximizedPanel==id or (not panel.state.hidden and not panel.state.minimized)
+end
+
 function ArjUI:reconcilePanelViews()
   for name,widget in pairs(self.tabPanels or {}) do
     if name==self.activeTab then widget:show() else widget:hide() end
@@ -347,7 +357,7 @@ function ArjUI:reconcilePanelViews()
     elseif ui.wildConsole then ui.wildConsole:hide() end
   end
   for _,panel in pairs(self.panels or {}) do
-    if self.hidden or (panel.state.hidden and self.maximizedPanel~=panel.def.id) then panel.frame:hide()
+    if self.hidden or (self.maximizedPanel and self.maximizedPanel~=panel.def.id) or (panel.state.hidden and self.maximizedPanel~=panel.def.id) then panel.frame:hide()
     elseif panel.state.minimized and self.maximizedPanel~=panel.def.id then panel.frame.Inside:hide() end
   end
   if self.creditTooltip then self.creditTooltip:hide() end
@@ -358,8 +368,12 @@ function ArjUI:applyPanel(panel)
   if panel.def.private then
     local chat=self.privateChats[panel.def.id:sub(6)]
     if chat then
-      chat.visible=not self.hidden and (self.maximizedPanel==panel.def.id or (not state.hidden and not state.minimized))
-      if chat.visible then chat.unread=0 end
+      local visible=self:panelIsVisible(panel.def.id)
+      if visible and not chat.visible then
+        chat.unread=0
+        self:renderTellContacts()
+      end
+      chat.visible=visible
     end
   end
   local x,y,w,h=self:panelBounds(panel)
@@ -369,7 +383,7 @@ function ArjUI:applyPanel(panel)
   frame.minimized=state.minimized and not maximized
   frame.Inside:move(5,22)
   frame.Inside:resize("100%-10px","100%-27px")
-  if self.hidden or (state.hidden and not maximized) then frame:hide()
+  if self.hidden or (self.maximizedPanel and not maximized) or (state.hidden and not maximized) then frame:hide()
   else
     frame:show()
     if state.minimized and not maximized then frame.Inside:hide() else frame.Inside:show() end
@@ -439,7 +453,9 @@ function ArjUI:createPanel(def)
 end
 
 function ArjUI:refreshPanelContent(id)
-  if (not id or id=="map") and ArjMapper and ArjMapper.refreshViewport then ArjMapper:refreshViewport() end
+  if ArjMapper and ArjMapper.state.enabled and self:panelIsVisible("map") then
+    ArjMapper:refreshViewport()
+  end
 end
 
 function ArjUI:panelAction(id,action)
@@ -472,7 +488,7 @@ function ArjUI:panelAction(id,action)
   else return false end
   if action~="maximize" and self.maximizedPanel==id and action~="lock" and action~="unlock" then self.maximizedPanel=nil end
   self:applyPanelLayout()
-  if not self.hidden and not state.hidden then panel.frame:raiseAll() end
+  if self:panelIsVisible(id) then panel.frame:raiseAll() end
   self:refreshPanelContent(id)
   if panel.def.private then self:renderTellContacts() end
   self:saveLayout()
@@ -762,13 +778,18 @@ function ArjUI:enableGMCP()
   sendGMCP("Core.Supports.Add " .. yajl.to_string(modules))
 end
 
+function ArjUI:headerHeightPct()
+  return self.settings.compactHeader and 2.8 or 10.5
+end
+
 function ArjUI:init()
   self:kill()
   self.hidden = false
+  self:loadSettings()
   
   -- Layout constants as percentages for DPI-independent scaling
   -- Tuned to match the decorative background frame
-  self.bannerPct = 10.5     -- top margin (below Duris banner)
+  local bannerPct = self:headerHeightPct()
   self.frameInsetXPct = 2.5 -- side margins (inside decorative frame)
   self.frameInsetBottomPct = 2.8  -- bottom margin (above bottom frame)
 
@@ -798,9 +819,9 @@ function ArjUI:init()
 
   -- Use percentage-based positioning for DPI independence
   local rootX = self.frameInsetXPct .. "%"
-  local rootY = self.bannerPct .. "%"
+  local rootY = bannerPct .. "%"
   local rootW = (100 - self.frameInsetXPct * 2) .. "%"
-  local rootH = (100 - self.bannerPct - self.frameInsetBottomPct) .. "%"
+  local rootH = (100 - bannerPct - self.frameInsetBottomPct) .. "%"
 
   self.uiRoot = Geyser.Container:new({
     name = "ArjUI_Root", x = rootX, y = rootY, width = rootW, height = rootH
@@ -1003,6 +1024,7 @@ function ArjUI:init()
   
   -- SHIP panel (GMCP Ship.Info/Ship.Contacts, or 'look contacts' text)
   self.shipBox = makeConsole(self.tabContent, "ArjUI_ShipBox", 0, 0, "100%", "100%", 9)
+  self.shipBox:enableScrollBar()
   self.shipBox:hide()
   self.tabPanels.ship = self.shipBox
   
@@ -1240,7 +1262,6 @@ function ArjUI:init()
   self:layout()
 
   self:loadCustomCommands()
-  self:loadSettings()
   self:registerGMCPHandlers()
   self:setupPorted()
   self:renderAll()
@@ -1267,7 +1288,7 @@ function ArjUI:layout()
   setBorderTop(h)
   
   -- Calculate pixel values from percentages for resize
-  local banner = h * (self.bannerPct or 5.5) / 100
+  local banner = h * self:headerHeightPct() / 100
   local insetX = w * (self.frameInsetXPct or 3.8) / 100
   local insetBottom = h * (self.frameInsetBottomPct or 3.5) / 100
   
@@ -1303,6 +1324,7 @@ function ArjUI:layout()
       self.creditTooltip:resize(creditW, 36)
     end
   end
+
 end
 
 -- ============================================================
@@ -1784,7 +1806,6 @@ function ArjUI:openPrivateChat(playerName)
     chat.displayName=displayName
     for _,msg in ipairs(chat.history) do self:displayPrivateMessage(name,msg.sender,msg.text,msg.outgoing) end
   end
-  chat.unread=0
   self:panelAction(id,"show")
   self:addTellContact(displayName)
   self:renderTellContacts()
@@ -3447,6 +3468,7 @@ end
 -- ============================================================
 
 ArjUI.settingsDefaults = {
+  compactHeader = false,  -- smaller header, without the illustrated frame
   keypad = true,          -- numpad movement keys
   chatTimestamps = true,  -- [hh:mm] prefix on chat lines
   damageTracker = true,   -- per-fight / session damage tracking
@@ -3486,6 +3508,10 @@ function ArjUI:setSetting(key, on)
   self.settings[key] = on
   self:saveSettings()
   if key == "keypad" then self:setupKeypad() end
+  if key == "compactHeader" then
+    self:applyBackground()
+    self:layout()
+  end
   return true
 end
 
@@ -3860,71 +3886,127 @@ end
 function ArjUI:renderShip()
   if not self.shipBox then return end
   local box = self.shipBox
+  box.shipScrollTop = box.shipScrollTop or math.max(0, box:getScroll() - getRowCount(box.name))
   box:clear()
   local s = self.state.ship or {}
   box:cecho("<dim_gray>── Ship ──\n")
 
-  local info = s.info
+  local info = type(s.info) == "table" and s.info or {}
   local shown = false
-  if type(info) == "table" then
-    local name = pick(info, "name", "ship", "shipName")
-    if name then box:cecho(string.format("<white>%s\n", stripColors(tostring(name)))); shown = true end
-    local lineParts = {}
-    local heading = pick(info, "heading", "course")
-    local speed = pick(info, "speed")
-    local maxSpeed = pick(info, "maxSpeed", "max_speed", "speedMax")
-    if heading then table.insert(lineParts, "H:" .. tostring(heading)) end
-    if speed then table.insert(lineParts, "S:" .. tostring(speed) .. (maxSpeed and ("/" .. tostring(maxSpeed)) or "")) end
-    if #lineParts > 0 then box:cecho("<yellow>" .. table.concat(lineParts, "  ") .. "\n"); shown = true end
-    local skip = { name = true, ship = true, shipName = true, heading = true, course = true, speed = true, maxSpeed = true, max_speed = true, speedMax = true }
-    for _, k in ipairs(sortedKeys(info)) do
-      local v = info[k]
-      if not skip[k] and type(v) ~= "table" then
-        box:cecho(string.format("<dim_gray>%s: <light_gray>%s\n", k, stripColors(tostring(v))))
-        shown = true
-      elseif not skip[k] and type(v) == "table" then
-        local vals = {}
-        for _, kk in ipairs(sortedKeys(v)) do
-          local vv = v[kk]
-          if type(vv) ~= "table" then
-            table.insert(vals, kk .. "=" .. stripColors(tostring(vv)))
-          elseif #vv == 2 and type(vv[1]) == "number" and type(vv[2]) == "number" then
-            table.insert(vals, kk .. "=" .. vv[1] .. "/" .. vv[2])
-          else
-            local entries = (#vv > 0 and type(vv[1]) == "table") and vv or {vv}
-            for _, entry in ipairs(entries) do
-              local details = {}
-              for _, field in ipairs(sortedKeys(entry)) do
-                if type(entry[field]) ~= "table" then
-                  details[#details+1] = field .. "=" .. stripColors(tostring(entry[field]))
-                end
-              end
-              vals[#vals+1] = table.concat(details, " ")
-            end
-          end
-        end
-        if #vals > 0 then box:cecho(string.format("<dim_gray>%s: <light_gray>%s\n", k, table.concat(vals, " "))); shown = true end
+  -- Local presentation helpers: unknown is not zero; false is a real value.
+  -- Strip both server colors and cecho markup in supplied names and values.
+  local function text(value)
+    if value == nil then return "?" end
+    return cecho2string(stripColors(tostring(value)))
+  end
+  local function section(title)
+    box:cecho("\n<gold>" .. title .. "\n")
+    shown = true
+  end
+  local function row(label, value)
+    if value ~= nil then
+      box:cecho("<dim_gray>" .. label .. ": <light_gray>" .. text(value) .. "\n")
+      shown = true
+    end
+  end
+  local function pair(current, maximum, color)
+    local accent = "<light_gray>"
+    local n, m = tonumber(current), tonumber(maximum)
+    if color and n and m and m > 0 then
+      accent = n/m <= .25 and "<indian_red>" or (n/m <= .6 and "<khaki>" or "<dark_sea_green>")
+    end
+    return accent .. text(current) .. "/" .. text(maximum)
+  end
+  local function slots(items)
+    local list = {}
+    for _, item in ipairs(items) do if type(item) == "table" then list[#list+1] = item end end
+    table.sort(list, function(a, b) return (tonumber(a.slot) or math.huge) < (tonumber(b.slot) or math.huge) end)
+    return list
+  end
+  local function readiness(item)
+    if item.ready == true then return "<dim_gray>Timer: <dark_sea_green>Ready\n" end
+    if item.ready == false then return "<dim_gray>Timer: <khaki>Not ready\n" end
+    return ""
+  end
+  local name = pick(info, "name", "ship", "shipName") or s.name
+  if name then box:cecho("<white>" .. text(name) .. "\n"); shown = true end
+  row("ID", info.id)
+  row("Status", info.status or s.status)
+  row("Captain", info.captain or s.captain)
+  row("Frags", info.frags)
+  local heading = s.heading or pick(info, "heading", "course")
+  local speed = s.speed or info.speed
+  local maximum = pick(info, "maxSpeed", "max_speed", "speedMax") or s.maxSpeed
+  if heading ~= nil or speed ~= nil or maximum ~= nil then
+    box:cecho("<yellow>H:" .. text(heading) .. "  S:" .. text(speed) .. "/" .. text(maximum) .. "\n")
+    shown = true
+  end
+  row("Contact range", info.contactRange)
+  row("Locked on", s.target)
+
+  if info.armor or info.internal or info.sail ~= nil or info.maxSail ~= nil then
+    section("Condition")
+    for _, arc in ipairs({{"bow", "Forward"}, {"port", "Port"}, {"starboard", "Starboard"}, {"stern", "Rear"}}) do
+      local armor = type(info.armor) == "table" and info.armor[arc[1]]
+      local hull = type(info.internal) == "table" and info.internal[arc[1]]
+      if type(armor) == "table" or type(hull) == "table" then
+        armor, hull = type(armor) == "table" and armor or {}, type(hull) == "table" and hull or {}
+        box:cecho("<white>" .. arc[2] .. "<dim_gray> Armor " .. pair(armor[1], armor[2], true) .. "\n")
+        box:cecho("<dim_gray>  Hull " .. pair(hull[1], hull[2], true) .. "\n")
       end
     end
+    if info.sail ~= nil or info.maxSail ~= nil then box:cecho("<dim_gray>Sail: " .. pair(info.sail, info.maxSail, true) .. "\n") end
   end
-  if s.name or s.status or s.captain or s.maxSpeed or s.heading then
-    local bits = {}
-    if s.name then table.insert(bits, "<white>" .. s.name) end
-    if s.status then table.insert(bits, "<cyan>" .. s.status) end
-    if s.captain then table.insert(bits, "<dim_gray>Capt. <light_gray>" .. s.captain) end
-    if s.maxSpeed then table.insert(bits, "<dim_gray>max spd <light_gray>" .. s.maxSpeed) end
-    box:cecho(table.concat(bits, "<dim_gray> · ") .. "\n")
-    if s.heading or s.speed then
-      box:cecho(string.format("<yellow>H:%s  S:%s\n", tostring(s.heading or "?"), tostring(s.speed or "?")))
+  if type(info.weapons) == "table" then
+    section("Weapons")
+    if #info.weapons == 0 then row("Weapons", "None") end
+    for _, weapon in ipairs(slots(info.weapons)) do
+      box:cecho("<white>[" .. text(weapon.slot) .. "] " .. text(weapon.name) .. "\n")
+      row("Position", ({bow="Forward", stern="Rear"})[weapon.position] or weapon.position)
+      if weapon.ammo ~= nil or weapon.maxAmmo ~= nil then
+        box:cecho("<dim_gray>Ammo: " .. pair(weapon.ammo, weapon.maxAmmo) .. (tonumber(weapon.ammo) == 0 and "<indian_red> (empty)" or "") .. "\n")
+      end
+      if weapon.damage ~= nil then
+        box:cecho("<dim_gray>Damage: " .. ((tonumber(weapon.damage) or 0) > 0 and "<indian_red>" or "<light_gray>") .. text(weapon.damage) .. "\n")
+      end
+      box:cecho(readiness(weapon))
     end
-    shown = true
   end
-  if s.target then box:cecho("<indian_red>Locked on: <white>" .. s.target .. "\n"); shown = true end
-  if next(s.skills or {}) then
-    local parts = {}
-    for _, k in ipairs(sortedKeys(s.skills)) do table.insert(parts, k .. " " .. s.skills[k]) end
-    box:cecho("<dim_gray>Skills: <light_gray>" .. table.concat(parts, "  ") .. "\n")
-    shown = true
+  if info.crewType or info.crewStamina ~= nil or info.maxCrewStamina ~= nil or info.people ~= nil or info.maxPeople ~= nil
+      or info.repairStock ~= nil or info.chiefs or info.skills or info.skillMods or next(s.skills or {}) then
+    section("Crew and supplies")
+    row("Crew", info.crewType)
+    if info.crewStamina ~= nil or info.maxCrewStamina ~= nil then box:cecho("<dim_gray>Stamina: " .. pair(info.crewStamina, info.maxCrewStamina, true) .. "\n") end
+    if info.people ~= nil or info.maxPeople ~= nil then box:cecho("<dim_gray>Passengers: " .. pair(info.people, info.maxPeople) .. "\n") end
+    row("Repair stock", info.repairStock)
+    for _, skill in ipairs({{"sail", "Deck"}, {"guns", "Guns"}, {"repair", "Repair"}}) do
+      local key, label = skill[1], skill[2]
+      local chief = type(info.chiefs) == "table" and info.chiefs[key] or nil
+      row(label .. " chief", chief == "" and "None" or chief)
+      row(label .. " skill", pick(info.skills, key) or pick(s.skills, label))
+      local modifier = tonumber(pick(info.skillMods, key))
+      if modifier then row(label .. " modifier", string.format("%+d", modifier)) end
+    end
+  end
+  if type(info.equipment) == "table" then
+    section("Equipment")
+    if #info.equipment == 0 then row("Equipment", "None") end
+    for _, item in ipairs(slots(info.equipment)) do
+      box:cecho("<white>[" .. text(item.slot) .. "] " .. text(item.name) .. "\n" .. readiness(item))
+    end
+  end
+  if type(info.cargo) == "table" then
+    section("Cargo")
+    local cargo = info.cargo
+    if cargo.current ~= nil or cargo.max ~= nil then box:cecho("<dim_gray>Crates: " .. pair(cargo.current, cargo.max) .. "\n") end
+    if type(cargo.items) == "table" then
+      if #cargo.items == 0 then row("Cargo", "None") end
+      for _, item in ipairs(slots(cargo.items)) do
+        box:cecho("<white>[" .. text(item.slot) .. "] " .. text(item.name) .. (item.contraband == true and "<indian_red> (contraband)" or "") .. "\n")
+        row("Crates", item.crates)
+        row("Invoice price", item.invoicePrice)
+      end
+    end
   end
 
   local contacts = s.contacts
@@ -3958,14 +4040,27 @@ function ArjUI:renderShip()
         end
       end
       local tag = (s.target and id and tostring(id) == tostring(s.target)) and "<white>*" or ""
-      box:cecho(string.format("%s%s[%s] %s%s<dim_gray> %s\n", tag, color, tostring(id or "-"), stripColors(tostring(name)), c.sunk and " (sunk)" or "", table.concat(bits, " ")))
+      box:cecho(string.format("%s%s[%s] %s%s<dim_gray> %s\n", tag, color, text(id or "-"), text(name), c.sunk and " (sunk)" or "", text(table.concat(bits, " "))))
     end
     shown = true
+  elseif type(contacts) == "table" and shown then
+    section("Contacts (0)")
+    row("Contacts", "None")
   end
 
   if not shown then
     box:cecho("<dim_gray>(no ship data)\n\nBoard a ship and click SHIP\nto look at contacts.\n")
   end
+  -- A contact refresh must not pull the reader away from weapons or cargo.
+  -- clear() closes Mudlet's split scrollback. Wait for its geometry to settle;
+  -- coalesce consecutive Info/Contacts events into one restoration.
+  self:after(0, function()
+    if self.shipBox ~= box or box.shipScrollTop == nil then return end
+    local top = box.shipScrollTop
+    box.shipScrollTop = nil
+    local lines, rows = getLastLineNumber(box.name) + 1, getRowCount(box.name)
+    if lines - top > rows then box:scrollTo(top + rows) end
+  end)
 end
 
 -- ------------------------------------------------------------
@@ -4003,6 +4098,7 @@ function ArjUI:showHelp()
   self:note("<white>ui damage<dim_gray>             session damage report; <white>ui damage reset<dim_gray> clears it")
   self:note("<white>ui layout<dim_gray>             panel controls and reset; right-click a panel title for actions")
   self:note("<white>ui set<dim_gray>                list toggles; <white>ui set <name> on|off<dim_gray> changes one")
+  self:note("<white>ui set compactHeader on|off<dim_gray>  collapse or restore the illustrated header")
   self:note("<white>mapper<dim_gray>                mapper help")
   self:note("<white>auto<dim_gray>                  automation and utility aliases (ArjAuto)")
   self:note("<dim_gray>Numpad: 8/2/4/6 move, 7/9/1/3 diagonals, - up, + down, 5 look, / scan, 0 flee")
@@ -4011,6 +4107,7 @@ end
 function ArjUI:showSettings()
   self:note("<gold>══ Toggles (ui set <name> on|off) ══")
   local desc = {
+    compactHeader = "smaller header without the illustrated frame",
     keypad = "numpad movement keys", chatTimestamps = "[hh:mm] on chat lines",
     damageTracker = "damage counter in the target panel", scanFormat = "aligned, coloured scan output",
     alerts = "banners for sanc/rage/disarm/scry/skill-up", expTracker = "+exp notices with kills-to-level",

@@ -1,0 +1,10 @@
+Current crew: Corwell Sea Dogs
+              Master Gunner
+              Expert Engineer
+Deck skill:   1586  (+4)
+Guns skill:   1656  (+6)
+Repair skill: 1683  (+5)
+Stamina:      800/800
+
+< 762h/762H 170v/170V Pos: standing >
+<>
