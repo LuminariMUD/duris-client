@@ -1,0 +1,663 @@
+{
+  "candidate_runs": [
+    {
+      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-dashboard-ready/20261022T195954Z-b1a27ba9-layout",
+      "scenario": "layout",
+      "automated_status": "PASS",
+      "assertions": 98,
+      "reopen_assertions": 31,
+      "manifest": {
+        "run_id": "20261022T195954Z-b1a27ba9",
+        "scenario": "layout",
+        "candidate": {
+          "version": "2.0.0",
+          "sha256": "c7ebdc5ad31dc6829f987f99115da4381f60ef8790bf02cba5358445f072a1b3",
+          "payload_sha256": "5dcb6642ccd1a36c3fe4a8ed586c06922b8526439388d28a76a4c7d8218df94f"
+        },
+        "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+        "environment": {
+          "tools": {
+            "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+            "python3": "/usr/bin/python3",
+            "luac5.1": "/usr/bin/luac5.1",
+            "xvfb-run": "/usr/bin/xvfb-run",
+            "Xvfb": "/usr/bin/Xvfb",
+            "xauth": "/usr/bin/xauth",
+            "openbox": "/usr/bin/openbox",
+            "xdotool": "/usr/bin/xdotool",
+            "import": "/usr/bin/import",
+            "fc-match": "/usr/bin/fc-match"
+          },
+          "mudlet": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.config/mudlet\"\nmudlet 5.0.1  \nQt libraries 6.11.1 (compilation) 6.11.1 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+          "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+          "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+          "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+          "locale": "C.UTF-8"
+        },
+        "source": "1b9dc34dadb6c99d983d8488eba72bfefa504072",
+        "scale": 1,
+        "size": "1366x768",
+        "timeout": 35,
+        "network": "offline fixtures; loopback map and GMCP servers only",
+        "started_utc": "2026-10-22T19:59:54Z",
+        "fixtures": {
+          "test_runner.py": "294666d4fe1779adb0b46ce9f7f0d458597f1106d9f67978b075682ce0825c2e",
+          "gmcp_server.py": "b8ba347a98fc59f6467ea7b188435fc96b535452a5256c44ddfcf474601735de",
+          "profile.xml": "262f3478c0559e34acfa4e55454c5d8d012b5c06c41cf11368308b373c3d6d1e",
+          "README.md": "5891f096ca4b566ca2605602f1b7bd98b780ac3c4000dde30f98c5571ad9e0e2",
+          "map_server.py": "92d761ee00b90ed2746a765e079d035e9573636f5168993df02ff33a642a06bf",
+          "bootstrap.lua": "019350095efb08aba567d15418019ccbeb4025dca1cd59dcc6a29105b81d1caa",
+          "scenarios.json": "3d90e5dbd491d27c34e9cfb87ac130063cea8b21c0ad49a6b6342fa9d6578362",
+          "fixtures/chat.lua": "c830c4d988833706e42f1c90188a1572b5840986ac325dbc86c9beb2c0003263",
+          "fixtures/text.lua": "a5c8df9f97d07645defef81bac5a4c95658432d7bc238dce42a147c45421ca59",
+          "fixtures/server-gmcp.json": "62ef82ba17080268095ee2b88ed9aa5dd7fb5a5aa36b944f26f633e407c0424f",
+          "fixtures/server-wire.lua": "f67f7bcbc988c0ca4ed6aefb9a96bd387f2981696d00c285756093066256d5b8",
+          "fixtures/zone.json": "0c2d78a9d1baaa4af59c5b203d2664dadedde16dba0e996e2f25f49ac48bdc4d",
+          "fixtures/layout.lua": "5f19d73b4dc10c759569a956d15f9fa5481d9d98a183b56a2de0b7dd878b42db",
+          "fixtures/reopen.lua": "3f67bf27378355d3fa1cfa6c094b52a039cc36f644dd044e45f41319651ee7e7",
+          "fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
+          "fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082",
+          "fixtures/information.lua": "f77bb2eb985b73627990656093ef59dd79b9cb6e85fc5db52f9c1b1bc688bef2",
+          "fixtures/lifecycle.lua": "8fd4253fdc7b00d92f4d93e04d6969370fc3d7bb1d0911cc379eb0766874a615",
+          "fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
+          "fixtures/lowhp.lua": "5fe1914b25c5e0606f75ac5236b053a9a2b9e78f209e212a445d712ae0bc1173",
+          "fixtures/controls.lua": "efe3d04e83c2b2f95475917baf7b9963960979961f7a0541cd4e3cb892a22b57",
+          "fixtures/README.md": "f8f06b3f6a60afe5fe651fd361c110ac14bfd3624d57cd7d9260203ec307d38d",
+          "fixtures/connections.lua": "94e2c522b470cbfc6716dcdc7b76d3831d10e5cacdbc9597fe98f52c54d80c48",
+          "fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
+          "fixtures/maps.lua": "fa0b004cd3dfe7bcaa925f9d7c59dd9e0ad51e922497481c90213e436810debd",
+          "fixtures/assertion-error.lua": "0fb1cd524b09681d6118214dae83ff8d759c7f4a88fc3de127e23a99aa1e0fdf",
+          "fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
+          "fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
+          "fixtures/map-colors.lua": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b"
+        },
+        "fault": null,
+        "profile": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-dashboard-ready/20261022T195954Z-b1a27ba9-layout/config/mudlet/profiles/Duris-Visual",
+        "map_base": "http://127.0.0.1:45151/zones/",
+        "geometry": {
+          "WINDOW": "4194311",
+          "X": "2",
+          "Y": "44",
+          "WIDTH": "1366",
+          "HEIGHT": "768",
+          "SCREEN": "0"
+        },
+        "finished_utc": "2026-10-22T20:00:14Z",
+        "screenshots": {
+          "02-title-drag-after-input.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "304f7a9c913dc69c2cf4d7f951d1e87ce50001646dd54f6acf0fdb075d9375ae"
+          },
+          "reopened-candidate.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "e4a39e45ca55e097f04a4c87d07cc0edcafe0858c2b0338dabca5840cd6e5c5e"
+          },
+          "02-title-drag.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "5db65dffd6777356ff3bb113b19b15dba483adc8c4eca12393a2e49406045ac0"
+          },
+          "04-fixed-reset-after-input.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "c3106e3e22e0c68fa56034399b4b845e4cdef4b03fdafa305af6e78934d03d4c"
+          },
+          "scenario.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "702cdc3c82e9e387231ab07f131fa747891a0937ff2863c9bd293167a0c8919a"
+          },
+          "03-border-resize.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "d223d08eee8eb72ea4fe95e9b0b18a7b147c6cf1ca9216a0afe95b4a5f6c5769"
+          },
+          "03-border-resize-after-input.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "6d63f8afa28209aa6cbf56c541dd186dfd5713475e3ddec64d26a4573ab88f55"
+          },
+          "01-unlocked-dashboard-after-input.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "49028631a4d3ecd17cfae31670ab627440cf1942d127ed914f239c679bb0d0a0"
+          },
+          "reopened-fixture.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "c3bfc24a82e1e082e541c8afcd570c82e49878a9a6a151d31a3146f199870230"
+          },
+          "05-title-menu.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "6635402b5260efefbe07da0ccff8f8be48bb16295baffd48699f298c2a74f195"
+          },
+          "candidate-only.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "6ac6c529339ac73cebbaa374d0d95da3ef994c298dcc0e7a197cbbffb7e3407e"
+          },
+          "04-fixed-reset.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "82c0e2afb9bc6b5b4032bad58a316cf4a767bbe9cb1dab102d493a2bddaabfbe"
+          },
+          "01-unlocked-dashboard.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "3f2394fefb03592de473c03825af8479d14ae4601b4c5010782d1dafac4875fb"
+          },
+          "errors-view.png": {
+            "dimensions": [
+              2048,
+              1200
+            ],
+            "sha256": "4649d779233c5ca32c9f0ac9a2c432264a42d246c3c44dbedd599d523abe51ff"
+          }
+        }
+      }
+    },
+    {
+      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-dashboard-ready/20261022T200015Z-e06d09bf-chat",
+      "scenario": "chat",
+      "automated_status": "PASS",
+      "assertions": 13,
+      "reopen_assertions": 0,
+      "manifest": {
+        "run_id": "20261022T200015Z-e06d09bf",
+        "scenario": "chat",
+        "candidate": {
+          "version": "2.0.0",
+          "sha256": "dcc4cd992bf972e8db160f36e8fd1128961e6be06adc14561b238d28f8356910",
+          "payload_sha256": "5dcb6642ccd1a36c3fe4a8ed586c06922b8526439388d28a76a4c7d8218df94f"
+        },
+        "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+        "environment": {
+          "tools": {
+            "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+            "python3": "/usr/bin/python3",
+            "luac5.1": "/usr/bin/luac5.1",
+            "xvfb-run": "/usr/bin/xvfb-run",
+            "Xvfb": "/usr/bin/Xvfb",
+            "xauth": "/usr/bin/xauth",
+            "openbox": "/usr/bin/openbox",
+            "xdotool": "/usr/bin/xdotool",
+            "import": "/usr/bin/import",
+            "fc-match": "/usr/bin/fc-match"
+          },
+          "mudlet": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.config/mudlet\"\nmudlet 5.0.1  \nQt libraries 6.11.1 (compilation) 6.11.1 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+          "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+          "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+          "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+          "locale": "C.UTF-8"
+        },
+        "source": "1b9dc34dadb6c99d983d8488eba72bfefa504072",
+        "scale": 1,
+        "size": "1366x768",
+        "timeout": 35,
+        "network": "offline fixtures; loopback map and GMCP servers only",
+        "started_utc": "2026-10-22T20:00:15Z",
+        "fixtures": {
+          "test_runner.py": "294666d4fe1779adb0b46ce9f7f0d458597f1106d9f67978b075682ce0825c2e",
+          "gmcp_server.py": "b8ba347a98fc59f6467ea7b188435fc96b535452a5256c44ddfcf474601735de",
+          "profile.xml": "262f3478c0559e34acfa4e55454c5d8d012b5c06c41cf11368308b373c3d6d1e",
+          "README.md": "5891f096ca4b566ca2605602f1b7bd98b780ac3c4000dde30f98c5571ad9e0e2",
+          "map_server.py": "92d761ee00b90ed2746a765e079d035e9573636f5168993df02ff33a642a06bf",
+          "bootstrap.lua": "019350095efb08aba567d15418019ccbeb4025dca1cd59dcc6a29105b81d1caa",
+          "scenarios.json": "3d90e5dbd491d27c34e9cfb87ac130063cea8b21c0ad49a6b6342fa9d6578362",
+          "fixtures/chat.lua": "c830c4d988833706e42f1c90188a1572b5840986ac325dbc86c9beb2c0003263",
+          "fixtures/text.lua": "a5c8df9f97d07645defef81bac5a4c95658432d7bc238dce42a147c45421ca59",
+          "fixtures/server-gmcp.json": "62ef82ba17080268095ee2b88ed9aa5dd7fb5a5aa36b944f26f633e407c0424f",
+          "fixtures/server-wire.lua": "f67f7bcbc988c0ca4ed6aefb9a96bd387f2981696d00c285756093066256d5b8",
+          "fixtures/zone.json": "0c2d78a9d1baaa4af59c5b203d2664dadedde16dba0e996e2f25f49ac48bdc4d",
+          "fixtures/layout.lua": "5f19d73b4dc10c759569a956d15f9fa5481d9d98a183b56a2de0b7dd878b42db",
+          "fixtures/reopen.lua": "3f67bf27378355d3fa1cfa6c094b52a039cc36f644dd044e45f41319651ee7e7",
+          "fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
+          "fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082",
+          "fixtures/information.lua": "f77bb2eb985b73627990656093ef59dd79b9cb6e85fc5db52f9c1b1bc688bef2",
+          "fixtures/lifecycle.lua": "8fd4253fdc7b00d92f4d93e04d6969370fc3d7bb1d0911cc379eb0766874a615",
+          "fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
+          "fixtures/lowhp.lua": "5fe1914b25c5e0606f75ac5236b053a9a2b9e78f209e212a445d712ae0bc1173",
+          "fixtures/controls.lua": "efe3d04e83c2b2f95475917baf7b9963960979961f7a0541cd4e3cb892a22b57",
+          "fixtures/README.md": "f8f06b3f6a60afe5fe651fd361c110ac14bfd3624d57cd7d9260203ec307d38d",
+          "fixtures/connections.lua": "94e2c522b470cbfc6716dcdc7b76d3831d10e5cacdbc9597fe98f52c54d80c48",
+          "fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
+          "fixtures/maps.lua": "fa0b004cd3dfe7bcaa925f9d7c59dd9e0ad51e922497481c90213e436810debd",
+          "fixtures/assertion-error.lua": "0fb1cd524b09681d6118214dae83ff8d759c7f4a88fc3de127e23a99aa1e0fdf",
+          "fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
+          "fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
+          "fixtures/map-colors.lua": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b"
+        },
+        "fault": null,
+        "profile": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-dashboard-ready/20261022T200015Z-e06d09bf-chat/config/mudlet/profiles/Duris-Visual",
+        "map_base": "http://127.0.0.1:45391/zones/",
+        "geometry": {
+          "WINDOW": "6291463",
+          "X": "2",
+          "Y": "44",
+          "WIDTH": "1366",
+          "HEIGHT": "768",
+          "SCREEN": "0"
+        },
+        "finished_utc": "2026-10-22T20:00:26Z",
+        "screenshots": {
+          "09-outgoing-tell.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "75ceb0b798f5939ee74e058c8b8f1e5c0c84459f96dc474046346f8c6b7dc467"
+          },
+          "01-say.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "db14163f648fe4d0b3d22586803e0d665032a89079cf925484ad13809aa39a42"
+          },
+          "08-wizmsg.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "333f78da251c2df50ddc7d0ef33a19e783147b95ab821bd2807636aaafcf48fe"
+          },
+          "scenario.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "3607251a95a55f81bb68078ae6791b3265a24248f7050479db752b2f93a98c1f"
+          },
+          "07-petition.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "4bcadcd6a07d5bc18066f124b2a71a6d5b58370d69849d65b247d2253a087e52"
+          },
+          "03-gcc.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "cd0c3ff172e8dd32034e38f57e0f08090d9730c281d8b8f78cdebc1f3465db29"
+          },
+          "06-jchat.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "709130687cbd69e1a705170f25c6d720f3407d3cad3da6569500f34422609e97"
+          },
+          "candidate-only.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "6ac6c529339ac73cebbaa374d0d95da3ef994c298dcc0e7a197cbbffb7e3407e"
+          },
+          "02-tell.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "0dd797c0c21ccd0b1efa8e26494b881f95b620859ae7a0b011b241c5c256173c"
+          },
+          "04-gsay.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "4c70f34e16641f935fe7084f070ac7a0e322b8d48417ed6aea621f10974b3eff"
+          },
+          "05-nchat.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "a3ad6e5f0fa6d8c3afd4599bcc787f9821b45a7f9fb198c96fa322bfbc6acc13"
+          },
+          "errors-view.png": {
+            "dimensions": [
+              2048,
+              1200
+            ],
+            "sha256": "96a78248c5f1f553f93ff75623c653c974adb181ce0bfc144fe189051b797abc"
+          }
+        }
+      }
+    },
+    {
+      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-dashboard-ready/20261022T200026Z-c69db791-maps",
+      "scenario": "maps",
+      "automated_status": "PASS",
+      "assertions": 18,
+      "reopen_assertions": 0,
+      "manifest": {
+        "run_id": "20261022T200026Z-c69db791",
+        "scenario": "maps",
+        "candidate": {
+          "version": "2.0.0",
+          "sha256": "84655c3ca6c339ae5085712fa8879e388c0ce253940913dd318d2cf30db7eb86",
+          "payload_sha256": "5dcb6642ccd1a36c3fe4a8ed586c06922b8526439388d28a76a4c7d8218df94f"
+        },
+        "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+        "environment": {
+          "tools": {
+            "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+            "python3": "/usr/bin/python3",
+            "luac5.1": "/usr/bin/luac5.1",
+            "xvfb-run": "/usr/bin/xvfb-run",
+            "Xvfb": "/usr/bin/Xvfb",
+            "xauth": "/usr/bin/xauth",
+            "openbox": "/usr/bin/openbox",
+            "xdotool": "/usr/bin/xdotool",
+            "import": "/usr/bin/import",
+            "fc-match": "/usr/bin/fc-match"
+          },
+          "mudlet": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.config/mudlet\"\nmudlet 5.0.1  \nQt libraries 6.11.1 (compilation) 6.11.1 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+          "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+          "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+          "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+          "locale": "C.UTF-8"
+        },
+        "source": "1b9dc34dadb6c99d983d8488eba72bfefa504072",
+        "scale": 1,
+        "size": "1366x768",
+        "timeout": 35,
+        "network": "offline fixtures; loopback map and GMCP servers only",
+        "started_utc": "2026-10-22T20:00:27Z",
+        "fixtures": {
+          "test_runner.py": "294666d4fe1779adb0b46ce9f7f0d458597f1106d9f67978b075682ce0825c2e",
+          "gmcp_server.py": "b8ba347a98fc59f6467ea7b188435fc96b535452a5256c44ddfcf474601735de",
+          "profile.xml": "262f3478c0559e34acfa4e55454c5d8d012b5c06c41cf11368308b373c3d6d1e",
+          "README.md": "5891f096ca4b566ca2605602f1b7bd98b780ac3c4000dde30f98c5571ad9e0e2",
+          "map_server.py": "92d761ee00b90ed2746a765e079d035e9573636f5168993df02ff33a642a06bf",
+          "bootstrap.lua": "019350095efb08aba567d15418019ccbeb4025dca1cd59dcc6a29105b81d1caa",
+          "scenarios.json": "3d90e5dbd491d27c34e9cfb87ac130063cea8b21c0ad49a6b6342fa9d6578362",
+          "fixtures/chat.lua": "c830c4d988833706e42f1c90188a1572b5840986ac325dbc86c9beb2c0003263",
+          "fixtures/text.lua": "a5c8df9f97d07645defef81bac5a4c95658432d7bc238dce42a147c45421ca59",
+          "fixtures/server-gmcp.json": "62ef82ba17080268095ee2b88ed9aa5dd7fb5a5aa36b944f26f633e407c0424f",
+          "fixtures/server-wire.lua": "f67f7bcbc988c0ca4ed6aefb9a96bd387f2981696d00c285756093066256d5b8",
+          "fixtures/zone.json": "0c2d78a9d1baaa4af59c5b203d2664dadedde16dba0e996e2f25f49ac48bdc4d",
+          "fixtures/layout.lua": "5f19d73b4dc10c759569a956d15f9fa5481d9d98a183b56a2de0b7dd878b42db",
+          "fixtures/reopen.lua": "3f67bf27378355d3fa1cfa6c094b52a039cc36f644dd044e45f41319651ee7e7",
+          "fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
+          "fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082",
+          "fixtures/information.lua": "f77bb2eb985b73627990656093ef59dd79b9cb6e85fc5db52f9c1b1bc688bef2",
+          "fixtures/lifecycle.lua": "8fd4253fdc7b00d92f4d93e04d6969370fc3d7bb1d0911cc379eb0766874a615",
+          "fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
+          "fixtures/lowhp.lua": "5fe1914b25c5e0606f75ac5236b053a9a2b9e78f209e212a445d712ae0bc1173",
+          "fixtures/controls.lua": "efe3d04e83c2b2f95475917baf7b9963960979961f7a0541cd4e3cb892a22b57",
+          "fixtures/README.md": "f8f06b3f6a60afe5fe651fd361c110ac14bfd3624d57cd7d9260203ec307d38d",
+          "fixtures/connections.lua": "94e2c522b470cbfc6716dcdc7b76d3831d10e5cacdbc9597fe98f52c54d80c48",
+          "fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
+          "fixtures/maps.lua": "fa0b004cd3dfe7bcaa925f9d7c59dd9e0ad51e922497481c90213e436810debd",
+          "fixtures/assertion-error.lua": "0fb1cd524b09681d6118214dae83ff8d759c7f4a88fc3de127e23a99aa1e0fdf",
+          "fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
+          "fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
+          "fixtures/map-colors.lua": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b"
+        },
+        "fault": null,
+        "profile": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-dashboard-ready/20261022T200026Z-c69db791-maps/config/mudlet/profiles/Duris-Visual",
+        "map_base": "http://127.0.0.1:45843/zones/",
+        "geometry": {
+          "WINDOW": "4194311",
+          "X": "2",
+          "Y": "44",
+          "WIDTH": "1366",
+          "HEIGHT": "768",
+          "SCREEN": "0"
+        },
+        "finished_utc": "2026-10-22T20:00:59Z",
+        "screenshots": {
+          "05-http-error.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "8fd4c436cea4dc3c826db98ec1d67ae70c65de081b11081f914deec7314d838c"
+          },
+          "01-zone-after-input.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "71cf03637acf529c3e58761f56e496e41829ae19ec2ff182141b4f7e2a01e084"
+          },
+          "scenario.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "6080e66a22c90aa35ce85c69fd2879648f3502e8c0e0394d1383a63fb40748a8"
+          },
+          "09-recovered.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "5cbea25f524d7eefaedbadf1b3d2335ef9022fd47d680ad7967018bc33a3eb46"
+          },
+          "04-malformed.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "0a036a2ae0d633150b8de81696cc16c252f9d15802baa2ec7d1d039c5c255375"
+          },
+          "03-delayed-to-wilderness.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "b725b2984e9a54f7f2cb403faa330e9da290de528ace270c09eedce87d83fd20"
+          },
+          "02-zoom.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "91867e602defb95625a41db00e8a225b7c0be56df4d64b33089fb1e0dc17a844"
+          },
+          "08-timeout.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "53f5cdd477a0554eac99f0badf89f4f9a7089110b46c95849db562f24da91409"
+          },
+          "01-zone.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "5c2ac8540e4df3ddb2b8d16bc3fcc4ebd57a352b0d782c7cbb23d044890c173b"
+          },
+          "07-invalid-edge.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "26a3ecc00800b5fea1c39205b47a55512d43eb4adf76b31d5b560735f602f6cc"
+          },
+          "candidate-only.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "6ac6c529339ac73cebbaa374d0d95da3ef994c298dcc0e7a197cbbffb7e3407e"
+          },
+          "errors-view.png": {
+            "dimensions": [
+              2048,
+              1200
+            ],
+            "sha256": "8ffbb94c14f5c4fa63a7b2a94483f5e329fb32ca2ed685d756b49d22065b4d84"
+          },
+          "06-invalid-schema.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "1270f4e75d0ac54d35f9a311f8d516b7d59eac4bcecbbe05a713171ad9022187"
+          }
+        }
+      }
+    },
+    {
+      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-dashboard-ready/20261022T200100Z-df22d7a5-lifecycle",
+      "scenario": "lifecycle",
+      "automated_status": "PASS",
+      "assertions": 319,
+      "reopen_assertions": 27,
+      "manifest": {
+        "run_id": "20261022T200100Z-df22d7a5",
+        "scenario": "lifecycle",
+        "candidate": {
+          "version": "2.0.0",
+          "sha256": "90142a1ab6c630ee9007b6d07ca1b9bcb19c81b85637d7e5593afa3b930232bc",
+          "payload_sha256": "5dcb6642ccd1a36c3fe4a8ed586c06922b8526439388d28a76a4c7d8218df94f"
+        },
+        "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+        "environment": {
+          "tools": {
+            "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+            "python3": "/usr/bin/python3",
+            "luac5.1": "/usr/bin/luac5.1",
+            "xvfb-run": "/usr/bin/xvfb-run",
+            "Xvfb": "/usr/bin/Xvfb",
+            "xauth": "/usr/bin/xauth",
+            "openbox": "/usr/bin/openbox",
+            "xdotool": "/usr/bin/xdotool",
+            "import": "/usr/bin/import",
+            "fc-match": "/usr/bin/fc-match"
+          },
+          "mudlet": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.config/mudlet\"\nmudlet 5.0.1  \nQt libraries 6.11.1 (compilation) 6.11.1 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+          "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+          "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+          "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+          "locale": "C.UTF-8"
+        },
+        "source": "1b9dc34dadb6c99d983d8488eba72bfefa504072",
+        "scale": 1,
+        "size": "1366x768",
+        "timeout": 35,
+        "network": "offline fixtures; loopback map and GMCP servers only",
+        "started_utc": "2026-10-22T20:01:00Z",
+        "fixtures": {
+          "test_runner.py": "294666d4fe1779adb0b46ce9f7f0d458597f1106d9f67978b075682ce0825c2e",
+          "gmcp_server.py": "b8ba347a98fc59f6467ea7b188435fc96b535452a5256c44ddfcf474601735de",
+          "profile.xml": "262f3478c0559e34acfa4e55454c5d8d012b5c06c41cf11368308b373c3d6d1e",
+          "README.md": "5891f096ca4b566ca2605602f1b7bd98b780ac3c4000dde30f98c5571ad9e0e2",
+          "map_server.py": "92d761ee00b90ed2746a765e079d035e9573636f5168993df02ff33a642a06bf",
+          "bootstrap.lua": "019350095efb08aba567d15418019ccbeb4025dca1cd59dcc6a29105b81d1caa",
+          "scenarios.json": "3d90e5dbd491d27c34e9cfb87ac130063cea8b21c0ad49a6b6342fa9d6578362",
+          "fixtures/chat.lua": "c830c4d988833706e42f1c90188a1572b5840986ac325dbc86c9beb2c0003263",
+          "fixtures/text.lua": "a5c8df9f97d07645defef81bac5a4c95658432d7bc238dce42a147c45421ca59",
+          "fixtures/server-gmcp.json": "62ef82ba17080268095ee2b88ed9aa5dd7fb5a5aa36b944f26f633e407c0424f",
+          "fixtures/server-wire.lua": "f67f7bcbc988c0ca4ed6aefb9a96bd387f2981696d00c285756093066256d5b8",
+          "fixtures/zone.json": "0c2d78a9d1baaa4af59c5b203d2664dadedde16dba0e996e2f25f49ac48bdc4d",
+          "fixtures/layout.lua": "5f19d73b4dc10c759569a956d15f9fa5481d9d98a183b56a2de0b7dd878b42db",
+          "fixtures/reopen.lua": "3f67bf27378355d3fa1cfa6c094b52a039cc36f644dd044e45f41319651ee7e7",
+          "fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
+          "fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082",
+          "fixtures/information.lua": "f77bb2eb985b73627990656093ef59dd79b9cb6e85fc5db52f9c1b1bc688bef2",
+          "fixtures/lifecycle.lua": "8fd4253fdc7b00d92f4d93e04d6969370fc3d7bb1d0911cc379eb0766874a615",
+          "fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
+          "fixtures/lowhp.lua": "5fe1914b25c5e0606f75ac5236b053a9a2b9e78f209e212a445d712ae0bc1173",
+          "fixtures/controls.lua": "efe3d04e83c2b2f95475917baf7b9963960979961f7a0541cd4e3cb892a22b57",
+          "fixtures/README.md": "f8f06b3f6a60afe5fe651fd361c110ac14bfd3624d57cd7d9260203ec307d38d",
+          "fixtures/connections.lua": "94e2c522b470cbfc6716dcdc7b76d3831d10e5cacdbc9597fe98f52c54d80c48",
+          "fixtures/combat.lua": "3aece1775680ae199157ea103c46fc875000f9c3560860e9c0d094ce306a5b74",
+          "fixtures/maps.lua": "fa0b004cd3dfe7bcaa925f9d7c59dd9e0ad51e922497481c90213e436810debd",
+          "fixtures/assertion-error.lua": "0fb1cd524b09681d6118214dae83ff8d759c7f4a88fc3de127e23a99aa1e0fdf",
+          "fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
+          "fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
+          "fixtures/map-colors.lua": "36ed99d4459dbdb4ffe4dbddd1927e406a8f73c9f0e606de54e1ea44a577252b"
+        },
+        "fault": null,
+        "profile": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-dashboard-ready/20261022T200100Z-df22d7a5-lifecycle/config/mudlet/profiles/Duris-Visual",
+        "map_base": "http://127.0.0.1:46443/zones/",
+        "geometry": {
+          "WINDOW": "4194311",
+          "X": "2",
+          "Y": "44",
+          "WIDTH": "1366",
+          "HEIGHT": "768",
+          "SCREEN": "0"
+        },
+        "finished_utc": "2026-10-22T20:01:16Z",
+        "screenshots": {
+          "reopened-candidate.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "8df6ed78670d2c8adc24159888719d2af3e4340d8618b03929741da436357ccf"
+          },
+          "scenario.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "633c1d38ad2a05ffa6e8672a2c3d242b7800553ce631c29bd7657b2345e3dc8f"
+          },
+          "reopened-fixture.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "3f2394fefb03592de473c03825af8479d14ae4601b4c5010782d1dafac4875fb"
+          },
+          "candidate-only.png": {
+            "dimensions": [
+              1366,
+              768
+            ],
+            "sha256": "8df6ed78670d2c8adc24159888719d2af3e4340d8618b03929741da436357ccf"
+          },
+          "errors-view.png": {
+            "dimensions": [
+              2048,
+              1200
+            ],
+            "sha256": "a8ca7adb24918ea7025b4a96b7fc116c9073c3f61052e52fdc2751dc39c91bc5"
+          }
+        }
+      }
+    }
+  ],
+  "earlier_suite": "/home/aiwithapex/.local/share/duris-client-dev/issue-5-dashboard-suite/suite-results.json",
+  "reuse": "20-case suite ran: 18 passed initially; chat wrapping assertion and pointer hover failed, then corrected. Targeted layout/chat/maps/lifecycle rerun covers subsequent body restoration and menu registry cleanup changes. Other handlers, routing and failure semantics unchanged.",
+  "pending": "Private chat migration, stationary map viewport redraw, geometry/scaling matrix and 4.x qualification."
+}

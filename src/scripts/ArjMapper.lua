@@ -362,13 +362,15 @@ function ArjMapper:showWilderness()
     if self.ui.zoneContainer then self.ui.zoneContainer:hide() end
     if ArjUI and ArjUI.mapper then ArjUI.mapper:hide() end
 
-    self.ui.wildConsole:show()
     self.state.lastDisplayMode = "wilderness"
+    if ArjUI and ArjUI.panelIsVisible and not ArjUI:panelIsVisible("map") then return end
+    self.ui.wildConsole:show()
 end
 
 function ArjMapper:updateWildernessMap(mapData)
     if not self.ui.wildConsole or not mapData or not mapData.map then return end
 
+    self.state.lastWildernessMap={map=mapData.map}
     local parsed = self:parseWildernessMap(mapData.map)
     local containerH = self.ui.wildConsole:get_height() or 250
     local fontSize = math.floor(self.config.wildFontSize * self.config.wildZoom)
@@ -401,13 +403,15 @@ end
 -- ============================================================
 
 function ArjMapper:showZoneMap()
+    self.state.lastWildernessMap=nil
     if not self.ui.zoneContainer and not self:setupUI() then return end
 
     if self.ui.wildConsole then self.ui.wildConsole:hide() end
     if ArjUI and ArjUI.mapper then ArjUI.mapper:hide() end
 
-    self.ui.zoneContainer:show()
     self.state.lastDisplayMode = "zone"
+    if ArjUI and ArjUI.panelIsVisible and not ArjUI:panelIsVisible("map") then return end
+    self.ui.zoneContainer:show()
 
     self:renderZoneMap()
 end
@@ -740,6 +744,7 @@ end
 -- ============================================================
 
 function ArjMapper:renderZoneMap()
+    if ArjUI and ArjUI.panelIsVisible and not ArjUI:panelIsVisible("map") then return end
     if not self.ui.zoneContainer then return end
     
     -- Coalesce rapid updates using wall time, retaining the final update.
@@ -1403,6 +1408,7 @@ function ArjMapper:kill()
 end
 
 function ArjMapper:resetSession()
+    self.state.lastWildernessMap=nil
     if self.renderTimer then killTimer(self.renderTimer); self.renderTimer = nil end
     for _, request in pairs(self.requests or {}) do request.finish() end
     self.requests = {}

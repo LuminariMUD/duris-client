@@ -20,6 +20,23 @@ class RunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "requires Mudlet 5.0"):
                 runner.doctor()
 
+    def test_drag_releases_button_after_pointer_failure(self):
+        calls = []
+        def xdo(*args):
+            calls.append(args)
+            if len(calls) == 3:
+                raise RuntimeError("pointer failed")
+        with patch.object(runner, "xdo", side_effect=xdo):
+            with self.assertRaisesRegex(RuntimeError, "pointer failed"):
+                runner.pointer_action("123", {"type":"drag", "x":10, "y":20, "to_x":50, "to_y":70}, 2)
+        self.assertEqual(calls[0], ("mousemove", "--window", "123", "20", "80"))
+        self.assertEqual(calls[-1], ("mouseup", "1"))
+
+    def test_right_click_uses_requested_button(self):
+        with patch.object(runner, "xdo") as xdo:
+            runner.pointer_action("123", {"type":"click", "x":10, "y":20, "button":3}, 1)
+        self.assertEqual(xdo.call_args.args, ("click", "3"))
+
     def test_missing_dependencies_fail(self):
         with patch.object(runner.shutil, "which", return_value=None):
             with self.assertRaisesRegex(RuntimeError, "Missing prerequisites.*luac5.1"):

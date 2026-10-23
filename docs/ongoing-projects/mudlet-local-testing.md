@@ -1,5 +1,43 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Later review findings — 2026-10-23
+
+The Windows replacement finding is valid: repeated saves now retain a backup
+while replacing an existing destination, restore it on failed installation,
+and can load it after interruption. The real-Mudlet fixture fails before this
+repair and passes with simulated Windows destination semantics, rollback and
+recovery. This is not native Windows runtime qualification.
+Wilderness resize now repaints the last accepted payload; zone/session changes
+retire it. The inactive private-frame menu placeholder is removed from this
+dashboard-only parent. Registered private frames, commands and recovery are
+implemented and tested in dependent #12; no feature is dropped from the stack.
+Version 2.0.1, local release payload checks, 15 release/ten controller tests and
+all 21 suite expectations pass. Current hashes/runs are in review-2026-10-23.json;
+its predecessor record remains historical. Native-platform limits are unchanged.
+
+## Integrated review repair — 2026-10-23
+
+PR #8 now carries #7 (compact header and hidden-tell repair). Merge #7 before
+#8; dependent branches will carry the combined runtime forward. Published
+history is preserved through a merge, with no manual release tags.
+The prior header plan is preserved in [plan-issue-4.md](plan-issue-4.md).
+
+The map-over-maximized-output finding is valid. Covered dashboard frame trees
+are hidden without changing saved normal state. The mapper checks effective
+body visibility before event/deferred paints, retains accepted room updates,
+and reveals the latest room when output is restored. No new timer or renderer
+was introduced. The hidden-tell regression from #7 remains passing.
+
+Local release validation, 15 release tests, ten controller tests and all 21
+Mudlet 5.0.1 suite expectations pass after the affected maps rerun. That rerun
+corrects a fixture assumption: compact geometry can grow without adding a full
+blank text row. The regression checks Geyser's hidden OR auto_hidden state;
+covered output, restored latest-room map, reset layout and Errors images were
+inspected. [Current source/payload and per-run archive hashes](../testing/issue-5/review-2026-10-23.json)
+identify the integrated package. Earlier manifests remain historical evidence;
+no fresh live, 4.22, minimum-version, hardware-DPI or other-OS claim is made.
+
+
 ## Review follow-up — 2026-10-23
 
 The inherited private-chat visibility finding is valid. `ui off` now clears the
@@ -495,3 +533,17 @@ Environment/baseline, repeatable execution, offline fixtures, triage and operato
 documentation are implemented. Live/compatibility has the explicit limits
 above; remote CI execution and evidence upload passed. No unresolved
 reproduced defect currently blocks ordinary use in the tested primary target.
+
+## Issue #5 dashboard chunk — 2026-10-22
+
+Candidate 2.0.0 adds ten adjustable dashboard frames. Real Mudlet 5.0.1 / Qt
+6.11.1, Xvfb 1366x768 scale 1: physical title drag, border resize, right-click
+menu, reset button, all dashboard actions, off/on and profile restart pass.
+The 20-case suite ran with 18 initial passes; fixes for hover dispatch and a
+wrap-sensitive chat assertion passed targeted chat/maps reruns. Layout/lifecycle
+also pass after restoring explicitly hidden frame bodies and clearing frame
+menu registries. Ten Python controller tests pass. Inspected default,
+resized, reset/menu, mixed-state and Errors-view images; no Lua errors.
+See [candidate evidence](../testing/issue-5/dashboard-evidence.json) for hashes,
+run paths and selected screenshots. Private chats, cached map redraw, full size/
+scale matrix and 4.x qualification remain pending in the implementation plan.

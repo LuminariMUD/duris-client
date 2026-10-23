@@ -40,33 +40,48 @@ The content root is inset **2.5%** from each side and leaves **2.8%** at the
 bottom. In full mode (the default), it starts **10.5%** below the top and is
 **86.7%** tall. `ui set compactHeader on` moves its top to **2.8%** and makes
 it **94.4%** tall. Width stays **95%** of `getMainWindowSize()` in both modes.
-The root gains **7.7%** of the logical window height; with its existing child
-proportions, the main console gains about **5.94%** of that window height.
+The root gains **7.7%** of the logical window height; game output gains height according to the selected
+panel arrangement.
 `ArjUI:headerHeightPct()` supplies the same decision to startup and
 `ArjUI:layout()`, which recalculates the root/footer and redraws the active
 map from current-session data on header changes, show, and resize.
 When `mapper off` pauses updates, those layout changes retain the displayed
 map; they must not render the incoming GMCP payloads ignored by the mapper.
 
-These are the current content-root proportions. They describe the implemented
-arrangement, not a user-selectable layout system.
+Ten `Adjustable.Container` frames are siblings under the content root. The
+package owns one descriptor list for geometry, minimum logical sizes and reset.
+Panels default to locked, visible and docked. A title drag or border resize
+floats a panel; Dock returns its named home rectangle. Native border attachment
+and frame auto-save/load are disabled. Frame content uses a 22px title band and
+5px side/bottom clearance. Titles replace duplicate mobs/items/players headers.
 
-| Region | Placement | Contents |
-| --- | --- | --- |
-| Left column | x 0%, width 16.5%; upper 83% of root | Area/world links and map; exits and time; mobs; items |
-| Center column | x 16.7%, width 57%; upper 83% of root | Experience bar, room name, main game output |
-| Right column | x 73.9%, width 26%; full root height | Character tabs, players in the room, chat |
-| Bottom strip | y 83.5%, height 16.5%; panels occupy the left/center width | Personal vitals, tank and buffs, target and debuffs/damage |
-| Footer | Below the root, aligned with the right column | Build-injected package version and credits tooltip |
-| Command input | Mudlet's native command line | Commands, history, and completion |
+Default rectangles (x, y, width, height as percentages of the content root):
 
-The right column spans the root's full height; it does not stop above the
-bottom strip. The small gaps between columns and panels expose the frame
-without reducing text contrast.
+- Map: (0, 0, 16.5, 32), including area/world links, exits and time.
+- Mobs: (0, 33, 16.5, 21.5); items: (0, 55.5, 16.5, 23.5).
+- Output: (16.7, 0, 57, 79), including experience and room title.
+- Character: (73.9, 0, 26, 45); players: (73.9, 46, 26, 26);
+  chat: (73.9, 73, 26, 27).
+- Vitals: (0, 80, 16.5, 19.5); tank: (16.7, 80, 28.3, 19.5);
+  target: (45.5, 80, 28.2, 19.5).
 
-Within the left column, the map occupies the top 35%, exits/time share the
-36–40% band, mobs occupy 41–69%, and items occupy 70–100%. Within the right
-column, character tabs occupy 0–45%, players 46–72%, and chat 73–100%.
+The bottom strip is slightly taller to preserve combat labels below the new
+frame controls. Names/positions use 16px, HP uses 16px, affects headers 14px;
+remaining height is for affects. Character/chat tab rows retain an 18px minimum.
+Minimum full sizes are map 190x170, mobs/items 150x95, output 340x180,
+character 285x160, players 190x95, chat 285x110, vitals 150x110 and
+tank/target 220x110, in Qt logical pixels. Smaller viewports clamp displayed
+rectangles to available space without replacing saved normal rectangles.
+
+The fixed Panels and Reset layout controls sit just above the root inside the
+existing header margin. They remain outside maximized frames. Footer credits
+stay below the right column; native command input stays available. Auxiliary
+frames support hide/minimize, every dashboard frame supports maximize/restore
+and global/per-panel locking. Game output cannot hide/minimize independently.
+The common command dispatcher enforces the same capabilities as title menus.
+A maximized frame hides all other dashboard frame trees without changing their
+saved normal state. Map event/deferred renderers use the same effective body
+visibility rule, continue accepting room data while covered, and redraw on reveal.
 
 The character tabs are **GROUP / STATS / INV / EQ / WHO / SHIP**, with GROUP
 selected initially. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
@@ -261,6 +276,7 @@ or use `look` to obtain fresh room data and retry.
 
 | Storage | Contents and lifetime |
 | --- | --- |
+| `arjui_layout.json` | Versioned dashboard modes, normalized normal rectangles, locks and hidden/minimized flags; maximize is transient |
 | `arjui_settings.json` | Seven display/input toggles: `compactHeader` defaults off; the other six default on |
 | `arjui_custom_commands.json` | Custom context-menu actions |
 | `arjauto.json` | Automation toggles, variables, rescue list, bidscores, and login commands |
@@ -282,7 +298,11 @@ and delayed actions must not apply to the next character session.
 Each script tracks the runtime resources it creates. Package uninstall calls
 the three cleanup paths to remove aliases, triggers, keys, handlers, timers,
 and widgets. New callbacks or delayed work must join the owning script's
-cleanup path. Hiding the UI is a separate operation from teardown.
+cleanup path. Hiding the UI is a separate operation from teardown. Layout reset never calls
+`init()` or `kill()`, never sends game commands, and preserves scrollback and
+preferences. Gesture completion saves once; ordinary window resizing clamps
+only the displayed geometry. Missing/corrupt/unsupported layouts fall back to
+defaults with local diagnostics. Writes use a temporary file plus replacement.
 
 ## Packaging and design validation
 
@@ -325,3 +345,8 @@ The imported LuminariGUI references are background material for a different
 package. Their fragment build system, MSDP setup, `GUI.*` helpers, and release
 checklists do not define this client's design; see the
 [documentation index](README.md#imported-reference-material).
+
+Layout saves first try atomic replacement, then retain a backup while replacing
+an existing Windows destination. Failed installation restores the old file;
+startup can read the backup after interruption. Dashboard-only recovery lists
+ten registered groups; private frame integration is delivered by PR #12.
