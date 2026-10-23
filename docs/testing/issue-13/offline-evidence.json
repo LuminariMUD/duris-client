@@ -543,6 +543,38 @@
     },
     "scenario": "ship-table"
   },
+  "current_payload_ci_suite": {
+    "run": "https://github.com/LuminariMUD/duris-client/actions/runs/39964441199",
+    "runtime_job": "https://github.com/LuminariMUD/duris-client/actions/runs/39964441199/job/120450516677",
+    "artifact": "https://github.com/LuminariMUD/duris-client/actions/runs/39964441199/artifacts/12506955505",
+    "head_source": "c61895a8e680bab64133703a0ebb192c244d0677",
+    "checkout_merge": "a58a9468296d83ddde47bf34443942a6c1378159",
+    "checkout_tree": "759350116c9197745a7d41c352897e9025ce5916",
+    "tree_identity": "GitHub git-commit metadata confirms the CI checkout tree exactly equals c61895a8e680bab64133703a0ebb192c244d0677. Later integration edits affect repository documentation/evidence only.",
+    "package_sha256": "cedd3627f739bd45a397bd686df516b4877f47afd253f42cda02d5ff3ddaae78",
+    "payload_sha256": "8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330",
+    "command": "python3 scripts/mudlet_suite.py --root \"$MUDLET_ARTIFACTS\"",
+    "runtime": "Checksum-pinned Mudlet 5.0.1 on Ubuntu 26.04, configured in .github/workflows/mudlet-runtime.yml.",
+    "passed": 23,
+    "total": 23,
+    "passed_cases": [
+      "ship-bridge", "lowhp", "ship-table", "vitals", "crowded", "combat",
+      "chat", "information", "map-colors", "controls", "login", "text",
+      "maps", "lifecycle", "connections", "server-wire", "assertion-error",
+      "timer-error", "event-error", "layout", "wrong-profile", "wrong-candidate",
+      "no-readiness"
+    ],
+    "negative_cases": "Deliberate errors and fault cases passed by failing for their expected reason with normal shutdown/cleanup, as enforced by mudlet_suite.py.",
+    "controller_tests": 10,
+    "conclusion": "success",
+    "visual_review": "CI establishes automated behavior. Reuse the inspected current-payload scale-1/2 screenshots recorded in current_ui_regressions and scale2; no blanket CI screenshot review is claimed."
+  },
+  "compatibility_qualification": {
+    "status": "PARTIAL",
+    "minimum_runtime": "Mudlet 4.19.1 unverified; source API audit is not runtime certification.",
+    "native_platforms": "Windows/macOS and physical DPI/input unverified.",
+    "integration_scope": "Implementation is delivered with passing available checks; complete supported-version/platform qualification is not established."
+  },
   "pre_review_scale2": {
     "run": "/home/aiwithapex/.local/share/duris-captains-scale2-qualified/20261023T131215Z-23a2e7ab-ship-table",
     "automated_status": "PASS",

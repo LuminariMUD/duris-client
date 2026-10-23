@@ -9,10 +9,10 @@
     "sha256": "e0ac55014b4b16853dd488a819f382827d2d74a0218bf0798790e4b910d60cbb",
     "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
   },
-  "profile": "Fresh independent Duris-Live-Test with exact final archive; no companion, send override or injected GMCP. Only read-only reference commands and reversible test-character movement.",
+  "profile": "Fresh independent Duris-Live-Test with exact pre-review archive identified in package; no companion, send override or injected GMCP. Only read-only reference commands and reversible test-character movement.",
   "run": "/home/aiwithapex/.local/share/duris-captains-live-qualified",
   "checks": [
-    "Actual final package and same vessel",
+    "Actual pre-review package and same vessel",
     "Matching observing-vessel keys on real packets",
     "Bridge weight and load",
     "Crate capacity is distinct from weight load",

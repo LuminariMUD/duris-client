@@ -1,24 +1,25 @@
 # SHIP redesign: the Captain's Table
 
-Date: 2026-10-23. Status: implementation and scoped qualification complete; review repairs ready for sequential merge.
+Date: 2026-10-23. Status: implementation integrated; available checks pass; compatibility qualification remains partial.
 
 ## Current handoff
 
-**Implementation and scoped qualification are complete; the client stack is ready for sequential merge.**
-Keep issue #13 open until review/integration. No client PR has been merged or manually tagged here.
+**Implementation is delivered on master through #14 and #15. #16 records the qualification closeout.**
+Issue #13 closes when that final evidence PR is integrated. Actual Mudlet 4.19.1 and
+native-platform certification remain incomplete; no complete supported-platform
+release-readiness claim is made. These limits do not leave implementation work open.
 
-- Merge order: [#14 — Details](https://github.com/LuminariMUD/duris-client/pull/14)
-  (`c7d4e10`) → [#15 — Captain's Table](https://github.com/LuminariMUD/duris-client/pull/15)
-  (`2cf57f69fc8525f9b084e89d289fedcd9eeae9b1`) →
-  [#16 — qualification](https://github.com/LuminariMUD/duris-client/pull/16).
-  Current master `e540a12` is already an ancestor of all three branches. Keep the
-  dependent bases until their predecessors merge. Prefer merge commits to preserve
-  ancestry, then retarget each successor to master. If squash merges are chosen,
-  save each predecessor tip and explicitly rebase its successor onto master before
-  retargeting; simply retargeting would reintroduce predecessor history. #16 carries
-  the latest #15 fix through merge `a63cf1d`. Master CI continues to own release tags.
-- Active branch: `branch/issue-13-ship-qualification`. The original requested branch
-  `branch/issue-13-ship-captains-table` owns #14. All completed work is committed/pushed.
+- Integrated in order with merge commits:
+  [#14 — Details](https://github.com/LuminariMUD/duris-client/pull/14),
+  `cffab206036d5ee97d1bde5ed7465f4322a039ad`, then
+  [#15 — Captain's Table](https://github.com/LuminariMUD/duris-client/pull/15),
+  `1a9024c38ed7b61a32791f3eba1aec54b56d6331`.
+  GitHub automatically retargeted successors to master after deleting each merged
+  predecessor branch. Ancestry was preserved without rebases or conflict repairs.
+- [#16 — qualification](https://github.com/LuminariMUD/duris-client/pull/16)
+  contains documentation/evidence only relative to master. Its runtime, package,
+  fixtures and release inputs match merged #15. Keep master as the stable handoff;
+  completed stack branches can be deleted after ancestry checks. Master CI owns tags.
 - Final package: **2.3.0**, source plus rebuilt `duris-client.mpackage` in #15.
   Archive SHA-256 `cedd3627f739bd45a397bd686df516b4877f47afd253f42cda02d5ff3ddaae78`;
   canonical payload `8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330`.
@@ -55,16 +56,20 @@ Keep issue #13 open until review/integration. No client PR has been merged or ma
   ambiguous, preserves destroyed Yes/No/unknown, and combines overlapping actual/ordered
   helm glyphs while retaining both exact headings. Existing fixtures cover all cases.
   The renderer needs no new state, framework or compatibility path for these fixes.
-- **Offline proof:** the full **23/23** suite passed after the review repairs at
-  `~/.local/share/duris-captains-table-reviewed-suite`, source `2e7cc5d`.
-  Subsequent repairs passed focused `ship-bridge` and `ship-table` checks at
-  `~/.local/share/duris-captains-final-all-ship` and `~/.local/share/duris-captains-calibrated-plot`.
-  Fresh `ship-table` runs on the current payload pass **58/58** assertions at scale 1
+- **Offline proof:** the full current-payload **23/23** suite passed in
+  [CI run 39964441199](https://github.com/LuminariMUD/duris-client/actions/runs/39964441199),
+  including expected negative/fault cases. CI checked out `a58a946`; its tree
+  exactly equals qualification head `c61895a`, with current canonical payload
+  `8d4976fb5c2a31876ba8bdbde15ab49f37b0746e1292b030bab9f4a137c8b330`.
+  The evidence manifest records all case outcomes, job/artifact URLs and tree identity.
+  This supersedes the earlier broad baseline at `2e7cc5d` for current behavior proof.
+  Current `ship-table` runs also pass **58/58** assertions at scale 1
   (`~/.local/share/duris-pr15-review-final/20261023T134157Z-abcaea30-ship-table`) and scale 2
   (`~/.local/share/duris-pr16-review-scale2/20261023T134422Z-d8cddce6-ship-table`), with no Lua errors
-  and normal shutdown/cleanup. Release validation and whitespace checks pass. The unchanged
-  Python release/controller paths retain their 15/10 passing tests from #14. Reuse the
-  broad suite for unchanged paths; the focused runs prove the new Bridge behavior.
+  and normal shutdown/cleanup. Reuse those inspected current-payload screenshots;
+  automated CI success does not imply blanket visual review. Release validation and
+  15 release/10 controller tests pass. Documentation-only integration edits need no
+  additional broad suite run or package/version change.
 - **Visual/native proof:** inspected 1280×720, 1366×768, 1920×1080, minimum 285×160
   Character, scrolled manifest before/after updates, selected modes, and Errors views.
   The current scale-1/2 helm, manifest, minimum frame and Errors views were inspected.
@@ -102,17 +107,18 @@ Keep issue #13 open until review/integration. No client PR has been merged or ma
   populated/overlapping contacts and all 16 occupied slots use production-helper,
   wire and Mudlet fixtures, not invented live claims. Actual **Mudlet 4.19.1**, native
   Windows/macOS and physical DPI/input are unverified. The 4.19.1 source API audit confirms
-  the chosen primitives; it is not runtime qualification. The minimum remains unchanged.
-- Next: integrate #14 → #15 → #16 using the ancestry rules above.
-  Preserve source/archive pairing and the documented evidence boundaries. There is no
-  scoped implementation work left open; unsupported-platform manual checks remain explicit limits.
+  the chosen primitives; it is not runtime qualification. The declared minimum remains
+  unchanged, but its runtime qualification is incomplete.
+- Closeout: integrate #16, close completed issue #13 and remove merged stack branches.
+  Preserve source/archive pairing and the documented evidence boundaries. Full minimum-
+  version/native-platform qualification remains incomplete; available implementation
+  checks pass and no scoped implementation work remains.
 
 
 ## Tracking and navigation
 
 - Work item: [issue #13 — Captain's Table SHIP view with full look ship parity](https://github.com/LuminariMUD/duris-client/issues/13).
-- Dedicated branch: [branch/issue-13-ship-captains-table](https://github.com/LuminariMUD/duris-client/tree/branch/issue-13-ship-captains-table), linked in the issue's Development section.
-- [Published plan on that branch](https://github.com/LuminariMUD/duris-client/blob/branch/issue-13-ship-captains-table/docs/ongoing-projects/plan-ship-bridge.md).
+- [Integrated plan on master](https://github.com/LuminariMUD/duris-client/blob/master/docs/ongoing-projects/plan-ship-bridge.md).
 - Earlier work: [SHIP readability issue #3](https://github.com/LuminariMUD/duris-client/issues/3), [feedback index #1](https://github.com/LuminariMUD/duris-client/issues/1), and the [historical qualification plan](plan-ship-qualification.md).
 
 Keep the issue checklist and this plan aligned as implementation progresses.
