@@ -1,6 +1,6 @@
 # SHIP redesign: the Captain's Table
 
-Date: 2026-10-23. Status: implementation in progress; server contract slice first.
+Date: 2026-10-23. Status: client implementation ready for review; final live qualification in progress.
 
 ## Current handoff
 
@@ -61,8 +61,35 @@ Date: 2026-10-23. Status: implementation in progress; server contract slice firs
 - A Details review found that two unflagged duplicate IDs could hide a later flagged lock.
   PR #14 receives the focused correction and three-duplicate regression; its real-Mudlet
   `ship-bridge` run passed at `/home/aiwithapex/.local/share/duris-details-duplicate-followup`.
-- Next: finish Bridge interaction/visual checks, publish its dependent PR, then run final
-  package qualification and update the issue checklist.
+- Bridge is published as [client PR #15](https://github.com/LuminariMUD/duris-client/pull/15),
+  source `03c8b2cad0c6fee03ea887b9faf9d762d275fc70`. Merge order: #14 → #15 →
+  the qualification slice on `branch/issue-13-ship-qualification` (active branch).
+  Retarget each successor after its parent merges; no history rewrite is needed.
+- Final archive: **2.3.0**. Full offline suite **23/23 PASS**, including real wire,
+  lifecycle/reinstall/reopen, layout, expected Lua failures and startup faults.
+  Qt scale 2 and actual **Mudlet 4.22.0 / Qt 6.9.0** ship-table checks also pass.
+  The original **2.1.2** archive passes the focused `server-wire` scenario against
+  the new additive server payload. Release validation and whitespace checks pass.
+  See [offline-evidence.json](../testing/issue-13/offline-evidence.json) for exact
+  archive/canonical payload hashes, source revisions, environments, assertions and paths.
+- Reviewed expanded/minimum/scroll/scale2/4.22 screenshots are committed under
+  `docs/testing/issue-13/`. Only relevant visual surfaces are approved; unrelated
+  suite cases establish behavior rather than blanket visual fidelity.
+- Fresh legacy-server live check: independent `Duris-Live-Test` profile imports
+  this exact 2.3.0 archive, with no companion, send override or injected packets.
+  GallTest's existing identity, arcs, sail, crew, six weapons and cargo agree with
+  reference text. The endpoint still omitted `shipKey` and `bridge`, so new facts
+  correctly remained unknown. Bridge departure cleared the ledger. Veridian was
+  restored to the original Inn of Oceans and logged out before deployment.
+- The user is deploying merged server #304. The live profile remains available at
+  `/home/aiwithapex/.local/share/duris-captains-live`; helpers are
+  `/tmp/duris-captains-live.py`, `/tmp/duris-captains-live-control.py` and
+  `/tmp/duris-captains-live-capture.py`. Its private credential copy is restricted
+  and must be removed when the owned desktop closes. Do not commit profile/private files.
+- Next: reconnect after deployment, repeat the GallTest reference/GMCP/Bridge/Details
+  capture and prove new weight/load/orders/slot fields. Then restore/logout, close
+  owned desktops, remove the credential copy, finish qualification evidence and
+  publish the final focused PR. No full regression rerun is needed for evidence-only edits.
   Live, actual 4.19.1 and native-platform verification remain outstanding.
   Master CI continues to own release tags; no tags or production changes are made here.
 

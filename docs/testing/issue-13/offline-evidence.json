@@ -1,0 +1,443 @@
+{
+  "date": "2026-10-23",
+  "client_source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+  "server_source": "e86bf7f24c52449b1260bb378443efafd1d9c491",
+  "package": {
+    "version": "2.3.0",
+    "sha256": "823cb463ac1ee168b37c963bc8e0a5f2e5004401b5045f0a5d0516a058924a00",
+    "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+  },
+  "command": "python3 scripts/mudlet_suite.py --root /home/aiwithapex/.local/share/duris-captains-table-final-suite",
+  "suite": {
+    "passed": 23,
+    "total": 23,
+    "cases": [
+      {
+        "case": "ship-table",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/ship-table/20261023T121438Z-bf4d4b9e-ship-table",
+        "assertions": 39,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "5443702821f2e0e50d766fadb512de1295505d78f640e70dd89f5cbc038842a2",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "ship-bridge",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/ship-bridge/20261023T121438Z-c2eac2b7-ship-bridge",
+        "assertions": 38,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "5443702821f2e0e50d766fadb512de1295505d78f640e70dd89f5cbc038842a2",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "lowhp",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/lowhp/20261023T121448Z-c5bc2a1c-lowhp",
+        "assertions": 29,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "31062eb2cccfc37cb85243ff43ec4426c3f8d735444232a1093035dd21f3ffc8",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "vitals",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/vitals/20261023T121455Z-dc39035e-vitals",
+        "assertions": 10,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "f942f81a9f34defbc43b7a1868edb5517922eedea20e1c795b4a4ab82410e517",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "crowded",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/crowded/20261023T121458Z-06fce084-crowded",
+        "assertions": 7,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "9110afc7b41cd9604799c6d0af06956bedd1fea9867d5a62a305ea73c5f68c39",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "combat",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/combat/20261023T121504Z-086331f9-combat",
+        "assertions": 14,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "759424909681a27c731af99349613e98e088199623c41383da5995d1aa21c786",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "chat",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/chat/20261023T121508Z-24edb66f-chat",
+        "assertions": 17,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "deaaf65f8fac9509782bf0dce6f6c3d7bf6879e4c9ef88dd1193a81682c947b2",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "information",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/information/20261023T121513Z-323152f2-information",
+        "assertions": 20,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "066282db31d05a7912cd571c5997bc17f571b2d986f9b9bcccc7505a1f8b3824",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "maps",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/maps/20261023T121520Z-41c32a65-maps",
+        "assertions": 90,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "e532509a59f8d880769f546d492573f0bd50bf93166a2a52c575f15f92f47173",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "map-colors",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/map-colors/20261023T121528Z-6dbda1e9-map-colors",
+        "assertions": 23,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "5274e494fcd793351c7d420d4174d31043ef49f3487ca5a22619f9ab8f47e0eb",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "controls",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/controls/20261023T121536Z-3b1f5134-controls",
+        "assertions": 131,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "5396415b31367010125481bd969fdb9d8c312d579801a40b81752485328141c3",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "login",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/login/20261023T121551Z-44067abb-login",
+        "assertions": 6,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "4af77bc7cb2e1ead2da8650d4cb1776c776f27a1fc08a54d1cac2face795f282",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "text",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/text/20261023T121601Z-31952a4d-text",
+        "assertions": 15,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "86219d178aa126658c308ccd285bf777e4765fc494fcfa0cbb25320fed6061fb",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "lifecycle",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/lifecycle/20261023T121607Z-fd04007d-lifecycle",
+        "assertions": 337,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "dd78416fea59ae68feaf8c63b7ec352fdd0f634e3a34131bb4ef3c5f85c10ac3",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "connections",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/connections/20261023T121610Z-35c45510-connections",
+        "assertions": 115,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "a1aec2eb18508d782956c2c26dbeb8c15f5882e7a5527a0831eddfae2d0fc80d",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "server-wire",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/server-wire/20261023T121620Z-26678179-server-wire",
+        "assertions": 27,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "dd50fe076d34819de54550ec9dcf53710e3d41950d80c170a909abfa96bbb58d",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "layout",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/layout/20261023T121626Z-602623ea-layout",
+        "assertions": 132,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "5769d266520612ee3176a84c724ea3cab55d601848bc8fce240f94a554cb504a",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "assertion-error",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/assertion-error/20261023T121633Z-d0004fa2-assertion-error",
+        "assertions": 5,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "6c29f25da88281b7cfc8f77a8cc7531afa7e3d9b75c618da55ab0019025e5336",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "timer-error",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/timer-error/20261023T121640Z-ae82eb74-timer-error",
+        "assertions": 4,
+        "errors": [
+          "[  LUA  ] - object: <error in anonymous Lua function> function:<no debug data available>\n            <Lua error:...Visual/Duris Test Companion/fixtures/timer-error.lua:1: "
+        ],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "58950c0de703c9d9deffda50329b8b1497c7c5e726ca210d1f351e04c2eb366e",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "event-error",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/event-error/20261023T121647Z-5b908e34-event-error",
+        "assertions": 4,
+        "errors": [
+          "[  LUA  ] - error in event handler for DurisTestError:\n            <...Visual/Duris Test Companion/fixtures/event-error.lua:1: DELIBERATE_EVENT_FAILURE>"
+        ],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "202c72db8fa76034d73f3f5f3e4f2bde0ac5f7244c63cf9a53594a0d69027455",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "wrong-profile",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/wrong-profile/20261023T121651Z-6b003d61-lowhp",
+        "assertions": 0,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "357ce6db16f7f9ae35e547da667523403d60bde703f4e85e00a5a4cd2793751d",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "wrong-candidate",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/wrong-candidate/20261023T121653Z-2163a9a3-lowhp",
+        "assertions": 0,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "0271dd1a78c000fb72ef9ce120f4d0f509f8a752be9989c001a8ac3fa975b362",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      },
+      {
+        "case": "no-readiness",
+        "passed": true,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/no-readiness/20261023T121703Z-530c3324-lowhp",
+        "assertions": 0,
+        "errors": [],
+        "cleanup": true,
+        "normal_shutdown": true,
+        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "candidate": {
+          "version": "2.3.0",
+          "sha256": "eeaaee044dfe2fddb4f97902a03d9fca57b1afba91fb504c97532c28210b52b6",
+          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+        }
+      }
+    ]
+  },
+  "environment": {
+    "tools": {
+      "mudlet": "/home/aiwithapex/.local/bin/mudlet",
+      "python3": "/usr/bin/python3",
+      "luac5.1": "/usr/bin/luac5.1",
+      "xvfb-run": "/usr/bin/xvfb-run",
+      "Xvfb": "/usr/bin/Xvfb",
+      "xauth": "/usr/bin/xauth",
+      "openbox": "/usr/bin/openbox",
+      "xdotool": "/usr/bin/xdotool",
+      "import": "/usr/bin/import",
+      "fc-match": "/usr/bin/fc-match"
+    },
+    "mudlet": "Discord integration loaded. Using functions from: \"libdiscord-rpc.so\"\nmudlet::setupConfig() INFO: using config dir: \"/home/aiwithapex/.config/mudlet\"\nmudlet 5.0.1  \nQt libraries 6.11.1 (compilation) 6.11.1 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+    "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+    "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+    "locale": "C.UTF-8"
+  },
+  "scale2": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-table-scale2/20261023T121448Z-8940d76f-ship-table",
+    "automated_status": "PASS",
+    "assertions": 39,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "31062eb2cccfc37cb85243ff43ec4426c3f8d735444232a1093035dd21f3ffc8",
+      "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+    },
+    "scenario": "ship-table"
+  },
+  "mudlet4_22": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-table-4.22",
+    "automated_status": "PASS",
+    "assertions": 39,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "823cb463ac1ee168b37c963bc8e0a5f2e5004401b5045f0a5d0516a058924a00",
+      "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+    },
+    "scenario": "ship-table"
+  },
+  "new_server_old_client": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-old-client",
+    "automated_status": "PASS",
+    "assertions": 27,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.1.2",
+      "sha256": "4db36dead898d086bc44574aba6cf5ce67267c8b4197bfaf8b711653c982caa7",
+      "payload_sha256": "15593d0128aa2dd8f874d27cd1f04d8d1410fa745c37c0caad758bd21dea7b61"
+    },
+    "scenario": "server-wire"
+  },
+  "visual_review": {
+    "status": "PASS",
+    "scope": "Expanded spatial diagram/helm/bearing, scrolled manifest before/after update, minimum frame, Qt scale 2 and Mudlet 4.22 screenshots inspected. Unrelated scenarios assert behavior; no blanket visual approval is implied."
+  },
+  "release_validation": "python3 scripts/release.py --output /home/aiwithapex/.local/share/duris-captains-table-release-check passed",
+  "limits": [
+    "Actual Mudlet 4.19.1 runtime not run; official-source API audit only.",
+    "Native Windows/macOS and physical DPI/input checks not run.",
+    "Moving orders, fatigue, damaged/reloading equipment, contraband and populated contacts use focused production-helper/wire and Mudlet fixtures; no production ship mechanics were changed."
+  ],
+  "artifacts": {
+    "bridge-expanded.png": "14b2d9d670c3b711bf4260d2be39c07c64495e285066c2038c4539e1d12fdf48",
+    "bridge-scrolled.png": "db7257765823aeaf9e890c8c165960cd16845ff127be1397df0ea1614ee624db",
+    "bridge-refresh.png": "21fa781a8f71c84f4a18fb826ab520625450fce5306258c4895ad345c8e3d738",
+    "bridge-minimum.png": "af154bcff88b8403f580f8504770d095fc5fdb065a9a0c5f3033cd718551ca10",
+    "bridge-4.22.png": "a393f273f8de693a59a4859279015a84c709c5e1f3a7b87f03403b1a1cdbb5e9",
+    "bridge-scale2.png": "c404c28c32eca6aa7fc2ff9f357292493f4a7dcf63b9798dd64174fb3cf4374b",
+    "errors-primary.png": "94b213305fb4d06f2707f9fed5c1ec331d9bb22cb09bf0756264e20faaff6997"
+  }
+}
