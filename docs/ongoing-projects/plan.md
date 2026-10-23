@@ -1,5 +1,20 @@
 # Issue #5: adjustable client panels
 
+## Later review findings — 2026-10-23
+
+The Windows replacement finding is valid: repeated saves now retain a backup
+while replacing an existing destination, restore it on failed installation,
+and can load it after interruption. The real-Mudlet fixture fails before this
+repair and passes with simulated Windows destination semantics, rollback and
+recovery. This is not native Windows runtime qualification.
+Wilderness resize now repaints the last accepted payload; zone/session changes
+retire it. The inactive private-frame menu placeholder is removed from this
+dashboard-only parent. Registered private frames, commands and recovery are
+implemented and tested in dependent #12; no feature is dropped from the stack.
+Version 2.0.1, local release payload checks, 15 release/ten controller tests and
+all 21 suite expectations pass. Current hashes/runs are in review-2026-10-23.json;
+its predecessor record remains historical. Native-platform limits are unchanged.
+
 ## Integrated review repair — 2026-10-23
 
 PR #8 now carries #7 (compact header and hidden-tell repair). Merge #7 before

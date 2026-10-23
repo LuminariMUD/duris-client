@@ -29,6 +29,58 @@ T.steps({
  {name="zone-full",wait=.5,run=function()
   expandAlias("ui set compactHeader off")
  end,verify=centered},
+ {name="stationary-zone-normal-maximize",wait=.5,run=function()
+  ArjUI:panelAction("map","restore")
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  local c=ArjMapper.ui.zoneContainer
+  local player=ArjMapper.ui.roomLabels.room_90010
+  T.check(math.abs(player:get_x()+player:get_width()/2-c:get_x()-math.floor(c:get_width()/2))<2,"stationary maximized zone centers horizontally")
+  centered()
+  T.check(true,"zone maximize retains saved normal state")
+  T.check(ArjMapper.ui.wildConsole.hidden,"maximized zone keeps wilderness hidden")
+ end},
+ {name="stationary-zone-normal-restore",run=function()
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  ArjUI:panelAction("map","restore")
+ end},
+ {name="stationary-zone-minimize-maximize",wait=.5,run=function()
+  ArjUI:panelAction("map","restore")
+  ArjUI:panelAction("map","minimize")
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  local c=ArjMapper.ui.zoneContainer
+  local player=ArjMapper.ui.roomLabels.room_90010
+  T.check(math.abs(player:get_x()+player:get_width()/2-c:get_x()-math.floor(c:get_width()/2))<2,"stationary maximized zone centers horizontally")
+  centered()
+  T.check(ArjUI.panels.map.state.minimized,"zone maximize retains saved normal state")
+  T.check(ArjMapper.ui.wildConsole.hidden,"maximized zone keeps wilderness hidden")
+ end},
+ {name="stationary-zone-minimize-restore",run=function()
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  T.check(ArjUI.panels.map.state.minimized,"normal map minimize state survives maximize")
+  ArjUI:panelAction("map","restore")
+ end},
+ {name="stationary-zone-hide-maximize",wait=.5,run=function()
+  ArjUI:panelAction("map","restore")
+  ArjUI:panelAction("map","hide")
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  local c=ArjMapper.ui.zoneContainer
+  local player=ArjMapper.ui.roomLabels.room_90010
+  T.check(math.abs(player:get_x()+player:get_width()/2-c:get_x()-math.floor(c:get_width()/2))<2,"stationary maximized zone centers horizontally")
+  centered()
+  T.check(ArjUI.panels.map.state.hidden,"zone maximize retains saved normal state")
+  T.check(ArjMapper.ui.wildConsole.hidden,"maximized zone keeps wilderness hidden")
+ end},
+ {name="stationary-zone-hide-restore",run=function()
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  T.check(ArjUI.panels.map.state.hidden,"normal map hide state survives maximize")
+  ArjUI:panelAction("map","restore")
+ end},
  {name="zoom",run=function()
   for i=1,20 do ArjMapper:zoomIn() end
   T.check(ArjMapper.config.roomSize==24,"zone zoom upper bound")
@@ -61,6 +113,55 @@ T.steps({
  end,verify=function()
   local text=T.lines(ArjMapper.ui.wildConsole.name)
   T.check(#(text:match("^\n*") or "")==fullPadding,"full wilderness restores padding")
+ end},
+ {name="stationary-wilderness-normal-maximize",wait=.5,run=function()
+  ArjUI:panelAction("map","restore")
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  T.check(ArjMapper.ui.wildConsole:get_height()>T.fullMapHeight+100,"stationary maximized wilderness grows")
+  local text=T.lines(ArjMapper.ui.wildConsole.name)
+  T.check(#(text:match("^\n*") or "")>fullPadding and text:find("@",1,true),"stationary maximized wilderness redraws cached padding and marker")
+  T.check(true,"wilderness maximize retains saved normal state")
+  T.check(ArjMapper.ui.zoneContainer.hidden,"maximized wilderness keeps zone hidden")
+ end},
+ {name="stationary-wilderness-normal-restore",run=function()
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  ArjUI:panelAction("map","restore")
+ end},
+ {name="stationary-wilderness-minimize-maximize",wait=.5,run=function()
+  ArjUI:panelAction("map","restore")
+  ArjUI:panelAction("map","minimize")
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  T.check(ArjMapper.ui.wildConsole:get_height()>T.fullMapHeight+100,"stationary maximized wilderness grows")
+  local text=T.lines(ArjMapper.ui.wildConsole.name)
+  T.check(#(text:match("^\n*") or "")>fullPadding and text:find("@",1,true),"stationary maximized wilderness redraws cached padding and marker")
+  T.check(ArjUI.panels.map.state.minimized,"wilderness maximize retains saved normal state")
+  T.check(ArjMapper.ui.zoneContainer.hidden,"maximized wilderness keeps zone hidden")
+ end},
+ {name="stationary-wilderness-minimize-restore",run=function()
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  T.check(ArjUI.panels.map.state.minimized,"normal map minimize state survives maximize")
+  ArjUI:panelAction("map","restore")
+ end},
+ {name="stationary-wilderness-hide-maximize",wait=.5,run=function()
+  ArjUI:panelAction("map","restore")
+  ArjUI:panelAction("map","hide")
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  T.check(ArjMapper.ui.wildConsole:get_height()>T.fullMapHeight+100,"stationary maximized wilderness grows")
+  local text=T.lines(ArjMapper.ui.wildConsole.name)
+  T.check(#(text:match("^\n*") or "")>fullPadding and text:find("@",1,true),"stationary maximized wilderness redraws cached padding and marker")
+  T.check(ArjUI.panels.map.state.hidden,"wilderness maximize retains saved normal state")
+  T.check(ArjMapper.ui.zoneContainer.hidden,"maximized wilderness keeps zone hidden")
+ end},
+ {name="stationary-wilderness-hide-restore",run=function()
+  ArjUI:panelAction("map","maximize")
+ end,verify=function()
+  T.check(ArjUI.panels.map.state.hidden,"normal map hide state survives maximize")
+  ArjUI:panelAction("map","restore")
  end},
  {name="paused-wilderness-compact",run=function()
   expandAlias("mapper off")
@@ -107,8 +208,21 @@ T.steps({
   T.check(not ArjUI.panels.map.frame.hidden,"map frame restored")
   T.check(ArjMapper.state.currentRoom==90011 and not ArjMapper.ui.roomLabels.room_90011.hidden,"revealed map shows latest accepted room")
  end},
- {name="malformed",wait=.6,run=function() room(9003) end,verify=function()
+ {name="covered-deferred-map",wait=.5,run=function()
+  room(9001)
+  ArjUI:resetLayout()
+  ArjUI:openPrivateChat("Mapprobe")
+  expandAlias("ui panel output maximize")
+  T.emit("Room.Info",{num=90011,zone=9001,name="Deferred covered update",exits={}})
+ end,verify=function()
+  T.check(ArjMapper.state.currentRoom==90011,"deferred covered map keeps accepted room")
+  T.check(ArjUI.panels.map.frame.hidden,"pending viewport refresh keeps map covered")
+  for _,label in pairs(ArjMapper.ui.roomLabels) do T.check(label.hidden or label.auto_hidden,"deferred map labels remain covered") end
+  T.check(ArjMapper.ui.zoomIn.hidden or ArjMapper.ui.zoomIn.auto_hidden,"deferred zoom control remains covered")
+ end},
+ {name="malformed",wait=.6,run=function() expandAlias("ui panel output restore"); room(9003) end,verify=function()
   T.check(ArjMapper.state.zoneData[9003]==nil and ArjMapper.requests[9003]==nil,"malformed response rejected and request cleaned")
+  T.check(ArjMapper.state.lastWildernessMap==nil,"retiring wilderness clears accepted payload")
   T.check(ArjMapper.state.lastDisplayMode=="zone" and not next(ArjMapper.ui.roomLabels),"failed zone does not retain prior wilderness or room labels")
  end},
  {name="http-error",wait=.6,run=function() room(9004) end,verify=function()

@@ -273,7 +273,8 @@ local function validRect(rect)
 end
 
 function ArjUI:loadLayout()
-  local file=io.open(getMudletHomeDir().."/arjui_layout.json","r")
+  local path=getMudletHomeDir().."/arjui_layout.json"
+  local file=io.open(path,"r") or io.open(path..".bak","r")
   if not file then return end
   local text=file:read("*a"); file:close()
   local ok,data=pcall(yajl.to_value,text)
@@ -308,7 +309,20 @@ function ArjUI:saveLayout()
     local written,why=file:write(yajl.to_string(data))
     local closed,closeError=file:close()
     assert(written,why); assert(closed,closeError)
-    assert(os.rename(path..".tmp",path))
+    local installed,why=os.rename(path..".tmp",path)
+    if not installed then
+      -- Windows rename cannot replace an existing destination. Retain the old
+      -- file until installation succeeds, and recover it on failure/restart.
+      local backup=path..".bak"
+      os.remove(backup)
+      assert(os.rename(path,backup),why)
+      installed,why=os.rename(path..".tmp",path)
+      if not installed then
+        local restored,restoreError=os.rename(backup,path)
+        error(tostring(why)..(restored and "" or "; previous layout retained at "..backup..": "..tostring(restoreError)))
+      end
+      os.remove(backup)
+    end
   end)
   if not ok then self:note("<indian_red>Cannot save panel layout: "..tostring(err)) end
 end
@@ -434,8 +448,10 @@ end
 
 function ArjUI:refreshPanelContent(id)
   if ArjMapper and ArjMapper.state.enabled and self:panelIsVisible("map") then
-    if ArjMapper.refreshViewport then ArjMapper:refreshViewport()
-    elseif ArjMapper.state.lastDisplayMode=="zone" then ArjMapper:showZoneMap() end
+    if ArjMapper.state.lastDisplayMode=="zone" then ArjMapper:showZoneMap()
+    elseif ArjMapper.state.lastDisplayMode=="wilderness" then
+      ArjMapper:updateWildernessMap(ArjMapper.state.lastWildernessMap)
+    end
   end
 end
 
@@ -487,11 +503,6 @@ function ArjUI:showPanelsMenu()
     table.insert(items,{text=def.title,callback=function()
       self:panelAction(def.id,"show"); self:showPanelMenu(def.id)
     end})
-  end
-  for name,chat in pairs(self.privateChats) do
-    if self.panels["tell:"..name] then
-      table.insert(items,{text="Tell: "..name,callback=function() self:openPrivateChat(name); self:showPanelMenu("tell:"..name) end})
-    end
   end
   self:showContextMenu(items)
 end

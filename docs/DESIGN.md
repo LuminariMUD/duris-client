@@ -345,3 +345,8 @@ The imported LuminariGUI references are background material for a different
 package. Their fragment build system, MSDP setup, `GUI.*` helpers, and release
 checklists do not define this client's design; see the
 [documentation index](README.md#imported-reference-material).
+
+Layout saves first try atomic replacement, then retain a backup while replacing
+an existing Windows destination. Failed installation restores the old file;
+startup can read the backup after interruption. Dashboard-only recovery lists
+ten registered groups; private frame integration is delivered by PR #12.
