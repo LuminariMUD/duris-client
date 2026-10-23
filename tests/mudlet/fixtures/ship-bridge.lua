@@ -46,6 +46,9 @@ T.steps({
   T.check(ArjUI.state.ship.target==nil,"legacy empty Contacts clears lock")
  end},
  {name="optional-target-and-captain",run=function()
+  T.emit("Ship.Contacts",{heading=0,speed=0,contacts={}})
+  T.emit("Ship.Contacts",{{id="BARE",name="Bare legacy array",bearing=20}})
+  T.check(ArjUI.state.ship.heading==0 and ArjUI.state.ship.speed==0,"bare legacy arrays preserve authoritative navigation")
   T.emit("Ship.Info",{name="Mixed contract",captain="TestCaptain",bridge={setHeading=0}})
   T.emit("Ship.Contacts",{heading=0,speed=0,contacts={{id="BB",name="Fallback lock",bearing=20,you_targeting=true}}})
   T.check(T.lines("ArjUI_ShipBox"):find("Locked on: BB Fallback lock",1,true),"absent optional target retains legacy ID/name lock")
