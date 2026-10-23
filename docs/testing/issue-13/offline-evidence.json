@@ -1,13 +1,13 @@
 {
   "date": "2026-10-23",
-  "client_source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+  "client_source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
   "server_source": "e86bf7f24c52449b1260bb378443efafd1d9c491",
   "package": {
     "version": "2.3.0",
-    "sha256": "823cb463ac1ee168b37c963bc8e0a5f2e5004401b5045f0a5d0516a058924a00",
-    "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+    "sha256": "3716294c837fb0d729317692a2be978201e04ec5f12ebf20e49ccffde5b2573e",
+    "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
   },
-  "command": "python3 scripts/mudlet_suite.py --root /home/aiwithapex/.local/share/duris-captains-table-final-suite",
+  "command": "python3 scripts/mudlet_suite.py --root /home/aiwithapex/.local/share/duris-captains-table-reviewed-suite",
   "suite": {
     "passed": 23,
     "total": 23,
@@ -15,350 +15,350 @@
       {
         "case": "ship-table",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/ship-table/20261023T121438Z-bf4d4b9e-ship-table",
-        "assertions": 39,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/ship-table/20261023T123439Z-52073eef-ship-table",
+        "assertions": 43,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "5443702821f2e0e50d766fadb512de1295505d78f640e70dd89f5cbc038842a2",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "56a027293a3ee4a2b58b1193867087bcf3e23918a16d4a8f77d6689d6fa525d4",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "ship-bridge",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/ship-bridge/20261023T121438Z-c2eac2b7-ship-bridge",
-        "assertions": 38,
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/ship-bridge/20261023T123439Z-b7330e13-ship-bridge",
+        "assertions": 43,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "5443702821f2e0e50d766fadb512de1295505d78f640e70dd89f5cbc038842a2",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "56a027293a3ee4a2b58b1193867087bcf3e23918a16d4a8f77d6689d6fa525d4",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "lowhp",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/lowhp/20261023T121448Z-c5bc2a1c-lowhp",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/lowhp/20261023T123448Z-6baca38a-lowhp",
         "assertions": 29,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "31062eb2cccfc37cb85243ff43ec4426c3f8d735444232a1093035dd21f3ffc8",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "e6cfa79931f410783d5d33ef26acc4f1175c8f77b9482900501f62c7f01d553e",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "vitals",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/vitals/20261023T121455Z-dc39035e-vitals",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/vitals/20261023T123454Z-652016c1-vitals",
         "assertions": 10,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "f942f81a9f34defbc43b7a1868edb5517922eedea20e1c795b4a4ab82410e517",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "267203386a3109fa78091601037b6374f246a5e93f850ca5f438416844df6b36",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "crowded",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/crowded/20261023T121458Z-06fce084-crowded",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/crowded/20261023T123457Z-5409ff2e-crowded",
         "assertions": 7,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "9110afc7b41cd9604799c6d0af06956bedd1fea9867d5a62a305ea73c5f68c39",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "3ccdb7e13e7d49dccb0d607e0d80a4c8c8cba340089a757229c086628ce27a80",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "combat",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/combat/20261023T121504Z-086331f9-combat",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/combat/20261023T123503Z-4b483aa8-combat",
         "assertions": 14,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "759424909681a27c731af99349613e98e088199623c41383da5995d1aa21c786",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "c24c23cdaff88b9a80a0acba44ff4654f2859a8405d5021fbe633c7fb6a6133d",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "chat",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/chat/20261023T121508Z-24edb66f-chat",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/chat/20261023T123507Z-1f2a0083-chat",
         "assertions": 17,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "deaaf65f8fac9509782bf0dce6f6c3d7bf6879e4c9ef88dd1193a81682c947b2",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "d48353feb1d01c2464d34f67623921bd893169d4528253fe12b1b64713d6d401",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "information",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/information/20261023T121513Z-323152f2-information",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/information/20261023T123513Z-225b561e-information",
         "assertions": 20,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "066282db31d05a7912cd571c5997bc17f571b2d986f9b9bcccc7505a1f8b3824",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "08fe0e76e2c7e2cfd14aca3d89b63458362d0d330e90124753528b1e42da7456",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "maps",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/maps/20261023T121520Z-41c32a65-maps",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/maps/20261023T123519Z-da2077f1-maps",
         "assertions": 90,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "e532509a59f8d880769f546d492573f0bd50bf93166a2a52c575f15f92f47173",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "7e9598b7ee09bc20f114ce1c82a56154628f19f12b5d75ad916c7802bf01d3b0",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "map-colors",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/map-colors/20261023T121528Z-6dbda1e9-map-colors",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/map-colors/20261023T123527Z-debed483-map-colors",
         "assertions": 23,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "5274e494fcd793351c7d420d4174d31043ef49f3487ca5a22619f9ab8f47e0eb",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "6890a72ffedf953110772210fac6623115fcd458bcfa4efad10cecc00589dbd1",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "controls",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/controls/20261023T121536Z-3b1f5134-controls",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/controls/20261023T123535Z-0a51b35e-controls",
         "assertions": 131,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "5396415b31367010125481bd969fdb9d8c312d579801a40b81752485328141c3",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "366a6882956b8442928071acefe43694fb67f00bfb8cb926859eb54642be3e31",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "login",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/login/20261023T121551Z-44067abb-login",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/login/20261023T123551Z-f680e94c-login",
         "assertions": 6,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "4af77bc7cb2e1ead2da8650d4cb1776c776f27a1fc08a54d1cac2face795f282",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "a410695591cbb5e75c7616a21ee79f528d81b6808bbb36ed936bb04ffe9c553d",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "text",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/text/20261023T121601Z-31952a4d-text",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/text/20261023T123600Z-2113139d-text",
         "assertions": 15,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "86219d178aa126658c308ccd285bf777e4765fc494fcfa0cbb25320fed6061fb",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "31e65a8d98d6c6c84c1c1340cc880493ba4a75fe4e8ba46424eab020bebcddf3",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "lifecycle",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/lifecycle/20261023T121607Z-fd04007d-lifecycle",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/lifecycle/20261023T123607Z-f0bba1a5-lifecycle",
         "assertions": 337,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "dd78416fea59ae68feaf8c63b7ec352fdd0f634e3a34131bb4ef3c5f85c10ac3",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "ad40f20def1ef9e75e127dc7f6c88f1bccf556a4ff0f43afc242672ec1dfcced",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "connections",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/connections/20261023T121610Z-35c45510-connections",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/connections/20261023T123609Z-a783ea4e-connections",
         "assertions": 115,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "a1aec2eb18508d782956c2c26dbeb8c15f5882e7a5527a0831eddfae2d0fc80d",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "a1313b4245faeff577cc47aca1c5749b0fa32742a2a2d57fe1a750dd74a80297",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "server-wire",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/server-wire/20261023T121620Z-26678179-server-wire",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/server-wire/20261023T123620Z-7c21023e-server-wire",
         "assertions": 27,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "dd50fe076d34819de54550ec9dcf53710e3d41950d80c170a909abfa96bbb58d",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "3b726ebded164c53f49ca7865ff5e003beab053b7937172faf0cc5696cb9d786",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "layout",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/layout/20261023T121626Z-602623ea-layout",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/layout/20261023T123625Z-02cdb6f4-layout",
         "assertions": 132,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "5769d266520612ee3176a84c724ea3cab55d601848bc8fce240f94a554cb504a",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "15b8fe98dc8c91543915aa52c3bbd4bb09aa3098dc574a99c45af11fec7a4be7",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "assertion-error",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/assertion-error/20261023T121633Z-d0004fa2-assertion-error",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/assertion-error/20261023T123633Z-6022f71c-assertion-error",
         "assertions": 5,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "6c29f25da88281b7cfc8f77a8cc7531afa7e3d9b75c618da55ab0019025e5336",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "26ef8ccd778e95ca80dab84bd382a34c7ca7b065b3e6e54ef894c861a4451718",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "timer-error",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/timer-error/20261023T121640Z-ae82eb74-timer-error",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/timer-error/20261023T123640Z-621d9f5c-timer-error",
         "assertions": 4,
         "errors": [
           "[  LUA  ] - object: <error in anonymous Lua function> function:<no debug data available>\n            <Lua error:...Visual/Duris Test Companion/fixtures/timer-error.lua:1: "
         ],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "58950c0de703c9d9deffda50329b8b1497c7c5e726ca210d1f351e04c2eb366e",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "9d6874416cdefdc039bcfc08c12471d2597f8f99902265e48b3057320c85d2e9",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "event-error",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/event-error/20261023T121647Z-5b908e34-event-error",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/event-error/20261023T123646Z-ef6b50fb-event-error",
         "assertions": 4,
         "errors": [
           "[  LUA  ] - error in event handler for DurisTestError:\n            <...Visual/Duris Test Companion/fixtures/event-error.lua:1: DELIBERATE_EVENT_FAILURE>"
         ],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "202c72db8fa76034d73f3f5f3e4f2bde0ac5f7244c63cf9a53594a0d69027455",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "74a7869e6ba5d7daa858b81d846033f9b94ee6ceb82b15c5a373867ec8a98772",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "wrong-profile",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/wrong-profile/20261023T121651Z-6b003d61-lowhp",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/wrong-profile/20261023T123650Z-dfd89fc0-lowhp",
         "assertions": 0,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "357ce6db16f7f9ae35e547da667523403d60bde703f4e85e00a5a4cd2793751d",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "b012113dfa108ca1a5a91f73d58f0ddf9b5752a68889d8bc109abf24717151cc",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "wrong-candidate",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/wrong-candidate/20261023T121653Z-2163a9a3-lowhp",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/wrong-candidate/20261023T123653Z-24e27a0c-lowhp",
         "assertions": 0,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "0271dd1a78c000fb72ef9ce120f4d0f509f8a752be9989c001a8ac3fa975b362",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "f08e5f2a590e890ba85280705fd2782f829d3711c0a0bfdf71f5e5c55d84f69c",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       },
       {
         "case": "no-readiness",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-captains-table-final-suite/no-readiness/20261023T121703Z-530c3324-lowhp",
+        "run": "/home/aiwithapex/.local/share/duris-captains-table-reviewed-suite/no-readiness/20261023T123701Z-02af09e1-lowhp",
         "assertions": 0,
         "errors": [],
         "cleanup": true,
         "normal_shutdown": true,
-        "source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+        "source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
         "candidate": {
           "version": "2.3.0",
-          "sha256": "eeaaee044dfe2fddb4f97902a03d9fca57b1afba91fb504c97532c28210b52b6",
-          "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+          "sha256": "f8fa3fc6e93a4f89bd0e560e3675ff594c8a388fce8ceae82d4d830c63d78108",
+          "payload_sha256": "13de969bbef12c71d6fe2154dfd8971fe9fd2a7702f29d98f7b2ac9e39753e63"
         }
       }
     ]
@@ -425,7 +425,11 @@
     "status": "PASS",
     "scope": "Expanded spatial diagram/helm/bearing, scrolled manifest before/after update, minimum frame, Qt scale 2 and Mudlet 4.22 screenshots inspected. Unrelated scenarios assert behavior; no blanket visual approval is implied."
   },
-  "release_validation": "python3 scripts/release.py --output /home/aiwithapex/.local/share/duris-captains-table-release-check passed",
+  "coverage_reuse": {
+    "from_client_source": "03c8b2cad0c6fee03ea887b9faf9d762d275fc70",
+    "scope": "Mudlet 4.22 native API/font/visual and Qt scale-2 geometry checks; review repairs only changed target/snapshot/selection logic and no native APIs, geometry, fonts or styles. Latest logic regressions and the complete final suite run on the current archive. Each retained run records its actual package identity."
+  },
+  "release_validation": "python3 scripts/release.py --output /home/aiwithapex/.local/share/duris-captains-table-reviewed-release-check passed",
   "limits": [
     "Actual Mudlet 4.19.1 runtime not run; official-source API audit only.",
     "Native Windows/macOS and physical DPI/input checks not run.",
@@ -433,11 +437,11 @@
   ],
   "artifacts": {
     "bridge-expanded.png": "14b2d9d670c3b711bf4260d2be39c07c64495e285066c2038c4539e1d12fdf48",
-    "bridge-scrolled.png": "db7257765823aeaf9e890c8c165960cd16845ff127be1397df0ea1614ee624db",
-    "bridge-refresh.png": "21fa781a8f71c84f4a18fb826ab520625450fce5306258c4895ad345c8e3d738",
-    "bridge-minimum.png": "af154bcff88b8403f580f8504770d095fc5fdb065a9a0c5f3033cd718551ca10",
+    "bridge-scrolled.png": "cf6409dbcafac70a030caae434934caa12fc95b1958f4eccbf745074032a1795",
+    "bridge-refresh.png": "a7491857a659a2cabc73ca376b522ff5d5cdfd380373ce97999f51059b212f95",
+    "bridge-minimum.png": "4ab7e8842c994ac79c901b5b6bd905104da95449787ac2d930b764d9d7df0d9d",
     "bridge-4.22.png": "a393f273f8de693a59a4859279015a84c709c5e1f3a7b87f03403b1a1cdbb5e9",
     "bridge-scale2.png": "c404c28c32eca6aa7fc2ff9f357292493f4a7dcf63b9798dd64174fb3cf4374b",
-    "errors-primary.png": "94b213305fb4d06f2707f9fed5c1ec331d9bb22cb09bf0756264e20faaff6997"
+    "errors-primary.png": "cce22d6a9b470d3e6ea04bcd1f0ee95fd56e6922486f722cdc78df6ae4400489"
   }
 }

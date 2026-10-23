@@ -36,7 +36,7 @@ Date: 2026-10-23. Status: client implementation ready for review; final live qua
   Inspected lower-ledger and new-contract screenshots at 1366×768; names wrap and
   markup-like names remain literal. This qualifies Details behavior only.
 - Details is published as [client PR #14](https://github.com/LuminariMUD/duris-client/pull/14),
-  commit `6a0704c38cf965c2310b109daec99992a6f97761` on the requested branch.
+  current commit `681d2b5` on the requested branch.
 - Active dependent branch: `branch/issue-13-captains-table-ui`, based on #14.
   Package 2.3.0 adds the native Bridge, persistent Bridge/Details preference,
   Copy details, explicit reference actions and deferred coalesced visible paints.
@@ -62,8 +62,9 @@ Date: 2026-10-23. Status: client implementation ready for review; final live qua
   PR #14 receives the focused correction and three-duplicate regression; its real-Mudlet
   `ship-bridge` run passed at `/home/aiwithapex/.local/share/duris-details-duplicate-followup`.
 - Bridge is published as [client PR #15](https://github.com/LuminariMUD/duris-client/pull/15),
-  source `03c8b2cad0c6fee03ea887b9faf9d762d275fc70`. Merge order: #14 → #15 →
-  the qualification slice on `branch/issue-13-ship-qualification` (active branch).
+  current source `79bf1ec`. Merge order: #14 → #15 →
+  [qualification PR #16](https://github.com/LuminariMUD/duris-client/pull/16) on
+  `branch/issue-13-ship-qualification` (active branch).
   Retarget each successor after its parent merges; no history rewrite is needed.
 - Final archive: **2.3.0**. Full offline suite **23/23 PASS**, including real wire,
   lifecycle/reinstall/reopen, layout, expected Lua failures and startup faults.
@@ -72,6 +73,16 @@ Date: 2026-10-23. Status: client implementation ready for review; final live qua
   the new additive server payload. Release validation and whitespace checks pass.
   See [offline-evidence.json](../testing/issue-13/offline-evidence.json) for exact
   archive/canonical payload hashes, source revisions, environments, assertions and paths.
+- Review repairs are published in their owning PRs and all eight reported threads are
+  resolved: optional target absence versus explicit JSON null, reveal repaint, duplicate
+  lock scans including missing bearings, captain availability to `qkcargo`, current-snapshot
+  inspectors for identical docked contacts, legacy Contacts without identity, and removed
+  slot highlight clearing. Real-Mudlet regressions cover each case. The full final suite
+  was rerun after these repairs at `~/.local/share/duris-captains-table-reviewed-suite`;
+  source `2e7cc5d18fb838b8acc0886511c0fc4120586991`, all **23/23 PASS** with cleanup.
+  Scale-2 and 4.22 native geometry/API proof is reused from the earlier 2.3.0 candidate:
+  these repairs changed snapshot/selection logic, not native APIs, geometry or styles.
+  The evidence records both actual archive identities and this coverage boundary.
 - Reviewed expanded/minimum/scroll/scale2/4.22 screenshots are committed under
   `docs/testing/issue-13/`. Only relevant visual surfaces are approved; unrelated
   suite cases establish behavior rather than blanket visual fidelity.
@@ -82,9 +93,10 @@ Date: 2026-10-23. Status: client implementation ready for review; final live qua
   correctly remained unknown. Bridge departure cleared the ledger. Veridian was
   restored to the original Inn of Oceans and logged out before deployment.
 - The user is deploying merged server #304. The live profile remains available at
-  `/home/aiwithapex/.local/share/duris-captains-live`; helpers are
-  `/tmp/duris-captains-live.py`, `/tmp/duris-captains-live-control.py` and
-  `/tmp/duris-captains-live-capture.py`. Its private credential copy is restricted
+  `/home/aiwithapex/.local/share/duris-captains-live-updated`; helpers are
+  `/tmp/duris-captains-live-updated.py`, `/tmp/duris-captains-live-updated-control.py` and
+  `/tmp/duris-captains-live-updated-capture.py`. It imports the reviewed final archive.
+  The earlier desktop is closed and its credential copy removed. This fresh profile's private copy is restricted
   and must be removed when the owned desktop closes. Do not commit profile/private files.
 - Next: reconnect after deployment, repeat the GallTest reference/GMCP/Bridge/Details
   capture and prove new weight/load/orders/slot fields. Then restore/logout, close
