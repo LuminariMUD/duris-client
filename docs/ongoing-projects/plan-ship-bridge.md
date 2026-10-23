@@ -8,8 +8,8 @@ Date: 2026-10-23. Status: implementation and scoped qualification complete; clie
 Keep issue #13 open until review/integration. No client PR has been merged or manually tagged here.
 
 - Merge order: [#14 — Details](https://github.com/LuminariMUD/duris-client/pull/14)
-  (`3779504`) → [#15 — Captain's Table](https://github.com/LuminariMUD/duris-client/pull/15)
-  (`825b49bd365e92abbbe1c22cda1284dfd0d21ca4`) →
+  (`c7d4e10`) → [#15 — Captain's Table](https://github.com/LuminariMUD/duris-client/pull/15)
+  (`1d4381510ba05454df7641db6176eac72423164d`) →
   [#16 — qualification](https://github.com/LuminariMUD/duris-client/pull/16).
   Retarget each successor to master after its parent merges. Preserve the published
   branches and let master CI create release tags; no history rewrite is needed.
@@ -37,22 +37,25 @@ Keep issue #13 open until review/integration. No client PR has been merged or ma
   Legacy explicit ordinary-ID changes, or changed names for `**`, clear navigation;
   partial untagged Info without identity fields retains the last untagged navigation.
   Explicit target null differs from absence. Display locks never supply an invented bearing.
-- Eight review findings are repaired in their owning PRs and their threads resolved:
+- Fifteen reported review findings are repaired in their owning PRs and their threads resolved:
   optional target fallback, reveal repaint, complete duplicate-ID scans, duplicate
   identity checks before bearing validation, captain availability to cargo automation,
   current-snapshot inspectors for identical contacts, legacy Contacts without identity,
-  and removed-slot highlight clearing. An additional empty-captain guard preserves the
-  existing cargo alias's unknown-captain behavior. Real-Mudlet regressions cover these cases.
+  removed-slot highlight clearing, bare-array navigation, captured marker generations,
+  grouped targeting flags, truthful text provenance, unknown contact counts and independent
+  legacy sunk state. The empty-captain guard preserves the existing cargo alias's
+  unknown-captain behavior. The bearing rings and markers share a calibrated radius.
+  Real-Mudlet regressions cover these cases.
 - **Offline proof:** the full **23/23** suite passed after the review repairs at
   `~/.local/share/duris-captains-table-reviewed-suite`, source `2e7cc5d`.
-  The final one-line empty-captain guard passed focused `ship-bridge` qualification
-  at `~/.local/share/duris-captains-table-final-captain` and fresh exact-archive live proof.
+  Subsequent repairs passed focused `ship-bridge` and `ship-table` checks at
+  `~/.local/share/duris-captains-final-all-ship` and `~/.local/share/duris-captains-calibrated-plot`.
   Release validation and whitespace checks pass. No broad rerun is needed for these evidence edits.
 - **Visual/native proof:** inspected 1280×720, 1366×768, 1920×1080, minimum 285×160
   Character, scrolled manifest before/after updates, selected modes, and Errors views.
-  Qt scale 2 and actual **Mudlet 4.22.0 / Qt 6.9.0** native API/font/geometry evidence
-  is retained from the earlier 2.3.0 candidate. Later repairs changed snapshot/selection
-  logic, not native APIs, geometry, fonts or styles. Each run records its actual archive;
+  Qt scale 2 and actual **Mudlet 4.22.0 / Qt 6.9.0** checks were refreshed on the final
+  canonical payload at `~/.local/share/duris-captains-scale2-qualified` and
+  `~/.local/share/duris-captains-table-4.22-qualified`. Each run records its actual archive;
   unrelated suite cases establish behavior rather than blanket visual fidelity.
 - **Compatibility:** old server/new final client was exercised live, with new-only
   facts correctly unknown. The original **2.1.2** archive passes the focused real-wire
@@ -69,7 +72,7 @@ Keep issue #13 open until review/integration. No client PR has been merged or ma
 - **Live cleanup:** real bridge departure cleared info/key/max-speed/target and the ledger.
   Veridian returned to the original Inn of Oceans, room **66899**, quit and disconnected.
   Owned desktops are closed and temporary credential copies removed. Raw independent
-  live evidence is retained externally at `~/.local/share/duris-captains-live-final`.
+  live evidence is retained externally at `~/.local/share/duris-captains-live-qualified`.
   No production ship orders or mechanics were changed.
 - **Limits:** the live vessel was docked with no equipment, contacts or target. Moving
   orders, fatigue, damaged/reloading equipment, destruction thresholds, contraband,

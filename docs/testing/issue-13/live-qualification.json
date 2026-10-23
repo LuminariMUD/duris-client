@@ -6,11 +6,11 @@
   "live_build_revision": "User confirmed deployment; the protocol does not expose a binary revision. Behavior is verified directly.",
   "package": {
     "version": "2.3.0",
-    "sha256": "acd5aba8306818fb67a7e2cb59b681ee4d596ffe27529b17bb55c96d8ba5b235",
-    "payload_sha256": "d1807a062fa5ca55e6d2708d017e1fc0135941d0913a39c3f9f1cfcb539a5ba2"
+    "sha256": "e0ac55014b4b16853dd488a819f382827d2d74a0218bf0798790e4b910d60cbb",
+    "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
   },
   "profile": "Fresh independent Duris-Live-Test with exact final archive; no companion, send override or injected GMCP. Only read-only reference commands and reversible test-character movement.",
-  "run": "/home/aiwithapex/.local/share/duris-captains-live-final",
+  "run": "/home/aiwithapex/.local/share/duris-captains-live-qualified",
   "checks": [
     "Actual final package and same vessel",
     "Matching observing-vessel keys on real packets",
@@ -86,9 +86,9 @@
     "live-look-crew.txt": "c80d3ed834c223283cb09a340cc2ea5e43534e1a63bb50c593f476a3ffa0cf11",
     "live-look-contacts.txt": "f9898ec0cb3dcad5108cf144faac4c33dc4927b9afd7587d84b7ae5d8ecd0f5a",
     "live-details.txt": "222690ca5106a4d43b3aa5a0e8b3ca10bf520285adb446b17756452aa1237e78",
-    "live-bridge.png": "7d9b0e047e1030659c18a491dfbfdf3bbea2d142eeb339e7c222ec058fae2e65",
-    "live-details.png": "30330332adacf64d7c9040da7e558d277a49f4a1ad0a5a40f8c6dbdda7dd495c",
-    "live-errors.png": "c2b40dcfd5ab57806569ca72ddafcb0e0ca70e20c500edbda89b775bd3745ed5",
+    "live-bridge.png": "9fbc1531d13290e69bd8cb9c61948336b70c53aee85f803966d9c20bfdc9ce5f",
+    "live-details.png": "abccd3c29488f3062d3ecded01350bcadeed11870b2be5fffe676030a4aa26bd",
+    "live-errors.png": "fac5b68deaad673dad73e68459325fc18b29f9664dda1741d55ab8110b7e6ff5",
     "live-gmcp.json": "b468006ab438047c33e6c453d93cbe0c5feac9930f7711f1576dbe94d70259a5"
   },
   "cleanup": {

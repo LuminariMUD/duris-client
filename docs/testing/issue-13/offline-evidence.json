@@ -1,12 +1,12 @@
 {
   "date": "2026-10-23",
-  "client_source": "825b49bd365e92abbbe1c22cda1284dfd0d21ca4",
+  "client_source": "1d4381510ba05454df7641db6176eac72423164d",
   "suite_client_source": "2e7cc5d18fb838b8acc0886511c0fc4120586991",
   "server_source": "e86bf7f24c52449b1260bb378443efafd1d9c491",
   "package": {
     "version": "2.3.0",
-    "sha256": "acd5aba8306818fb67a7e2cb59b681ee4d596ffe27529b17bb55c96d8ba5b235",
-    "payload_sha256": "d1807a062fa5ca55e6d2708d017e1fc0135941d0913a39c3f9f1cfcb539a5ba2"
+    "sha256": "e0ac55014b4b16853dd488a819f382827d2d74a0218bf0798790e4b910d60cbb",
+    "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
   },
   "command": "python3 scripts/mudlet_suite.py --root /home/aiwithapex/.local/share/duris-captains-table-reviewed-suite",
   "suite": {
@@ -384,28 +384,28 @@
     "locale": "C.UTF-8"
   },
   "scale2": {
-    "run": "/home/aiwithapex/.local/share/duris-captains-table-scale2/20261023T121448Z-8940d76f-ship-table",
+    "run": "/home/aiwithapex/.local/share/duris-captains-scale2-qualified/20261023T131215Z-23a2e7ab-ship-table",
     "automated_status": "PASS",
-    "assertions": 39,
+    "assertions": 50,
     "cleanup": true,
     "normal_shutdown": true,
     "candidate": {
       "version": "2.3.0",
-      "sha256": "31062eb2cccfc37cb85243ff43ec4426c3f8d735444232a1093035dd21f3ffc8",
-      "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+      "sha256": "f12675c77872dcf21dcf4116cd8b72697ea7476f3957cef653a04f066b704ece",
+      "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
     },
     "scenario": "ship-table"
   },
   "mudlet4_22": {
-    "run": "/home/aiwithapex/.local/share/duris-captains-table-4.22",
+    "run": "/home/aiwithapex/.local/share/duris-captains-table-4.22-qualified",
     "automated_status": "PASS",
-    "assertions": 39,
+    "assertions": 50,
     "cleanup": true,
     "normal_shutdown": true,
     "candidate": {
       "version": "2.3.0",
-      "sha256": "823cb463ac1ee168b37c963bc8e0a5f2e5004401b5045f0a5d0516a058924a00",
-      "payload_sha256": "e5586a5468bf7188a1d4bf235d815339145359e32dea7d9c9fd4bd6f3540fd5f"
+      "sha256": "e0ac55014b4b16853dd488a819f382827d2d74a0218bf0798790e4b910d60cbb",
+      "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
     },
     "scenario": "ship-table"
   },
@@ -426,35 +426,48 @@
     "status": "PASS",
     "scope": "Expanded spatial diagram/helm/bearing, scrolled manifest before/after update, minimum frame, Qt scale 2 and Mudlet 4.22 screenshots inspected. Unrelated scenarios assert behavior; no blanket visual approval is implied."
   },
-  "final_candidate_regression": {
-    "run": "/home/aiwithapex/.local/share/duris-captains-table-final-captain/20261023T124412Z-dc29dbed-ship-bridge",
+  "ship_state_regressions": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-final-all-ship/20261023T130400Z-68a1b978-ship-bridge",
     "automated_status": "PASS",
-    "assertions": 44,
+    "assertions": 45,
     "cleanup": true,
     "normal_shutdown": true,
     "candidate": {
       "version": "2.3.0",
-      "sha256": "57b0a5cd2edcdc6b9ac906e44989f8e36e6f247a6fa7602ee3ae220c4dafd99a",
-      "payload_sha256": "d1807a062fa5ca55e6d2708d017e1fc0135941d0913a39c3f9f1cfcb539a5ba2"
+      "sha256": "5b43a1938c4d50557f6e198b1e868235fc800c30a3a20dcf250a3b2f1d2e1b3f",
+      "payload_sha256": "8ceab2cfb42ef52d0c3ebb6e93db78519cb136544f8f0ac102931faf12dfd5be"
     },
     "scenario": "ship-bridge"
   },
-  "coverage_reuse": {
-    "scope": "The complete 23-case suite ran after all review repairs at 2e7cc5d. The final one-line empty-captain automation guard is covered by the focused final ship-bridge regression and exact-archive live check. Native API/font/visual Mudlet 4.22 and Qt scale-2 proof is retained from 03c8b2c: no native APIs, geometry, fonts or styles changed. Each retained run records its actual package identity."
+  "current_ui_regressions": {
+    "run": "/home/aiwithapex/.local/share/duris-captains-calibrated-plot/20261023T131028Z-9ed3de74-ship-table",
+    "automated_status": "PASS",
+    "assertions": 50,
+    "cleanup": true,
+    "normal_shutdown": true,
+    "candidate": {
+      "version": "2.3.0",
+      "sha256": "e0ac55014b4b16853dd488a819f382827d2d74a0218bf0798790e4b910d60cbb",
+      "payload_sha256": "6d419a2e4a77373a7ddb8cf09b9fcf00d8d97516e4c089b7281b302447ba23e7"
+    },
+    "scenario": "ship-table"
   },
-  "release_validation": "python3 scripts/release.py --output /home/aiwithapex/.local/share/duris-captains-table-final-release-check passed",
+  "coverage_reuse": {
+    "scope": "The complete 23-case suite ran at 2e7cc5d. Subsequent focused ship-bridge and ship-table checks cover the empty captain, bare legacy arrays, rendered-generation clicks, grouped flags, truthful provenance, unknown contact state, legacy sunk state and calibrated bearing rings. The last plot calibration changes only drawing geometry; accepted-state logic retains its focused ship-bridge proof. Final Mudlet 4.22, Qt scale-2, current UI and exact-archive live checks run on the final canonical payload. Each retained run records its actual package identity."
+  },
+  "release_validation": "python3 scripts/release.py --output /home/aiwithapex/.local/share/duris-captains-release-qualified passed",
   "limits": [
     "Actual Mudlet 4.19.1 runtime not run; official-source API audit only.",
     "Native Windows/macOS and physical DPI/input checks not run.",
     "Moving orders, fatigue, damaged/reloading equipment, contraband and populated contacts use focused production-helper/wire and Mudlet fixtures; no production ship mechanics were changed."
   ],
   "artifacts": {
-    "bridge-expanded.png": "14b2d9d670c3b711bf4260d2be39c07c64495e285066c2038c4539e1d12fdf48",
-    "bridge-scrolled.png": "cf6409dbcafac70a030caae434934caa12fc95b1958f4eccbf745074032a1795",
-    "bridge-refresh.png": "a7491857a659a2cabc73ca376b522ff5d5cdfd380373ce97999f51059b212f95",
-    "bridge-minimum.png": "4ab7e8842c994ac79c901b5b6bd905104da95449787ac2d930b764d9d7df0d9d",
-    "bridge-4.22.png": "a393f273f8de693a59a4859279015a84c709c5e1f3a7b87f03403b1a1cdbb5e9",
-    "bridge-scale2.png": "c404c28c32eca6aa7fc2ff9f357292493f4a7dcf63b9798dd64174fb3cf4374b",
-    "errors-primary.png": "cce22d6a9b470d3e6ea04bcd1f0ee95fd56e6922486f722cdc78df6ae4400489"
+    "bridge-expanded.png": "6026cb12f329e43ee80445fb9af9e79ad63f8691c7d2f4d5e479cbcb0379a110",
+    "bridge-scrolled.png": "4b86274efafce935e55a56a6bd59fff423946ccffe61df88fbb4ba3e9a768643",
+    "bridge-refresh.png": "b9f6044ae1437eef9f3b28478cddfba909c97fec47d83bdc2e1a5bd806e57b91",
+    "bridge-minimum.png": "ec18d1e2c1f8221f9015be07556cb6e9d2753a68d177aaaf7f43dedceb1a24fb",
+    "bridge-4.22.png": "b2af5c5ca488133710c3df67e0df4d0ee6061658b331d1521b45bb576580a9e2",
+    "bridge-scale2.png": "dee4975d008d23f1e92dd9048e6cc7d7d5e969dc0e332843a5d2ef84058ad607",
+    "errors-primary.png": "b81d1aef63ddf98b5882e65b481101ac62f74db4053f5c02cff62792c289d01d"
   }
 }
