@@ -20,7 +20,8 @@
     "text": "Artwork fallback, scan summary, alert banners, ANSI and long-line wrapping",
     "lifecycle": "Hide/show state, uninstall resource cleanup, canceled timers and reinstall",
     "connections": "Actual server ship fields, nested ship info, empty updates, door keys, combat end and logout/reconnect",
-    "server-wire": "Real server serializer output over loopback Telnet: negotiation, populated and empty snapshots, disconnect"
+    "server-wire": "Real server serializer output over loopback Telnet: negotiation, populated and empty snapshots, disconnect",
+    "layout": "Adjustable dashboard gestures, controls, recovery, saved layout and unchanged game data"
   },
   "negative": [
     "assertion-error",

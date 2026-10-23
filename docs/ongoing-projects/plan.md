@@ -1,5 +1,27 @@
 # Issue #3: readable SHIP panel
 
+## Integrated SHIP review completion — 2026-10-23
+
+PR #9 is stacked on #8, retaining #7 and both layout review repairs. Version
+2.0.1 prevents a downgrade to the former standalone 1.3.7 candidate. The prior
+layout handoff is preserved in [plan-issue-5.md](plan-issue-5.md).
+
+All four existing review findings remain valid and addressed: authoritative
+bridge departure stays empty; fresh zero Contacts navigation beats cached Info;
+the manifest now identifies this integrated candidate; all 21 final-package
+Mudlet suite expectations pass. The inherited hidden-tell defect is fixed by
+#7 and retained. Integration exposed a one-row SHIP scroll drift (22 to 21);
+the existing absolute scrollTo path repairs it, with the failing and passing
+connection runs recorded. The 1280x720 connection case also passes 115 assertions.
+
+Local build/release payload validation, 15 release and ten controller tests pass.
+Weapon/refresh/Errors screenshots were inspected. Current source, archive and
+per-run payload identities: [review record](../testing/issue-3/review-2026-10-23.json).
+The old 1.3.7 live, 4.22 and size/DPI evidence is historical; the new combined
+layout is not qualified by those captures. No live/minimum-version/hardware-DPI/
+other-platform rerun is claimed. No merge or manual tag was performed.
+
+
 Status: implementation in progress; renderer and focused real-Mudlet fixtures
 are being qualified. Issue remains open until the manual same-ship comparison.
 

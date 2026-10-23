@@ -1,11 +1,29 @@
 # Changelog
 
-## 1.3.7 - 2026-10-22
+Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
+
+## 2.0.1 - 2026-10-23
 
 - Organize SHIP into readable condition, weapon, crew, equipment, cargo and contact sections with labeled values, condition colors and separate ammunition, damage and timer status.
 - Preserve navigation, target controls, text fallback and empty-state clearing while handling older or partial ship payloads.
+- Restore the absolute SHIP scroll position after updates, including the adjustable dashboard viewport.
 
-Notable changes to the Duris Client Mudlet package. Versions follow [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`); see [docs/RELEASING.md](docs/RELEASING.md) for what each part means here. Each version heading must match `VERSION`; the release workflow copies that section into the GitHub Release notes.
+## 2.0.0 - 2026-10-22
+
+- Rebuild the dashboard as ten adjustable panels with title/border gestures, named home docking, locking, minimize, hide and maximize actions.
+- Add `ui layout`, `ui panel`, fixed Panels and Reset layout controls, and profile-local normalized layout persistence.
+- Keep game output visible and preserve scrollback and selected views during layout changes.
+- Keep event-driven map paints below a different maximized panel and reveal the latest accepted room on restore.
+
+## 1.4.1 - 2026-10-23
+
+- Preserve unread private tells received while the UI is hidden; opening the conversation reveals and marks them read.
+
+## 1.4.0 - 2026-10-22
+
+- Add `ui set compactHeader on|off`, a saved option that collapses the illustrated header into a dark gradient and gives the recovered height to gameplay panels. Full artwork remains the default.
+- Recenter populated zone and wilderness maps when the header or window size changes, preserving map mode, cache and zoom.
+- Keep a paused mapper's display frozen during header changes, resize, and UI hide/show.
 
 ## 1.3.6 - 2026-10-22
 

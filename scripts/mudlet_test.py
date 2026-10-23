@@ -29,6 +29,28 @@ def command(args, **kwargs):
                           capture_output=True, timeout=30, **kwargs).stdout.strip()
 
 
+def pointer_action(wid, action, scale):
+    def move(x, y):
+        xdo("mousemove", "--window", wid, str(round(x * scale)), str(round((y + 20) * scale)))
+    move(action["x"], action["y"])
+    button = str(action.get("button", 1))
+    if action["type"] == "click":
+        xdo("click", button)
+    elif action["type"] == "scroll":
+        xdo("click", "--repeat", "8", "--delay", "80", "5")
+    elif action["type"] == "drag":
+        try:
+            xdo("mousedown", button)
+            for step in range(1, 9):
+                move(action["x"] + (action["to_x"] - action["x"]) * step / 8,
+                     action["y"] + (action["to_y"] - action["y"]) * step / 8)
+                time.sleep(.04)
+        finally:
+            xdo("mouseup", button)
+    elif action["type"] != "hover":
+        raise ValueError("Unknown pointer action: " + action["type"])
+
+
 def write_json(path, value):
     path = Path(path)
     pending = path.with_suffix(".tmp")
@@ -225,11 +247,7 @@ def session(run):
                     if action["type"] == "key":
                         xdo("key", "--clearmodifiers", action["key"])
                     else:
-                        xdo("mousemove", "--window", wid, str(round(action["x"] * scale)), str(round((action["y"] + 20) * scale)))
-                        if action["type"] == "click":
-                            xdo("click", "1")
-                        elif action["type"] == "scroll":
-                            xdo("click", "--repeat", "8", "--delay", "80", "5")
+                        pointer_action(wid, action, scale)
                     time.sleep(.25)
                 if checkpoint.get("actions"):
                     capture(run, wid, f'{seen_step:02d}-{checkpoint["name"]}-after-input')
@@ -255,7 +273,7 @@ def session(run):
                 result["error"] = "Unexpected map requests: " + str(observed)
         # Keep the main buffer and a real editor Errors-view capture for review.
         enter(wid, "lua DurisTest.save()")
-        if config["scenario"] == "lifecycle" and result["status"] == "PASS":
+        if config["scenario"] in {"lifecycle", "layout"} and result["status"] == "PASS":
             xdo("key", "alt+F4")
             app.wait(timeout=8)
             if app.returncode != 0:
