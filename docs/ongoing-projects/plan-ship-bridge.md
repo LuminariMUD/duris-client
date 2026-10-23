@@ -1,6 +1,6 @@
 # SHIP redesign: the Captain's Table
 
-Date: 2026-10-23. Status: implementation in progress; server contract slice first.
+Date: 2026-10-23. Status: Details and Bridge implemented in dependent PRs #14/#15; final qualification in #16.
 
 ## Current handoff
 
@@ -61,9 +61,19 @@ Date: 2026-10-23. Status: implementation in progress; server contract slice firs
 - A Details review found that two unflagged duplicate IDs could hide a later flagged lock.
   PR #14 receives the focused correction and three-duplicate regression; its real-Mudlet
   `ship-bridge` run passed at `/home/aiwithapex/.local/share/duris-details-duplicate-followup`.
-- Next: finish Bridge interaction/visual checks, publish its dependent PR, then run final
-  package qualification and update the issue checklist.
-  Live, actual 4.19.1 and native-platform verification remain outstanding.
+- Review follow-up for #15: clear a contact group if any member becomes ambiguous
+  after replacement, show weapon destruction as Yes/No/unknown, and combine overlapping
+  helm glyphs while retaining both exact numeric headings. These use the existing renderer
+  and `ship-table` fixture; no new state, dependencies or compatibility paths are needed.
+  Keep unreleased 2.3.0 and rebuild its archive with the fixes.
+- Review proof: `scripts/release.py --output /tmp/duris-pr15-review-release` and
+  `git diff --check` pass. Real Mudlet 5.0.1 `ship-table` passes all 58 assertions,
+  no Lua errors and normal cleanup, under
+  `/home/aiwithapex/.local/share/duris-pr15-review-final/20261023T134157Z-abcaea30-ship-table`.
+  Inspected helm, manifest, minimum-frame and actual Errors-view screenshots.
+- Next: carry this focused review correction into #16, whose handoff owns final
+  integrated evidence and the live comparison. Actual 4.19.1 and native-platform
+  runtime verification remain unverified.
   Master CI continues to own release tags; no tags or production changes are made here.
 
 ## Tracking and navigation

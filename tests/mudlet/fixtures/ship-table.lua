@@ -61,6 +61,26 @@ T.steps({
   T.check(countWidgets()==T.widgets and ArjUI.shipWidgets.portArmor==T.hull,"updates retain widget identities and count")
   T.paintCount=ArjUI.shipPaintCount
  end},
+ {name="complete-slot-and-helm-state",run=function()
+  local originalInfo=ArjUI.state.ship.info
+  local info=yajl.to_value(yajl.to_string(originalInfo))
+  for _,value in ipairs({{false,"No"},{true,"Yes (bridge **)"},{nil,"?"}}) do
+   info.weapons[1].destroyed=value[1]
+   T.emit("Ship.Info",info);ArjUI:renderShip()
+   local row=ArjUI.shipWidgets["slot"..info.weapons[1].slot].shipHTML:gsub("<br>"," ")
+   T.check(row:find("Destroyed "..value[2],1,true),"Bridge preserves destroyed state "..value[2])
+  end
+  info.bridge.setHeading=360
+  T.emit("Ship.Info",info)
+  T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts=ArjUI.state.ship.contacts})
+  ArjUI:renderShip()
+  T.check(ArjUI.shipWidgets.headingactual.shipHTML=="●◇" and not ArjUI.shipWidgets.headingordered.shipUsed,"coincident headings show both actual and ordered glyphs, including 0/360")
+  info.bridge.setHeading=90;T.emit("Ship.Info",info);ArjUI:renderShip()
+  T.check(ArjUI.shipWidgets.headingactual.shipHTML=="●" and ArjUI.shipWidgets.headingordered.shipUsed,"different headings restore separate helm markers")
+  T.emit("Ship.Info",originalInfo);ArjUI:renderShip()
+  T.check(ArjUI.shipWidgets.headingactual.shipHTML=="●◇" and not ArjUI.shipWidgets.headingordered.shipUsed,"nearby 0/359 headings also retain both glyphs instead of overlapping")
+  T.paintCount=ArjUI.shipPaintCount
+ end},
  {name="replacement-selection",run=function()
   local originalInfo,originalContacts=ArjUI.state.ship.info,ArjUI.state.ship.contacts
   ArjUI.shipSelection={slot=2,arc="stern"};ArjUI:renderShip()
@@ -81,6 +101,12 @@ T.steps({
   T.emit("Ship.Contacts",duplicatePacket);ArjUI:renderShip();ArjUI.shipWidgets.contactMarker1.clickCallback()
   T.emit("Ship.Contacts",gmcp.Ship.Contacts);ArjUI:renderShip()
   T.check(ArjUI.shipSelection==nil,"ambiguous selection clears after a replacement snapshot")
+  T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts={
+   {id="**",name="Duplicate",bearing=90,range=35},{id="**",name="Duplicate",bearing=90,range=35},{id="BB",name="Unique",bearing=90,range=35}}})
+  ArjUI:renderShip();ArjUI.shipWidgets.contactMarker1.clickCallback()
+  T.check(ArjUI.shipWidgets.contactInspector1.shipUsed and ArjUI.shipWidgets.contactInspector2.shipUsed and ArjUI.shipWidgets.contactInspector3.shipUsed,"mixed marker opens every duplicate and unique member")
+  T.emit("Ship.Contacts",gmcp.Ship.Contacts);ArjUI:renderShip()
+  T.check(ArjUI.shipSelection==nil and not ArjUI.shipWidgets.contactInspector3.shipUsed,"mixed ambiguous replacement clears the whole group, including its unique member")
   T.emit("Ship.Info",originalInfo)
   T.emit("Ship.Contacts",{shipKey=ArjUI.state.ship.shipKey,heading=0,speed=0,contacts=originalContacts})
   ArjUI:renderShip();T.paintCount=ArjUI.shipPaintCount
