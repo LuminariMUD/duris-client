@@ -4201,16 +4201,17 @@ function ArjUI:renderShipBridge()
     local showPlot=wide or self.shipPlotOpen
     if showPlot then
       local size=math.min(250,rightW-8); local radius=size/2; local centerX=rightX+rightW/2; local centerY=y+radius
+      local plotRadius=radius-14
       local maxRange=tonumber(info.contactRange) or 1
       for _,entry in ipairs(v.contacts) do maxRange=math.max(maxRange,tonumber(pick(entry.data,"range","distance","r")) or 0) end
       maxRange=math.max(1,maxRange)
-      label("plot",centerX-radius,y,size,size,"<center>N<br><br><br>W　 +　 E<br><br><br>S</center>",nil,"border:1px solid #80613c;border-radius:"..radius.."px;background-color:#101613;color:#9eac9d;")
-      label("plotRing",centerX-radius/2,centerY-radius/2,radius,radius,"",nil,"border:1px solid #3c5143;border-radius:"..math.floor(radius/2).."px;background-color:transparent;")
+      label("plot",centerX-plotRadius,centerY-plotRadius,plotRadius*2,plotRadius*2,"<center>N<br><br><br>W　 +　 E<br><br><br>S</center>",nil,"border:1px solid #80613c;border-radius:"..plotRadius.."px;background-color:#101613;color:#9eac9d;")
+      label("plotRing",centerX-plotRadius/2,centerY-plotRadius/2,plotRadius,plotRadius,"",nil,"border:1px solid #3c5143;border-radius:"..math.floor(plotRadius/2).."px;background-color:transparent;")
       local groups={}
       for _,entry in ipairs(v.contacts) do
         local c=entry.data; local bearing,range=tonumber(pick(c,"bearing","b")),tonumber(pick(c,"range","distance","r"))
         if bearing and range and range>=0 then
-          local angle=math.rad(bearing); local distance=range/maxRange*(radius-14)
+          local angle=math.rad(bearing); local distance=range/maxRange*plotRadius
           local px,py=centerX+math.sin(angle)*distance,centerY-math.cos(angle)*distance
           local group
           for i=#groups,1,-1 do
