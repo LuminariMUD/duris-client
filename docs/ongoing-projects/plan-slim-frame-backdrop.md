@@ -376,9 +376,11 @@ button. Targeting `rootY + 12` corrected that path but was insufficient: the
 next hosted run logged root y=24 / title y=75. The old controller advanced and
 released after fixed 40ms delays, without confirming native move delivery.
 
-The fixture now acknowledges each completed call through the existing
-`capturePanelGesture()` callback. The controller waits for that acknowledgement
-before its next drag move or release (bounded at 5 seconds, with mouse release
+The fixture now acknowledges native `onClick()` and each completed move through
+the existing `capturePanelGesture()` callback. The native click handler samples
+`getMousePosition()` to anchor the drag; moving before it runs can lose initial
+motion. The controller waits for press delivery before moving and for each
+move acknowledgement before its next move or release (bounded at 5 seconds, with mouse release
 in `finally` even on timeout). This is test-companion/controller synchronization;
 no player-package polling, timer, dependency or callback is added. The strict
 root-boundary assertion and tolerance remain unchanged. No direct placement,
@@ -389,7 +391,7 @@ The official checksum-pinned .deb (Mudlet 5.0.1, Qt 6.10.2) was replayed in an
 isolated Ubuntu 26.04 container limited to one CPU. The complete synchronized
 layout scenario and real restart pass at logical 1366x719, root/title y=24 in
 both presentations. Run:
-`~/.local/share/duris-client-dev/issue-21-ci-container/ack/20261025T151126Z-d484f05a-layout`.
+`~/.local/share/duris-client-dev/issue-21-ci-container/press-ack/20261025T151441Z-fddc850b-layout`.
 Scenic/quiet pointer captures and Errors view were inspected and retained.
 The controller's new acknowledgement-timeout regression verifies mouse cleanup;
 all 11 controller tests pass. Runtime source, assets, archive and canonical

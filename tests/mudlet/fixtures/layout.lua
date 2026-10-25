@@ -17,10 +17,18 @@ end
 -- CI can queue moves longer than a fixed per-step delay.
 local originalCapture=ArjUI.capturePanelGesture
 local pointerSequence=0
-function ArjUI:capturePanelGesture(panel)
- originalCapture(self,panel)
+local function delivered()
  pointerSequence=pointerSequence+1
  T.write("pointer-delivered",{sequence=pointerSequence})
+end
+local originalClick=Adjustable.Container.onClick
+function Adjustable.Container:onClick(label,event)
+ originalClick(self,label,event)
+ if event.button=="LeftButton" then delivered() end
+end
+function ArjUI:capturePanelGesture(panel)
+ originalCapture(self,panel)
+ delivered()
 end
 local steps={}
 T.boundary={}

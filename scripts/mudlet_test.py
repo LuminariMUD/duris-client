@@ -45,7 +45,10 @@ def pointer_action(wid, action, scale):
             except (FileNotFoundError, json.JSONDecodeError):
                 return 0
         try:
+            previous = delivered() if action.get("ack") else None
             xdo("mousedown", button)
+            if action.get("ack"):
+                wait_for(lambda: delivered() > previous, 5)
             for step in range(1, 9):
                 previous = delivered() if action.get("ack") else None
                 move(action["x"] + (action["to_x"] - action["x"]) * step / 8,

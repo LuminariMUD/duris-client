@@ -31,7 +31,7 @@
     "VERSION": "2ad7b0c3f0ede58c3165b7a8a5479e890a758d39bfe8683eaef50ce6afad7232",
     "build.py": "d5af8f092144381ce754084379924ae4f1dd549807844916ac0fc8f31d417208",
     "scripts/mudlet_suite.py": "3d40efe99214dcc897cd575a58904b9c3d8b2510540490b04edad82b3f4ad397",
-    "scripts/mudlet_test.py": "acede14cd28ef9a8255587361f283be3b20b97dc3eae2deb5aed79737ef068fc",
+    "scripts/mudlet_test.py": "3b075f76f5026fe8ded5bf8b613d6c5b235f629c02c6c8e104128963f0655aa9",
     "src/assets/.mudlet/Icon/ArjUI.jpeg": "2fd4ab3f1542b579f582811e6b220348b60b9f4bc24b4e0409c6973e159f7980",
     "src/assets/duris-backdrop-stormwatch.png": "9c985b679d1a9b387e866381a7d35ed4487de5fc8ee67d83cd6fb1d02b2cda9e",
     "src/assets/duris-frame-slim.png": "59980d4e4137bbc54ae970d76fb7f7e70e8e7bd1f78119e0a4a834619e1b5163",
@@ -224,8 +224,8 @@
       {
         "case": "layout",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/ack/20261025T151126Z-d484f05a-layout",
-        "archive_sha256": "b546a1c45b36502382c9b3857e3580afb40ea47a54d1f8a93c5dcb514e74f5f8",
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/press-ack/20261025T151441Z-fddc850b-layout",
+        "archive_sha256": "e603b5c08daecb5688fa56bcd162a1752f574b8ec371c27b041646f3fc53ede1",
         "payload_sha256": "e51e875e4aa78f359fd92842ba0930bc6b10f93b9b08a049d5657e3f9eea0fc4",
         "assertions": 184,
         "normal_shutdown": true,
@@ -913,7 +913,8 @@
     "/home/aiwithapex/.local/share/duris-client-dev/issue-21-suite/ship-table/20261025T142830Z-213b1f2d-ship-table",
     "/home/aiwithapex/.local/share/duris-client-dev/issue-21-suite/crowded/20261025T142837Z-9d9bec07-crowded",
     "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/20261025T145840Z-e95d3dc0-layout",
-    "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/ack/20261025T151126Z-d484f05a-layout"
+    "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/ack/20261025T151126Z-d484f05a-layout",
+    "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/press-ack/20261025T151441Z-fddc850b-layout"
   ],
   "retained_screenshots": {
     "default-1366.png": {
@@ -945,11 +946,11 @@
       "sha256": "db1901c035839a13dae8d7fab3ae24d58f0501afc1447c33354b08e827b164b1"
     },
     "ci-top-scenic-pointer.png": {
-      "source": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/ack/20261025T151126Z-d484f05a-layout/01-scenic-top-drag-after-input.png",
+      "source": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/press-ack/20261025T151441Z-fddc850b-layout/01-scenic-top-drag-after-input.png",
       "sha256": "75e6e4cdbff5edf031f7a6434bc4cfa4e57db78bd65ee3b57407d2d096f058f3"
     },
     "ci-top-quiet-pointer.png": {
-      "source": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/ack/20261025T151126Z-d484f05a-layout/10-quiet-top-drag-after-input.png",
+      "source": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/press-ack/20261025T151441Z-fddc850b-layout/10-quiet-top-drag-after-input.png",
       "sha256": "c0cac16e406d2fe37e5814a66d0e96f16af2586e5b0ea12aac38d4bc58ca20c9"
     }
   },
@@ -986,7 +987,7 @@
     "tests/mudlet/fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
     "tests/mudlet/fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
     "tests/mudlet/fixtures/information.lua": "80772ed88103edbe990ac4c8daf93cea733b7d20976e99a7c9506001df74e99d",
-    "tests/mudlet/fixtures/layout.lua": "9969ae623147268ace3b64c6221ddaae7876b8865a8b2b2821a4c837d1446d74",
+    "tests/mudlet/fixtures/layout.lua": "ddfb515098d0cf7a801c73f99145960d6f1ba3b1b91555eae31544f1173c427c",
     "tests/mudlet/fixtures/lifecycle.lua": "149ddaae59d6a64c6f890b6a464a5612d98a2f4d08e0159f18c205572743f1a4",
     "tests/mudlet/fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
     "tests/mudlet/fixtures/lowhp.lua": "5fc5a895833c3ce1238776e0581b4cee61bd29bb3ebd01e0eb4d2f70ea30754c",
@@ -1007,10 +1008,10 @@
     "initial_hosted_cases_passed": 22,
     "initial_hosted_cases_total": 23,
     "failure": "layout: scenic pointer title reaches new top above old boundary",
-    "finding": "The original y12 destination overshot the title. Targeting rootY+12 improved the path but did not resolve hosted CI: head 139011f recorded title y75/root y24. The controller advanced/released based only on 40ms delays. Native move delivery is now acknowledged by the existing capture callback before each next move/release. No geometry assignment, retry, bounds change or assertion-tolerance change is used.",
+    "finding": "The original y12 destination overshot the title. Targeting rootY+12 improved the path but did not resolve hosted CI: head 139011f recorded title y75/root y24. The controller advanced/released based only on 40ms delays. Native move delivery is now acknowledged by the existing capture callback before each next move/release. No geometry assignment, retry, bounds change or assertion-tolerance change is used. The press is acknowledged too: native onClick samples getMousePosition, so advancing immediately after mousedown can initialize the drag from an already-moved pointer. Waiting for press delivery preserves the original anchor.",
     "official_build_replay": {
-      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/ack/20261025T151126Z-d484f05a-layout",
-      "source": "139011f5b57c95a8cd7626481fd6dcfe88258839",
+      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/press-ack/20261025T151441Z-fddc850b-layout",
+      "source": "351f46075d83ccd376aa62c0b1212944cdf8b8ab",
       "environment": {
         "tools": {
           "mudlet": "/usr/bin/mudlet",
@@ -1033,13 +1034,13 @@
       "cpu_limit": 1,
       "candidate": {
         "version": "2.4.0",
-        "sha256": "b546a1c45b36502382c9b3857e3580afb40ea47a54d1f8a93c5dcb514e74f5f8",
+        "sha256": "e603b5c08daecb5688fa56bcd162a1752f574b8ec371c27b041646f3fc53ede1",
         "payload_sha256": "e51e875e4aa78f359fd92842ba0930bc6b10f93b9b08a049d5657e3f9eea0fc4"
       },
       "result": "PASS",
       "assertions": 184,
       "geometry": {
-        "run_id": "20261025T151126Z-d484f05a",
+        "run_id": "20261025T151441Z-fddc850b",
         "quiet": {
           "window": [
             1366,

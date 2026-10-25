@@ -26,7 +26,7 @@ superseded and rerun with full 3440x1440 captures.
 Hosted heads `28a619f` and `139011f` passed 22/23; the latter logged a drag
 ending at y75 while the root was y24. Correcting the destination alone was
 insufficient. The controller now waits for native drag-delivery acknowledgements
-from the test companion before each next move/release, with a bounded timeout
+from the test companion after the press and before each next move/release, with a bounded timeout
 and guaranteed mouse cleanup. The strict root assertion and package runtime
 are unchanged. The pinned official .deb/Qt 6.10.2 full layout/restart replay
 passes under a one-CPU limit at logical 1366x719, y24 in both modes. Inspected
