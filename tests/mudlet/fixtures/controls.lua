@@ -17,6 +17,9 @@ local original,full,compact
 local function retained()
  T.check(ArjUI.main==original.main and ArjUI.console==original.console and ArjUI.state==original.state,"header retains widgets and GMCP state")
  T.check(ArjUI.activeTab=="stats" and ArjUI.activeChatTab=="guild","header retains selected tabs")
+ T.check(ArjUI.privateChats.retained==original.chat and original.chat.inputBox:getText()=="retained presentation draft","presentation retains private widget and draft")
+ T.check(#original.chat.history==original.history and original.chat.unread==1,"presentation retains private history and unread")
+ T.check(ArjUI.shipMode==original.shipMode,"presentation retains SHIP mode")
  T.check(#ArjUI.eventHandlers==original.handlers and #ArjMapper.handlers==original.mapHandlers,"header retains handler ownership")
  T.check(T.lines("ArjUI_Console"):find("HEADER-SCROLLBACK-SENTINEL",1,true),"header retains console scrollback")
  for key,value in pairs(original.settings) do
@@ -84,7 +87,12 @@ T.steps({
   ArjUI:switchChatTab("guild")
   feedTriggers("HEADER-SCROLLBACK-SENTINEL\n")
   for i=1,60 do feedTriggers(string.format("Gameplay line %02d: the bronze gate opens before you.\n",i)) end
-  original={main=ArjUI.main,console=ArjUI.console,state=ArjUI.state,handlers=#ArjUI.eventHandlers,
+  ArjUI:openPrivateChat("Retained")
+  local chat=ArjUI.privateChats.retained
+  chat.inputBox:print("retained presentation draft")
+  ArjUI:panelAction("tell:retained","minimize")
+  T.emit("Comm.Channel",{channel="tell",sender="Retained",text="Unread across presentation changes"})
+  original={chat=chat,history=#chat.history,shipMode=ArjUI.shipMode,main=ArjUI.main,console=ArjUI.console,state=ArjUI.state,handlers=#ArjUI.eventHandlers,
    mapHandlers=#ArjMapper.handlers,settings=table.deepcopy(ArjUI.settings)}
   expandAlias("ui set")
   T.check(T.lines("ArjUI_Console"):find("compactHeader",1,true),"setting discoverable through ui set")
@@ -101,12 +109,12 @@ T.steps({
   T.check(math.abs(compact.console.width-full.console.width)<2,"console width and wrapping unchanged")
   retained()
   T.write("header-geometry",{full=full,compact=compact})
-  T.headerInput=false
-  T.headerInputAlias=tempAlias("^h$",function() T.headerInput=true end)
- end,actions=function() return {T.click(ArjUI.tabButtons.group),{type="key",key="h"},{type="key",key="Return"}} end},
+  T.headerInput=0
+  T.headerInputAlias=tempAlias("^h$",function() T.headerInput=T.headerInput+1 end)
+ end,actions=function() return {T.click(ArjUI.tabButtons.group),{type="key",key="h"},{type="key",key="Return"},{type="key",key="Up"},{type="key",key="Return"}} end},
  {name="header-input",run=function()
   T.check(ArjUI.activeTab=="group","compact tab click target works")
-  T.check(T.headerInput,"native input retains focus after header change")
+  T.check(T.headerInput==2,"native input retains focus and command history after presentation change")
   killAlias(T.headerInputAlias)
   ArjUI:switchTab("stats")
   raiseEvent("sysAppStyleSheetChange")

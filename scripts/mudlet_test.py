@@ -400,7 +400,11 @@ end)
 def run_desktop(run, args):
     env = {**os.environ, "XDG_CONFIG_HOME": str(run / "config"), "QT_QPA_PLATFORM": "xcb",
            "QT_SCALE_FACTOR": str(args.scale), "DURIS_TEST_RUN": str(run), "LC_ALL": "C.UTF-8"}
-    display_size = "4096x2400x24" if args.scale == 2 else "2048x1200x24"
+    width, height = map(int, args.size.split("x"))
+    screen_width, screen_height = (4096, 2400) if args.scale == 2 else (2048, 1200)
+    # Leave room for window-manager decorations; otherwise import silently
+    # clips an ultrawide window to the smaller virtual screen.
+    display_size = f"{max(screen_width, width + 100)}x{max(screen_height, height + 100)}x24"
     proc = subprocess.Popen(["xvfb-run", "--auto-servernum", "--error-file=" + str(run / "xvfb.log"),
         "--server-args=-screen 0 " + display_size + " -dpi 96 -nolisten tcp", sys.executable,
         __file__, "_session", "--run-dir", str(run)], env=env, start_new_session=True)

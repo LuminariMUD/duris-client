@@ -67,6 +67,7 @@ python3 scripts/mudlet_test.py run --scenario information
 python3 scripts/mudlet_test.py run --scenario maps --size 1280x720 --timeout 70
 python3 scripts/mudlet_test.py run --scenario crowded --size 1920x1080
 python3 scripts/mudlet_test.py run --scenario controls --scale 2 --size 2732x1536
+python3 scripts/mudlet_test.py run --scenario text --size 3440x1440
 python3 scripts/mudlet_test.py run --scenario server-wire
 ```
 
@@ -77,6 +78,10 @@ test. It verifies negotiation, decoding, empty updates, a custom prompt and
 disconnect cleanup. Refresh its payloads with
 `python3 scripts/capture_server_gmcp.py --server /path/to/duris` when changing
 the server contract; see [fixture provenance](../tests/mudlet/fixtures/README.md).
+
+The runner expands its virtual screen to fit the requested physical window plus
+decoration clearance, including ultrawide sizes. `text` records actual logical
+client/root geometry and captures scenic/quiet default, sparse and maximized layouts.
 
 Each command prints its run directory. `manifest.json` records source/diff,
 package hash, fixture hashes, versions, geometry and screenshot hashes.

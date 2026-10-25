@@ -104,7 +104,7 @@ T.steps({
   expandAlias("ui set compactHeader on")
  end,verify=function()
   local text=T.lines(ArjMapper.ui.wildConsole.name)
-  T.check(ArjMapper.ui.wildConsole:get_height()>T.fullMapHeight and #(text:match("^\n*") or "")>=fullPadding,"compact wilderness grows viewport without losing padding")
+  T.check(ArjMapper.ui.wildConsole:get_height()==T.fullMapHeight and #(text:match("^\n*") or "")==fullPadding,"quiet wilderness retains viewport and padding")
   T.check(text:find("@",1,true) and ArjMapper.state.lastDisplayMode=="wilderness","header retains wilderness content and display mode")
   T.check(ArjMapper.config.wildZoom==wildZoom,"header retains wilderness zoom")
  end},

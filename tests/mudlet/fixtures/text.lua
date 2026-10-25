@@ -1,5 +1,10 @@
 local T=DurisTest
 ArjUI.initialDataRequested=true
+local w,h=getMainWindowSize()
+T.write("presentation-geometry",{logical={width=w,height=h},
+ root={x=ArjUI.uiRoot:get_x(),y=ArjUI.uiRoot:get_y(),width=ArjUI.uiRoot:get_width(),height=ArjUI.uiRoot:get_height()},
+ scene={width=ArjUI.backdrop:get_width(),height=ArjUI.backdrop:get_height(),style=ArjUI.backdrop.stylesheet},
+ frameStyle=ArjUI.frameArt.stylesheet})
 local home=getMudletHomeDir().."/Arjinius Client/"
 local scene=home.."duris-backdrop-stormwatch.png"
 local frame=home.."duris-frame-slim.png"

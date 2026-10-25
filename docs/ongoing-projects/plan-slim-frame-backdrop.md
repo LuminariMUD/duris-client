@@ -1,6 +1,6 @@
 # Slim Duris frame and Stormwatch backdrop
 
-Date: 2026-10-25. Status: **implementation in progress; initial real-Mudlet drag and render checks pass**.
+Date: 2026-10-25. Status: **implemented; review-ready in [PR #22](https://github.com/LuminariMUD/duris-client/pull/22)**.
 
 - Work item: [#21 — Slim the Duris frame and add an atmospheric workspace backdrop](https://github.com/LuminariMUD/duris-client/issues/21).
 - Included defect: [#20 — Panels cannot be dragged above the red line beneath the Duris banner](https://github.com/LuminariMUD/duris-client/issues/20).
@@ -198,32 +198,32 @@ the saved normal rectangle. Issue #19's alternative arrangement is separate.
 
 ## Acceptance and evidence
 
-- [ ] Real dragging places a panel title above the old `0.105 * H` boundary
+- [x] Real dragging places a panel title above the old `0.105 * H` boundary
   and at the new usable top in both preference states. Pointer input, not only
   direct geometry assignments, proves this. Compare against the base behavior.
-- [ ] At the upper edge, resize, dock/float, minimize/restore, maximize/restore,
+- [x] At the upper edge, resize, dock/float, minimize/restore, maximize/restore,
   and lock/unlock retain accessible title controls. Panels and Reset remain
   clickable; reset restores descriptor defaults. Include a private tell frame.
-- [ ] Save/reopen and window shrink/grow preserve normalized floating state;
+- [x] Save/reopen and window shrink/grow preserve normalized floating state;
   switching scenic/quiet mode preserves the new root geometry and user layout.
   Cover fresh installs and upgrades with saved true/false/missing preferences.
-- [ ] Frame corners stay coherent and the top visually matches other edges.
+- [x] Frame corners stay coherent and the top visually matches other edges.
   The scene keeps its aspect ratio, has no seams or exposed unpainted strips,
   and remains attractive in a sparse layout with panels moved off the center.
-- [ ] Review default, sparse/rearranged, and maximized layouts at physical
+- [x] Review default, sparse/rearranged, and maximized layouts at physical
   1280x720, 1366x768, 1920x1080, 2732x1536 at scale 2, and 3440x1440 ultrawide.
   Record logical dimensions separately. Inspect both scenic and quiet modes
   where their appearance differs; do not equate emulated scale with physical DPI.
-- [ ] Game output, chat, room lists, vitals, maps, and SHIP content retain
+- [x] Game output, chat, room lists, vitals, maps, and SHIP content retain
   readable opaque backgrounds and unchanged semantic colors. Native input
   focus/history and ordinary click/drag routing still work.
-- [ ] Independent missing/corrupt asset cases fall back cleanly. Hide/show,
+- [x] Independent missing/corrupt asset cases fall back cleanly. Hide/show,
   reconnect/style repaint, profile restart, uninstall/reinstall, and repeated
   resize leave no orphan labels, duplicate callbacks, errors, or stale images.
-- [ ] Existing `layout`, `controls`, `text`, `lowhp`, `maps`, `chat`, lifecycle
+- [x] Existing `layout`, `controls`, `text`, `lowhp`, `maps`, `chat`, lifecycle
   and reopen paths cover the changed contracts. Replace obsolete full-header
   expectations with assertions of real bounds, preserved state and rendering.
-- [ ] Build and full real-Mudlet suite pass; inspect affected screenshots and
+- [x] Build and full real-Mudlet suite pass; inspect affected screenshots and
   Errors views and record review against the exact candidate. Retain source,
   asset, archive/payload hashes, geometry and runtime versions with the evidence.
 
@@ -296,9 +296,69 @@ opaque panorama remains behind opaque panels. A first prototype exposed an
 initial-footer reference to the removed inset field; it was repaired before
 this successful run. It is not acceptance evidence.
 
-Current next steps: finish top-edge interaction/fallback tests and visual
-matrix, run the final required suite, inspect Errors views, record source,
-asset and payload hashes, publish the focused PR and update this section with
-exact delivery/evidence pointers. Minimum Mudlet 4.19.1, native Windows/macOS,
-physical DPI/input and live gameplay remain NOT RUN unless explicitly recorded.
-No tag, release, merge or deployment is authorized by this implementation pass.
+## Delivery and final qualification
+
+Implementation commit: `89897e3c0ce3d426f6cef22a547267e45dc830b2`.
+[PR #22](https://github.com/LuminariMUD/duris-client/pull/22) targets master and
+closes #21/#20 on merge. Follow-up qualification changes affect the controller,
+fixtures and evidence only; runtime source, assets and package payload retain
+that implementation identity. This feature is one cohesive PR; there is no
+independently shippable runtime dependency requiring a stack.
+
+- **All 23 suite expectations pass with proportionate evidence reuse.** The
+  complete initial suite returned 22/23 because `maps` still asserted that
+  compact mode grows the viewport. Its corrected assertion checks equal height
+  and padding. The focused `maps` run passes all 90 assertions, including paused
+  map behavior, accepted-data redraw and request counts. Unchanged green cases
+  were retained. Enhanced `controls` and the final text matrix replace those
+  cases in the aggregate evidence; no runtime change required another full run.
+- The final layout run proves actual mobs/private-tell top dragging and border
+  resizing, lock/unlock, dock/float, minimize/restore, maximize/restore, physical
+  Panels/Reset clicks, native window shrink/grow, normalized-state retention,
+  save/reopen, and private draft/history/unread behavior. Both presentations
+  place the title/root at y=24 in the 1366x716 logical client area.
+- Scale-2 `controls` passes native command focus/history, missing/true/false
+  preferences, existing-widget identity, selected tabs, SHIP mode, private
+  draft/history/unread, repaint/reconnect and hidden presentation changes.
+  Lifecycle passes teardown/reinstall and real saved-true profile restart;
+  layout restart supplies the saved-false case. Corrupt and missing scenery
+  and frame fall back independently in `text`.
+- **Visual matrix reviewed:** scenic/quiet default, sparse and maximized
+  captures at all five requested physical window sizes. Logical client sizes
+  are 1280x668, 1366x716, 1920x1028, 1366x716 (physical 2732x1536, scale 2), and
+  3440x1388. Root coordinates, crop styles and full capture dimensions are
+  recorded separately. Corners stay square, rails match, scene proportions
+  survive cover cropping, no seams appear, and information surfaces stay
+  opaque. Affected layout/map/SHIP/crowded captures and real Errors views were
+  also inspected; no new errors were found.
+- Visual review caught the runner silently clipping ultrawide captures to its
+  fixed 2048x1200 Xvfb screen. `run_desktop()` now expands the virtual screen
+  to the requested physical dimensions plus decoration clearance. The clipped
+  run is explicitly FAIL/superseded; final captures are actual 3440x1440 PNGs.
+- `build.py --check`, full build, 10 controller tests, 15 release tests,
+  `scripts/release.py --output /tmp/duris-21-release-check`, and `git diff --check`
+  pass. The committed archive matches the builder's payload.
+
+[Machine-readable qualification record](../testing/issue-21/review-2026-10-25.json)
+retains exact per-run paths, source/asset/controller hashes, canonical payload
+identity, per-run ZIP hashes, assertions, screenshot hashes and both superseded
+findings. Full offline profiles/logs remain under
+`~/.local/share/duris-client-dev/issue-21-*`; selected raw screenshots are
+versioned beside the JSON. The final matrix is in `issue-21-final-matrix-*`.
+Root archive SHA-256:
+`0864c24e00c3ec40769a2bca83c2cdb6362b49f0d189540947f964bd85915ce6`.
+Canonical payload SHA-256:
+`e51e875e4aa78f359fd92842ba0930bc6b10f93b9b08a049d5657e3f9eea0fc4`.
+Each run rebuilds a ZIP with different timestamps; canonical payload equality,
+rather than ZIP byte equality, ties the evidence to this delivered package.
+
+The checked boxes above cover available offline acceptance only. **NOT RUN:**
+Mudlet 4.19.1, native Windows/macOS, physical DPI/input hardware and live
+integration. Qt scale emulation does not certify hardware DPI. The requested
+≥2560px scene master was not returned by imagegen; actual artwork is 1983x793,
+reviewed at ultrawide and scale 2 without claiming a higher-resolution master.
+
+Handoff: implementation and local qualification are complete. Review PR #22
+and its live checks before merging; retain the stated compatibility limits.
+Issues stay open until merge. No master push, manual tag, release, merge or
+deployment was performed. Master CI owns the eventual version 2.4.0 release.
