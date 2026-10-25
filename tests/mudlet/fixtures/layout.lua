@@ -25,12 +25,15 @@ for _,value in ipairs({false,true}) do
   expandAlias("ui layout unlock")
  end,actions=function()
   local p=point("mobs",60,12)
-  return {{type="drag",x=p.x,y=p.y,to_x=p.x,to_y=12}}
+  -- Keep the pointer over the title at the destination. Overshooting into
+  -- the fixed Panels button can interrupt native move delivery on some Qt builds.
+  return {{type="drag",x=p.x,y=p.y,to_x=p.x,to_y=ArjUI.uiRoot:get_y()+12}}
  end}
  steps[#steps+1]={name=mode.."-top-resize",run=function()
   local w,h=getMainWindowSize()
   local f=ArjUI.panels.mobs.frame
   T.boundary[mode]={window={w,h},rootY=ArjUI.uiRoot:get_y(),titleY=f:get_y()}
+  T.write("boundary-geometry",T.boundary)
   T.check(math.abs(f:get_y()-math.max(24,h*.028))<2 and f:get_y()<h*.105-10,mode.." pointer title reaches new top above old boundary")
   T.check(ArjUI.panels.mobs.state.mode=="floating",mode.." pointer floats panel")
   beforeWidth=f:get_width()
@@ -81,7 +84,7 @@ for _,value in ipairs({false,true}) do
   expandAlias("ui panel tell:topprobe unlock")
  end,actions=function()
   local p=point("tell:topprobe",60,12)
-  return {{type="drag",x=p.x,y=p.y,to_x=p.x,to_y=12}}
+  return {{type="drag",x=p.x,y=p.y,to_x=p.x,to_y=ArjUI.uiRoot:get_y()+12}}
  end}
  steps[#steps+1]={name=mode.."-private-top-resize",run=function()
   local f=ArjUI.panels["tell:topprobe"].frame

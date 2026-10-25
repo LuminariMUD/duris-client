@@ -362,3 +362,31 @@ Handoff: implementation and local qualification are complete. Review PR #22
 and its live checks before merging; retain the stated compatibility limits.
 Issues stay open until merge. No master push, manual tag, release, merge or
 deployment was performed. Master CI owns the eventual version 2.4.0 release.
+
+### Hosted-CI pointer fixture follow-up
+
+At head `28a619f`, [CI run 40203512462](https://github.com/LuminariMUD/duris-client/actions/runs/40203512462)
+passed 22/23 cases but failed the first scenic top assertion. Artifact
+`12602134683` retains that run; layout files are also under
+`~/.local/share/duris-client-dev/issue-21-ci-failure`.
+
+The pointer destination y=12 overshot the usable workspace and ended over the
+fixed Panels button. The corrected fixture targets `rootY + 12`, keeping the
+pointer over its title at the requested top. The assertion still requires the
+frame at the exact usable boundary (same <2px tolerance) in both states; no
+runtime bounds, dragging implementation or tolerance was changed. Geometry is
+written before assertions so any later failure retains actual coordinates.
+
+The official checksum-pinned .deb (Mudlet 5.0.1, Qt 6.10.2) was replayed in an
+isolated Ubuntu 26.04 container. Its full corrected `layout` scenario and real
+restart pass: client logical 1366x719, root/title y=24 in both presentations.
+Run: `~/.local/share/duris-client-dev/issue-21-ci-container/20261025T145840Z-e95d3dc0-layout`.
+Scenic/quiet pointer captures and Errors view were inspected; data is added to
+the qualification JSON. The original local AppImage (Qt 6.11.1) results remain
+valid for its unchanged runtime and all other cases. A fresh hosted run checks
+the fixture follow-up; consult the PR's live checks before merging.
+
+The task-owned replay container is removed after collecting its evidence;
+profiles and logs remain in the named host evidence directory. A first minimal
+container startup stopped on Mudlet's telnet-handler prompt because xdg-utils
+was missing; that setup attempt is not acceptance evidence.

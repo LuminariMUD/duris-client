@@ -224,8 +224,8 @@
       {
         "case": "layout",
         "passed": true,
-        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-suite/layout/20261025T142939Z-c278b08c-layout",
-        "archive_sha256": "0d7a4f132ebd24d45bfde5c256a22d8fa0b6d543218b40d5d19187e36e82331b",
+        "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/20261025T145840Z-e95d3dc0-layout",
+        "archive_sha256": "2959a963ff95d79f1b668864f36735b4cc6094f6dd3d05dd887846e8b31968cd",
         "payload_sha256": "e51e875e4aa78f359fd92842ba0930bc6b10f93b9b08a049d5657e3f9eea0fc4",
         "assertions": 184,
         "normal_shutdown": true,
@@ -299,7 +299,7 @@
         "reviewed": false
       }
     ],
-    "reuse": "Initial complete run passed 22/23; maps stopped at an obsolete header-growth assertion. Focused corrected maps, enhanced scale-2 controls and final text matrix replace only those cases. Runtime sources and canonical package payload remain unchanged; per-run ZIP timestamps differ. Default desktop dimensions are unchanged by the ultrawide screen repair."
+    "reuse": "Initial complete run passed 22/23; maps stopped at an obsolete header-growth assertion. Focused corrected maps, enhanced scale-2 controls and final text matrix replace only those cases. Runtime sources and canonical package payload remain unchanged; per-run ZIP timestamps differ. Default desktop dimensions are unchanged by the ultrawide screen repair. Corrected pointer destination is proven by the official Qt 6.10.2 layout/restart replay."
   },
   "initial_suite": {
     "cases": [
@@ -911,7 +911,8 @@
     "/home/aiwithapex/.local/share/duris-client-dev/issue-21-suite/layout/20261025T142939Z-c278b08c-layout",
     "/home/aiwithapex/.local/share/duris-client-dev/issue-21-suite/lifecycle/20261025T142924Z-6c665dfa-lifecycle",
     "/home/aiwithapex/.local/share/duris-client-dev/issue-21-suite/ship-table/20261025T142830Z-213b1f2d-ship-table",
-    "/home/aiwithapex/.local/share/duris-client-dev/issue-21-suite/crowded/20261025T142837Z-9d9bec07-crowded"
+    "/home/aiwithapex/.local/share/duris-client-dev/issue-21-suite/crowded/20261025T142837Z-9d9bec07-crowded",
+    "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/20261025T145840Z-e95d3dc0-layout"
   ],
   "retained_screenshots": {
     "default-1366.png": {
@@ -941,6 +942,14 @@
     "top-quiet-pointer.png": {
       "source": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-suite/layout/20261025T142939Z-c278b08c-layout/10-quiet-top-drag-after-input.png",
       "sha256": "db1901c035839a13dae8d7fab3ae24d58f0501afc1447c33354b08e827b164b1"
+    },
+    "ci-top-scenic-pointer.png": {
+      "source": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/20261025T145840Z-e95d3dc0-layout/01-scenic-top-drag-after-input.png",
+      "sha256": "8b7a93c036a250e7e1388ee67d0c0fc636bac5a99782e7a2e058166322cb165b"
+    },
+    "ci-top-quiet-pointer.png": {
+      "source": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/20261025T145840Z-e95d3dc0-layout/10-quiet-top-drag-after-input.png",
+      "sha256": "c0cac16e406d2fe37e5814a66d0e96f16af2586e5b0ea12aac38d4bc58ca20c9"
     }
   },
   "superseded": [
@@ -976,7 +985,7 @@
     "tests/mudlet/fixtures/crowded.lua": "878bceb990e0f9f8b210e0b1bf6a463223e0ef70f08126ce70496c8b488797d1",
     "tests/mudlet/fixtures/event-error.lua": "1af735bb4892151a1d62585166f08c83f25c0f4977ac166c69514d6f7c3c7de3",
     "tests/mudlet/fixtures/information.lua": "80772ed88103edbe990ac4c8daf93cea733b7d20976e99a7c9506001df74e99d",
-    "tests/mudlet/fixtures/layout.lua": "ec0cafa45e534cdb35a02796f6579fb1c23baa2972ec1a26e05c354a30ba1a02",
+    "tests/mudlet/fixtures/layout.lua": "a79ddec2b031d66bef981bdc3bf87d9fe1c643413a6fa7aa218fb663a4a688b5",
     "tests/mudlet/fixtures/lifecycle.lua": "149ddaae59d6a64c6f890b6a464a5612d98a2f4d08e0159f18c205572743f1a4",
     "tests/mudlet/fixtures/login.lua": "07b1e5384f2a9b91f14b74268d7f41001a553b77f9f4104dc95f1c2a378fd625",
     "tests/mudlet/fixtures/lowhp.lua": "5fc5a895833c3ce1238776e0581b4cee61bd29bb3ebd01e0eb4d2f70ea30754c",
@@ -989,5 +998,66 @@
     "tests/mudlet/fixtures/text.lua": "b1aef64697ee71857c56a3069f9f30fb513010d1bd745b76b021eec8ed27226a",
     "tests/mudlet/fixtures/timer-error.lua": "8eb8d02e9afaafccf638d79cf278c35d9f1015193b675ed0aa85f63a02bc54ae",
     "tests/mudlet/fixtures/vitals.lua": "fe6b88741fe134bd372c5d671b7dc5438045c7c46d93b330662fa61f7a123082"
+  },
+  "ci_follow_up": {
+    "failed_head": "28a619f1cef9e22c7900376a949b28b6c91dc519",
+    "workflow_run": 40203512462,
+    "artifact": 12602134683,
+    "initial_hosted_cases_passed": 22,
+    "initial_hosted_cases_total": 23,
+    "failure": "layout: scenic pointer title reaches new top above old boundary",
+    "finding": "The original pointer destination y12 overshot the usable title and ended over the fixed Panels recovery button. The test now targets rootY+12, retaining the strict rootY boundary assertion, and records geometry before any assertion. No runtime bounds or assertion tolerance changed.",
+    "official_build_replay": {
+      "run": "/home/aiwithapex/.local/share/duris-client-dev/issue-21-ci-container/20261025T145840Z-e95d3dc0-layout",
+      "source": "28a619f1cef9e22c7900376a949b28b6c91dc519",
+      "environment": {
+        "tools": {
+          "mudlet": "/usr/bin/mudlet",
+          "python3": "/usr/bin/python3",
+          "luac5.1": "/usr/bin/luac5.1",
+          "xvfb-run": "/usr/bin/xvfb-run",
+          "Xvfb": "/usr/bin/Xvfb",
+          "xauth": "/usr/bin/xauth",
+          "openbox": "/usr/bin/openbox",
+          "xdotool": "/usr/bin/xdotool",
+          "import": "/usr/bin/import",
+          "fc-match": "/usr/bin/fc-match"
+        },
+        "mudlet": "mudlet 5.0.1  \nQt libraries 6.10.2 (compilation) 6.10.2 (runtime)\nCopyright \u00a9 2008-2026  Mudlet developers\nLicence GPLv3: GNU GPL version 3 - http://gnu.org/licenses/gpl.html\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+        "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio",
+        "os": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "font": "DejaVuSansMono.ttf: \"DejaVu Sans Mono\" \"Book\"",
+        "locale": ""
+      },
+      "candidate": {
+        "version": "2.4.0",
+        "sha256": "2959a963ff95d79f1b668864f36735b4cc6094f6dd3d05dd887846e8b31968cd",
+        "payload_sha256": "e51e875e4aa78f359fd92842ba0930bc6b10f93b9b08a049d5657e3f9eea0fc4"
+      },
+      "result": "PASS",
+      "assertions": 184,
+      "geometry": {
+        "run_id": "20261025T145840Z-e95d3dc0",
+        "quiet": {
+          "window": [
+            1366,
+            719
+          ],
+          "titleY": 24,
+          "rootY": 24
+        },
+        "scenic": {
+          "window": [
+            1366,
+            719
+          ],
+          "titleY": 24,
+          "rootY": 24
+        }
+      },
+      "visual_review": "PASS",
+      "errors": []
+    },
+    "hosted_recheck": "See live PR checks after the fixture-only follow-up."
   }
 }

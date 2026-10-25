@@ -23,6 +23,14 @@ Affected maps, SHIP, crowded, layout and Errors captures were inspected.
 The runner's fixed-screen ultrawide clipping was caught, repaired, marked
 superseded and rerun with full 3440x1440 captures.
 
+The first hosted run at `28a619f` passed 22/23 and exposed a pointer fixture
+that overshot into the fixed Panels button. Its destination now keeps the
+pointer on the title at `rootY + 12`; the strict root-boundary assertion and
+package runtime are unchanged. The official .deb/Qt 6.10.2 full layout/restart
+replay passes at logical 1366x719, y=24 in both modes; inspected screenshots and
+exact replay data are included in the qualification JSON. Consult live PR
+checks for the subsequent hosted rerun.
+
 [The maintained plan](plan-slim-frame-backdrop.md#delivery-and-final-qualification)
 provides the full handoff and exact local run paths. Mudlet **4.19.1**, native
 Windows/macOS, physical DPI/input and live gameplay remain **NOT RUN**.
