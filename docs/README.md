@@ -2,6 +2,12 @@
 
 ## Duris client documentation
 
+Planned frame work: [Slim frame and Stormwatch backdrop](ongoing-projects/plan-slim-frame-backdrop.md)
+defines a matching thin top border, an atmospheric background behind movable
+panels, and expanded panel bounds. Track [issue #21](https://github.com/LuminariMUD/duris-client/issues/21)
+and the included [upper-boundary defect #20](https://github.com/LuminariMUD/duris-client/issues/20).
+The plan is on `branch/slim-frame-atmospheric-backdrop`; implementation is pending.
+
 Proposed SHIP follow-up: [Captain's Table bridge redesign](ongoing-projects/plan-ship-bridge.md)
 reconciles `look ship` with the SHIP tab and specifies a graphical hull, helm,
 contact plot and complete details ledger. This is a plan, not implemented behavior.

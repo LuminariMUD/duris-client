@@ -1,5 +1,44 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Slim frame and Stormwatch — 2026-10-25
+
+Version **2.4.0**, runtime commit `89897e3`, is delivered for review in
+[PR #22](https://github.com/LuminariMUD/duris-client/pull/22). Real pointer
+baseline: title y=75 full / y=20 compact at logical 1366x716. Candidate: y=24
+in both preferences, with 22px recovery buttons clear above the title band.
+Top-edge dashboard/private gestures, real window resize, state persistence,
+input/history, missing/corrupt assets and lifecycle/reopen pass.
+
+All **23 offline suite expectations** pass using the complete 22/23 run plus
+a focused correction/rerun for the obsolete map-height-growth assertion.
+Enhanced scale-2 controls and final presentation captures replace those cases;
+all package payloads match the delivered archive. Controller tests (11),
+release tests (15), Lua/XML build and release-payload validation pass.
+
+Reviewed scenic/quiet default, sparse and maximized layouts at physical
+1280x720, 1366x768, 1920x1080, 2732x1536 (Qt scale 2), and 3440x1440.
+Their actual logical client sizes, crop styles, screenshot dimensions and
+source/payload hashes are in the [qualification JSON](../testing/issue-21/review-2026-10-25.json).
+Affected maps, SHIP, crowded, layout and Errors captures were inspected.
+The runner's fixed-screen ultrawide clipping was caught, repaired, marked
+superseded and rerun with full 3440x1440 captures.
+
+Hosted heads `28a619f` and `139011f` passed 22/23; the latter logged a drag
+ending at y75 while the root was y24. Correcting the destination alone was
+insufficient. The controller now waits for native drag-delivery acknowledgements
+from the test companion after the press and before each next move/release, with a bounded timeout
+and guaranteed mouse cleanup. The strict root assertion and package runtime
+are unchanged. The pinned official .deb/Qt 6.10.2 full layout/restart replay
+passes under a one-CPU limit at logical 1366x719, y24 in both modes. Inspected
+captures and replay data are in the qualification JSON; consult live PR checks
+for the subsequent hosted rerun.
+
+[The maintained plan](plan-slim-frame-backdrop.md#delivery-and-final-qualification)
+provides the full handoff and exact local run paths. Mudlet **4.19.1**, native
+Windows/macOS, physical DPI/input and live gameplay remain **NOT RUN**.
+No release, tag, merge or deployment was performed.
+
+
 ## Final integrated candidate — 2026-10-23
 
 Version 2.1.2 carries every reviewed feature and the portable save/rollback/

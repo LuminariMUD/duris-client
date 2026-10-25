@@ -69,7 +69,7 @@ Type these into the Mudlet command input:
 | `ui debug` | Show which core GMCP data tables have arrived. |
 | `ui damage` | Session damage report (total, hits, damage per second, current fight). `ui damage reset` clears it. Clicking the **DMG** counter in the target panel shows the same report. |
 | `ui set` | List the toggles below. `ui set <name> on` or `off` changes one and remembers it. |
-| `ui set compactHeader on` / `off` | Collapse or restore the illustrated header. Compact mode gives more height to game output and panels, using the same dark palette. Full artwork is the default. |
+| `ui set compactHeader on` / `off` | Choose a quiet gradient (`on`) or the Stormwatch panorama (`off`, default). Both retain the slim frame and expanded panel workspace. |
 | `auto` | ArjAuto help: automation toggles (`auto set`, `auto <name> on\|off`), variables (`vars`), and the utility aliases. |
 | `mapper` | Show mapper help. |
 | `mapper on` / `mapper off` | Enable or pause mapper updates. |
@@ -79,7 +79,7 @@ Type these into the Mudlet command input:
 | `mapper size 14` | Set zone room size; accepts integers from **8–20**. |
 | `/mapreload` | An additional shortcut to clear the map cache. |
 
-Toggles for `ui set`: `compactHeader` (off by default), `keypad` (numpad keys), `chatTimestamps`, `damageTracker`, `scanFormat`, `alerts`, and `expTracker` (the latter six default to on). All are saved to `arjui_settings.json` in your Mudlet profile folder. Changing the header preserves your output history, selected tabs, and live state; the saved mode also applies after reopening Mudlet.
+Toggles for `ui set`: `compactHeader` (off by default), `keypad` (numpad keys), `chatTimestamps`, `damageTracker`, `scanFormat`, `alerts`, and `expTracker` (the latter six default to on). All are saved to `arjui_settings.json` in your Mudlet profile folder. Changing the presentation preserves your output history, selected tabs, and live state; the saved mode also applies after reopening Mudlet.
 
 Panel IDs are `map`, `mobs`, `items`, `output`, `character`, `players`, `chat`,
 `vitals`, `tank`, and `target`. Existing conversations also use `tell:<name>`.

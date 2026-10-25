@@ -39,11 +39,24 @@ def pointer_action(wid, action, scale):
     elif action["type"] == "scroll":
         xdo("click", "--repeat", "8", "--delay", "80", "5")
     elif action["type"] == "drag":
+        def delivered():
+            try:
+                return json.loads(Path(action["ack"]).read_text())["sequence"]
+            except (FileNotFoundError, json.JSONDecodeError):
+                return 0
         try:
+            previous = delivered() if action.get("ack") else None
             xdo("mousedown", button)
+            if action.get("ack"):
+                wait_for(lambda: delivered() > previous, 5)
             for step in range(1, 9):
+                previous = delivered() if action.get("ack") else None
                 move(action["x"] + (action["to_x"] - action["x"]) * step / 8,
                      action["y"] + (action["to_y"] - action["y"]) * step / 8)
+                if action.get("ack"):
+                    # A pointer at its target does not mean Qt has delivered the
+                    # move callback yet. Keep the button held until it has.
+                    wait_for(lambda: delivered() > previous, 5)
                 time.sleep(.04)
         finally:
             xdo("mouseup", button)
@@ -246,6 +259,8 @@ def session(run):
                     scale = config["scale"]
                     if action["type"] == "key":
                         xdo("key", "--clearmodifiers", action["key"])
+                    elif action["type"] == "resize-window":
+                        xdo("windowsize", "--sync", wid, str(action["width"]), str(action["height"]))
                     else:
                         pointer_action(wid, action, scale)
                     time.sleep(.25)
@@ -398,7 +413,11 @@ end)
 def run_desktop(run, args):
     env = {**os.environ, "XDG_CONFIG_HOME": str(run / "config"), "QT_QPA_PLATFORM": "xcb",
            "QT_SCALE_FACTOR": str(args.scale), "DURIS_TEST_RUN": str(run), "LC_ALL": "C.UTF-8"}
-    display_size = "4096x2400x24" if args.scale == 2 else "2048x1200x24"
+    width, height = map(int, args.size.split("x"))
+    screen_width, screen_height = (4096, 2400) if args.scale == 2 else (2048, 1200)
+    # Leave room for window-manager decorations; otherwise import silently
+    # clips an ultrawide window to the smaller virtual screen.
+    display_size = f"{max(screen_width, width + 100)}x{max(screen_height, height + 100)}x24"
     proc = subprocess.Popen(["xvfb-run", "--auto-servernum", "--error-file=" + str(run / "xvfb.log"),
         "--server-args=-screen 0 " + display_size + " -dpi 96 -nolisten tcp", sys.executable,
         __file__, "_session", "--run-dir", str(run)], env=env, start_new_session=True)

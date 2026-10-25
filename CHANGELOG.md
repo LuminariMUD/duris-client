@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.0 - 2026-10-25
+
+- Replace the tall Duris banner with a slim bronze/obsidian perimeter and an original Stormwatch panorama, cropped without stretching.
+- Let panels use the recovered upper workspace in both presentation modes, with protected Panels/Reset clearance. Existing saved layouts remain compatible.
+- Keep `ui set compactHeader on` as the quiet gradient option; both settings retain the same frame and panel bounds. Missing or corrupt artwork falls back independently.
+
 ## 2.3.0 - 2026-10-23
 
 - Add the responsive Captain's Table Bridge with spatial armor/internal gauges, actual/ordered helm, arc badges, complete manifest, crew watch and contact bearing glass.

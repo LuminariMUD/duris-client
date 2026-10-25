@@ -37,6 +37,16 @@ class RunnerTests(unittest.TestCase):
             runner.pointer_action("123", {"type":"click", "x":10, "y":20, "button":3}, 1)
         self.assertEqual(xdo.call_args.args, ("click", "3"))
 
+    def test_drag_waits_for_native_delivery_and_releases_after_timeout(self):
+        with patch.object(runner, "xdo") as xdo, \
+             patch.object(runner, "wait_for", side_effect=TimeoutError("no native move")) as wait:
+            with tempfile.TemporaryDirectory() as directory:
+                with self.assertRaisesRegex(TimeoutError, "no native move"):
+                    runner.pointer_action("123", {"type":"drag", "x":10, "y":20,
+                        "to_x":50, "to_y":70, "ack":str(Path(directory)/"pointer.json")}, 1)
+            wait.assert_called_once()
+            self.assertEqual(xdo.call_args.args, ("mouseup", "1"))
+
     def test_missing_dependencies_fail(self):
         with patch.object(runner.shutil, "which", return_value=None):
             with self.assertRaisesRegex(RuntimeError, "Missing prerequisites.*luac5.1"):

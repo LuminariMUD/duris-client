@@ -6,9 +6,9 @@ end
 local function measure(mode)
  local w,h=getMainWindowSize()
  local b={window={width=w,height=h},root=bounds(ArjUI.uiRoot),console=bounds(ArjUI.console)}
- local pct=mode=="compact" and .028 or .105
- T.check(math.abs(b.root.y-h*pct)<2,mode.." root top")
- T.check(math.abs(b.root.height-h*(.972-pct))<2,mode.." root height")
+ local top=math.max(24,h*.028)
+ T.check(math.abs(b.root.y-top)<2,mode.." root top")
+ T.check(math.abs(b.root.height-(h*.972-top))<2,mode.." root height")
  T.check(math.abs(b.root.y+b.root.height-h*.972)<2,mode.." root bottom")
  T.check(math.abs(b.root.x-w*.025)<2 and math.abs(b.root.width-w*.95)<2,mode.." root width/inset")
  return b
@@ -17,6 +17,9 @@ local original,full,compact
 local function retained()
  T.check(ArjUI.main==original.main and ArjUI.console==original.console and ArjUI.state==original.state,"header retains widgets and GMCP state")
  T.check(ArjUI.activeTab=="stats" and ArjUI.activeChatTab=="guild","header retains selected tabs")
+ T.check(ArjUI.privateChats.retained==original.chat and original.chat.inputBox:getText()=="retained presentation draft","presentation retains private widget and draft")
+ T.check(#original.chat.history==original.history and original.chat.unread==1,"presentation retains private history and unread")
+ T.check(ArjUI.shipMode==original.shipMode,"presentation retains SHIP mode")
  T.check(#ArjUI.eventHandlers==original.handlers and #ArjMapper.handlers==original.mapHandlers,"header retains handler ownership")
  T.check(T.lines("ArjUI_Console"):find("HEADER-SCROLLBACK-SENTINEL",1,true),"header retains console scrollback")
  for key,value in pairs(original.settings) do
@@ -60,14 +63,14 @@ T.steps({
   T.check(ArjAuto.settings.autoStand==false,"automation setting persisted")
  end},
  {name="header-full",run=function()
-  T.check(ArjUI.settings.compactHeader==false,"fresh profile keeps full header")
+  T.check(ArjUI.settings.compactHeader==false,"fresh profile selects Stormwatch")
   -- A settings file written before this option existed retains the full layout.
   local legacy=table.deepcopy(ArjUI.settings)
   legacy.compactHeader=nil
   local f=assert(io.open(getMudletHomeDir().."/arjui_settings.json","w"))
   f:write(yajl.to_string(legacy)); f:close()
   ArjUI:loadSettings()
-  T.check(ArjUI.settings.compactHeader==false,"legacy settings keep full header")
+  T.check(ArjUI.settings.compactHeader==false,"missing preference selects Stormwatch")
   assert(loadfile(getMudletHomeDir().."/Duris Test Companion/fixtures/lowhp.lua"))()
   local group,npcs,items,players={},{},{},{}
   for i=1,12 do
@@ -84,7 +87,12 @@ T.steps({
   ArjUI:switchChatTab("guild")
   feedTriggers("HEADER-SCROLLBACK-SENTINEL\n")
   for i=1,60 do feedTriggers(string.format("Gameplay line %02d: the bronze gate opens before you.\n",i)) end
-  original={main=ArjUI.main,console=ArjUI.console,state=ArjUI.state,handlers=#ArjUI.eventHandlers,
+  ArjUI:openPrivateChat("Retained")
+  local chat=ArjUI.privateChats.retained
+  chat.inputBox:print("retained presentation draft")
+  ArjUI:panelAction("tell:retained","minimize")
+  T.emit("Comm.Channel",{channel="tell",sender="Retained",text="Unread across presentation changes"})
+  original={chat=chat,history=#chat.history,shipMode=ArjUI.shipMode,main=ArjUI.main,console=ArjUI.console,state=ArjUI.state,handlers=#ArjUI.eventHandlers,
    mapHandlers=#ArjMapper.handlers,settings=table.deepcopy(ArjUI.settings)}
   expandAlias("ui set")
   T.check(T.lines("ArjUI_Console"):find("compactHeader",1,true),"setting discoverable through ui set")
@@ -94,35 +102,31 @@ T.steps({
   expandAlias("ui set compactHeader on")
  end,verify=function()
   T.check(ArjUI.settings.compactHeader==true,"real alias enables compact header")
-  T.check(not ArjUI.bg.stylesheet:find("border-image",1,true) and ArjUI.bg.stylesheet:find("qlineargradient",1,true),"compact omits frame and uses dark gradient")
+  T.check(ArjUI.backdrop.hidden and ArjUI.bg.stylesheet:find("qlineargradient",1,true) and ArjUI.frameArt.stylesheet:find("border-image",1,true),"quiet uses gradient and retains slim frame")
   compact=measure("compact")
-  local h=full.window.height
-  T.check(math.abs(compact.root.height-full.root.height-.077*h)<2,"recovered height reaches content root")
-  -- Output occupies 79% of the adjustable root and its console uses 93% of the body.
-  -- Fixed frame insets cancel when comparing the two header modes.
-  local consoleGain=.077*h*.79*.93
-  T.check(math.abs(compact.console.height-full.console.height-consoleGain)<2,"recovered height reaches game console")
+  T.check(math.abs(compact.root.height-full.root.height)<2 and math.abs(compact.root.y-full.root.y)<2,"both presentations retain expanded root")
+  T.check(math.abs(compact.console.height-full.console.height)<2,"both presentations retain console geometry")
   T.check(math.abs(compact.console.width-full.console.width)<2,"console width and wrapping unchanged")
   retained()
   T.write("header-geometry",{full=full,compact=compact})
-  T.headerInput=false
-  T.headerInputAlias=tempAlias("^h$",function() T.headerInput=true end)
- end,actions=function() return {T.click(ArjUI.tabButtons.group),{type="key",key="h"},{type="key",key="Return"}} end},
+  T.headerInput=0
+  T.headerInputAlias=tempAlias("^h$",function() T.headerInput=T.headerInput+1 end)
+ end,actions=function() return {T.click(ArjUI.tabButtons.group),{type="key",key="h"},{type="key",key="Return"},{type="key",key="Up"},{type="key",key="Return"}} end},
  {name="header-input",run=function()
   T.check(ArjUI.activeTab=="group","compact tab click target works")
-  T.check(T.headerInput,"native input retains focus after header change")
+  T.check(T.headerInput==2,"native input retains focus and command history after presentation change")
   killAlias(T.headerInputAlias)
   ArjUI:switchTab("stats")
   raiseEvent("sysAppStyleSheetChange")
  end,verify=function()
-  T.check(not ArjUI.bg.stylesheet:find("border-image",1,true),"stylesheet reapplication keeps compact")
+  T.check(ArjUI.backdrop.hidden,"stylesheet reapplication keeps compact")
  end},
  {name="header-restored",wait=.4,run=function()
   expandAlias("ui set compactHeader off")
  end,verify=function()
   local restored=measure("full")
   T.check(math.abs(restored.console.height-full.console.height)<2,"full console geometry restored")
-  T.check(ArjUI.bg.stylesheet:find("border-image",1,true),"full artwork restored")
+  T.check(ArjUI.backdrop.stylesheet:find("border-image",1,true) and not ArjUI.backdrop.hidden,"full artwork restored")
   retained()
   for i=1,3 do
    expandAlias("ui set compactHeader on")
@@ -148,6 +152,6 @@ T.steps({
   raiseEvent("sysConnectionEvent")
  end,verify=function()
   measure("compact")
-  T.check(ArjUI.settings.compactHeader and not ArjUI.bg.stylesheet:find("border-image",1,true),"connection reset retains compact preference and style")
+  T.check(ArjUI.settings.compactHeader and ArjUI.backdrop.hidden,"connection reset retains compact preference and style")
  end}
 })
