@@ -11,7 +11,16 @@ local function bounds(id)
 end
 local function drag(id,dx,dy,tx,ty)
  local p=point(id,dx,dy)
- return {{type="drag",x=p.x,y=p.y,to_x=p.x+tx,to_y=p.y+ty}}
+ return {{type="drag",x=p.x,y=p.y,to_x=p.x+tx,to_y=p.y+ty,ack=T.run.."/pointer-delivered.json"}}
+end
+-- Acknowledge native move delivery before the controller releases the mouse.
+-- CI can queue moves longer than a fixed per-step delay.
+local originalCapture=ArjUI.capturePanelGesture
+local pointerSequence=0
+function ArjUI:capturePanelGesture(panel)
+ originalCapture(self,panel)
+ pointerSequence=pointerSequence+1
+ T.write("pointer-delivered",{sequence=pointerSequence})
 end
 local steps={}
 T.boundary={}
@@ -27,7 +36,7 @@ for _,value in ipairs({false,true}) do
   local p=point("mobs",60,12)
   -- Keep the pointer over the title at the destination. Overshooting into
   -- the fixed Panels button can interrupt native move delivery on some Qt builds.
-  return {{type="drag",x=p.x,y=p.y,to_x=p.x,to_y=ArjUI.uiRoot:get_y()+12}}
+  return {{type="drag",x=p.x,y=p.y,to_x=p.x,to_y=ArjUI.uiRoot:get_y()+12,ack=T.run.."/pointer-delivered.json"}}
  end}
  steps[#steps+1]={name=mode.."-top-resize",run=function()
   local w,h=getMainWindowSize()
@@ -84,7 +93,7 @@ for _,value in ipairs({false,true}) do
   expandAlias("ui panel tell:topprobe unlock")
  end,actions=function()
   local p=point("tell:topprobe",60,12)
-  return {{type="drag",x=p.x,y=p.y,to_x=p.x,to_y=ArjUI.uiRoot:get_y()+12}}
+  return {{type="drag",x=p.x,y=p.y,to_x=p.x,to_y=ArjUI.uiRoot:get_y()+12,ack=T.run.."/pointer-delivered.json"}}
  end}
  steps[#steps+1]={name=mode.."-private-top-resize",run=function()
   local f=ArjUI.panels["tell:topprobe"].frame

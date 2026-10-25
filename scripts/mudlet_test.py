@@ -39,11 +39,21 @@ def pointer_action(wid, action, scale):
     elif action["type"] == "scroll":
         xdo("click", "--repeat", "8", "--delay", "80", "5")
     elif action["type"] == "drag":
+        def delivered():
+            try:
+                return json.loads(Path(action["ack"]).read_text())["sequence"]
+            except (FileNotFoundError, json.JSONDecodeError):
+                return 0
         try:
             xdo("mousedown", button)
             for step in range(1, 9):
+                previous = delivered() if action.get("ack") else None
                 move(action["x"] + (action["to_x"] - action["x"]) * step / 8,
                      action["y"] + (action["to_y"] - action["y"]) * step / 8)
+                if action.get("ack"):
+                    # A pointer at its target does not mean Qt has delivered the
+                    # move callback yet. Keep the button held until it has.
+                    wait_for(lambda: delivered() > previous, 5)
                 time.sleep(.04)
         finally:
             xdo("mouseup", button)

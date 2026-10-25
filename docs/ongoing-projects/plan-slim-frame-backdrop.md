@@ -335,7 +335,7 @@ independently shippable runtime dependency requiring a stack.
   fixed 2048x1200 Xvfb screen. `run_desktop()` now expands the virtual screen
   to the requested physical dimensions plus decoration clearance. The clipped
   run is explicitly FAIL/superseded; final captures are actual 3440x1440 PNGs.
-- `build.py --check`, full build, 10 controller tests, 15 release tests,
+- `build.py --check`, full build, 11 controller tests, 15 release tests,
   `scripts/release.py --output /tmp/duris-21-release-check`, and `git diff --check`
   pass. The committed archive matches the builder's payload.
 
@@ -363,30 +363,41 @@ and its live checks before merging; retain the stated compatibility limits.
 Issues stay open until merge. No master push, manual tag, release, merge or
 deployment was performed. Master CI owns the eventual version 2.4.0 release.
 
-### Hosted-CI pointer fixture follow-up
+### Hosted-CI pointer delivery follow-up
 
-At head `28a619f`, [CI run 40203512462](https://github.com/LuminariMUD/duris-client/actions/runs/40203512462)
-passed 22/23 cases but failed the first scenic top assertion. Artifact
-`12602134683` retains that run; layout files are also under
-`~/.local/share/duris-client-dev/issue-21-ci-failure`.
+Hosted heads `28a619f` ([run 40203512462](https://github.com/LuminariMUD/duris-client/actions/runs/40203512462))
+and `139011f` ([run 40204914846](https://github.com/LuminariMUD/duris-client/actions/runs/40204914846))
+passed 22/23 cases and failed the first scenic top assertion. Artifacts
+`12602134683` and `12603307569` retain full evidence. Selected layout files are
+under `issue-21-ci-failure` and `issue-21-ci-failure-139011f` locally.
 
-The pointer destination y=12 overshot the usable workspace and ended over the
-fixed Panels button. The corrected fixture targets `rootY + 12`, keeping the
-pointer over its title at the requested top. The assertion still requires the
-frame at the exact usable boundary (same <2px tolerance) in both states; no
-runtime bounds, dragging implementation or tolerance was changed. Geometry is
-written before assertions so any later failure retains actual coordinates.
+The initial pointer destination y=12 overshot the title into the fixed Panels
+button. Targeting `rootY + 12` corrected that path but was insufficient: the
+next hosted run logged root y=24 / title y=75. The old controller advanced and
+released after fixed 40ms delays, without confirming native move delivery.
+
+The fixture now acknowledges each completed call through the existing
+`capturePanelGesture()` callback. The controller waits for that acknowledgement
+before its next drag move or release (bounded at 5 seconds, with mouse release
+in `finally` even on timeout). This is test-companion/controller synchronization;
+no player-package polling, timer, dependency or callback is added. The strict
+root-boundary assertion and tolerance remain unchanged. No direct placement,
+retry or weaker acceptance substitutes for pointer input. Geometry is written
+before assertions to retain failed-run coordinates.
 
 The official checksum-pinned .deb (Mudlet 5.0.1, Qt 6.10.2) was replayed in an
-isolated Ubuntu 26.04 container. Its full corrected `layout` scenario and real
-restart pass: client logical 1366x719, root/title y=24 in both presentations.
-Run: `~/.local/share/duris-client-dev/issue-21-ci-container/20261025T145840Z-e95d3dc0-layout`.
-Scenic/quiet pointer captures and Errors view were inspected; data is added to
-the qualification JSON. The original local AppImage (Qt 6.11.1) results remain
-valid for its unchanged runtime and all other cases. A fresh hosted run checks
-the fixture follow-up; consult the PR's live checks before merging.
+isolated Ubuntu 26.04 container limited to one CPU. The complete synchronized
+layout scenario and real restart pass at logical 1366x719, root/title y=24 in
+both presentations. Run:
+`~/.local/share/duris-client-dev/issue-21-ci-container/ack/20261025T151126Z-d484f05a-layout`.
+Scenic/quiet pointer captures and Errors view were inspected and retained.
+The controller's new acknowledgement-timeout regression verifies mouse cleanup;
+all 11 controller tests pass. Runtime source, assets, archive and canonical
+payload remain byte-identical to the implementation commit. Unchanged suite
+and matrix evidence is retained; consult PR live checks for the hosted rerun.
 
 The task-owned replay container is removed after collecting its evidence;
-profiles and logs remain in the named host evidence directory. A first minimal
-container startup stopped on Mudlet's telnet-handler prompt because xdg-utils
-was missing; that setup attempt is not acceptance evidence.
+profiles/logs remain in the named host directory. A first minimal container
+startup stopped on a telnet-handler prompt because xdg-utils was missing;
+that setup attempt is not acceptance evidence. Temporary gesture tracing was
+removed; the small delivery acknowledgement is the only retained test mechanism.
