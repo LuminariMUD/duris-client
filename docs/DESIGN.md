@@ -37,14 +37,13 @@ design decisions change. Player commands are documented in the
 
 `ArjUI:init()` creates a full-window background and a transparent UI container.
 The content root is inset **2.5%** from each side and leaves **2.8%** at the
-bottom. In full mode (the default), it starts **10.5%** below the top and is
-**86.7%** tall. `ui set compactHeader on` moves its top to **2.8%** and makes
-it **94.4%** tall. Width stays **95%** of `getMainWindowSize()` in both modes.
-The root gains **7.7%** of the logical window height; game output gains height according to the selected
-panel arrangement.
-`ArjUI:headerHeightPct()` supplies the same decision to startup and
-`ArjUI:layout()`, which recalculates the root/footer and redraws the active
-map from current-session data on header changes, show, and resize.
+bottom. Its top is **max(2.8% of logical height, 24 logical pixels)** in both
+presentation modes. Width stays **95%**. Compared with the old 10.5% banner,
+the root recovers `0.105 * H - max(0.028 * H, 24)` pixels; actual game-output
+gain depends on panel arrangement. The fixed 22px Panels/Reset buttons occupy
+the clearance immediately above the root, raised above maximized panels.
+`ArjUI:workspaceGeometry()` supplies startup and `layout()` with the same
+bounds. Layout uses the existing accepted-map refresh path on show and resize.
 When `mapper off` pauses updates, those layout changes retain the displayed
 map; they must not render the incoming GMCP payloads ignored by the mapper.
 
@@ -147,18 +146,27 @@ tank and target respectively. DMG shows the current fight's damage total.
 
 ### Frame and surfaces
 
-[`src/assets/duris-v1.png`](../src/assets/duris-v1.png) is the installed frame.
-Its art direction uses obsidian iron, worn bronze atlas/compass engravings,
-and a single DURIS wordmark. Keep ornament in the top band and perimeter,
-outside the content-root bounds. The frame stretches to the window, so review
-both its lettering and its alignment at different aspect ratios. The
-[artwork record](artwork/duris-frame.md) contains its generation prompts.
+The [slim frame and Stormwatch artwork record](artwork/stormwatch.md) documents
+the two installed PNGs. A full-window gradient label owns a scenery label and
+a transparent frame label, all behind the dashboard and set to click through.
+The scene uses a centered cover crop: Qt paints the center source slice into
+a zero-width border. The perimeter uses 96px source slices and equal logical
+corner dimensions (`floor(min(0.025 * W, 0.028 * H))`, minimum 1px). The corners
+stay square while straight rails stretch; the complete rectangle never stretches.
 
-`ArjUI:applyBackground()` locates the installed asset in full mode and uses a
-dark gradient when it is unavailable. Compact mode intentionally uses that
-gradient without the frame/wordmark, leaving the bronze panel chrome in place.
-Changing the setting repaints and resizes existing widgets. It retains output,
-tabs, chat, character state, and map cache/zoom, and keeps a hidden UI hidden.
+`ArjUI:applyBackground()` independently decodes each installed asset with
+`getImageSize()`, checking current and legacy package directories with portable
+forward slashes. Missing/corrupt scenery retains the gradient and frame;
+missing/corrupt frame retains the chosen background with a native bronze border.
+No runtime downloads occur. Resize uses the resolved image dimensions without
+reloading files. Hide/show and teardown own all three labels through their
+single background parent.
+
+`compactHeader=false` (default) selects Stormwatch; `true` selects the quiet
+gradient. Both use the slim perimeter and identical root geometry. The saved
+key, aliases, normalized rectangles and layout schema version 1 remain intact.
+Changing presentation repaints existing widgets, retaining output, tabs, chat,
+character state and map cache/zoom, and keeps a hidden UI hidden.
 Primary output has its own opaque black panel, so
 artwork cannot show through the game feed. Secondary panels use warm dark
 surfaces and softer borders. The
@@ -336,7 +344,7 @@ JSON files live under the active Mudlet profile directory returned by
 available across a connection reset within the loaded UI. UI teardown/profile
 restart clears it. Saved settings are separate from live character state.
 Settings load before background and geometry construction. A profile without
-`compactHeader` retains full mode; compact mode persists across reinstall and
+`compactHeader` selects Stormwatch; quiet mode persists across reinstall and
 profile restart.
 
 On account-menu return, disconnect, or a new connection, character/combat,

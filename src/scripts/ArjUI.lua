@@ -71,6 +71,7 @@ function ArjUI:kill()
     self:disposeWidget(self.bg)
     self.bg = nil
   end
+  self.backdrop, self.frameArt, self.artwork = nil, nil, nil
   if self.main then
     self:disposeWidget(self.main)
     self.main = nil
@@ -172,47 +173,50 @@ function ArjUI:setVisible(visible)
   end
 end
 
+function ArjUI:findArtwork(name)
+  local home=getMudletHomeDir()
+  local roots={home,home.."/profiles/"..getProfileName()}
+  for _,root in ipairs(roots) do
+    for _,package in ipairs({"Arjinius Client","Arjinius Client V1.0"}) do
+      local path=(root.."/"..package.."/"..name):gsub("\\","/")
+      -- Decode with Mudlet, so a corrupt file takes the same fallback as a missing one.
+      local w,h=getImageSize(path)
+      if w and h and w>0 and h>0 then return {path=path,width=w,height=h} end
+    end
+  end
+end
+
 function ArjUI:applyBackground()
-  -- Package installs to profile folder: getMudletHomeDir()/profiles/[profile]/[package]/
-  -- Try multiple possible paths
-  local possiblePaths = {
-    getMudletHomeDir() .. "/Arjinius Client V1.0/duris-v1.png",  -- Old location
-    getMudletHomeDir() .. "/Arjinius Client/duris-v1.png",       -- Without version
-  }
-  
-  -- Also try profile-relative path if available
-  if getProfileName then
-    local profile = getProfileName()
-    if profile then
-      table.insert(possiblePaths, 1, getMudletHomeDir() .. "/profiles/" .. profile .. "/Arjinius Client V1.0/duris-v1.png")
-      table.insert(possiblePaths, 2, getMudletHomeDir() .. "/profiles/" .. profile .. "/Arjinius Client/duris-v1.png")
-    end
+  if not self.bg then return end
+  self.artwork={frame=self:findArtwork("duris-frame-slim.png"),
+    scene=self:findArtwork("duris-backdrop-stormwatch.png")}
+  self:layoutBackground(getMainWindowSize())
+end
+
+function ArjUI:layoutBackground(w,h)
+  if not self.bg then return end
+  self.bg:move(0,0); self.bg:resize(w,h)
+  -- Equal logical corner dimensions avoid stretching the decorated rectangle.
+  local rail=math.max(1,math.floor(math.min(w*.025,h*.028)))
+  self.frameArt:resize(w,h)
+  local frame=self.artwork and self.artwork.frame
+  if frame then
+    self.frameArt:setStyleSheet(string.format('background-color: transparent; border: %dpx solid transparent; border-image: url("%s") 96 96 96 96 stretch stretch;',rail,frame.path))
+  else
+    self.frameArt:setStyleSheet("background-color: transparent; border: 2px solid #8c6e46;")
   end
-  
-  local bgPath = nil
-  for _, path in ipairs(possiblePaths) do
-    -- Forward slashes work on Windows as well as Unix. Converting them to
-    -- backslashes before io.open makes a valid Unix asset path unreadable.
-    local f = io.open(path, "rb")
-    if f then
-      f:close()
-      bgPath = path:gsub("\\", "/")  -- Qt needs forward slashes
-      break
-    end
-  end
-  
-  if self.bg then
-    if bgPath and not self.settings.compactHeader then
-      self.bg:setStyleSheet(string.format([[
-        border-image: url("%s") 0 0 0 0 stretch stretch;
-      ]], bgPath))
-    else
-      -- Compact mode omits the illustrated header; also used if artwork is missing.
-      self.bg:setStyleSheet([[
-        background-color: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #0a0908,stop:0.5 #12100c,stop:1 #0a0908);
-      ]])
-    end
-  end
+  local scene=self.artwork and self.artwork.scene
+  local vw,vh=math.max(1,w-2*rail),math.max(1,h-2*rail)
+  self.backdrop:move(rail,rail); self.backdrop:resize(vw,vh)
+  if scene and not self.settings.compactHeader then
+    -- A zero-width Qt border paints only the center slice: centered cover crop,
+    -- not browser background-size or a stretched panorama. Round source pixels.
+    local scale=math.max(vw/scene.width,vh/scene.height)
+    local cx=math.max(0,math.floor((scene.width-vw/scale)/2+.5))
+    local cy=math.max(0,math.floor((scene.height-vh/scale)/2+.5))
+    self.backdrop:setStyleSheet(string.format('background-color: transparent; border: 0px; border-image: url("%s") %d %d %d %d stretch stretch;',scene.path,cy,cx,cy,cx))
+    if not self.hidden then self.backdrop:show() end
+  else self.backdrop:hide() end
 end
 
 -- ============================================================
@@ -796,8 +800,9 @@ function ArjUI:enableGMCP()
   sendGMCP("Core.Supports.Add " .. yajl.to_string(modules))
 end
 
-function ArjUI:headerHeightPct()
-  return self.settings.compactHeader and 2.8 or 10.5
+function ArjUI:workspaceGeometry(w,h)
+  local x,top,bottom=w*.025,math.max(h*.028,24),h*.028
+  return x,top,math.max(0,w-2*x),math.max(0,h-top-bottom),bottom
 end
 
 function ArjUI:init()
@@ -805,19 +810,16 @@ function ArjUI:init()
   self.hidden = false
   self:loadSettings()
   
-  -- Layout constants as percentages for DPI-independent scaling
-  -- Tuned to match the decorative background frame
-  local bannerPct = self:headerHeightPct()
-  self.frameInsetXPct = 2.5 -- side margins (inside decorative frame)
-  self.frameInsetBottomPct = 2.8  -- bottom margin (above bottom frame)
-
   local w, h = getMainWindowSize()
 
   -- Create background label at ROOT level (no parent) so it sits behind everything including main console
   self.bg = Geyser.Label:new({
     name = "ArjUI_Background", x = 0, y = 0, width = "100%", height = "100%"
   })
-  self.bg:setStyleSheet([[background-color: #000000;]])
+  self.bg:setStyleSheet("background-color: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #0a0908,stop:0.5 #12100c,stop:1 #0a0908);")
+  self.backdrop=Geyser.Label:new({name="ArjUI_Backdrop",x=0,y=0,width="100%",height="100%"},self.bg)
+  self.frameArt=Geyser.Label:new({name="ArjUI_FrameArt",x=0,y=0,width="100%",height="100%"},self.bg)
+  for _,label in ipairs({self.bg,self.backdrop,self.frameArt}) do enableClickthrough(label.name) end
   self:applyBackground()
 
   -- Reserve ALL space with borders so main console has nowhere to render
@@ -835,11 +837,7 @@ function ArjUI:init()
     name = "ArjUI_Main", x = 0, y = 0, width = "100%", height = "100%"
   })
 
-  -- Use percentage-based positioning for DPI independence
-  local rootX = self.frameInsetXPct .. "%"
-  local rootY = bannerPct .. "%"
-  local rootW = (100 - self.frameInsetXPct * 2) .. "%"
-  local rootH = (100 - bannerPct - self.frameInsetBottomPct) .. "%"
+  local rootX,rootY,rootW,rootH=self:workspaceGeometry(w,h)
 
   self.uiRoot = Geyser.Container:new({
     name = "ArjUI_Root", x = rootX, y = rootY, width = rootW, height = rootH
@@ -866,7 +864,7 @@ function ArjUI:init()
     -- Main output panel - solid black to match the MUD text background
     panelPrimary = "background-color: #000000; border: 2px solid #5a4b37; border-top: 2px solid #8c6e46; border-radius: 4px;",
     -- Secondary panels (side info) - softer border, slight transparency (85-90%)
-    panelGlass = "background-color: rgba(10, 9, 8, 218); border: 1px solid #5a4b37; border-top: 1px solid #8c6e46; border-radius: 4px;",
+    panelGlass = "background-color: #0a0908; border: 1px solid #5a4b37; border-top: 1px solid #8c6e46; border-radius: 4px;",
     header = string.format("background-color: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 %s,stop:1 %s); border: 1px solid %s; border-bottom: 1px solid %s; color: %s; qproperty-alignment: 'AlignCenter'; font-size: 9px; font-weight: bold;", colors.bgLight, colors.bgMid, colors.borderDivider, colors.borderSecondary, colors.textDim),
     headerCombat = "background-color: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #1a100c,stop:1 #0f0e0c); border: 1px solid #4a3028; border-bottom: 1px solid #5a3830; color: #c45050; qproperty-alignment: 'AlignCenter'; font-size: 9px; font-weight: bold;",
     headerTarget = "background-color: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #18140c,stop:1 #0f0e0c); border: 1px solid #4a4028; border-bottom: 1px solid #5a4830; color: #d4a855; qproperty-alignment: 'AlignCenter'; font-size: 9px; font-weight: bold;",
@@ -918,8 +916,8 @@ function ArjUI:init()
   -- Globe/World Map link (top-left, above area label)
   self.globeBtn = Geyser.Label:new({ name = "ArjUI_GlobeBtn", x = "3%", y = 1, width = "12%", height = 18 }, self.mapSection)
   self.globeBtn:setStyleSheet([[
-    QLabel { background-color: rgba(10,9,8,200); color: #7be; border: 1px solid #5a4b37; border-radius: 10px; font-size: 11px; }
-    QLabel:hover { background-color: rgba(22,20,15,220); color: #9df; border-color: #8c6e46; }
+    QLabel { background-color: #0a0908; color: #7be; border: 1px solid #5a4b37; border-radius: 10px; font-size: 11px; }
+    QLabel:hover { background-color: #16140f; color: #9df; border-color: #8c6e46; }
   ]])
   self.globeBtn:echo("<center>🌐</center>")
   self.globeBtn:setClickCallback(function() openUrl("https://duris.sbs/wiki/map") end)
@@ -940,7 +938,7 @@ function ArjUI:init()
 
   -- Map - below globe and area label (with clipping to prevent overflow)
   self.mapWrap = makePanel(self.mapSection, "ArjUI_MapWrap", "3%", 22, "94%", "100%-44px", self.styles.panel)
-  self.mapWrap:setStyleSheet("background-color: rgba(10,9,8,240); border: 2px solid #5a4b37; border-top: 2px solid #8c6e46; border-radius: 4px; overflow: hidden;")
+  self.mapWrap:setStyleSheet("background-color: #0a0908; border: 2px solid #5a4b37; border-top: 2px solid #8c6e46; border-radius: 4px; overflow: hidden;")
   self.mapper = Geyser.Label:new({ name = "ArjUI_Mapper", x = "2%", y = "2%", width = "96%", height = "96%" }, self.mapWrap)
   self.mapper:setStyleSheet("background-color: #0c0b09; color: #8a8a8a; qproperty-alignment: 'AlignCenter'; font-size: 10px;")
   self.mapper:echo("Waiting for room data")
@@ -1120,13 +1118,13 @@ function ArjUI:init()
   -- Credit box (directly under chat panel, same width as right column)
   local creditX = "73.9%"  -- same as rightCol
   local creditW = "26%"   -- same width as rightCol (26%)
-  local creditY = (100 - self.frameInsetBottomPct + 0.3) .. "%"
+  local creditY = "97.5%"
   self.creditBox = Geyser.Label:new({
     name = "ArjUI_CreditBox",
     x = creditX, y = creditY, width = creditW, height = 20
   }, self.main)
   self.creditBox:setStyleSheet([[
-    background-color: rgba(15, 14, 12, 0.85);
+    background-color: #0f0e0c;
     border: 1px solid #3c3428;
     border-radius: 3px;
     color: #8a7a5a;
@@ -1137,13 +1135,13 @@ function ArjUI:init()
   self.creditBox:echo("Arjinius Client v" .. self.VERSION)
   
   -- Hover tooltip (appears above credit box)
-  local tooltipY = (100 - self.frameInsetBottomPct - 3.2) .. "%"
+  local tooltipY = "94%"
   self.creditTooltip = Geyser.Label:new({
     name = "ArjUI_CreditTooltip",
     x = creditX, y = tooltipY, width = creditW, height = 36
   }, self.main)
   self.creditTooltip:setStyleSheet([[
-    background-color: rgba(15, 14, 12, 0.95);
+    background-color: #0f0e0c;
     border: 1px solid #5a4b37;
     border-radius: 3px;
     color: #c0b090;
@@ -1155,7 +1153,7 @@ function ArjUI:init()
   
   self.creditBox:setOnEnter(function()
     self.creditBox:setStyleSheet([[
-      background-color: rgba(20, 18, 14, 0.95);
+      background-color: #14120e;
       border: 1px solid #5a4b37;
       border-radius: 3px;
       color: #d4a855;
@@ -1168,7 +1166,7 @@ function ArjUI:init()
   end)
   self.creditBox:setOnLeave(function()
     self.creditBox:setStyleSheet([[
-      background-color: rgba(15, 14, 12, 0.85);
+      background-color: #0f0e0c;
       border: 1px solid #3c3428;
       border-radius: 3px;
       color: #8a7a5a;
@@ -1311,20 +1309,13 @@ function ArjUI:layout()
   setBorderTop(h)
   
   -- Calculate pixel values from percentages for resize
-  local banner = h * self:headerHeightPct() / 100
-  local insetX = w * (self.frameInsetXPct or 3.8) / 100
-  local insetBottom = h * (self.frameInsetBottomPct or 3.5) / 100
+  local insetX,banner,rootW,rootH,insetBottom=self:workspaceGeometry(w,h)
   
   if self.main and w and h then
     self.main:move(0, 0)
     self.main:resize(w, h)
   end
-  if self.bg and w and h then
-    self.bg:move(0, 0)
-    self.bg:resize(w, h)
-  end
-  local rootW = math.max(0, w - (insetX * 2))
-  local rootH = math.max(0, h - banner - insetBottom)
+  self:layoutBackground(w,h)
   self.uiRoot:move(insetX, banner)
   self.uiRoot:resize(rootW, rootH)
   if self.panelsButton then
@@ -3491,7 +3482,7 @@ end
 -- ============================================================
 
 ArjUI.settingsDefaults = {
-  compactHeader = false,  -- smaller header, without the illustrated frame
+  compactHeader = false,  -- quiet gradient instead of Stormwatch; same slim frame and workspace
   keypad = true,          -- numpad movement keys
   chatTimestamps = true,  -- [hh:mm] prefix on chat lines
   damageTracker = true,   -- per-fight / session damage tracking
@@ -4532,7 +4523,7 @@ function ArjUI:showHelp()
   self:note("<white>ui damage<dim_gray>             session damage report; <white>ui damage reset<dim_gray> clears it")
   self:note("<white>ui layout<dim_gray>             panel controls and reset; right-click a panel title for actions")
   self:note("<white>ui set<dim_gray>                list toggles; <white>ui set <name> on|off<dim_gray> changes one")
-  self:note("<white>ui set compactHeader on|off<dim_gray>  collapse or restore the illustrated header")
+  self:note("<white>ui set compactHeader on|off<dim_gray>  quiet gradient (on) or Stormwatch scenery (off)")
   self:note("<white>SHIP: Bridge / Details<dim_gray>  local views; Copy exports Details. Look ship / Look crew / Contacts request reference text.")
   self:note("<white>mapper<dim_gray>                mapper help")
   self:note("<white>auto<dim_gray>                  automation and utility aliases (ArjAuto)")
@@ -4542,7 +4533,7 @@ end
 function ArjUI:showSettings()
   self:note("<gold>══ Toggles (ui set <name> on|off) ══")
   local desc = {
-    compactHeader = "smaller header without the illustrated frame",
+    compactHeader = "quiet gradient instead of Stormwatch; same panel bounds",
     keypad = "numpad movement keys", chatTimestamps = "[hh:mm] on chat lines",
     damageTracker = "damage counter in the target panel", scanFormat = "aligned, coloured scan output",
     alerts = "banners for sanc/rage/disarm/scry/skill-up", expTracker = "+exp notices with kills-to-level",

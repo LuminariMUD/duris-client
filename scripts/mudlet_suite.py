@@ -26,7 +26,7 @@ def main():
         scenario, fault = case
         case_root = args.root / (fault or scenario)
         cmd = [sys.executable, str(ROOT / 'scripts/mudlet_test.py'), 'run',
-               '--scenario', scenario, '--root', str(case_root), '--timeout', '70']
+               '--scenario', scenario, '--root', str(case_root), '--timeout', '140' if scenario == 'layout' else '70']
         if fault:
             cmd += ['--fault', fault, '--timeout', '8']
         process = subprocess.run(cmd, text=True, capture_output=True, timeout=420)

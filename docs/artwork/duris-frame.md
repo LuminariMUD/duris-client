@@ -1,7 +1,8 @@
 # Duris atlas frame
 
-The production asset is `src/assets/duris-v1.png`; the stable filename preserves
-existing package asset references. It replaces the original “New Duris” border.
+Historical asset: [`src/assets/duris-v1.png`](https://github.com/LuminariMUD/duris-client/blob/bdfdbe4fbd631f87003e39309cbc650e924be27b/src/assets/duris-v1.png).
+Version 2.4.0 replaces it with the [slim frame and Stormwatch](stormwatch.md);
+the retired opaque image is no longer packaged. It replaces the original “New Duris” border.
 Generated on 2026-10-15 using the built-in imagegen tool, with one targeted
 refinement to fit the header above the existing GUI panels. No CLI fallback or
 programmatic image editing was used. The final generated PNG was copied into

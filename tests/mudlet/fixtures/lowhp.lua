@@ -13,10 +13,11 @@ T.check(ArjUI.state.mana/ArjUI.state.manamax==.7, "mana 70 percent")
 T.check(ArjUI.state.move/ArjUI.state.movemax==.5, "movement 50 percent")
 T.check(#ArjUI.state.group==2, "two group members")
 local compact=ArjUI.settings.compactHeader
-T.check(not not ArjUI.bg.stylesheet:find("border-image",1,true)==not compact, "background matches saved header mode")
+T.check((not ArjUI.backdrop.hidden)==not compact, "background matches saved header mode")
+T.check(ArjUI.frameArt.stylesheet:find("border-image",1,true),"slim frame in both modes")
 if compact then T.check(ArjUI.bg.stylesheet:find("qlineargradient",1,true),"compact background uses gradient") end
 local _,height=getMainWindowSize()
-T.check(math.abs(ArjUI.uiRoot:get_y()-height*(compact and .028 or .105))<2,"initial geometry matches saved header mode")
+T.check(math.abs(ArjUI.uiRoot:get_y()-math.max(24,height*.028))<2,"initial slim geometry matches saved header mode")
 T.check(ArjUI.creditBox.message:find(T.config.candidate.version,1,true), "footer version")
 T.check(not ArjUI.inputBar, "native command line is the only input")
 T.check(T.lines("ArjUI_Console"):find("Visual test: plain incoming text.",1,true), "text routed once to package console")

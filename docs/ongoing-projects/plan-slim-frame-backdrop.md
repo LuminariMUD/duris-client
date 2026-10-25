@@ -1,6 +1,6 @@
 # Slim Duris frame and Stormwatch backdrop
 
-Date: 2026-10-25. Status: **planned; artwork and runtime changes not started**.
+Date: 2026-10-25. Status: **implementation in progress; initial real-Mudlet drag and render checks pass**.
 
 - Work item: [#21 — Slim the Duris frame and add an atmospheric workspace backdrop](https://github.com/LuminariMUD/duris-client/issues/21).
 - Included defect: [#20 — Panels cannot be dragged above the red line beneath the Duris banner](https://github.com/LuminariMUD/duris-client/issues/20).
@@ -8,7 +8,7 @@ Date: 2026-10-25. Status: **planned; artwork and runtime changes not started**.
 - Verified base: `master` and freshly fetched `origin/master` at
   `bdfdbe4fbd631f87003e39309cbc650e924be27b`, package **2.3.0**.
 - Planning artifacts are maintained on the dedicated branch linked above.
-  This pass changes repository documentation only.
+  Runtime work is now based on that planning commit.
 
 ## Outcome
 
@@ -246,8 +246,7 @@ explicitly. Any live check uses a separate profile from the offline companion.
 
 ## Packaging and closeout
 
-This planning-only change needs no VERSION bump or rebuilt archive. For the
-implementation, follow [RELEASING.md](../RELEASING.md): a compatible presentation
+Implementation uses **2.4.0** and a rebuilt archive. Follow [RELEASING.md](../RELEASING.md): a compatible presentation
 and behavior change is a minor increment (provisionally 2.4.0 from this base;
 reconcile with master before delivery). Do not require a reinstall or reset.
 Add the dated changelog entry, rebuild through `build.py`, and include source,
@@ -263,3 +262,43 @@ Creating this plan is not implementation acceptance.
 Out of scope: issue #19's panel ordering/presets, mapper defects #17/#18, new
 game mechanics, GMCP/server/website changes, automation, a theme editor, custom
 image uploading, animated backgrounds, or a release/deployment in this pass.
+
+## Implementation handoff — 2026-10-25
+
+Outcome: slim perimeter, separate Stormwatch scenery, identical expanded bounds
+in both preferences, preserved player state and independent asset fallbacks.
+Non-goals remain the scope exclusions above. Files: ArjUI, two PNGs, existing
+Mudlet fixtures, package/version/changelog, README/DESIGN/artwork/testing records.
+Proof: actual pointer gestures, saved-profile restart, fallback/lifecycle checks,
+reviewed size/scaling captures and the final offline suite.
+
+Ablation: used the existing layout/settings/teardown paths. Three background
+labels (one owner plus scenery and frame) supply independent fallbacks and
+native Qt crop/slicing. No theme framework, new settings, timers, network work,
+user-layout migration or alternative renderer is needed. The requested skill
+was absent here; the same `ablation/SKILL.md` was read from the adjacent Duris
+checkout at `/home/aiwithapex/projects/duris/.agents/skills/ablation/SKILL.md`.
+
+Base reproduction: package 2.3.0, planning commit `07063aa`, real Mudlet 5.0.1 /
+Qt 6.11.1 under WSL2/Xvfb. Physical window 1366x768, client logical 1366x716.
+Pointer dragging a mobs title upward stops at y=75 (root y=75) in full mode and
+y=20 (root y=20) in compact mode. Evidence:
+`~/.local/share/duris-client-dev/issue-21-baseline/20261025T141955Z-702a15f0-layout`.
+The fixture-only addition recorded geometry before runtime edits; screenshots
+and the archive are retained there. The old full boundary is reproduced.
+
+The initial 2.4.0 runtime run at
+`~/.local/share/duris-client-dev/issue-21-layout/20261025T142308Z-3dc79d6e-layout`
+passes layout and restart behavior. Pointer titles/root reach y=24 in both
+states, recovering 51 logical pixels in scenic mode. The candidate capture
+shows centered panorama cropping and coherent slim rails; the previously
+opaque panorama remains behind opaque panels. A first prototype exposed an
+initial-footer reference to the removed inset field; it was repaired before
+this successful run. It is not acceptance evidence.
+
+Current next steps: finish top-edge interaction/fallback tests and visual
+matrix, run the final required suite, inspect Errors views, record source,
+asset and payload hashes, publish the focused PR and update this section with
+exact delivery/evidence pointers. Minimum Mudlet 4.19.1, native Windows/macOS,
+physical DPI/input and live gameplay remain NOT RUN unless explicitly recorded.
+No tag, release, merge or deployment is authorized by this implementation pass.

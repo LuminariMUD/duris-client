@@ -13,7 +13,95 @@ local function drag(id,dx,dy,tx,ty)
  local p=point(id,dx,dy)
  return {{type="drag",x=p.x,y=p.y,to_x=p.x+tx,to_y=p.y+ty}}
 end
-T.steps({
+local steps={}
+T.boundary={}
+for _,value in ipairs({false,true}) do
+ local quiet=value
+ local mode=quiet and "quiet" or "scenic"
+ local beforeWidth,normalRect
+ steps[#steps+1]={name=mode.."-top-drag",run=function()
+  ArjUI:resetLayout()
+  ArjUI:setSetting("compactHeader",quiet)
+  expandAlias("ui layout unlock")
+ end,actions=function()
+  local p=point("mobs",60,12)
+  return {{type="drag",x=p.x,y=p.y,to_x=p.x,to_y=12}}
+ end}
+ steps[#steps+1]={name=mode.."-top-resize",run=function()
+  local w,h=getMainWindowSize()
+  local f=ArjUI.panels.mobs.frame
+  T.boundary[mode]={window={w,h},rootY=ArjUI.uiRoot:get_y(),titleY=f:get_y()}
+  T.check(math.abs(f:get_y()-math.max(24,h*.028))<2 and f:get_y()<h*.105-10,mode.." pointer title reaches new top above old boundary")
+  T.check(ArjUI.panels.mobs.state.mode=="floating",mode.." pointer floats panel")
+  beforeWidth=f:get_width()
+ end,actions=function()
+  local f=ArjUI.panels.mobs.frame
+  return drag("mobs",f:get_width()-3,f:get_height()-3,65,25)
+ end}
+ steps[#steps+1]={name=mode.."-top-controls",run=function()
+  local p=ArjUI.panels.mobs
+  T.check(p.frame:get_width()>beforeWidth+35,mode.." physical resize at top")
+  bounds("mobs")
+  local rect=table.deepcopy(p.state.rect)
+  ArjUI:saveLayout();ArjUI:loadLayout();ArjUI:applyPanelLayout()
+  T.check(math.abs(p.state.rect[2]-rect[2])<.001,mode.." saved top rectangle reloads")
+  for _,action in ipairs({"lock","unlock","minimize","restore","maximize","restore"}) do
+   expandAlias("ui panel mobs "..action)
+  end
+  T.check(math.abs(p.frame:get_y()-ArjUI.uiRoot:get_y())<2,mode.." top restored after lock/minimize/maximize")
+  T.check(ArjUI.panelsButton:get_y()+22<=ArjUI.uiRoot:get_y(),mode.." recovery controls clear titles")
+  normalRect=table.deepcopy(p.state.rect)
+ end,actions=function() return {{type="resize-window",width=900*T.config.scale,height=600*T.config.scale}} end}
+ steps[#steps+1]={name=mode.."-window-shrunk",run=function()
+  local p=ArjUI.panels.mobs
+  bounds("mobs")
+  for i=1,4 do T.check(p.state.rect[i]==normalRect[i],mode.." window shrink preserves normalized rectangle "..i) end
+  T.check(math.abs(p.frame:get_y()-ArjUI.uiRoot:get_y())<2,mode.." title accessible after window shrink")
+ end,actions=function()
+  local w,h=T.config.size:match("(%d+)x(%d+)")
+  return {{type="resize-window",width=tonumber(w),height=tonumber(h)}}
+ end}
+ steps[#steps+1]={name=mode.."-window-grown",run=function()
+  local p=ArjUI.panels.mobs
+  bounds("mobs")
+  for i=1,4 do T.check(p.state.rect[i]==normalRect[i],mode.." window grow preserves normalized rectangle "..i) end
+  expandAlias("ui panel mobs dock");expandAlias("ui panel mobs float")
+  T.check(p.state.mode=="floating" and p.state.rect[2]==p.def.home[2],mode.." dock/float retain home bounds")
+  expandAlias("ui panel output maximize")
+ end,actions=function() return {T.click(ArjUI.panelsButton)} end}
+ steps[#steps+1]={name=mode.."-maximized-panels",run=function()
+  T.check(ArjUI.currentMenu,mode.." physical Panels click survives maximize")
+  ArjUI:disposeWidget(ArjUI.currentMenu);ArjUI.currentMenu=nil
+ end,actions=function() return {T.click(ArjUI.resetLayoutButton)} end}
+ steps[#steps+1]={name=mode.."-private-top",run=function()
+  T.check(not ArjUI.maximizedPanel and ArjUI.panels.mobs.state.mode=="docked",mode.." physical Reset restores defaults")
+  ArjUI:openPrivateChat("Topprobe")
+  local chat=ArjUI.privateChats.topprobe
+  chat.inputBox:clear();chat.inputBox:print("top edge retained draft")
+  expandAlias("ui panel tell:topprobe unlock")
+ end,actions=function()
+  local p=point("tell:topprobe",60,12)
+  return {{type="drag",x=p.x,y=p.y,to_x=p.x,to_y=12}}
+ end}
+ steps[#steps+1]={name=mode.."-private-top-resize",run=function()
+  local f=ArjUI.panels["tell:topprobe"].frame
+  T.check(math.abs(f:get_y()-ArjUI.uiRoot:get_y())<2,mode.." private pointer reaches usable top")
+  beforeWidth=f:get_width()
+ end,actions=function()
+  local f=ArjUI.panels["tell:topprobe"].frame
+  return drag("tell:topprobe",f:get_width()-3,f:get_height()-3,45,20)
+ end}
+ steps[#steps+1]={name=mode.."-private-top-retained",run=function()
+  T.check(ArjUI.panels["tell:topprobe"].frame:get_width()>beforeWidth+20,mode.." private physical top resize")
+  for _,action in ipairs({"lock","unlock","minimize","restore","maximize","restore"}) do expandAlias("ui panel tell:topprobe "..action) end
+  T.check(ArjUI.privateChats.topprobe.inputBox:getText()=="top edge retained draft",mode.." top gestures retain private draft")
+  bounds("tell:topprobe")
+  ArjUI:resetLayout()
+  T.write("boundary-geometry",T.boundary)
+ end}
+end
+steps[#steps+1]={name="scenic-restored",run=function() ArjUI:setSetting("compactHeader",false) end}
+local existing={
  {name="portable-layout-replace",run=function()
   local path=getMudletHomeDir().."/arjui_layout.json"
   ArjUI:saveLayout()
@@ -229,4 +317,6 @@ T.steps({
   T.check(ArjUI.panels.items.state.hidden and ArjUI.panels.chat.state.minimized,"mixed layout saved for restart")
  end}
 
-})
+}
+for _,step in ipairs(existing) do steps[#steps+1]=step end
+T.steps(steps)

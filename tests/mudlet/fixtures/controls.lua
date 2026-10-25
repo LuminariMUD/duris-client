@@ -6,9 +6,9 @@ end
 local function measure(mode)
  local w,h=getMainWindowSize()
  local b={window={width=w,height=h},root=bounds(ArjUI.uiRoot),console=bounds(ArjUI.console)}
- local pct=mode=="compact" and .028 or .105
- T.check(math.abs(b.root.y-h*pct)<2,mode.." root top")
- T.check(math.abs(b.root.height-h*(.972-pct))<2,mode.." root height")
+ local top=math.max(24,h*.028)
+ T.check(math.abs(b.root.y-top)<2,mode.." root top")
+ T.check(math.abs(b.root.height-(h*.972-top))<2,mode.." root height")
  T.check(math.abs(b.root.y+b.root.height-h*.972)<2,mode.." root bottom")
  T.check(math.abs(b.root.x-w*.025)<2 and math.abs(b.root.width-w*.95)<2,mode.." root width/inset")
  return b
@@ -60,14 +60,14 @@ T.steps({
   T.check(ArjAuto.settings.autoStand==false,"automation setting persisted")
  end},
  {name="header-full",run=function()
-  T.check(ArjUI.settings.compactHeader==false,"fresh profile keeps full header")
+  T.check(ArjUI.settings.compactHeader==false,"fresh profile selects Stormwatch")
   -- A settings file written before this option existed retains the full layout.
   local legacy=table.deepcopy(ArjUI.settings)
   legacy.compactHeader=nil
   local f=assert(io.open(getMudletHomeDir().."/arjui_settings.json","w"))
   f:write(yajl.to_string(legacy)); f:close()
   ArjUI:loadSettings()
-  T.check(ArjUI.settings.compactHeader==false,"legacy settings keep full header")
+  T.check(ArjUI.settings.compactHeader==false,"missing preference selects Stormwatch")
   assert(loadfile(getMudletHomeDir().."/Duris Test Companion/fixtures/lowhp.lua"))()
   local group,npcs,items,players={},{},{},{}
   for i=1,12 do
@@ -94,14 +94,10 @@ T.steps({
   expandAlias("ui set compactHeader on")
  end,verify=function()
   T.check(ArjUI.settings.compactHeader==true,"real alias enables compact header")
-  T.check(not ArjUI.bg.stylesheet:find("border-image",1,true) and ArjUI.bg.stylesheet:find("qlineargradient",1,true),"compact omits frame and uses dark gradient")
+  T.check(ArjUI.backdrop.hidden and ArjUI.bg.stylesheet:find("qlineargradient",1,true) and ArjUI.frameArt.stylesheet:find("border-image",1,true),"quiet uses gradient and retains slim frame")
   compact=measure("compact")
-  local h=full.window.height
-  T.check(math.abs(compact.root.height-full.root.height-.077*h)<2,"recovered height reaches content root")
-  -- Output occupies 79% of the adjustable root and its console uses 93% of the body.
-  -- Fixed frame insets cancel when comparing the two header modes.
-  local consoleGain=.077*h*.79*.93
-  T.check(math.abs(compact.console.height-full.console.height-consoleGain)<2,"recovered height reaches game console")
+  T.check(math.abs(compact.root.height-full.root.height)<2 and math.abs(compact.root.y-full.root.y)<2,"both presentations retain expanded root")
+  T.check(math.abs(compact.console.height-full.console.height)<2,"both presentations retain console geometry")
   T.check(math.abs(compact.console.width-full.console.width)<2,"console width and wrapping unchanged")
   retained()
   T.write("header-geometry",{full=full,compact=compact})
@@ -115,14 +111,14 @@ T.steps({
   ArjUI:switchTab("stats")
   raiseEvent("sysAppStyleSheetChange")
  end,verify=function()
-  T.check(not ArjUI.bg.stylesheet:find("border-image",1,true),"stylesheet reapplication keeps compact")
+  T.check(ArjUI.backdrop.hidden,"stylesheet reapplication keeps compact")
  end},
  {name="header-restored",wait=.4,run=function()
   expandAlias("ui set compactHeader off")
  end,verify=function()
   local restored=measure("full")
   T.check(math.abs(restored.console.height-full.console.height)<2,"full console geometry restored")
-  T.check(ArjUI.bg.stylesheet:find("border-image",1,true),"full artwork restored")
+  T.check(ArjUI.backdrop.stylesheet:find("border-image",1,true) and not ArjUI.backdrop.hidden,"full artwork restored")
   retained()
   for i=1,3 do
    expandAlias("ui set compactHeader on")
@@ -148,6 +144,6 @@ T.steps({
   raiseEvent("sysConnectionEvent")
  end,verify=function()
   measure("compact")
-  T.check(ArjUI.settings.compactHeader and not ArjUI.bg.stylesheet:find("border-image",1,true),"connection reset retains compact preference and style")
+  T.check(ArjUI.settings.compactHeader and ArjUI.backdrop.hidden,"connection reset retains compact preference and style")
  end}
 })

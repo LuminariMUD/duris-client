@@ -246,6 +246,8 @@ def session(run):
                     scale = config["scale"]
                     if action["type"] == "key":
                         xdo("key", "--clearmodifiers", action["key"])
+                    elif action["type"] == "resize-window":
+                        xdo("windowsize", "--sync", wid, str(action["width"]), str(action["height"]))
                     else:
                         pointer_action(wid, action, scale)
                     time.sleep(.25)
