@@ -771,8 +771,8 @@ timer cleanup. Values are synthetic and follow Duris `do_time()` at
 
 Validation:
 
-- **24/24 suite cases pass on Mudlet 5.0.1 and 5.0.2**, Qt 6.11.1,
-  Xvfb 1366x768 scale 1, including expected negative/fault results,
+- **24/24 suite cases pass on Mudlet 5.0.1 / Qt 6.11.1 and
+  Mudlet 5.0.2 / Qt 6.11.3**, Xvfb 1366x768 scale 1, including expected negative/fault results,
   normal shutdown and owned-process cleanup.
 - **11 controller tests and 15 release tests pass**. Lua/XML build and local
   release preparation validate the rebuilt committed package.
