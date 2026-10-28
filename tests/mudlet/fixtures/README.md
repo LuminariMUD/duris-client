@@ -38,6 +38,18 @@ this disconnected fixture also calls native `send` to exercise
 `sysDataSendRequest`; command-line requests use native `expandAlias`.
 Visibility assertions read the displayed `ArjUI_Console`, because route-all
 removes even visible output from `main`. No live game connection is made.
+It also checks manual/HUD requests before the delayed login query fires, all
+24 query hours and the nine color-stripped `astralMsgs` from
+`src/world/weather.c:103-214`. `connections` uses the real bordered header
+from `src/account/account.c:770-785`, alongside ordinary menu mentions and
+incomplete sequences that must preserve state and timers.
+
+`split` uses synthetic bids and color-stripped `do_dice()` results from the
+same server revision, `src/economy/tradeskill.c:2537-2591`. It exercises the
+real aliases/triggers and saved `arjauto.json`, including foreign/wrong-size,
+out-of-order, duplicate and invalid results, rejection retries, paid/free
+awards and session cancellation. Exhaustive enumeration of the 10,000
+two-die inputs checks equal ticket and bidder probabilities for 120 tickets.
 
 `map-colors` uses invented diagnostic glyphs with the actual Duris color
 contract, checked on 2026-10-22 against server revision

@@ -20,6 +20,7 @@
     "controls": "Numpad input, aliases, toggles, menu click, timer cancellation and settings",
     "login": "One time query per character login, renewed after connection event",
     "time": "Bounded silent login reply, manual/HUD output visibility, incomplete replies and session cleanup",
+    "split": "Local roll correlation, persisted scores, uniform weighted tickets and rejection retry",
     "text": "Artwork fallback, scan summary, alert banners, ANSI and long-line wrapping",
     "lifecycle": "Hide/show state, uninstall resource cleanup, canceled timers and reinstall",
     "connections": "Actual server ship fields, nested ship info, empty updates, door keys, combat end and logout/reconnect",

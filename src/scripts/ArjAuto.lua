@@ -178,6 +178,7 @@ function ArjAuto:resetSession()
   self.pendingTimers, self.timers = {}, {}
   self.rescueLocked, self.fleeStabArmed, self.contactsWanted = false, false, false
   self.rebash = {generic=false, target=false, inLag=false}
+  self.split = { bids = {}, dice = {}, pending = 0, caught = 0, result = 0, spend = false }
 end
 
 function ArjAuto:after(delay, callback)
@@ -537,6 +538,19 @@ end
 
 local function gsay(text) send("gsay " .. text, false) end
 
+local function requestSplitRoll(sp)
+  sp.pending = sp.rollCount
+  sp.caught, sp.result = 0, 0
+  send(string.format("dice %d %d", sp.rollCount, sp.sides), false)
+end
+
+-- Equal-sized buckets only: discard the incomplete bucket at the top of the
+-- base-100 sample space, then reduce to a ticket in 1..total.
+function ArjAuto:splitTicket(value)
+  local sp = self.split
+  if value < sp.limit then return value % sp.total + 1 end
+end
+
 function ArjAuto:setupSplitTriggers()
   addTrigger("^(\\w+) group-says.* 'bid'$", function()
     local sp = ArjAuto.split
@@ -549,14 +563,18 @@ function ArjAuto:setupSplitTriggers()
     note(string.format("<cyan>[split] %s bid (score %d)", name, ArjAuto:bidScore(name)))
     send("tell " .. name .. " bid received", false)
   end)
-  addTrigger("^Result for.* roll #\\d+ of a (\\d+) sided die: (\\d+)\\.$", function()
+  addTrigger("^Result for (\\w+)'s roll #(\\d+) of a (\\d+) sided die: (\\d+)\\.$", function()
     local sp = ArjAuto.split
     if sp.pending <= 0 then return end
-    sp.result = sp.result + tonumber(matches[3])
+    local roller, index, sides, result = matches[2]:lower(), tonumber(matches[3]), tonumber(matches[4]), tonumber(matches[5])
+    if roller ~= sp.roller or roller ~= myName():lower() or sides ~= sp.sides
+        or index ~= sp.caught + 1 or result < 1 or result > sides then return end
+    sp.result = sp.result * sides + result - 1
     sp.caught = sp.caught + 1
-    if sp.caught >= sp.pending then
-      -- Summing several dice raises the floor by one per extra die; normalise back to 1..N
-      sp.result = sp.result - sp.caught + 1
+    if sp.caught == sp.pending then
+      local ticket = ArjAuto:splitTicket(sp.result)
+      if not ticket then requestSplitRoll(sp); return end
+      sp.result = ticket
       sp.pending = 0
       ArjAuto:announceWinner()
     end
@@ -575,6 +593,8 @@ end
 
 function ArjAuto:splitRoll(free)
   local sp = self.split
+  if sp.pending > 0 then note("<cyan>[split] Waiting for the current roll."); return end
+  if myName() == "" then note("<red>[split] Character identity is required to roll."); return end
   sp.collecting = false
   if #sp.bids == 0 then gsay("[SPLIT] No bids received.") return end
   sp.spend = not free
@@ -588,16 +608,13 @@ function ArjAuto:splitRoll(free)
     table.insert(ranges, string.format("%s %d-%d", name, first, total))
   end
   gsay("[SPLIT] Ranges: " .. table.concat(ranges, ", "))
-  local hundreds = math.floor(total / 100)
-  if hundreds > 4 then note("<red>[split] Too many dice (max 500).") return end
-  if hundreds > 0 then
-    sp.pending = hundreds + 1
-    send("dice " .. hundreds .. " 100", false)
-    send("dice 1 " .. ((total % 100) + hundreds), false)
-  else
-    sp.pending = 1
-    send("dice 1 " .. total, false)
-  end
+  if total > 500 then note("<red>[split] Too many tickets (max 500)."); return end
+  sp.total, sp.roller = total, myName():lower()
+  sp.rollCount = total > 100 and 2 or 1
+  sp.sides = total > 100 and 100 or total
+  local capacity = sp.sides ^ sp.rollCount
+  sp.limit = math.floor(capacity / total) * total
+  requestSplitRoll(sp)
 end
 
 function ArjAuto:announceWinner()

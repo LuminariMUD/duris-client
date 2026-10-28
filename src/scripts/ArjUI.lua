@@ -763,6 +763,8 @@ function ArjUI:resetCharacterState()
 
   self.playerName = nil
   self.timeQuerySilent = false
+  self.timeQueryTimer = nil
+  self.accountMenuBorder = false
   self.capturing, self.captureBuffer = nil, {}
   self:resetShip()
 end
@@ -1972,10 +1974,15 @@ function ArjUI:registerGMCPHandlers()
   table.insert(self.eventHandlers, h)
   
   -- Prompt-based refresh for immediate updates
-  h = registerAnonymousEventHandler("sysDataSendRequest", function() 
+  h = registerAnonymousEventHandler("sysDataSendRequest", function(_, command)
     -- Prefer visible output once another command is sent, including a manual
     -- time request while the automatic reply is missing or still in flight.
     self.timeQuerySilent = false
+    if self.timeQueryTimer and tostring(command):lower():match("^%s*time%s*$") then
+      killTimer(self.timeQueryTimer)
+      self.timers[self.timeQueryTimer] = nil
+      self.timeQueryTimer = nil
+    end
     -- Refresh combat displays on every command sent
     self:renderTarget()
     self:renderTank()
@@ -2043,10 +2050,16 @@ function ArjUI:registerGMCPHandlers()
     ArjUI:renderTank()
   end)
   
-  -- Trigger to detect player death (clears all combat state)
-  -- Matches account menu which appears after death
-  self.playerDeathTrigger = self:addRuntimeTrigger("ACCOUNT MENU", function()
-    ArjUI:endSession()
+  -- The server menu follows this border immediately; mentions in chat or room
+  -- descriptions must not discard character state or pending actions.
+  self.playerDeathTrigger = self:addRuntimeTrigger("^.*$", function()
+    local text = matches[1]
+    local precededByBorder = self.accountMenuBorder
+    self.accountMenuBorder = text == "/" .. string.rep("=", 43) .. "\\"
+    if self.initialDataRequested and precededByBorder
+        and text:match("^|         %S+'s ACCOUNT MENU          |$") then
+      self:endSession()
+    end
   end)
   
   -- Trigger to detect assist (sets assist target for YOU bar)
@@ -2076,11 +2089,11 @@ function ArjUI:registerGMCPHandlers()
     ArjUI.state.timeOfDay = "night"
     ArjUI:renderTime()
   end)
-  self.timeDawnTrigger = self:addRuntimeTrigger("^The sun rises", function()
+  self.timeDawnTrigger = self:addRuntimeTrigger("^(?:The first hint of daylight can be seen on the northern horizon\\.|The first rays of sunlight signal that day is approaching\\.|The sun rises over the northern horizon\\.)$", function()
     ArjUI.state.timeOfDay = "dawn"
     ArjUI:renderTime()
   end)
-  self.timeDuskTrigger = self:addRuntimeTrigger("^The sun sets", function()
+  self.timeDuskTrigger = self:addRuntimeTrigger("^(?:The sun starts to set in the south\\.|Shadows stretch across the land as the sun limps towards the horizon\\.|The sun vanishes behind the southern horizon\\.)$", function()
     ArjUI.state.timeOfDay = "dusk"
     ArjUI:renderTime()
   end)
@@ -2093,12 +2106,12 @@ function ArjUI:registerGMCPHandlers()
     -- Convert to 24h for easier day/night detection
     if ampm == "pm" and hour ~= 12 then hour = hour + 12 end
     if ampm == "am" and hour == 12 then hour = 0 end
-    -- Determine time of day: 6am-6pm = day, 6pm-6am = night, with dawn/dusk at transitions
-    if hour >= 6 and hour < 7 then
+    -- Match the server's astral_clock_setMapModifiers() phase transitions.
+    if hour >= 4 and hour < 9 then
       ArjUI.state.timeOfDay = "dawn"
-    elseif hour >= 7 and hour < 18 then
+    elseif hour >= 9 and hour < 16 then
       ArjUI.state.timeOfDay = "day"
-    elseif hour >= 18 and hour < 19 then
+    elseif hour >= 16 and hour < 19 then
       ArjUI.state.timeOfDay = "dusk"
     else
       ArjUI.state.timeOfDay = "night"
@@ -2171,7 +2184,9 @@ function ArjUI:onLoginDetected()
     if ArjUI then ArjUI:renderAll() end
   end)
   -- Query time silently on login
-  self:after(1.0, function()
+  self.timeQueryTimer = self:after(1.0, function()
+    -- Clear ownership before send(), so our native send event cannot cancel us.
+    self.timeQueryTimer = nil
     send("time", false)
     -- send() raises sysDataSendRequest synchronously; arm gagging afterward.
     self.timeQuerySilent = true

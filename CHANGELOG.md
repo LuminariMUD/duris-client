@@ -4,6 +4,10 @@
 
 - Restore visible `time` output after the silent login query by recognizing the server's current reply format.
 - Stop suppressing time output after three seconds or another outgoing command, so missing or incomplete replies cannot hide later manual requests or time-display clicks.
+- Cancel the delayed login query when a manual time request or time-display click already supplies the HUD data.
+- Preserve character state and pending actions when ordinary text mentions the account menu; reset only at its actual bordered header.
+- Accept loot-split dice only from the local character with the requested sides and roll index, and use uniform weighted odds above 100 tickets.
+- Match Duris dawn/dusk announcements and query hours to the server clock.
 
 ## 2.4.0 - 2026-10-25
 

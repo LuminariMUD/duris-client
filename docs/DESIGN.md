@@ -269,12 +269,26 @@ of the current server reply. Suppression expires three seconds after the query
 or stops on the next outgoing command, preserving manual requests and time-display
 clicks even if the automatic reply is missing. Staff timestamps and shutdown
 notices remain visible. The timeout belongs to the normal session timer cleanup.
+During the initial one-second delay, a manual `time` request or time-display
+click cancels the automatic query; its visible response initializes the HUD.
+Query hours and server announcements use dawn 04:00–08:59, day 09:00–15:59,
+dusk 16:00–18:59 and night 19:00–03:59 in game time.
+
+The account-menu session boundary requires the server's full header immediately
+after its top border. Ordinary mentions or an isolated header preserve character
+state and pending actions.
 
 `ArjMapper` mounts its widgets inside `ArjUI.mapWrap` and subscribes directly
 to room/map events. `ArjAuto` owns its aliases, triggers, keys, and timers;
 it reads ArjUI state to decide when an enabled behavior may act. ArjUI also
 hands scan summaries to automation and resets its pending actions on session
 changes. ArjAuto's saved login commands use its own game-text triggers.
+Loot splits associate dice with the local character and the outstanding sides
+and roll index, ignoring unrelated, duplicate and invalid results. Up to 100
+tickets use one die; larger splits (up to 500 tickets) combine two 100-sided
+rolls as base-100 digits. Rejection of the incomplete final bucket keeps every
+ticket equally likely. Scores change only after an accepted paid award; free
+awards preserve scores, and session reset discards outstanding rolls.
 
 ### Data sources
 

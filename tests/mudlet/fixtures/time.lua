@@ -35,7 +35,7 @@ local function login()
 end
 
 local automatic=reply('9pm')
-local manual=reply('7am')
+local manual=reply('9am')
 local staff=reply('6pm')
 local late=reply('12am')
 local partial=reply('10pm')
@@ -119,6 +119,53 @@ T.steps({
     T.check(ArjUI.timeQuerySilent,'old timeout cannot clear new session query')
     feed(reply('4pm'))
     T.check(not ArjUI.timeQuerySilent,'new session reply completes normally')
+  end},
+  {name='manual-before-login-timer',run=login,wait=.8,verify=function()
+    T.check(ArjUI.timeQueryTimer and not ArjUI.timeQuerySilent,'automatic query is still delayed')
+    commandsBeforeClick=#T.commands
+    expandAlias('time')
+    T.check(not ArjUI.timeQueryTimer,'manual time cancels the delayed query')
+  end},
+  {name='overlapping-manual-reply',run=function() end,wait=.35,verify=function()
+    T.check(#T.commands==commandsBeforeClick and not ArjUI.timeQuerySilent,'canceled automatic query never sends or arms gagging')
+    local lines=reply('5pm')
+    feed(lines)
+    visible(lines,true,'manual reply arriving after original timer deadline stays visible')
+    T.check(ArjUI.state.timeOfDay=='dusk','early manual request initializes HUD')
+  end},
+  {name='hud-before-login-timer',run=login,wait=.1,verify=function()
+    T.check(ArjUI.timeQueryTimer and not ArjUI.timeQuerySilent,'automatic query delayed before physical HUD click')
+    commandsBeforeClick=#T.commands
+  end,actions=function() return {T.click(ArjUI.timeLabel)} end},
+  {name='early-hud-reply',run=function() end,wait=1.1,verify=function()
+    T.check(#T.commands==commandsBeforeClick+1 and T.commands[#T.commands].command=='time','early HUD click sends only its own request')
+    T.check(not ArjUI.timeQueryTimer and not ArjUI.timeQuerySilent,'early HUD click cancels delayed suppression')
+    local lines=reply('8am')
+    feed(lines)
+    visible(lines,true,'early HUD reply stays visible')
+    T.check(ArjUI.state.timeOfDay=='dawn','early HUD request initializes HUD')
+  end},
+  {name='server-clock-phases',run=function()
+    for hour=0,23 do
+      local phase=hour>=4 and hour<9 and 'dawn' or hour>=9 and hour<16 and 'day' or hour>=16 and hour<19 and 'dusk' or 'night'
+      feed(reply((hour%12==0 and 12 or hour%12)..(hour<12 and 'am' or 'pm')))
+      T.check(ArjUI.state.timeOfDay==phase,'server query phase at hour '..hour)
+    end
+    -- Actual color-stripped astralMsgs from src/world/weather.c.
+    for _,entry in ipairs({
+      {'The first hint of daylight can be seen on the northern horizon.','dawn'},
+      {'The first rays of sunlight signal that day is approaching.','dawn'},
+      {'The sun rises over the northern horizon.','dawn'},
+      {'The day has begun.','day'},
+      {'The sun hangs low on the southern sky.','day'},
+      {'The sun starts to set in the south.','dusk'},
+      {'Shadows stretch across the land as the sun limps towards the horizon.','dusk'},
+      {'The sun vanishes behind the southern horizon.','dusk'},
+      {'The night has begun.','night'},
+    }) do
+      feed({entry[1]})
+      T.check(ArjUI.state.timeOfDay==entry[2],'server announcement: '..entry[1])
+    end
     send=recordedSend
   end},
 })

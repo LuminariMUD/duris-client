@@ -795,3 +795,53 @@ and the local AppImage updating itself to 5.0.2. The controller now sets
 Mudlet's supported `MUDLET_TEST_MODE=1` to skip updater checks. The original
 cached 5.0.1 runtime was restored and the entire suite rerun successfully.
 This changes only the disposable test process environment.
+
+## PR #24 review follow-up — 2026-10-28
+
+All five review findings were valid. The original-candidate observations are
+preserved in `~/.local/share/duris-client-dev/pr24-adversarial-review/`
+`20261028T212540Z-44dff5a2-time/review-observations.json`: four hidden early
+manual reply lines, state/timer loss from a menu mention, premature paid awards
+from foreign dice, unequal 120-ticket odds, and the unrecognized sunset.
+The menu, dice and clock contracts at server revision
+`bca944c4e4146a5b91b6b3fdd7c745587ded1e3d` remain unchanged in the inspected
+server checkout at `b7498fb6ba3d714cd8a4370571022079e58d8150`.
+
+The unreleased **2.4.1** candidate now cancels its delayed query when a manual
+or physical HUD `time` request precedes it. It recognizes the complete server
+account-menu header only immediately after its top border. Clock queries and
+actual announcements agree on dawn 04–08, day 09–15, dusk 16–18 and night
+19–03. Paid/free splits validate character, sides, next roll index and result
+range; large splits use base-100 digits with rejection sampling. Disconnects
+discard outstanding split rolls.
+
+Local validation on **Mudlet 5.0.1 / Qt 6.11.1**, Xvfb 1366x768 scale 1:
+
+- `python3 scripts/mudlet_suite.py --root ~/.local/share/duris-client-dev/pr24-fixes-suite --jobs 2`
+  passed **25/25 cases**, including expected negative/fault results, normal
+  shutdown and owned-process cleanup. Its summary is `suite-results.json`.
+- Focused `python3 scripts/mudlet_test.py run --scenario <name>` runs passed
+  **107 time**, **151 split** and **117 connections** assertions. Evidence:
+  `pr24-fixes-time/20261028T213831Z-c7e97f5e-time`,
+  `pr24-fixes-split/20261028T213850Z-41cb3317-split`, and
+  `pr24-fixes-connections/20261028T213850Z-c802794b-connections`, under the same
+  development root. Their reviewed output and Errors-view screenshots show
+  visible early replies, correct clock labels and no Lua errors; review notes
+  are recorded in each `results.json`. Unaffected full-suite screenshots were
+  not all re-reviewed.
+- Exhaustive enumeration of all 10,000 two-die inputs for 120 tickets gives
+  each ticket **83** accepted inputs, each equal-score bidder **1,660**, and
+  **40** rejected inputs. Actual aliases/triggers verify retry, persisted paid
+  scores, unchanged free scores, and ignored interleaved/duplicate/invalid dice.
+- `python3 -m unittest discover -s tests/mudlet -p 'test_*.py'` passed **11**
+  controller tests; `python3 -m unittest discover -s tests/release -v` passed
+  **15** release tests. `python3 build.py`,
+  `python3 scripts/release.py --output /tmp/duris-pr24-release`, and
+  `git diff --check` passed.
+
+All 25 suite candidates and the three focused runs match the final committed
+package's canonical payload SHA-256:
+`31662c80cd8f75f62386eb173be6ece99d4cf650770e83d4300395be65e9b11c`.
+The earlier dual-version suite above applies to the earlier candidate; the
+review fixes were tested on 5.0.1. Live login, Mudlet 4.19.1, other platforms
+and physical DPI were not requalified. No live game session was used.
