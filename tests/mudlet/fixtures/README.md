@@ -29,6 +29,28 @@ ordinary fixtures and separately observed in `login`. `send` is recorded only
 in the offline companion. Downloads are restricted to its loopback map server.
 The live profile never imports this companion.
 
+`time` replays synthetic text matching `do_time()` at Duris server revision
+`bca944c4e4146a5b91b6b3fdd7c745587ded1e3d`, `src/cmd/actinf.c:7009-7085`
+(checked 2026-10-28). It checks the current four-line reply, manual requests,
+actual time-display clicks, staff/notice visibility, missing/partial replies,
+and disconnect/new-session timer ownership. Unlike the ordinary send recorder,
+this disconnected fixture also calls native `send` to exercise
+`sysDataSendRequest`; command-line requests use native `expandAlias`.
+Visibility assertions read the displayed `ArjUI_Console`, because route-all
+removes even visible output from `main`. No live game connection is made.
+It also checks manual/HUD requests before the delayed login query fires, all
+24 query hours and the nine color-stripped `astralMsgs` from
+`src/world/weather.c:103-214`. `connections` uses the real bordered header
+from `src/account/account.c:770-785`, alongside ordinary menu mentions and
+incomplete sequences that must preserve state and timers.
+
+`split` uses synthetic bids and color-stripped `do_dice()` results from the
+same server revision, `src/economy/tradeskill.c:2537-2591`. It exercises the
+real aliases/triggers and saved `arjauto.json`, including foreign/wrong-size,
+out-of-order, duplicate and invalid results, rejection retries, paid/free
+awards and session cancellation. Exhaustive enumeration of the 10,000
+two-die inputs checks equal ticket and bidder probabilities for 120 tickets.
+
 `map-colors` uses invented diagnostic glyphs with the actual Duris color
 contract, checked on 2026-10-22 against server revision
 `ca548bae11cab98490fd5e4e954785630b3a07da`, `src/net/ansi.c`

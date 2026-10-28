@@ -137,7 +137,17 @@ T.steps({
   ArjAuto.vars.channel="gsay"
   ArjUI:setSetting("scanFormat",true)
   feedTriggers("You quickly scan the area.\nA Drow Elf who is not far off to your east.\n")
-  feedTriggers("ACCOUNT MENU\n")
+  local uiTimer=ArjUI:after(20,function() error('menu mention canceled UI timer') end)
+  local autoTimer=ArjAuto.timers.contacts
+  local state=ArjUI.state
+  feedTriggers("Documentation mentions ACCOUNT MENU as the character selector.\n")
+  feedTriggers("Someone group-says 'ACCOUNT MENU'\nACCOUNT MENU\n")
+  feedTriggers("|         Testeraccount's ACCOUNT MENU          |\n")
+  feedTriggers("/"..string.rep("=",43).."\\\nAn intervening description.\n|         Testeraccount's ACCOUNT MENU          |\n")
+  T.check(ArjUI.state==state and ArjUI.playerName=='Tester' and #ArjUI.state.group==1,"ordinary menu mentions and isolated headers preserve character state")
+  T.check(ArjUI.timers[uiTimer] and ArjAuto.timers.contacts==autoTimer and next(ArjAuto.pendingTimers),"ordinary menu mentions preserve delayed and repeating actions")
+  -- Color-stripped display_account_menu() border/header sequence.
+  feedTriggers("/"..string.rep("=",43).."\\\n|         Testeraccount's ACCOUNT MENU          |\n\\"..string.rep("=",43).."/\n")
   T.check(ArjUI.playerName==nil and #ArjUI.state.group==0 and #ArjUI.state.affects==0 and ArjUI.state.quest==nil,"account menu clears character state")
   T.check(ArjUI.initialDataRequested==false,"same socket character login is rearmed")
   T.check(next(ArjAuto.timers)==nil and next(ArjAuto.pendingTimers)==nil,"logout cancels repeat and delayed actions")
