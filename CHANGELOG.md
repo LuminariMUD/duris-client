@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.1 - 2026-10-28
+
+- Restore visible `time` output after the silent login query by recognizing the server's current reply format.
+- Stop suppressing time output after three seconds or another outgoing command, so missing or incomplete replies cannot hide later manual requests or time-display clicks.
+
 ## 2.4.0 - 2026-10-25
 
 - Replace the tall Duris banner with a slim bronze/obsidian perimeter and an original Stormwatch panorama, cropped without stretching.

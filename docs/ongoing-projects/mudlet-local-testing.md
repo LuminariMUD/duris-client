@@ -753,3 +753,45 @@ entry in the current [official archive](https://www.mudlet.org/wp-content/files/
 the attempted old Linux URL returned 404. Physical DPI/input and Windows/macOS
 also remain NOT RUN. This is the same minimum-version limit already recorded
 for the incumbent package, not a new minimum-version claim.
+
+## Issue #23 time-command gagging — 2026-10-28
+
+Candidate **2.4.1** ends the silent login query at the current server's
+`Current time is:` line. A three-second owned timer bounds missing/partial
+replies; the next outgoing command also ends suppression so manual requests
+and time-display clicks stay visible. The obsolete indented EST trigger is
+removed. HUD parsing, staff timestamps and shutdown notices remain available.
+
+The new `time` scenario fails on the original 2.4.0 package at
+`current server reply completes silent query`. With the fix, all **58 assertions**
+pass in real Mudlet, including native command-line/send events, physical HUD
+clicks, visible-console output, missing/partial replies, and disconnect/new-session
+timer cleanup. Values are synthetic and follow Duris `do_time()` at
+`bca944c4e4146a5b91b6b3fdd7c745587ded1e3d`; no live login was used.
+
+Validation:
+
+- **24/24 suite cases pass on Mudlet 5.0.1 and 5.0.2**, Qt 6.11.1,
+  Xvfb 1366x768 scale 1, including expected negative/fault results,
+  normal shutdown and owned-process cleanup.
+- **11 controller tests and 15 release tests pass**. Lua/XML build and local
+  release preparation validate the rebuilt committed package.
+- Reviewed time-output checkpoints and Errors-view captures on both versions;
+  manual/staff output, timeout recovery and pending-query HUD requests render
+  correctly without Lua errors. Also inspected the 5.0.1 positive-scenario
+  overview images and layout/reopen captures. Full DPI/platform qualification
+  was not repeated; the existing 4.19.1 minimum-version limit remains.
+
+Evidence roots below `~/.local/share/duris-client-dev/`:
+`issue-23-before/20261028T203759Z-6cde4100-time` (baseline failure),
+`issue-23-suite-5.0.1/` and `issue-23-suite/` (5.0.2). The time runs are
+`20261028T204656Z-97bc4353-time` and `20261028T204238Z-ff3c9de5-time` respectively;
+their visual reviews are recorded in `results.json`. Every suite candidate has
+the same canonical package payload SHA-256:
+`a347eeb71dbd031398348f633e8a851361e20f9a871f0872be2d0f74c836705a`.
+
+Initial runs exposed an unrelated updater dialog preventing normal shutdown
+and the local AppImage updating itself to 5.0.2. The controller now sets
+Mudlet's supported `MUDLET_TEST_MODE=1` to skip updater checks. The original
+cached 5.0.1 runtime was restored and the entire suite rerun successfully.
+This changes only the disposable test process environment.

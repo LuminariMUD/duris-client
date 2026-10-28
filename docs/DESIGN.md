@@ -263,6 +263,13 @@ state and render affected panels; text triggers fill gaps in the protocol.
 While the UI is visible, its routing trigger copies game lines into the
 central MiniConsole and removes them from the underlying main console.
 
+Character login requests `time` once to initialize the time display. Its four
+ordinary response lines are hidden through `Current time is:`, the final ordinary line
+of the current server reply. Suppression expires three seconds after the query
+or stops on the next outgoing command, preserving manual requests and time-display
+clicks even if the automatic reply is missing. Staff timestamps and shutdown
+notices remain visible. The timeout belongs to the normal session timer cleanup.
+
 `ArjMapper` mounts its widgets inside `ArjUI.mapWrap` and subscribes directly
 to room/map events. `ArjAuto` owns its aliases, triggers, keys, and timers;
 it reads ArjUI state to decide when an enabled behavior may act. ArjUI also

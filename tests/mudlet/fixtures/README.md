@@ -29,6 +29,16 @@ ordinary fixtures and separately observed in `login`. `send` is recorded only
 in the offline companion. Downloads are restricted to its loopback map server.
 The live profile never imports this companion.
 
+`time` replays synthetic text matching `do_time()` at Duris server revision
+`bca944c4e4146a5b91b6b3fdd7c745587ded1e3d`, `src/cmd/actinf.c:7009-7085`
+(checked 2026-10-28). It checks the current four-line reply, manual requests,
+actual time-display clicks, staff/notice visibility, missing/partial replies,
+and disconnect/new-session timer ownership. Unlike the ordinary send recorder,
+this disconnected fixture also calls native `send` to exercise
+`sysDataSendRequest`; command-line requests use native `expandAlias`.
+Visibility assertions read the displayed `ArjUI_Console`, because route-all
+removes even visible output from `main`. No live game connection is made.
+
 `map-colors` uses invented diagnostic glyphs with the actual Duris color
 contract, checked on 2026-10-22 against server revision
 `ca548bae11cab98490fd5e4e954785630b3a07da`, `src/net/ansi.c`

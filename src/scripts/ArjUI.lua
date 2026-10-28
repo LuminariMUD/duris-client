@@ -1973,6 +1973,9 @@ function ArjUI:registerGMCPHandlers()
   
   -- Prompt-based refresh for immediate updates
   h = registerAnonymousEventHandler("sysDataSendRequest", function() 
+    -- Prefer visible output once another command is sent, including a manual
+    -- time request while the automatic reply is missing or still in flight.
+    self.timeQuerySilent = false
     -- Refresh combat displays on every command sent
     self:renderTarget()
     self:renderTank()
@@ -2101,7 +2104,7 @@ function ArjUI:registerGMCPHandlers()
       ArjUI.state.timeOfDay = "night"
     end
     ArjUI:renderTime()
-    -- Gag if this was from auto-query (within 3 seconds of login)
+    -- Gag only while the bounded login query is pending.
     if ArjUI.timeQuerySilent then
       deleteLine()
     end
@@ -2116,13 +2119,8 @@ function ArjUI:registerGMCPHandlers()
   end)
   self.timeGagTrigger3 = self:addRuntimeTrigger("^Current time is:", function()
     if ArjUI.timeQuerySilent then deleteLine() end
-  end)
-  self.timeGagTrigger4 = self:addRuntimeTrigger("^\\s+\\w+ \\w+ +\\d+ \\d+:\\d+:\\d+ \\d+", function()
-    if ArjUI.timeQuerySilent then 
-      deleteLine()
-      -- Last line of time output - clear the silent flag
-      ArjUI.timeQuerySilent = false
-    end
+    -- Final ordinary line in do_time(); staff/shutdown notices stay visible.
+    ArjUI.timeQuerySilent = false
   end)
   
   -- Trigger to parse combat prompt line for tank, target, and positions
@@ -2174,8 +2172,10 @@ function ArjUI:onLoginDetected()
   end)
   -- Query time silently on login
   self:after(1.0, function()
-    ArjUI.timeQuerySilent = true
     send("time", false)
+    -- send() raises sysDataSendRequest synchronously; arm gagging afterward.
+    self.timeQuerySilent = true
+    self:after(3.0, function() self.timeQuerySilent = false end)
   end)
 end
 

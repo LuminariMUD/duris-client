@@ -411,8 +411,11 @@ end)
 
 
 def run_desktop(run, args):
+    # Mudlet's test mode skips the updater, whose dialog can keep the process
+    # alive after the isolated profile closes when a newer release is available.
     env = {**os.environ, "XDG_CONFIG_HOME": str(run / "config"), "QT_QPA_PLATFORM": "xcb",
-           "QT_SCALE_FACTOR": str(args.scale), "DURIS_TEST_RUN": str(run), "LC_ALL": "C.UTF-8"}
+           "QT_SCALE_FACTOR": str(args.scale), "DURIS_TEST_RUN": str(run), "LC_ALL": "C.UTF-8",
+           "MUDLET_TEST_MODE": "1"}
     width, height = map(int, args.size.split("x"))
     screen_width, screen_height = (4096, 2400) if args.scale == 2 else (2048, 1200)
     # Leave room for window-manager decorations; otherwise import silently
