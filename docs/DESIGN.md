@@ -197,6 +197,10 @@ also communicate severity. Retain numeric values, labels, and state markers
 alongside color: non-mana characters show **MP n/a**, absent group members show
 **AWAY**, and NPC group members retain a trailing `*`.
 
+Player, tank, target, and group HP fills stop at 100% width. Vamp healing can
+raise actual HP above the normal maximum; retain those values in state and
+labels (for example, `2500/1000` and `250%`) while keeping the fill inside its gauge.
+
 ### Typography and density
 
 The main MiniConsole is configured with `fontSize = 10`; list/chat consoles

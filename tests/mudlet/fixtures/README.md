@@ -29,6 +29,18 @@ ordinary fixtures and separately observed in `login`. `send` is recorded only
 in the offline companion. Downloads are restricted to its loopback map server.
 The live profile never imports this companion.
 
+`vamp-overheal` replays synthetic `Char.Vitals`, `Group.Status`, and
+`Combat.Update` snapshots matching Duris server revision
+`787baebbc57f15452afd4f2c32da1c07a38294ec` (checked 2026-10-31).
+`src/core/utils.h` defines the ordinary 1.1–2.5x `VAMPPERCENT` range;
+`src/combat/fight.c:vamp()` publishes the resulting HP via GMCP.
+`src/core/json_utils.c:json_build_char_vitals()` and `src/net/gmcp.c` send
+actual HP, normal maximum HP, and target percentages without an upper clamp.
+The fixture checks all four HP fills at 110%, 150%, and 250%, preserved
+numeric labels/state/GMCP, replacement group rows, and recovery through
+normal, zero, negative, and healed HP. It checks real rendered widths with
+one pixel of rounding tolerance. No live game connection is made.
+
 `time` replays synthetic text matching `do_time()` at Duris server revision
 `bca944c4e4146a5b91b6b3fdd7c745587ded1e3d`, `src/cmd/actinf.c:7009-7085`
 (checked 2026-10-28). It checks the current four-line reply, manual requests,
