@@ -11,6 +11,7 @@
     "ship-bridge": "Bridge contract, keyed snapshot ordering, unseen lock, duplicate IDs, legacy fallback and authoritative departure",
     "lowhp": "Startup, assets, identity, vitals, two-member group, routing and off defaults",
     "vitals": "Full/zero health, non-mana class, zero/missing maxima and experience",
+    "vamp-overheal": "Player, self-tank, group and target HP fill bounds during vamp overheal, group row replacement and recovery; actual numbers preserved",
     "crowded": "Full group, scrolling, NPC/away/weakest markers, crowded room and removal",
     "combat": "Target/tank, GMCP and text damage, fight reset and affects clearing",
     "chat": "All channel routes, long messages, incoming/outgoing tells and private window",
