@@ -1,9 +1,15 @@
 # Changelog
 
-## 2.4.3 - 2026-11-01
+## 2.4.4 - 2026-11-01
 
 - Render wilderness foregrounds and backgrounds with the profile's ANSI colors, preserving the server's white zone-marker backgrounds and terrain contrast instead of dimming them with a separate map palette.
 - Keep custom marker colors, grey city/road symbols and the player marker consistent with ordinary game text after movement, refresh and zoom.
+
+## 2.4.3 - 2026-11-01
+
+- Mark your own health as `YOU HP` and identify the owner of tank and target bars explicitly, so a wounded pet or enemy cannot be mistaken for your character.
+- Correct the self-tank display when character identity arrives after the combat prompt, and keep health data with the correct combatant when tanks or assisted group members change.
+- Keep combat prompt fields separate when names contain prompt-like text or conditions contain a capital `E`; show unknown tank health when no current health data is available.
 
 ## 2.4.2 - 2026-10-31
 

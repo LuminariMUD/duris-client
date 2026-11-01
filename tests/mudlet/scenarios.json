@@ -14,6 +14,7 @@
     "vamp-overheal": "Player, self-tank, group and target HP fill bounds during vamp overheal, group row replacement and recovery; actual numbers preserved",
     "crowded": "Full group, scrolling, NPC/away/weakest markers, crowded room and removal",
     "combat": "Target/tank, GMCP and text damage, fight reset and affects clearing",
+    "health-identity": "Player/pet/enemy HP ownership, late identity, prompt delimiters, tank replacement, assist updates and session recovery",
     "chat": "All channel routes, long messages, incoming/outgoing tells and private window",
     "information": "Mouse-driven tabs, inventory/equipment/who, quests and sorted ship contacts",
     "maps": "Zone/wilderness, zoom, cache, delayed/malformed/HTTP errors and reload recovery",
