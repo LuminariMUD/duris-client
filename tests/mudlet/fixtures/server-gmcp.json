@@ -1,20 +1,187 @@
 {
   "provenance": {
     "description": "Production functions with isolated world/mechanics dependencies; no live player data.",
-    "server_commit": "e86bf7f24c52449b1260bb378443efafd1d9c491",
+    "server_commit": "e7f92285512b29acdfb90e5a4af14d1892ed7429",
     "source_sha256": {
-      "src/net/gmcp.c": "f8c948c69179d0bb74d4924ce3a2aacee585f22caa6bf732757af10c9fabe3a4",
-      "src/core/json_utils.c": "84bb92474c6d5d8d144bf044f19e684efce314168f109d2e75e80277f04090b1",
-      "src/core/structs.h": "1da598d39860ef98e55d154bed93f69e2f4909f91e26f5942c383ebbccb8adb5",
-      "src/combat/fight.c": "05c35ad3a98d2465b723c2ce14012333f7d095431c14ee2996e3436006cacaad",
-      "src/ships/ships.h": "abbff0dbab3e993ed7795881ec51ae287001217b67f2a94a78728f75dcaab2f5",
-      "src/ships/ship_utils.c": "280c062a18b72813ed7163cf0ea49884675fbfc7ad3fcc1c6ee897f8082e2563",
-      "src/core/utility.c": "7a12c6ad619a31f36653ae2217de8860b3b3e00c805e39edf7b6f0aadc95c8bd",
-      "tests/async/gui_gmcp_contract_harness.cpp": "3bcd949a2731dba054e1ecd1861e26be04606a3300ecce5cce9a5141e8c9859c",
-      "tests/async/test_gui_gmcp_contract.py": "30a0a423d172337d1a383afc2ea9f92c3db934f566c816d4c0171c3f79b112c7"
+      "src/net/gmcp.c": "fa82c1acd7f01f0847d628784bfc33664617ea52d4775d4481ea18855eb91adb",
+      "src/core/json_utils.c": "6ac6d2031bffaabbb9e1d66c74141dbcec05e16131c62b4b8334751fc4631756",
+      "src/core/structs.h": "58cbe8f90e7b9a94c5a08c1c704d030d072465d3524769efa564f445908d56b2",
+      "src/combat/fight.c": "85f1e64e2f779df99b6f1ed3e143f8ed31430c62f3f3d21f00a190400471ff93",
+      "src/ships/ships.h": "59e4eb9de496a04b18a260add2381ebb61ca03e2c516c5db0eb978cf43ae4320",
+      "src/ships/ship_utils.c": "1713e1e7cf926698ec5f17f8533b827c45ff5e9150f5cbac29be482bf9cce7de",
+      "src/core/utility.c": "8a4ce3acee1fec149a0583854ae11bb842c15b2e83ec9981fd09b08985a078b2",
+      "src/net/comm.c": "1fab46953bc7d0960516d9628877a9e2a064df30d416ed506432255dc1b139cc",
+      "src/net/ws_handlers.c": "a11f34ea2ba76635c0b4b844a175d066f5e3ee6cad52b97ed25d4e5d72a2157d",
+      "src/world/handler.c": "a189fc0711cd76a54844fdaf2eb3e81239cd352572b80993c70d2449588c5b33",
+      "src/world/condition.c": "04696bd1df79c4ad90ddf93f0e4526729ba2f6d403416a6d9e71b9cc0aef7fb7",
+      "src/world/weather.c": "1d6a98b99d608cfebe818660a064af1ae4e6dfa19df838ea3405d94e38702067",
+      "src/world/world_quest.c": "c1a48b50c253894424292de325296583bf465e2b56bfaf0a3f9082a2f16d7887",
+      "src/cmd/actinf.c": "ba8965f201435419367b54b4d1bc9995e8363c4de818f71a206b3a357cc69a02",
+      "src/cmd/actnew.c": "28775b026bc0cecb2f69452722dbb10bc8c31922e753c1a4b0c4b73c13f1c4a6",
+      "src/cmd/interp.c": "f62e0eddbe9c258d0a0e12eb16877f091d58352e923e88ccd6df628e4292fc4e",
+      "src/classes/salchemist.c": "467ffd6ed444132283f5863fa05c6a5c32ea8efd45883bbf31c2c8d706334b11",
+      "src/magic/magic.c": "7deb815487108c77c13e75aae7b2f4a5368120e446100e17fb4a9bd98ab011fa",
+      "src/item/random_equipment.c": "03c39e7be9e527312a4f8876cec9074b2fb91075c288d446ee029eef9d739efc",
+      "src/item/random_equipment_tables.c": "475ad1af3ed5684d1b09a35f485a7b7dd4b8c641cc1559436e635540a83cde30",
+      "src/core/safe_format.c": "c4d8266e5192bcc734b70d9675e274b3f7915a2643ae3b29f040d228b2c383c3",
+      "src/sql/sql.c": "1d888fb895b7692bab00df4cbb862c814163b61874717980cd943810109d12c9",
+      "tests/async/harness_stubs.cpp": "199155d67d47a17e2fef2ac8b503c24c338db01329706dfad454d99b90656338",
+      "tests/async/gui_gmcp_contract_harness.cpp": "5e372888b81856786ba7d93ad29faf270e8676083c87d9ffc0ce7829f4adceb3",
+      "tests/async/test_gui_gmcp_contract.py": "c80db9ed068d9f321a4e6b2b6adc40fc2e7c6cbe780a3018270df8220b19ae6a"
     }
   },
   "phases": {
+    "items-empty": [
+      {
+        "package": "Char.Items.List",
+        "data": {
+          "items": [],
+          "version": 1,
+          "context": "9ab3dc00439fa5d4e02bbade2af55372",
+          "process": "831a458e7d47968348da53c0f9e4acf0",
+          "generation": "1",
+          "bodyRevision": "1",
+          "revision": "4",
+          "location": "inv",
+          "page": 0,
+          "available": true,
+          "complete": true
+        }
+      }
+    ],
+    "items-equipment": [
+      {
+        "package": "Char.Items.List",
+        "data": {
+          "items": [
+            {
+              "flags": [],
+              "description": "a blade",
+              "quantity": 1,
+              "slot": 16,
+              "selector": "@i:36a3fd63ed437715d660d0b3319f55be:77",
+              "condition": " [ 0%]",
+              "slotName": "wielded"
+            }
+          ],
+          "version": 1,
+          "context": "9ab3dc00439fa5d4e02bbade2af55372",
+          "process": "831a458e7d47968348da53c0f9e4acf0",
+          "generation": "1",
+          "bodyRevision": "1",
+          "revision": "5",
+          "location": "eq",
+          "page": 0,
+          "available": true,
+          "complete": true
+        }
+      }
+    ],
+    "items-nested": [
+      {
+        "package": "Char.Items.List",
+        "data": {
+          "items": [
+            {
+              "flags": [],
+              "description": "an inner bag",
+              "quantity": 1,
+              "slot": null,
+              "selector": "@i:f839d6cc5bd126ce8ccac7db7ee46426:502",
+              "condition": " [ 0%]"
+            }
+          ],
+          "version": 1,
+          "context": "58f33866b7abdfc0d7d789b245c4d5df",
+          "process": "831a458e7d47968348da53c0f9e4acf0",
+          "generation": "1",
+          "bodyRevision": "1",
+          "revision": "2",
+          "location": "@i:f839d6cc5bd126ce8ccac7db7ee46426:501",
+          "page": 0,
+          "available": true,
+          "complete": true
+        }
+      }
+    ],
+    "combat-subjects": [
+      {
+        "package": "Combat.Update",
+        "data": {
+          "target": {
+            "name": "wolf",
+            "health": "small wounds",
+            "healthPercent": 80,
+            "position": "standing"
+          },
+          "tank": {
+            "name": "Ally",
+            "health": "awful",
+            "healthPercent": 5,
+            "position": "kneeling"
+          },
+          "revision": "1"
+        }
+      },
+      {
+        "package": "Combat.Update",
+        "data": {
+          "target": {
+            "name": "wolf",
+            "health": "small wounds",
+            "healthPercent": 80,
+            "position": "standing"
+          },
+          "tank": {
+            "name": "Ally",
+            "health": "awful",
+            "healthPercent": 5,
+            "position": "kneeling"
+          },
+          "revision": "1"
+        }
+      }
+    ],
+    "damage-secondary": [
+      {
+        "package": "Duris.Combat",
+        "data": {
+          "version": 1,
+          "context": "90392748898a64d261b79ae48cd0fbb2",
+          "process": "831a458e7d47968348da53c0f9e4acf0",
+          "generation": "1",
+          "bodyRevision": "1",
+          "sequence": "1",
+          "kind": "damage",
+          "outcome": "applied",
+          "actor": "Actor",
+          "target": "Secondary",
+          "primary": false,
+          "damage": 17,
+          "damageType": "physical",
+          "critical": true
+        }
+      },
+      {
+        "package": "Duris.Combat",
+        "data": {
+          "version": 1,
+          "context": "fdd3e16d23aa3456c6937a2c13f8fede",
+          "process": "831a458e7d47968348da53c0f9e4acf0",
+          "generation": "1",
+          "bodyRevision": "1",
+          "sequence": "1",
+          "kind": "damage",
+          "outcome": "applied",
+          "actor": "Actor",
+          "target": "Secondary",
+          "primary": false,
+          "damage": 17,
+          "damageType": "physical",
+          "critical": true
+        }
+      }
+    ],
     "snapshot": [
       {
         "package": "Ship.Info",
@@ -311,9 +478,11 @@
           "target": {
             "name": "wolf",
             "health": "big nasty wounds",
-            "healthPercent": 40,
+            "healthPercent": 32,
             "position": "on their ass"
           },
+          "tank": null,
+          "revision": "2",
           "round": {
             "attacker": "Tester",
             "damage": 8,
@@ -372,6 +541,8 @@
         "package": "Quest.Status",
         "data": {
           "remaining": 2,
+          "availability": "available",
+          "replacementDue": false,
           "active": true,
           "type": "kill",
           "killCount": 2,
@@ -388,7 +559,7 @@
           "sender": "Tester",
           "text": "hello",
           "alignment": "good",
-          "timestamp": 1792757072
+          "timestamp": 1793528338
         }
       },
       {
@@ -470,6 +641,8 @@
         "package": "Quest.Status",
         "data": {
           "remaining": 2,
+          "availability": "available",
+          "replacementDue": false,
           "active": false,
           "type": null,
           "target": "",
@@ -479,7 +652,9 @@
       {
         "package": "Combat.Update",
         "data": {
-          "target": null
+          "target": null,
+          "tank": null,
+          "revision": "13"
         }
       },
       {
@@ -490,6 +665,88 @@
         "package": "Ship.Contacts",
         "data": {
           "contacts": []
+        }
+      }
+    ],
+    "control": [
+      {
+        "package": "Duris.Capabilities",
+        "data": {
+          "version": 1,
+          "enabled": true,
+          "features": {
+            "Duris.Capabilities": 1,
+            "Duris.Subscribe": 1,
+            "Duris.Time": 1,
+            "Duris.Session": 1,
+            "Duris.Combat": 1,
+            "Char.Items": 1,
+            "Char.Items.Get": 1
+          },
+          "supported": [
+            "Duris.Time",
+            "Char.Items"
+          ],
+          "interested": [
+            "Duris.Time"
+          ],
+          "active": [
+            "Duris.Time"
+          ],
+          "control": []
+        }
+      }
+    ],
+    "time": [
+      {
+        "package": "Duris.Time",
+        "data": {
+          "revision": "14",
+          "hour": 10,
+          "phase": "day",
+          "process": "831a458e7d47968348da53c0f9e4acf0"
+        }
+      }
+    ],
+    "session-account": [
+      {
+        "package": "Duris.Session",
+        "data": {
+          "context": "df8c87ea088dffa9461dbc45d87bf75b",
+          "process": "831a458e7d47968348da53c0f9e4acf0",
+          "generation": "0",
+          "state": "account",
+          "resumed": false,
+          "character": null
+        }
+      }
+    ],
+    "session-enter": [
+      {
+        "package": "Duris.Session",
+        "data": {
+          "context": "df8c87ea088dffa9461dbc45d87bf75b",
+          "process": "831a458e7d47968348da53c0f9e4acf0",
+          "generation": "1",
+          "state": "playing",
+          "resumed": false,
+          "character": {
+            "name": "Tester",
+            "bodyRevision": "1"
+          }
+        }
+      }
+    ],
+    "session-clear": [
+      {
+        "package": "Duris.Session",
+        "data": {
+          "context": "df8c87ea088dffa9461dbc45d87bf75b",
+          "process": "831a458e7d47968348da53c0f9e4acf0",
+          "generation": "2",
+          "state": "account",
+          "resumed": false,
+          "character": null
         }
       }
     ]

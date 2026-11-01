@@ -95,3 +95,8 @@ integer skills and signed modifiers, unsorted numeric weapon slots, damage,
 ammo/timer status and cargo invoice/contraband fields. They also intentionally
 test omitted fields, unknown maxima, long names, empty lists and replacement.
 They do not refresh `server-gmcp.json` or establish a live-game comparison.
+
+The #26 time/session/combat/item contract capture is described in
+[the server handoff](../../../docs/ongoing-projects/server-interface-handoff.md).
+Its new contract phases supplement the existing eleven-package populated/clear
+fixtures; they do not establish client adoption or live gameplay coverage.
