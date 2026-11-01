@@ -2,12 +2,16 @@
 
 ## Duris client documentation
 
-Current protocol investigation: [Protocol interfaces and low-cost telemetry](ongoing-projects/protocol-interface-investigation.md)
+Protocol investigation: [Protocol interfaces and low-cost telemetry](ongoing-projects/protocol-interface-investigation.md)
 maps the remaining text captures to existing server GMCP, identifies client-only
 improvements, and prioritizes server additions with event-loop cost constraints
 (source audit, 2026-10-30; implementation proposed). Track
 [issue #26](https://github.com/LuminariMUD/duris-client/issues/26) on
 [branch/protocol-interface-improvements](https://github.com/LuminariMUD/duris-client/tree/branch/protocol-interface-improvements).
+
+The later [server interface handoff](ongoing-projects/server-interface-handoff.md)
+records the implemented time/session/combat/item contracts, production-generated
+fixtures, and client adoption boundaries as of 2026-11-01.
 
 Planned frame work: [Slim frame and Stormwatch backdrop](ongoing-projects/plan-slim-frame-backdrop.md)
 defines a matching thin top border, an atmospheric background behind movable

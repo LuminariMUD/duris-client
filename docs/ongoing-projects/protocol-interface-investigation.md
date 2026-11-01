@@ -2,6 +2,12 @@
 
 Date: **2026-10-30**. Status: **investigation complete; implementation proposed**.
 
+**2026-11-01 update:** this investigation preserves the source snapshot below.
+The later [server interface handoff](server-interface-handoff.md) documents the
+implemented time, session, combat and owner-item contracts and captured examples.
+Use that handoff and its pinned server contract for client adoption; the proposals
+and missing-server-feature findings below describe the earlier revision.
+
 Tracking issue: [#26](https://github.com/LuminariMUD/duris-client/issues/26).
 Work branch: [branch/protocol-interface-improvements](https://github.com/LuminariMUD/duris-client/tree/branch/protocol-interface-improvements).
 The issue also tracks reproduction of the reported player/pet/opponent HP

@@ -1,7 +1,12 @@
 # Fixture provenance
 
-Captain's Table contract (2026-10-23): `server-gmcp.json` is refreshed from
-Duris `e86bf7f24c52449b1260bb378443efafd1d9c491` (merged server PR #304).
+Current capture (2026-11-01): `server-gmcp.json` records Duris
+`0c580ba4453f670e75b300393f909ebd3ae58dcd`, with 26 source hashes and 12
+phases. See [the server handoff](../../../docs/ongoing-projects/server-interface-handoff.md)
+for the time/session/combat/item examples and their independent-session limits.
+
+Historical Captain's Table capture (2026-10-23) used Duris
+`e86bf7f24c52449b1260bb378443efafd1d9c491` (merged server PR #304).
 The harness executes the production slot status/description/weight and crew
 stamina helpers, not duplicate formulas. The captured ship occupies all 16
 slots and includes contraband, damage 100, timers and negative stamina.

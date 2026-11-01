@@ -8,7 +8,7 @@ Server [#542](https://github.com/LuminariMUD/Duris/pull/542),
 [#545](https://github.com/LuminariMUD/Duris/pull/545) and
 [#546](https://github.com/LuminariMUD/Duris/pull/546) are merged;
 [#547](https://github.com/LuminariMUD/Duris/pull/547) supplies owner items.
-The server [wire contract](https://github.com/LuminariMUD/Duris/blob/branch/issue-498-owner-items/docs/network/GMCP.md)
+The captured server [wire contract](https://github.com/LuminariMUD/Duris/blob/0c580ba4453f670e75b300393f909ebd3ae58dcd/docs/network/GMCP.md)
 owns the exact fields and limits. PR availability does not establish deployment.
 
 ## Source selection
@@ -97,3 +97,9 @@ This proves existing packet decoding/clears, not new item/time/session UI adopti
 The final capture also fingerprints the worn-container `get` lookup. Its existing
 `server-wire` populated/clear inputs are unchanged except the chat timestamp, so
 the recorded wire/screenshot pass remains applicable.
+
+Additional PR review verified all 26 source hashes against the recorded Git
+objects, all 12 phases and authoritative empty items. Fresh Mudlet 5.0.1 /
+Qt 6.11.1 wire run `20261101T134338Z-6cd309f5-server-wire` passed 27
+assertions. Populated, clear and Errors-view screenshots were inspected; no
+Lua errors appeared. This remains an offline transport check.
