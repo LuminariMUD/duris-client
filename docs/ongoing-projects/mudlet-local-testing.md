@@ -1,5 +1,49 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Wilderness ANSI palette — 2026-11-01
+
+Version **2.4.3** addresses [issue #17](https://github.com/LuminariMUD/duris-client/issues/17)
+by resolving all sixteen Duris colors from the Mudlet profile's ANSI palette
+on each map paint. Foregrounds and backgrounds share that palette. The
+existing decimal renderer, color-state resets and warm dark map surface stay
+in place. Literal angle brackets and unknown color codes remain visible.
+
+The server's `src/world/map.c` defines the default zone marker as `&=wl^`
+(black caret on a white background), and sends that colored map through
+`Room.Map`. The previous mapper dimmed white backgrounds to RGB `60,60,60`.
+Both city and road defaults use grey `+`; `mapglyphs` can customize a zone
+glyph. The fixture therefore checks default zones, a custom white plus,
+ordinary grey plus signs, neighboring terrain and the player separately.
+
+Real **Mudlet 5.0.1 / Qt 6.11.1**, in isolated WSL2/Xvfb profiles, passes
+**121 assertions** per focused run at 1366x768, physical 2732x1536 / Qt scale 2,
+and 1280x720 with a customized saved ANSI palette. All sixteen foreground,
+background and combined colors are compared with actual ANSI-decoded game
+output; movement, `look` and both zoom directions preserve marker colors.
+The customized profile's saved colors were checked after shutdown. Each
+focused run shut down normally with no Lua errors. All map-step and Errors
+captures were inspected.
+
+All **26 offline suite expectations** pass on the final package, including
+the deliberate errors and profile/candidate/readiness faults. The suite's
+scenario and Errors-view overviews were inspected; the unchanged `vitals`
+fixture still emits Geyser warnings for deliberate zero/missing maxima.
+Controller tests (11), release tests (15), Lua 5.1/XML build and committed
+release-payload validation pass. All final runtime archives have the same
+canonical package payload as the committed 2.4.3 archive.
+
+The released 2.4.2 baseline fails the new palette comparison. Original
+captures: [before](../testing/issue-17/before-2.4.2.png),
+[after](../testing/issue-17/after-2.4.3.png), and
+[zone/custom/road/player markers at scale 2](../testing/issue-17/markers-scale2.png).
+The [qualification JSON](../testing/issue-17/qualification.json) records
+run paths, package/source identities, assertions and screenshot hashes.
+
+These are offline GMCP updates and ANSI references. The reporter's original
+`+` payload, fresh live gameplay, Mudlet 4.19.1, native Windows/macOS and
+physical desktop DPI/input remain unverified. The profile ANSI names are
+present in the 4.19.1 source; this is source compatibility evidence only.
+
 ## Slim frame and Stormwatch — 2026-10-25
 
 Version **2.4.0**, runtime commit `89897e3`, is delivered for review in
