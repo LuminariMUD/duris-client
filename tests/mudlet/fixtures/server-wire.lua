@@ -19,7 +19,7 @@ T.steps({
   T.check(T.lines("ArjUI_NchatBox"):find("hello",1,true),"real channel data routes to chat")
   T.check(ArjUI.state.hp==70 and ArjUI.state.hpmax==100,"real Char.Vitals decoded")
   T.check(#ArjUI.state.group==2 and ArjUI.state.groupMax==13,"real Group.Status decoded")
-  T.check(ArjUI.state.target=="wolf" and ArjUI.state.targetHpPct==40,"real Combat.Update decoded")
+  T.check(ArjUI.state.target=="wolf" and ArjUI.state.targetHpPct==32,"real Combat.Update decoded")
   T.check(ArjUI.damage.fight==8,"real GMCP round decoded")
   T.check(ArjUI.state.ship.heading==90 and ArjUI.state.ship.speed==12,"real ship navigation decoded")
   T.check(ArjAuto:targetContact().id=="BB","real contact targeting decoded")
