@@ -41,8 +41,9 @@ enemy updates. Optional `Combat.Update.tank` packets and assist notifications
 are constructed compatibility inputs; the current server's legacy
 `Combat.Update` serializer emits the target and optional round, not a tank.
 The scenario also covers tank replacement/partial packets/clears, exact
-assisted group members, group health refresh, explicit enemy death, and
-session reset. These are offline regressions, not a captured live incident.
+assisted group members, group health refresh, explicit enemy death, text
+death/flee followed by group updates, and session reset. These are offline
+regressions, not a captured live incident.
 
 `vamp-overheal` replays synthetic `Char.Vitals`, `Group.Status`, and
 `Combat.Update` snapshots matching Duris server revision

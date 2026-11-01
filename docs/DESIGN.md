@@ -210,6 +210,8 @@ health data shows `HP unknown`, and a selected assist uses exact-name group
 membership and refreshes with group updates. A fresh combat tank supersedes
 the earlier assist selection. Prompt condition text remains an approximation
 for other combatants and never changes the player's numeric HP or color.
+Death, flee, and explicit combat-end messages discard the assist selection
+so a later group update cannot restore a previous combatant.
 
 ### Typography and density
 

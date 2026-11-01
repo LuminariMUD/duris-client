@@ -2027,6 +2027,7 @@ function ArjUI:registerGMCPHandlers()
     ArjUI.state.targetBleeding = false
     -- Reset tank bar to self (combat ended)
     ArjUI.state.iAmTank = true
+    ArjUI.state.assistTarget = nil
     ArjUI.state.tank = nil
     ArjUI.state.tankCond = nil
     ArjUI.state.tankHpPct = nil
@@ -2044,6 +2045,7 @@ function ArjUI:registerGMCPHandlers()
     ArjUI.state.targetBleeding = false
     -- Reset tank bar to self (combat ended for us)
     ArjUI.state.iAmTank = true
+    ArjUI.state.assistTarget = nil
     ArjUI.state.tank = nil
     ArjUI.state.tankCond = nil
     ArjUI.state.tankHpPct = nil

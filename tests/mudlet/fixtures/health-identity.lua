@@ -182,6 +182,27 @@ T.steps({
     T.check(ArjUI.state.target == nil, "combat end clears enemy ownership")
     playerUnchanged()
   end},
+  {name="death-clears-assist-before-group-update", run=function()
+    feedTriggers("You are now assisting Eldric.\n")
+    feedTriggers("Elder is dead! R.I.P.\n")
+    T.emit("Group.Status", {members={{name="Eldric", hp=1, maxHp=1000, isNpc=false, inRoom=true}}})
+  end, verify=function()
+    tank("Elowen", 90, true)
+    T.check(ArjUI.state.assistTarget == nil, "death discards the previous assist selection")
+    T.check(ArjUI.state.target == nil, "death keeps the enemy display cleared")
+    playerUnchanged()
+  end},
+  {name="flee-clears-assist-before-group-update", run=function()
+    T.emit("Combat.Update", {target={name="Elder", healthPercent=1, health="awful"}})
+    feedTriggers("You are now assisting Eldric.\n")
+    feedTriggers("You flee west.\n")
+    T.emit("Group.Status", {members={{name="Eldric", hp=1, maxHp=1000, isNpc=false, inRoom=true}}})
+  end, verify=function()
+    tank("Elowen", 90, true)
+    T.check(ArjUI.state.assistTarget == nil, "flee discards the previous assist selection")
+    T.check(ArjUI.state.target == nil, "flee keeps the enemy display cleared")
+    playerUnchanged()
+  end},
   {name="injured-player-with-healthy-pet", run=function()
     vitals(50)
     T.emit("Combat.Update", {tank={name="Ember", healthPercent=100, health="excellent"},

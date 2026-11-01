@@ -908,7 +908,7 @@ updates refresh that selection and fresh combat roles supersede it. A
 combatant named `You` is not treated as the player without an actual identity
 match, and incomplete numeric HP cannot reuse an older percentage/condition.
 
-Final validation on **Mudlet 5.0.1 / Qt 6.11.1**, Xvfb scale 1:
+Validation before the PR #29 reset follow-up on **Mudlet 5.0.1 / Qt 6.11.1**, Xvfb scale 1:
 
 - `python3 scripts/mudlet_suite.py --root ~/.local/share/duris-client-dev/issue25-reviewed-suite --jobs 2`
   passed **27/27 cases**, including the new `health-identity` scenario, existing
@@ -927,9 +927,31 @@ Final validation on **Mudlet 5.0.1 / Qt 6.11.1**, Xvfb scale 1:
   pass. Version, changelog, design notes, fixture provenance, and rebuilt
   `.mpackage` accompany the fix.
 
-All final suite/focused candidates match the rebuilt package payload SHA-256:
+All suite/focused candidates listed above match package payload SHA-256:
 `d0d92a828b1c5b57eff4fea75387e95119b3fc64933bd1b4fd00b41b6b59e1ef`.
 The earlier `issue25-suite`, `issue25-final`, and `issue25-720` runs cover the
 initial candidate, before the final identity/partial-health review changes.
 Live login, Mudlet 4.19.1, other platforms, and physical DPI were not
 requalified. No server or website files were changed.
+
+### PR #29 reset follow-up
+
+Review identified a valid interaction with the new group refresh: text death
+and flee handlers reset the tank to self but retained `assistTarget`, so the
+next group snapshot could restore the previous assisted combatant. The
+extended fixture fails on the first PR candidate at the owner assertion after
+the death/group sequence. Evidence is
+`issue25-review-reset-before/20261101T113740Z-ea828b69-health-identity` under
+the development root above. Both reset handlers now discard the selection.
+
+The final **2.4.3** candidate passes **27/27 suite cases** in
+`issue25-reset-suite/suite-results.json` and **219 assertions each** at
+1366x768 and 1280x720 in
+`issue25-reset-fixed/20261101T113824Z-2f51876d-health-identity` and
+`issue25-reset-720/20261101T113917Z-76b91750-health-identity` respectively.
+Reviewed death/flee plus group-refresh, injured-player/healthy-pet, and
+Errors-view captures on this package, with review notes in each `results.json`.
+No owner restoration, clipping, or Lua errors appear. Local release preparation
+and `git diff --check` pass. All final suite/focused candidates match payload:
+`06dffb73bfedbe7192d2aee61d25f099f4051cf77ba7c3524d4a7dd5b48773cc`.
+The live/minimum-version/platform limits above remain unchanged.
