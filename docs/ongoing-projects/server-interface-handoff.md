@@ -93,3 +93,7 @@ The refreshed existing `server-wire` scenario passes in real Mudlet (run
 `20261101T102603Z-38eccfe8-server-wire`); populated and clear screenshots were
 inspected. Its expected wolf percentage is 32, matching the captured fixture.
 This proves existing packet decoding/clears, not new item/time/session UI adoption.
+
+The final capture also fingerprints the worn-container `get` lookup. Its existing
+`server-wire` populated/clear inputs are unchanged except the chat timestamp, so
+the recorded wire/screenshot pass remains applicable.

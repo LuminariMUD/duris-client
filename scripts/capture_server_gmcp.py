@@ -24,7 +24,7 @@ files = ['src/net/gmcp.c', 'src/core/json_utils.c', 'src/core/structs.h', 'src/c
          'src/ships/ships.h', 'src/ships/ship_utils.c', 'src/core/utility.c',
          'src/net/comm.c', 'src/net/ws_handlers.c', 'src/world/handler.c',
          'src/world/condition.c', 'src/world/weather.c', 'src/world/world_quest.c',
-         'src/cmd/actinf.c', 'src/cmd/actnew.c', 'src/cmd/interp.c',
+         'src/cmd/actinf.c', 'src/cmd/actnew.c', 'src/cmd/actobj.c', 'src/cmd/interp.c',
          'src/classes/salchemist.c', 'src/magic/magic.c',
          'src/item/random_equipment.c', 'src/item/random_equipment_tables.c',
          'src/core/safe_format.c', 'src/sql/sql.c',
