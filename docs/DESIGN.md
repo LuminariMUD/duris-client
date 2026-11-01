@@ -201,6 +201,16 @@ Player, tank, target, and group HP fills stop at 100% width. Vamp healing can
 raise actual HP above the normal maximum; retain those values in state and
 labels (for example, `2500/1000` and `250%`) while keeping the fill inside its gauge.
 
+The player's bar says `YOU HP` and always uses `Char.Vitals`. The tank header
+says `You: <character>` when showing self and `Tank: <name>` for another
+combatant, including a pet; the enemy header says `Target: <name>`. Self-tank
+health also comes from player vitals, even if identity arrives after a prompt.
+Health snapshots stay with their named combatant: a replacement tank without
+health data shows `HP unknown`, and a selected assist uses exact-name group
+membership and refreshes with group updates. A fresh combat tank supersedes
+the earlier assist selection. Prompt condition text remains an approximation
+for other combatants and never changes the player's numeric HP or color.
+
 ### Typography and density
 
 The main MiniConsole is configured with `fontSize = 10`; list/chat consoles

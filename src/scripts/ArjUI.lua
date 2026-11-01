@@ -1211,7 +1211,7 @@ function ArjUI:init()
   self.tankWrap = panel("tank")
   styleSafe(self.tankWrap, self.styles.panelGlass)
   
-  -- Tank name as header (replaces "TANK" label)
+  -- Keep the owner explicit when this display switches between self and others.
   self.tankNameLabel = Geyser.Label:new({ name="ArjUI_TankName", x="3%", y=0, width="80%", height=16 }, self.tankWrap)
   styleSafe(self.tankNameLabel, self.styles.tankName)
   labelSet(self.tankNameLabel, "---")
@@ -2063,7 +2063,7 @@ function ArjUI:registerGMCPHandlers()
     end
   end)
   
-  -- Trigger to detect assist (sets assist target for YOU bar)
+  -- Assist changes the tank display; the player's own vitals stay independent.
   self.assistTrigger = self:addRuntimeTrigger("^You are now assisting (.+)\\.$", function()
     local assistName = matches[2]
     if assistName and assistName ~= "" then
@@ -2139,7 +2139,7 @@ function ArjUI:registerGMCPHandlers()
   
   -- Trigger to parse combat prompt line for tank, target, and positions
   -- Format: < T: Seveiwyn TP: sta TC: excellent E: wolf EP: sta EC: small wounds>
-  self.combatPromptTrigger = self:addRuntimeTrigger("^< T: (.+) TP: (\\w+) TC: ([^E]+) E: (.+) EP: (\\w+) EC: ([^>]+)>", function()
+  self.combatPromptTrigger = self:addRuntimeTrigger("^< T: (.+?) TP: (\\w+) TC: (.+?) E: (.+?) EP: (\\w+) EC: ([^>]+)>", function()
     local tankName = matches[2]:gsub("%s+$", "")  -- trim trailing space
     local tankPos = matches[3]
     local tankCond = matches[4]:gsub("%s+$", "")  -- trim trailing space
@@ -2147,23 +2147,10 @@ function ArjUI:registerGMCPHandlers()
     local enemyPos = matches[6]
     local enemyCond = matches[7]:gsub("%s+$", "")
     
-    -- Update tank info (T: is who is tanking)
-    if tankName and tankName ~= "" then
-      local myName = ArjUI.playerName or ""
-      if tankName:lower() == myName:lower() then
-        -- I am the tank - show my own HP
-        ArjUI.state.iAmTank = true
-        ArjUI.state.assistTarget = nil
-      else
-        -- Someone else is tanking - show their info
-        ArjUI.state.iAmTank = false
-        ArjUI.state.tank = tankName
-        ArjUI.state.tankPos = tankPos
-        ArjUI.state.tankCond = tankCond
-        ArjUI.state.tankHpPct = ArjUI:conditionToPercent(tankCond)
-      end
-      ArjUI:renderTank()
-    end
+    -- Combat roles supersede a previous manual assist selection.
+    ArjUI.state.assistTarget = nil
+    ArjUI:setTankInfo({name=tankName, position=tankPos, condition=tankCond}, true)
+    ArjUI:renderTank()
     
     -- Update target info (E: is the enemy)
     if enemyName and enemyName ~= "" then
@@ -2211,6 +2198,48 @@ function ArjUI:conditionToPercent(cond)
   elseif c:find("bleeding") then return 5
   elseif c:find("dead") then return 0
   else return 50 end
+end
+
+local function combatNameKey(name)
+  return type(name) == "string" and trim(stripColors(name)):lower() or ""
+end
+
+function ArjUI:isPlayerCombatant(name)
+  local key = combatNameKey(name)
+  return key ~= "" and key == combatNameKey(self.playerName)
+end
+
+-- A role change or a complete snapshot cannot inherit another combatant's HP.
+-- Partial updates for the same named combatant may retain their own prior data.
+function ArjUI:setTankInfo(info, replace)
+  local s = self.state
+  local name = type(info.name) == "string" and trim(stripColors(info.name)) or ""
+  local same = name ~= "" and combatNameKey(name) == combatNameKey(s.tank)
+  if replace or not same then
+    s.tankHp, s.tankMaxHp, s.tankHpPct, s.tankCond, s.tankPos = nil, nil, nil, nil, nil
+  end
+  s.tank = name ~= "" and name or nil
+  s.iAmTank = not s.tank or self:isPlayerCombatant(name)
+  s.tankPos = info.position or s.tankPos
+
+  local hp = toNum(pick(info, "hp", "health", "hitpoints"))
+  local maxHp = toNum(pick(info, "maxHp", "maxhp", "max_health", "hpmax"))
+  local pct = toNum(pick(info, "healthPercent", "hpPercent", "hp_pct"))
+  local cond = info.condition or info.health_desc or (type(info.health) == "string" and not hp and info.health or nil)
+  if (hp ~= nil or maxHp ~= nil or pct ~= nil) and cond == nil then s.tankCond = nil end
+  if hp ~= nil or maxHp ~= nil then
+    s.tankHp, s.tankMaxHp = hp or s.tankHp, maxHp or s.tankMaxHp
+    if s.tankHp and s.tankMaxHp and s.tankMaxHp > 0 then
+      pct = math.max(0, math.floor(s.tankHp / s.tankMaxHp * 100))
+    elseif pct == nil then
+      s.tankHpPct = nil
+    end
+  elseif pct ~= nil or cond ~= nil then
+    s.tankHp, s.tankMaxHp = nil, nil
+  end
+  if cond ~= nil then s.tankCond = cond end
+  if pct ~= nil then s.tankHpPct = pct
+  elseif cond ~= nil then s.tankHpPct = self:conditionToPercent(cond) end
 end
 
 function ArjUI:onCharVitals()
@@ -2294,21 +2323,12 @@ function ArjUI:onCombatUpdate()
   
   -- Handle tank info if provided (rescue, swap, flee changes)
   if type(c.tank) == "table" then
-    local t = c.tank
-    local tankName = t.name or ""
-    local myName = self.playerName or ""
-    
-    if tankName:lower() == myName:lower() then
-      -- I am the tank
-      self.state.iAmTank = true
-    else
-      -- Someone else is tanking
-      self.state.iAmTank = false
-      self.state.tank = tankName
-      self.state.tankPos = t.position or self.state.tankPos
-      self.state.tankCond = t.health or t.condition or self.state.tankCond
-      self.state.tankHpPct = toNum(pick(t, "healthPercent", "hpPercent", "hp_pct")) or self:conditionToPercent(self.state.tankCond)
-    end
+    self.state.assistTarget = nil
+    self:setTankInfo(c.tank)
+    self:renderTank()
+  elseif c.tank ~= nil then
+    self.state.assistTarget = nil
+    self:setTankInfo({}, true)
     self:renderTank()
   end
   
@@ -2352,6 +2372,7 @@ function ArjUI:onGroupStatus()
   self.state.group = g.members or {}
   self.state.groupSize = toNum(g.size) or #self.state.group
   self.state.groupMax = toNum(g.maxSize) or 0
+  if self.state.assistTarget then self:updateAssistTarget() end
   self:renderGroup()
   self:renderTank()  -- Update tank when group changes
 end
@@ -2519,7 +2540,7 @@ function ArjUI:renderVitals()
   local s = self.state
   local hpPct = s.hpmax > 0 and math.floor((s.hp / s.hpmax) * 100) or 100
   self.hpGauge.front:setStyleSheet(self:getHpBarStyle(hpPct))
-  self.hpGauge:setValue(s.hp, s.hpmax, string.format("HP %d/%d", s.hp, s.hpmax))
+  self.hpGauge:setValue(s.hp, s.hpmax, string.format("YOU HP %d/%d", s.hp, s.hpmax))
   if s.usesMana == false then
     self.mpGauge:setValue(0, 1, "MP n/a")
   else
@@ -2765,13 +2786,13 @@ function ArjUI:renderTarget()
     local isDead = (condLower == "dead" or condLower:find("^dead") or condLower:find("corpse"))
     
     if isDead then
-      self.targetNameLabel:echo(self.state.target .. " [DEAD]")
+      self.targetNameLabel:echo("Target: " .. self.state.target .. " [DEAD]")
       self.targetNameLabel:setStyleSheet(self.styles.targetDead)
       self.targetHpGauge.front:setStyleSheet(self.gaugeStyles.deadFront)
       self.targetHpGauge.back:setStyleSheet(self.gaugeStyles.deadBack)
       self.targetHpGauge:setValue(0, 100, "DEAD")
     else
-      self.targetNameLabel:echo(self.state.target)
+      self.targetNameLabel:echo("Target: " .. self.state.target)
       self.targetNameLabel:setStyleSheet(self.styles.targetName)
       -- Use at least 1% so the bar shows something even when very low
       local displayPct = math.max(1, pct)
@@ -2800,37 +2821,45 @@ function ArjUI:updateAssistTarget()
   
   local members = self.state.group or {}
   for _, mem in ipairs(members) do
-    local name = mem.name or ""
-    if name:lower() == assistName:lower() or name:lower():find(assistName:lower()) then
-      self.state.tank = mem.name
-      self.state.tankHp = toNum(pick(mem, "hp", "health"))
-      self.state.tankMaxHp = toNum(pick(mem, "maxHp", "maxhp", "max_health"))
-      self.state.tankPos = mem.position
-      self.state.tankCond = mem.condition or mem.health_desc
+    if combatNameKey(mem.name) == combatNameKey(assistName) then
+      self:setTankInfo(mem, true)
       return
     end
   end
+  self:setTankInfo({name=assistName}, true)
 end
 
 function ArjUI:renderTank()
   local s = self.state
+  -- Char.Status can arrive after a prompt. Reconcile identity on every paint.
+  if self:isPlayerCombatant(s.tank) then
+    s.iAmTank, s.assistTarget = true, nil
+  end
   
   -- If someone else is tanking (from combat prompt T:), show their info
   if not s.iAmTank and s.tank and s.tank ~= "" then
     local displayName = s.tank
-    self.tankNameLabel:echo(displayName)
+    self.tankNameLabel:echo("Tank: " .. displayName)
     self.tankNameLabel:setStyleSheet(self.styles.tankName)
     
     local tpos = upper3(s.tankPos)
     self.tankPosLabel:echo(tpos)
     self.tankPosLabel:setStyleSheet(tpos ~= "" and tpos ~= "STA" and self.styles.posAlert or self.styles.pos)
     
-    -- Use tankHpPct from combat prompt condition parsing
-    local pct = s.tankHpPct or 100
+    -- Health belongs to this tank's snapshot, never to the player or prior tank.
+    local pct = s.tankHpPct
     local cond = s.tankCond or ""
-    
-    self.tankHpGauge.front:setStyleSheet(self:getHpBarStyle(pct))
-    self.tankHpGauge:setValue(pct, 100, string.format("%d%% %s", pct, cond))
+    if pct ~= nil then
+      self.tankHpGauge.front:setStyleSheet(self:getHpBarStyle(pct))
+      local text = string.format("%d%% %s", pct, cond)
+      if s.tankHp and s.tankMaxHp and s.tankMaxHp > 0 then
+        text = string.format("HP %d/%d   %d%%", s.tankHp, s.tankMaxHp, pct)
+      end
+      self.tankHpGauge:setValue(pct, 100, text)
+    else
+      self.tankHpGauge.front:setStyleSheet(self.gaugeStyles.deadFront)
+      self.tankHpGauge:setValue(0, 100, "HP unknown")
+    end
   else
     -- Show self (You) - I am the tank or no combat
     s.tank = self.playerName or "You"
@@ -2839,7 +2868,7 @@ function ArjUI:renderTank()
     s.tankPos = s.position
     s.iAmTank = true
     
-    self.tankNameLabel:echo(s.tank or "You")
+    self.tankNameLabel:echo(self.playerName and ("You: " .. self.playerName) or "You")
     self.tankNameLabel:setStyleSheet(self.styles.tankNameMe)
     
     local tpos = upper3(s.tankPos)

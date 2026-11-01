@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.3 - 2026-11-01
+
+- Mark your own health as `YOU HP` and identify the owner of tank and target bars explicitly, so a wounded pet or enemy cannot be mistaken for your character.
+- Correct the self-tank display when character identity arrives after the combat prompt, and keep health data with the correct combatant when tanks or assisted group members change.
+- Keep combat prompt fields separate when names contain prompt-like text or conditions contain a capital `E`; show unknown tank health when no current health data is available.
+
 ## 2.4.2 - 2026-10-31
 
 - Keep player, tank, target, and group HP bars within their panels when vamp healing exceeds maximum HP, while preserving actual HP values and percentages in their labels.

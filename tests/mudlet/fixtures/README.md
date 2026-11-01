@@ -29,6 +29,21 @@ ordinary fixtures and separately observed in `login`. `send` is recorded only
 in the offline companion. Downloads are restricted to its loopback map server.
 The live profile never imports this companion.
 
+`health-identity` uses synthetic combat prompts matching
+`src/net/prompt.c` and target snapshots matching `src/net/gmcp.c` at Duris
+revision `dc1457f722c4f42d5d11fc39c96fb67859a94de8` (checked 2026-11-01;
+both owning files are unchanged in the inspected checkout). It reproduces
+late player identity leaving guessed self health in the tank bar, and adds
+adversarial names containing prompt delimiters and capital-`E` conditions.
+Healthy-player/critical-pet and injured-player/healthy-pet cases assert real
+player fill geometry, color, labels, and HP state independently of tank and
+enemy updates. Optional `Combat.Update.tank` packets and assist notifications
+are constructed compatibility inputs; the current server's legacy
+`Combat.Update` serializer emits the target and optional round, not a tank.
+The scenario also covers tank replacement/partial packets/clears, exact
+assisted group members, group health refresh, explicit enemy death, and
+session reset. These are offline regressions, not a captured live incident.
+
 `vamp-overheal` replays synthetic `Char.Vitals`, `Group.Status`, and
 `Combat.Update` snapshots matching Duris server revision
 `787baebbc57f15452afd4f2c32da1c07a38294ec` (checked 2026-10-31).

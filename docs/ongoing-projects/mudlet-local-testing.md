@@ -885,3 +885,51 @@ The candidate package payload SHA-256 is
 `ddbe0869a855c1941e87282e85855d2498abfef13c3d78c82b917e0e64a020a3`.
 Live login, Mudlet 4.19.1, other platforms, and physical DPI were not
 requalified. No live game session was used.
+
+## Issue #25 health ownership — 2026-11-01
+
+The primary player HP gauge already reads only `Char.Vitals`. The reproduced
+fault is in the second, tank display: a prompt received before character
+identity leaves a guessed **20%** self condition displayed after identity
+arrives, despite player vitals being **800/1000**. The original **2.4.2**
+candidate fails `late identity replaces guessed self condition with own vitals`
+in `issue25-before/20261101T111647Z-94d5ebe1-health-identity` below
+`~/.local/share/duris-client-dev/`. The exact original live incident was not
+captured; these are source-grounded offline reproductions.
+
+Candidate **2.4.3** marks the primary gauge `YOU HP` and labels the other
+displays `You: <character>`, `Tank: <name>`, and `Target: <name>`. Self identity
+is reconciled on every tank paint. Prompt captures stop at their delimiters
+instead of greedily consuming another field or rejecting a capital `E` in a
+condition. Tank changes clear the previous owner's health, same-owner partial
+updates retain only applicable data, and unavailable HP says `HP unknown`.
+An assisted group member uses exact names and current numeric HP; group
+updates refresh that selection and fresh combat roles supersede it. A
+combatant named `You` is not treated as the player without an actual identity
+match, and incomplete numeric HP cannot reuse an older percentage/condition.
+
+Final validation on **Mudlet 5.0.1 / Qt 6.11.1**, Xvfb scale 1:
+
+- `python3 scripts/mudlet_suite.py --root ~/.local/share/duris-client-dev/issue25-reviewed-suite --jobs 2`
+  passed **27/27 cases**, including the new `health-identity` scenario, existing
+  vamp-overheal coverage, expected negative/fault results, normal shutdown,
+  and owned-process cleanup. The summary is `suite-results.json`.
+- Focused `health-identity` runs passed **199 assertions each** at **1366x768**
+  and **1280x720**. Evidence roots are
+  `issue25-reviewed/20261101T112630Z-ed18f493-health-identity` and
+  `issue25-reviewed-720/20261101T112711Z-efee8542-health-identity` under the
+  development directory above. Reviewed critical-pet/healthy-player,
+  healthy-pet/injured-player, the named-`You` combatant, and Errors-view
+  screenshots as recorded in each `results.json`. Labels fit the default
+  panels, own fill/color stays independent, and no Lua errors appear.
+- **11 controller and 15 release tests pass**. Lua 5.1 syntax/fixture checks,
+  full package build, final local release preparation, and `git diff --check`
+  pass. Version, changelog, design notes, fixture provenance, and rebuilt
+  `.mpackage` accompany the fix.
+
+All final suite/focused candidates match the rebuilt package payload SHA-256:
+`d0d92a828b1c5b57eff4fea75387e95119b3fc64933bd1b4fd00b41b6b59e1ef`.
+The earlier `issue25-suite`, `issue25-final`, and `issue25-720` runs cover the
+initial candidate, before the final identity/partial-health review changes.
+Live login, Mudlet 4.19.1, other platforms, and physical DPI were not
+requalified. No server or website files were changed.
