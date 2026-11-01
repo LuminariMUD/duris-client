@@ -1,8 +1,41 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Sequential PR integration — 2026-11-01
+
+The map palette package advances to **2.4.4**, retaining the **2.4.3** HP
+ownership fix and its separate changelog entry. Both runtime PRs originally
+claimed 2.4.3; rebuilding the combined sources at a new patch version prevents
+reuse of a published version or loss of the first fix. The earlier 2.4.3 map
+captures and qualification JSON below retain their original candidate identities.
+
+Fresh qualification at source `af9e9aa7413ad8e5d672332f23b5e2e426ef286a`,
+on Mudlet 5.0.1 / Qt 6.11.1 with isolated WSL2/Xvfb profiles:
+
+- All **27 suite expectations pass**, including deliberate errors, isolation
+  faults, normal shutdown and cleanup, in
+  `~/.local/share/duris-client-dev/pr-review-20261101-combined/suite-results.json`.
+- `map-colors/20261101T134947Z-f05c1a16-map-colors` passes **121 assertions**;
+  `health-identity/20261101T134911Z-2f8aeb35-health-identity` passes **219**;
+  `server-wire/20261101T135109Z-0a2eb576-server-wire` passes **27**.
+  These paths are relative to the suite root above. Reviewed palette/marker,
+  independent player/pet health, populated/clear wire and Errors-view captures.
+- Eleven controller tests, fifteen release tests, Lua 5.1/XML and committed
+  release-payload validation pass. The canonical 2.4.4 package payload SHA-256 is
+  `5dccaf60f9301d2eba677bb1f711b6325fa9a1b61b450bcd26ac2c8560d17287`.
+
+The HP-only 2.4.3 package separately passes all 27 suite expectations in
+`pr-review-20261101-health/suite-results.json` under the development root above,
+with 219 health-identity assertions. After integrating the refreshed contract
+fixtures, wire run `pr-review-20261101-health-integrated/20261101T134813Z-8670167b-server-wire`
+passes all 27 assertions. Affected owner-state and Errors-view captures were
+reviewed. No additional runtime defect was found during the review.
+
+The live-game, Mudlet 4.19.1 runtime, native Windows/macOS and physical DPI/input
+limits of the earlier checks remain unchanged. No live player profile was used.
+
 ## Wilderness ANSI palette — 2026-11-01
 
-Version **2.4.3** addresses [issue #17](https://github.com/LuminariMUD/duris-client/issues/17)
+Original candidate **2.4.3** addresses [issue #17](https://github.com/LuminariMUD/duris-client/issues/17)
 by resolving all sixteen Duris colors from the Mudlet profile's ANSI palette
 on each map paint. Foregrounds and backgrounds share that palette. The
 existing decimal renderer, color-state resets and warm dark map surface stay
