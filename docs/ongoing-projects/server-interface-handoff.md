@@ -81,8 +81,15 @@ hashes, including the item naming, condition, command, publisher and test owners
 New phases include `control`, `time`, `session-account`, `session-enter`,
 `session-clear`, `combat-subjects`, `damage-secondary`, `items-empty`,
 `items-equipment` and `items-nested`. Existing populated/clear package phases are
-retained. These fixtures provide contract/adoption examples; capturing them does
+retained. New contract phases are independent examples with their own contexts;
+replaying all phases as one session would be invalid. These fixtures provide
+contract/adoption examples; capturing them does
 not implement the client handlers or prove a real Mudlet widget fix.
 
 Refresh with `python3 scripts/capture_server_gmcp.py --server /path/to/server`.
 This handoff changes test fixtures/docs only, with no package runtime or release.
+
+The refreshed existing `server-wire` scenario passes in real Mudlet (run
+`20261101T102603Z-38eccfe8-server-wire`); populated and clear screenshots were
+inspected. Its expected wolf percentage is 32, matching the captured fixture.
+This proves existing packet decoding/clears, not new item/time/session UI adoption.
