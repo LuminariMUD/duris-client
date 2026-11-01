@@ -80,29 +80,19 @@ ArjMapper.ui = {
 ArjMapper.handlers = {}
 
 -- ============================================================
--- DURIS COLOR TABLES
+-- DURIS COLORS IN THE PROFILE'S ANSI PALETTE
 -- ============================================================
 
-ArjMapper.fgRGB = {
-    r = "128,0,0",     R = "255,0,0",
-    g = "0,128,0",     G = "0,255,0",
-    b = "0,0,128",     B = "0,128,255",
-    c = "0,128,128",   C = "0,255,255",
-    m = "128,0,128",   M = "255,0,255",
-    y = "128,128,0",   Y = "255,255,0",
-    w = "192,192,192", W = "255,255,255",
-    L = "96,96,96",    l = "0,0,0",
-}
-
-ArjMapper.bgRGB = {
-    r = "80,0,0",      R = "128,0,0",
-    g = "0,80,0",      G = "0,128,0",
-    b = "0,0,60",      B = "0,0,100",
-    c = "0,60,60",     C = "0,100,100",
-    m = "60,0,60",     M = "100,0,100",
-    y = "60,60,0",     Y = "100,100,0",
-    w = "60,60,60",    W = "100,100,100",
-    L = "32,32,32",    l = "0,0,0",
+-- Use the same profile palette for foregrounds and backgrounds as game text.
+ArjMapper.ansiColors = {
+    l = "ansi_000", L = "ansi_008",
+    r = "ansi_001", R = "ansi_009",
+    g = "ansi_002", G = "ansi_010",
+    y = "ansi_003", Y = "ansi_011",
+    b = "ansi_004", B = "ansi_012",
+    m = "ansi_005", M = "ansi_013",
+    c = "ansi_006", C = "ansi_014",
+    w = "ansi_007", W = "ansi_015",
 }
 
 -- ============================================================
@@ -111,6 +101,11 @@ ArjMapper.bgRGB = {
 
 function ArjMapper:parseWildernessMap(rawMap)
     if not rawMap then return "" end
+    -- Resolve at each paint so profile color changes also affect cached maps.
+    local palette = {}
+    for code, name in pairs(self.ansiColors) do
+        palette[code] = table.concat(color_table[name], ",")
+    end
     local result = {}
     local i, len = 1, #rawMap
     local currentFg, currentBg = nil, nil
@@ -134,19 +129,19 @@ function ArjMapper:parseWildernessMap(rawMap)
             local nxt = rawMap:sub(i+1, i+1)
             -- Duris color codes replace the whole attribute, rather than
             -- independently changing ANSI foreground/background state.
-            if nxt == "+" and self.fgRGB[rawMap:sub(i+2, i+2)] then
-                currentFg = self.fgRGB[rawMap:sub(i+2, i+2)]
+            if nxt == "+" and palette[rawMap:sub(i+2, i+2)] then
+                currentFg = palette[rawMap:sub(i+2, i+2)]
                 currentBg = nil
                 i = i + 3
-            elseif nxt == "-" and self.bgRGB[rawMap:sub(i+2, i+2)] then
+            elseif nxt == "-" and palette[rawMap:sub(i+2, i+2)] then
                 currentFg = nil
-                currentBg = self.bgRGB[rawMap:sub(i+2, i+2)]
+                currentBg = palette[rawMap:sub(i+2, i+2)]
                 i = i + 3
-            elseif nxt == "=" and self.bgRGB[rawMap:sub(i+2, i+2)]
-                    and self.fgRGB[rawMap:sub(i+3, i+3)] then
+            elseif nxt == "=" and palette[rawMap:sub(i+2, i+2)]
+                    and palette[rawMap:sub(i+3, i+3)] then
                 -- &=XY is background X, foreground Y (AnsiString::ansi).
-                currentBg = self.bgRGB[rawMap:sub(i+2, i+2)]
-                currentFg = self.fgRGB[rawMap:sub(i+3, i+3)]
+                currentBg = palette[rawMap:sub(i+2, i+2)]
+                currentFg = palette[rawMap:sub(i+3, i+3)]
                 i = i + 4
             elseif nxt == "n" or nxt == "N" or nxt == "]" then
                 table.insert(result, "<r>")

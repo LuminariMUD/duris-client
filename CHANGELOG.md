@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.4 - 2026-11-01
+
+- Render wilderness foregrounds and backgrounds with the profile's ANSI colors, preserving the server's white zone-marker backgrounds and terrain contrast instead of dimming them with a separate map palette.
+- Keep custom marker colors, grey city/road symbols and the player marker consistent with ordinary game text after movement, refresh and zoom.
+
 ## 2.4.3 - 2026-11-01
 
 - Mark your own health as `YOU HP` and identify the owner of tank and target bars explicitly, so a wounded pet or enemy cannot be mistaken for your character.

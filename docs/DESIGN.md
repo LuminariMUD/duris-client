@@ -355,7 +355,13 @@ Wilderness uses the server's `Room.Map` text and Duris color codes:
 `&=XY` sets background X and foreground Y, `&+X` sets foreground X and clears
 the background, and `&-X` sets background X with default foreground. Colors
 reset on newlines, explicit resets and each map update so terrain backgrounds
-stay with their intended cells. The map retains its muted background palette.
+stay with their intended cells. Foregrounds and backgrounds use the profile's
+ANSI colors (`color_table.ansi_000` through `ansi_015`), resolved at each paint
+for the existing decimal renderer. This matches ordinary game text without
+a separate dimmed palette. The server's default zone glyph
+(`&=wl^`) therefore retains its black foreground and white background; symbols
+and per-character glyph customizations keep the colors the server supplies.
+The surrounding map surface retains its warm dark theme.
 The map's zoom
 buttons affect its text size in this mode. In zone mode, buttons adjust room
 size from 8 to 24; the separate `mapper size` command accepts 8–20.
