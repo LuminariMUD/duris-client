@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.2 - 2026-10-31
+
+- Keep player, tank, target, and group HP bars within their panels when vamp healing exceeds maximum HP, while preserving actual HP values and percentages in their labels.
+
 ## 2.4.1 - 2026-10-28
 
 - Restore visible `time` output after the silent login query by recognizing the server's current reply format.

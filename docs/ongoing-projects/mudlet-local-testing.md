@@ -845,3 +845,43 @@ package's canonical payload SHA-256:
 The earlier dual-version suite above applies to the earlier candidate; the
 review fixes were tested on 5.0.1. Live login, Mudlet 4.19.1, other platforms
 and physical DPI were not requalified. No live game session was used.
+
+## Vamp overheal HP-bar bounds — 2026-10-31
+
+Candidate **2.4.2** enables Geyser's `strict` fill limit on the player, tank,
+target, and dynamically created group HP gauges. Actual over-cap HP remains
+in state, GMCP snapshots, numeric labels, and percentage text. The new
+`vamp-overheal` scenario is registered in the full offline suite.
+
+The regression fails against the original **2.4.1** package at
+`target HP fill stays inside its gauge at 1100/1000`. Baseline evidence is
+`vamp-hp-before/20261031T114659Z-8ba0ecf6-vamp-overheal` below
+`~/.local/share/duris-client-dev/`. The fixed scenario checks real fill widths
+on all four gauges at 110%, 150%, and 250%, including replacement group rows,
+preserved actual values, and recovery through full, injured, zero, negative,
+and healed HP. Its target zero-health check preserves the existing 1% sliver
+until explicit death is reported.
+
+Validation on **Mudlet 5.0.1 / Qt 6.11.1**, Xvfb scale 1:
+
+- `python3 scripts/mudlet_suite.py --root ~/.local/share/duris-client-dev/vamp-hp-suite --jobs 2`
+  passed **26/26 cases**, including deliberate negative/fault cases, normal
+  shutdown, and process cleanup. The summary is `suite-results.json`.
+- Focused `vamp-overheal` runs passed **210 assertions each** at **1366x768**
+  and **1280x720**. Their evidence directories are
+  `vamp-hp-fixed/20261031T114804Z-e5a500f3-vamp-overheal` and
+  `vamp-hp-720/20261031T114850Z-78746109-vamp-overheal` under the same root.
+  Reviewed their 250% HP, recovery/negative HP, and Errors-view screenshots;
+  fills stay within their panels, labels retain actual values, group has no
+  horizontal scrollbar, and no Lua errors appear. Both visual reviews are
+  recorded in `results.json`. Also inspected the suite's combat and crowded
+  scenario overview images; unaffected screenshots were not all re-reviewed.
+- **11 controller tests and 15 release tests pass**. `python3 build.py`,
+  Lua 5.1 fixture compilation, local release preparation, and
+  `git diff --check` pass. The version, changelog, and rebuilt `.mpackage`
+  accompany the fix.
+
+The candidate package payload SHA-256 is
+`ddbe0869a855c1941e87282e85855d2498abfef13c3d78c82b917e0e64a020a3`.
+Live login, Mudlet 4.19.1, other platforms, and physical DPI were not
+requalified. No live game session was used.
