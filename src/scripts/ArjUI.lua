@@ -29,7 +29,7 @@ function ArjUI:kill()
   if self.panels then self:saveLayout() end
   for _,panel in pairs(self.panels or {}) do self:disposeWidget(panel.frame) end
   self.panels=nil; self.maximizedPanel=nil
-  self:unsubscribeSpellPreparation()
+  self:clearGMCPNegotiation()
   for id in pairs(self.timers or {}) do killTimer(id) end
   self.timers = {}
   for _, id in ipairs(self.runtimeTriggers or {}) do killTrigger(id) end
@@ -266,7 +266,9 @@ local function makeTabs(parent, prefix, names, selectTab)
     local button = Geyser.Label:new({name=prefix..name, x=(2+(i-1)*width).."%", y=1,
       width=(width-1).."%", height=18}, parent)
     button:echo("<center>"..name:upper().."</center>")
-    button:setClickCallback(function() selectTab(name) end)
+    button:setClickCallback(function(event)
+      if event.button=="LeftButton" then selectTab(name) end
+    end)
     button:setOnEnter(function() button:setCursor("PointingHand") end)
     button:setOnLeave(function() button:setCursor("Arrow") end)
     buttons[name] = button
@@ -305,17 +307,78 @@ local function validRect(rect)
     and rect[3]>0 and rect[3]<=1 and rect[4]>0 and rect[4]<=1
 end
 
-function ArjUI:loadLayout()
-  for _,def in ipairs(self.panelDefinitions) do self.panels[def.id].state=panelDefault(def) end
-  local path=getMudletHomeDir().."/arjui_layout.json"
-  local file=io.open(path,"r") or io.open(path..".bak","r")
-  if not file then return end
+-- Profile JSON files share one replacement and recovery path.
+local function readJSONFile(path)
+  local file=io.open(path,"rb")
+  if not file then return nil,false end
   local text=file:read("*a"); file:close()
   local ok,data=pcall(yajl.to_value,text)
-  if not ok or type(data)~="table" or data.version~=1 or type(data.panels)~="table" then
+  if ok and type(data)=="table" then return data,true end
+  return nil,true
+end
+
+function ArjUI:readProfileJSON(path)
+  local data,exists=readJSONFile(path)
+  if data then return data,true end
+  local backup,backupExists=readJSONFile(path..".bak")
+  return backup,exists or backupExists
+end
+
+function ArjUI:writeProfileJSON(path, data, label)
+  local tmp,backup=path..".tmp",path..".bak"
+  local ok,err=pcall(function()
+    local text=yajl.to_string(data)
+    local file=assert(io.open(tmp,"wb"))
+    local written,writeError=file:write(text)
+    local closed,closeError=file:close()
+    assert(written,writeError); assert(closed,closeError)
+    local installed,why=os.rename(tmp,path)
+    if not installed then
+      -- Windows cannot rename over an existing destination. Preserve the old
+      -- document before installing the new one, including after recovery.
+      local prior,exists=readJSONFile(path)
+      assert(exists,why)
+      local recovered=not prior and readJSONFile(backup)
+      if recovered then
+        assert(os.remove(path))
+      else
+        local _,backupExists=readJSONFile(backup)
+        if backupExists then assert(os.remove(backup)) end
+        assert(os.rename(path,backup))
+      end
+      installed,why=os.rename(tmp,path)
+      if not installed then
+        local restored=os.rename(backup,path)
+        error(tostring(why)..(restored and "" or ". Previous data retained at "..backup))
+      end
+    end
+    os.remove(backup)
+  end)
+  if not ok then
+    os.remove(tmp)
+    self:note("<indian_red>Cannot save "..label..": "..tostring(err))
+  end
+  return ok
+end
+
+local layoutFile="arjui_layout_v2.json"
+
+function ArjUI:loadLayout()
+  for _,def in ipairs(self.panelDefinitions) do self.panels[def.id].state=panelDefault(def) end
+  self.activeRoomTab="mobs"
+  local directory=getMudletHomeDir().."/"
+  local data,exists=self:readProfileJSON(directory..layoutFile)
+  local version=2
+  if not exists then
+    data,exists=self:readProfileJSON(directory.."arjui_layout.json")
+    version=1
+  end
+  if not exists then return end
+  if not data or data.version~=version or type(data.panels)~="table" then
     self:note("<indian_red>Saved panel layout is invalid or unsupported; using defaults.")
     return
   end
+  if data.roomTab=="items" then self.activeRoomTab="items" end
   local function validState(saved)
     return type(saved)=="table" and validRect(saved.rect)
       and (saved.mode=="docked" or saved.mode=="floating")
@@ -352,46 +415,41 @@ function ArjUI:loadLayout()
       room.hidden=mobs.hidden and items.hidden
       room.minimized=not room.hidden and not visible(mobs) and not visible(items)
     end
-    self:updateTabStyles()
   end
+  self:updateTabStyles()
   if invalid then self:note("<indian_red>Invalid saved panel entries replaced with defaults.") end
 end
 
 function ArjUI:saveLayout()
   if not self.panels then return end
-  local data={version=1,panels={}}
+  local data={version=2,panels={},roomTab=self.activeRoomTab}
   for _,def in ipairs(self.panelDefinitions) do data.panels[def.id]=self.panels[def.id].state end
-  local path=getMudletHomeDir().."/arjui_layout.json"
-  local ok,err=pcall(function()
-    local file=assert(io.open(path..".tmp","w"))
-    local written,why=file:write(yajl.to_string(data))
-    local closed,closeError=file:close()
-    assert(written,why); assert(closed,closeError)
-    local installed,why=os.rename(path..".tmp",path)
-    if not installed then
-      -- Windows rename cannot replace an existing destination. Retain the old
-      -- file until installation succeeds, and recover it on failure/restart.
-      local backup=path..".bak"
-      os.remove(backup)
-      assert(os.rename(path,backup),why)
-      installed,why=os.rename(path..".tmp",path)
-      if not installed then
-        local restored,restoreError=os.rename(backup,path)
-        error(tostring(why)..(restored and "" or "; previous layout retained at "..backup..": "..tostring(restoreError)))
-      end
-      os.remove(backup)
-    end
-  end)
-  if not ok then self:note("<indian_red>Cannot save panel layout: "..tostring(err)) end
+  return self:writeProfileJSON(getMudletHomeDir().."/"..layoutFile,data,"panel layout")
 end
+
+local dockNeighbor={room="vitals",vitals="room",players="chat",chat="players"}
 
 function ArjUI:panelBounds(panel)
   local w,h=math.max(1,self.uiRoot:get_width()),math.max(1,self.uiRoot:get_height())
-  local rect=panel.state.mode=="docked" and panel.def.home or panel.state.rect
-  if self.maximizedPanel==panel.def.id then return 0,0,w,h end
+  local docked=panel.state.mode=="docked"
+  local rect=docked and panel.def.home or panel.state.rect
+  local id=panel.def.id
+  if self.maximizedPanel==id then return 0,0,w,h end
   local pw=math.min(w,math.max(panel.def.minimum[1],rect[3]*w))
   local ph=math.min(h,math.max(panel.def.minimum[2],rect[4]*h))
   if panel.state.minimized then ph=math.min(h,22) end
+  local neighbor=self.panels[dockNeighbor[id]]
+  if docked and not self.maximizedPanel and not panel.state.hidden
+      and neighbor and neighbor.state.mode=="docked" and not neighbor.state.hidden then
+    local neighborTop=neighbor.def.home[2]*h
+    if rect[2]>neighbor.def.home[2] then
+      -- Keep some space for the upper title when minimum heights cannot fit.
+      ph=math.min(ph,h-neighborTop-math.min(22,h*.1))
+    else
+      local _,bottomTop=self:panelBounds(neighbor)
+      ph=math.min(ph,bottomTop-rect[2]*h-h*.01)
+    end
+  end
   return math.max(0,math.min(rect[1]*w,w-pw)),math.max(0,math.min(rect[2]*h,h-ph)),pw,ph
 end
 
@@ -477,6 +535,8 @@ function ArjUI:capturePanelGesture(panel)
   state.rect={math.max(0,x/w),math.max(0,y/h),math.min(1,frame:get_width()/w),
     state.minimized and state.rect[4] or math.min(1,frame:get_height()/h)}
   self:applyPanel(panel)
+  local neighbor=self.panels[dockNeighbor[panel.def.id]]
+  if neighbor then self:applyPanel(neighbor) end
   self:reconcilePanelViews()
 end
 
@@ -818,8 +878,9 @@ function ArjUI:resetCharacterState()
 end
 
 function ArjUI:endSession()
-  for id in pairs(self.timers or {}) do killTimer(id) end
-  self.timers = {}
+  for id in pairs(self.timers or {}) do
+    if id~=self.gmcpRetryTimer then killTimer(id); self.timers[id]=nil end
+  end
   if self.scanTimer then killTimer(self.scanTimer); self.scanTimer = nil end
   self.scanCounts = {}
   self:resetCharacterState()
@@ -845,19 +906,65 @@ ArjUI.gmcpModules = {"Char.Vitals", "Char.Status", "Char.Affects", "Room.Info", 
   "Group.Status", "Comm.Channel", "Combat.Update", "Quest.Status", "Ship.Info", "Ship.Contacts",
   "Duris.Capabilities", preparationStream}
 
-function ArjUI:enableGMCP()
-  self.preparationActive, self.preparationInterests = nil, nil
-  self:setSpellPreparation(nil)
-  sendGMCP('Core.Hello {"client":"Mudlet-ArjUI","version":"' .. ArjUI.VERSION .. '"}')
-  local modules = {}
-  for _, module in ipairs(self.gmcpModules) do modules[#modules+1] = module .. " 1" end
-  sendGMCP("Core.Supports.Add " .. yajl.to_string(modules))
-end
-
 local function contains(list, value)
   if type(list)~="table" then return false end
   for _, item in ipairs(list) do if item==value then return true end end
   return false
+end
+
+function ArjUI:cancelGMCPRetry()
+  if not self.gmcpRetryTimer then return end
+  killTimer(self.gmcpRetryTimer)
+  self.timers[self.gmcpRetryTimer]=nil
+  self.gmcpRetryTimer=nil
+end
+
+function ArjUI:clearGMCPNegotiation()
+  self:cancelGMCPRetry()
+  self.gmcpNegotiation,self.preparationActive=nil,nil
+  -- The support and interest sets are shared by the socket. Leave them in
+  -- place until disconnect. Teardown cannot establish exclusive ownership or
+  -- safely replace the current interests with a cached capabilities reply.
+end
+
+function ArjUI:enableGMCP()
+  if self.gmcpNegotiation then return end
+  self.gmcpNegotiation={advertisements=0,subscriptions=0}
+  sendGMCP('Core.Hello {"client":"Mudlet-ArjUI","version":"' .. ArjUI.VERSION .. '"}')
+  self:requestGMCPState()
+end
+
+function ArjUI:requestGMCPState()
+  local negotiation=self.gmcpNegotiation
+  if not negotiation or negotiation.synced then return end
+  local message,modules,attempts
+  local caps=negotiation.capabilities
+  if not caps then
+    message,modules="Core.Supports.Add ",{}
+    for _,module in ipairs(self.gmcpModules) do modules[#modules+1]=module.." 1" end
+    negotiation.advertisements=negotiation.advertisements+1
+    attempts=negotiation.advertisements
+  else
+    message,modules="Duris.Subscribe ",{preparationStream.." 1"}
+    -- Subscribe replaces all interests. Build the set from the latest reply.
+    for _,name in ipairs(type(caps.interested)=="table" and caps.interested or {}) do
+      local version=caps.features[name]
+      if name~=preparationStream and type(name)=="string" and finite(version) then
+        modules[#modules+1]=name.." "..version
+      end
+    end
+    negotiation.subscriptions=negotiation.subscriptions+1
+    attempts=negotiation.subscriptions
+  end
+  -- Duris refills each control family by one token per second. Schedule
+  -- before sending so a capability reply can cancel or advance the retry.
+  if attempts<3 then
+    self.gmcpRetryTimer=self:after(1.1,function()
+      self.gmcpRetryTimer=nil
+      self:requestGMCPState()
+    end)
+  end
+  if attempts<=3 then sendGMCP(message..yajl.to_string(modules)) end
 end
 
 function ArjUI:onDurisCapabilities()
@@ -866,30 +973,20 @@ function ArjUI:onDurisCapabilities()
   self.preparationActive = contains(caps.active, preparationStream)
   if not self.preparationActive then self:setSpellPreparation(nil) end
 
-  -- Subscribe replaces all interests. Retain any streams already selected
-  -- by the profile and issue at most one request per GMCP negotiation.
-  if type(caps.features)~="table" or not contains(caps.supported, preparationStream) then return end
-  local other = {}
-  for _, name in ipairs(type(caps.interested)=="table" and caps.interested or {}) do
-    local version = caps.features[name]
-    if name~=preparationStream and type(name)=="string" and finite(version) then
-      other[#other+1] = name .. " " .. version
-    end
+  local negotiation=self.gmcpNegotiation
+  if not negotiation or negotiation.synced
+      or type(caps.features)~="table" or not contains(caps.supported,preparationStream) then return end
+  local firstReply=not negotiation.capabilities
+  negotiation.capabilities=caps
+  if contains(caps.interested,preparationStream) and not self.preparationActive then
+    -- An interested stream will send its first snapshot on character entry.
+    negotiation.synced=true
+    self:cancelGMCPRetry()
+  elseif firstReply then
+    -- An already active stream needs a new snapshot for this UI instance.
+    self:cancelGMCPRetry()
+    self:requestGMCPState()
   end
-  self.preparationInterests = other
-  if not self.preparationRequested and not contains(caps.interested, preparationStream) then
-    self.preparationRequested = true
-    local desired = {preparationStream .. " 1"}
-    for _, module in ipairs(other) do desired[#desired+1] = module end
-    sendGMCP("Duris.Subscribe " .. yajl.to_string(desired))
-  end
-end
-
-function ArjUI:unsubscribeSpellPreparation()
-  if self.preparationRequested and self.preparationInterests then
-    sendGMCP("Duris.Subscribe " .. (#self.preparationInterests==0 and "[]" or yajl.to_string(self.preparationInterests)))
-  end
-  self.preparationRequested, self.preparationActive, self.preparationInterests = nil, nil, nil
 end
 
 function ArjUI:onSpellPreparation()
@@ -898,6 +995,8 @@ function ArjUI:onSpellPreparation()
   if type(data)~="table" or not finite(data.estimatedSeconds) or data.estimatedSeconds<0 then return end
   local mode = data.state
   if mode=="active" or mode=="paused" or mode=="complete" then
+    if self.gmcpNegotiation then self.gmcpNegotiation.synced=true end
+    self:cancelGMCPRetry()
     self:setSpellPreparation(mode, data.estimatedSeconds)
   end
 end
@@ -1101,9 +1200,11 @@ function ArjUI:init()
   styleSafe(self.roomSection, self.styles.panelGlass)
   self.activeRoomTab = "mobs"
   self.roomTabs = makeTabs(self.roomSection, "ArjUI_RoomTab_", {"mobs", "items"}, function(name)
+    if self.activeRoomTab == name then return end
     self.activeRoomTab = name
     showTab(self.roomViews, name)
     self:updateTabStyles()
+    self:saveLayout()
   end)
   self.mobsBox = makeConsole(self.roomSection, "ArjUI_MobsBox", "3%", 21, "94%", "100%-23px", 9)
   self.objsBox = makeConsole(self.roomSection, "ArjUI_ObjsBox", "3%", 21, "94%", "100%-23px", 9)
@@ -1564,7 +1665,10 @@ function ArjUI:showContextMenu(items, x, y)
           idx = tonumber(idx)
           if self.customCommands[cat] and idx and self.customCommands[cat][idx] then
             local removed = table.remove(self.customCommands[cat], idx)
-            self:saveCustomCommands()
+            if not self:saveCustomCommands() then
+              table.insert(self.customCommands[cat],idx,removed)
+              return
+            end
             cecho(string.format("<green>[ArjUI]<reset> Removed '%s'.\n", removed.text))
           end
         end
@@ -1597,30 +1701,16 @@ end
 -- ============================================================
 
 function ArjUI:loadCustomCommands()
-  local path = getMudletHomeDir() .. "/arjui_custom_commands.json"
-  local file = io.open(path, "r")
-  if file then
-    local content = file:read("*a")
-    file:close()
-    local ok, data = pcall(yajl.to_value, content)
-    if ok and data then
-      self.customCommands = data
-      cecho("<dim_gray>[ArjUI] Custom commands loaded.\n")
-    end
+  local data=self:readProfileJSON(getMudletHomeDir().."/arjui_custom_commands.json")
+  if data then
+    self.customCommands=data
+    cecho("<dim_gray>[ArjUI] Custom commands loaded.\n")
   end
 end
 
 function ArjUI:saveCustomCommands()
-  local path = getMudletHomeDir() .. "/arjui_custom_commands.json"
-  local ok, json = pcall(yajl.to_string, self.customCommands)
-  if ok then
-    local file = io.open(path, "w")
-    if file then
-      file:write(json)
-      file:close()
-      cecho("<dim_gray>[ArjUI] Custom commands saved.\n")
-    end
-  end
+  local path=getMudletHomeDir().."/arjui_custom_commands.json"
+  return self:writeProfileJSON(path,self.customCommands,"custom commands")
 end
 
 -- ============================================================
@@ -1704,7 +1794,10 @@ function ArjUI:showAddCommandPopup(category)
     if label and label ~= "" and cmd and cmd ~= "" then
       self.customCommands[category] = self.customCommands[category] or {}
       table.insert(self.customCommands[category], { text = label, cmd = cmd })
-      self:saveCustomCommands()
+      if not self:saveCustomCommands() then
+        table.remove(self.customCommands[category])
+        return
+      end
       cecho(string.format("<green>[ArjUI]<reset> Added '%s' to %s menu.\n", label, category))
       popup:hide()
       self.addCmdPopup = nil
@@ -1809,7 +1902,10 @@ function ArjUI:showAddSpellPopup(category)
       self.customCommands[category] = self.customCommands[category] or {}
       -- Store with spell flag so we know to format it specially
       table.insert(self.customCommands[category], { text = label, cmd = spell, isSpell = true })
-      self:saveCustomCommands()
+      if not self:saveCustomCommands() then
+        table.remove(self.customCommands[category])
+        return
+      end
       cecho(string.format("<green>[ArjUI]<reset> Added spell '%s' to %s menu.\n", label, category))
       popup:hide()
       self.addCmdPopup = nil
@@ -2124,7 +2220,6 @@ function ArjUI:registerGMCPHandlers()
   
   -- Prompt-based refresh for immediate updates
   h = registerAnonymousEventHandler("sysDataSendRequest", function(_, command)
-    self.spellCapture = nil
     -- Prefer visible output once another command is sent, including a manual
     -- time request while the automatic reply is missing or still in flight.
     self.timeQuerySilent = false
@@ -2140,20 +2235,25 @@ function ArjUI:registerGMCPHandlers()
   table.insert(self.eventHandlers, h)
   
   h = registerAnonymousEventHandler("sysProtocolEnabled", function(_, protocol)
-    if protocol == "GMCP" then self:enableGMCP() end
+    if protocol=="GMCP" then
+      -- A package installed while the socket was opening may have attempted
+      -- to advertise before Telnet actually enabled GMCP.
+      self:clearGMCPNegotiation()
+      self:enableGMCP()
+    end
   end)
   table.insert(self.eventHandlers, h)
   h = registerAnonymousEventHandler("sysConnectionEvent", function() self:endSession() end)
   table.insert(self.eventHandlers, h)
   h = registerAnonymousEventHandler("sysProtocolDisabled", function(_, protocol)
     if protocol=="GMCP" then
-      self.preparationActive, self.preparationRequested, self.preparationInterests = nil, nil, nil
+      self:clearGMCPNegotiation()
       self:setSpellPreparation(nil)
     end
   end)
   table.insert(self.eventHandlers, h)
   h = registerAnonymousEventHandler("sysDisconnectionEvent", function()
-    self.preparationActive, self.preparationRequested, self.preparationInterests = nil, nil, nil
+    self:clearGMCPNegotiation()
     self:endSession()
   end)
   table.insert(self.eventHandlers, h)
@@ -3418,8 +3518,25 @@ function ArjUI:requestSpellOutput(command)
     self.state.spellView="list"
     self:renderSpells()
   end
-  send(command)
   self.spellCapture = {command=command, deadline=getEpoch()+8, lines={}}
+  send(command)
+end
+
+local function isSpellInterfaceStart(command,text)
+  if command=="memorize" or command=="pray" then
+    return text=="You have memorized the following spells:"
+      or text=="You are currently memorizing the following spells:"
+      or text=="You are currently praying for the following spells:"
+      or text:match("^You can memorize ") or text:match("^You can pray ")
+      or text=="The gods ignore you." or text=="You aren't trained in magic."
+      or text=="Try using Assimilate in this form."
+  end
+  return text=="You currently have the following spell slots available:"
+    or text=="The powers of the dark ignore you..."
+    or text=="The forces of nature ignore you..."
+    or text=="You wave your hands trying to absorb the forces of nature."
+    or text=="You have no idea how to even begin."
+    or text=="You don't know how to do that!"
 end
 
 function ArjUI:captureSpellLine(text)
@@ -3431,17 +3548,20 @@ function ArjUI:captureSpellLine(text)
     return
   end
   if (isPrompt and isPrompt()) or text:match("^%s*<%s*%d+h") then
+    -- Prompts can belong to commands already queued ahead of this request.
+    if #lines==0 then return end
     self.spellCapture = nil
-    if request.command~="spells" and #lines>0 then
+    if request.command~="spells" then
       s.spellOutput, s.spellView = lines, "interface"
       self:renderSpells()
     end
     return
   end
   if request.command=="spells" then
-    -- The personal listing has a distinct header and footer. A class catalog
-    -- or a chat line mentioning a command cannot supply the interface button.
-    if #lines==0 and not text:match("^>====%[ .+ | Max Circle %d+ %]====<$") then return end
+    if #lines==0 then
+      local owner=text:match("^>====%[ (%S+) | .+ | Max Circle %d+ %]====<$")
+      if not owner or (self.playerName and owner:lower()~=self.playerName:lower()) then return end
+    end
     local command = text:match("^(%l+) is your spell interface$")
     if spellCommands[command] then request.interface = command end
     if text=="See: spells <class or specialization> | spells info <spell name>" then
@@ -3450,6 +3570,8 @@ function ArjUI:captureSpellLine(text)
       self:renderSpells()
       return
     end
+  elseif #lines==0 and not isSpellInterfaceStart(request.command,text) then
+    return
   end
   lines[#lines+1] = text
 end
@@ -3767,17 +3889,11 @@ function ArjUI:loadSettings()
   self.settings = {}
   self.shipMode = "bridge"
   for k, v in pairs(self.settingsDefaults) do self.settings[k] = v end
-  local path = getMudletHomeDir() .. "/arjui_settings.json"
-  local f = io.open(path, "r")
-  if f then
-    local content = f:read("*a")
-    f:close()
-    local ok, data = pcall(yajl.to_value, content)
-    if ok and type(data) == "table" then
-      self.shipMode = data.shipMode=="details" and "details" or "bridge"
-      for k, v in pairs(data) do
-        if self.settingsDefaults[k] ~= nil then self.settings[k] = (v == true) end
-      end
+  local data=self:readProfileJSON(getMudletHomeDir().."/arjui_settings.json")
+  if data then
+    self.shipMode = data.shipMode=="details" and "details" or "bridge"
+    for k, v in pairs(data) do
+      if self.settingsDefaults[k] ~= nil then self.settings[k] = (v == true) end
     end
   end
 end
@@ -3786,17 +3902,17 @@ function ArjUI:saveSettings()
   local path = getMudletHomeDir() .. "/arjui_settings.json"
   local data = {}; for key,value in pairs(self.settings or self.settingsDefaults) do data[key]=value end
   data.shipMode=self.shipMode or "bridge"
-  local ok, json = pcall(yajl.to_string, data)
-  if ok then
-    local f = io.open(path, "w")
-    if f then f:write(json); f:close() end
-  end
+  return self:writeProfileJSON(path,data,"UI settings")
 end
 
 function ArjUI:setSetting(key, on)
   if self.settingsDefaults[key] == nil then return false end
+  local prior=self.settings[key]
   self.settings[key] = on
-  self:saveSettings()
+  if not self:saveSettings() then
+    self.settings[key]=prior
+    return false
+  end
   if key == "keypad" then self:setupKeypad() end
   if key == "compactHeader" then
     self:applyBackground()
@@ -4907,7 +5023,7 @@ function ArjUI:setupAliases()
     local key, val = matches[2], matches[3] == "on"
     if ArjUI:setSetting(key, val) then
       ArjUI:note(string.format("<cyan>[ArjUI] %s is now %s.", key, val and "on" or "off"))
-    else
+    elseif ArjUI.settingsDefaults[key] == nil then
       ArjUI:note("<indian_red>[ArjUI] Unknown toggle '" .. key .. "'. Type 'ui set' to list them.")
     end
   end))

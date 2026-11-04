@@ -168,6 +168,10 @@ T.steps({
    supports=message:match("^Core.Supports.Add (.+)$") or supports
   end
   ArjUI:enableGMCP()
+  local retry=ArjUI.gmcpRetryTimer
+  T.check(retry and ArjUI.timers[retry],"negotiation retry belongs to UI")
+  raiseEvent("sysProtocolDisabled","GMCP")
+  T.check(not ArjUI.gmcpRetryTimer and not ArjUI.timers[retry],"GMCP disable cancels pending retry")
   sendGMCP=oldSend
   local seen={}
   for _,module in ipairs(yajl.to_value(supports)) do seen[module]=true end

@@ -88,7 +88,7 @@ and history through reset, and start closed after reset. Their geometry and
 history remain session-only.
 
 In CHARACTER, GEAR contains INV and EQ. SPELLS lists the character's spells and
-shows the spell command reported by Duris. Clicking that command can start
+shows the spell command reported by Duris. A primary click on that command can start
 preparation. VITALS shows the estimated time remaining next to position on
 servers that publish spell preparation over GMCP.
 
@@ -96,7 +96,8 @@ Panels start locked in their named home positions. Unlock to move or resize them
 adjusting a panel makes it float. **Dock** returns it home. Only one panel can
 maximize at a time; **Restore** returns its previous state. Game output cannot
 be hidden or minimized independently. Dashboard choices are saved in
-`arjui_layout.json` in this profile and survive reconnects and restarts. A reset
+`arjui_layout_v2.json` in this profile and survive reconnects and restarts.
+The original `arjui_layout.json` remains available if you roll back. A reset
 restores defaults even while `ui off`, without turning the UI on.
 
 Use the map's **+ / −** controls to zoom. Click the active **STATS**, **INV**, **EQ**, **WHO**, or **SHIP** tab to send `score`, `inv`, `eq`, `who`, or `look ship` and refresh the corresponding information.

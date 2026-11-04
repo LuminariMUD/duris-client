@@ -2,7 +2,11 @@ local T=DurisTest
 ArjUI.initialDataRequested=true
 T.steps({
  {name="room-mobs",run=function()
-  T.check(math.abs(ArjUI.panels.room.frame:get_height()-ArjUI.panels.players.frame:get_height())<1,"ROOM and PLAYERS have equal docked heights")
+  local room,players=ArjUI.panels.room.frame,ArjUI.panels.players.frame
+  T.check(math.abs(room:get_height()-players:get_height())<1,"ROOM and PLAYERS have equal docked heights")
+  T.check(room:get_y()+room:get_height()<=ArjUI.panels.vitals.frame:get_y()
+    and players:get_y()+players:get_height()<=ArjUI.panels.chat.frame:get_y(),
+    "docked ROOM and PLAYERS clear the bottom panels")
   T.emit("Room.Info",{name="A quiet clearing",npcs={{name="a snow wolf"}},items={{name="a red apple"}}})
   T.check(ArjUI.activeRoomTab=="mobs" and ArjUI.objsBox.hidden,"MOBS is initially visible")
   T.check(T.lines("ArjUI_MobsBox"):find("snow wolf",1,true),"room mob received")
@@ -35,6 +39,14 @@ T.steps({
   T.check(ArjUI.activeTab=="spells" and T.commands[#T.commands].command=="spells","opening SPELLS requests the read-only personal list")
   feedTriggers("\27[36m>====[ VisualTester | Druid | Max Circle 5 ]====<\27[0m\n\n1st CIRCLE:\ncure light\n\ncommune is your spell interface\nSee: spells <class or specialization> | spells info <spell name>\n")
   T.check(ArjUI.state.spellCommand=="commune" and T.lines("ArjUI_SpellsBox"):find("cure light",1,true),"personal catalog and server-selected command rendered")
+ end,actions=function()
+  local click=T.click(ArjUI.spellTabs.interface)
+  click.button=3
+  return {click}
+ end},
+ {name="spell-interface-right-click",run=function()
+  T.check(T.commands[#T.commands].command=="spells" and not ArjUI.spellCapture,
+    "right-click cannot run the preparation command")
  end,actions=function() return {T.click(ArjUI.spellTabs.interface)} end},
  {name="spell-interface",run=function()
   T.check(T.commands[#T.commands].command=="commune","explicit interface click runs the server-selected command")

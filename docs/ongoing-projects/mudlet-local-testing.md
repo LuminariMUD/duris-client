@@ -1057,3 +1057,24 @@ Lua 5.1 checks, 11 controller tests, 15 release tests and local release
 preparation passed. Package payload SHA-256 is
 2f14fcfbbe9a75b6929302cab972b313ad84ff0b1553aa0c0e13bfb28a45d4e2.
 Live Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.
+
+## PR #31 regression fixes — 2026-11-04
+
+Candidate **2.5.1** passed **28/28** cases on Mudlet 5.0.1 under Xvfb in
+WSL2, including the expected negative cases. The loopback wire case passed
+46 assertions. It exercised a rate-limited Supports.Add, an intervening login
+time query and unrelated custom prompts, a second add-on's interest update
+during uninstall, and a fresh snapshot after reinstall on the same socket.
+The persistence case passed 29 assertions, including injected short writes
+and failed closes for settings, custom commands, and automation/bid scores.
+Layout checks preserved the v1 layout for rollback and restored the migrated
+ITEMS selection after a full profile restart.
+
+Reviewed the spell interface, preparation estimate, layout/reopen and Errors
+captures. The information case also passed at 1180×540 with both middle panels
+aligned and clear of the bottom panels. Evidence is under
+`/tmp/duris-pr31-2.5.1-verified` and `/tmp/duris-pr31-2.5.1-short-fixed`.
+Lua 5.1 checks, 11 controller tests, 15 release tests and local release
+preparation passed. Every suite case used package payload SHA-256
+`5632743c12b0b1f2c2d4e1ea779326e71d352bf930d9aea4342f7600bfca7137`.
+Live Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.

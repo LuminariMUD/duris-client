@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.5.1 - 2026-11-04
+
+- Keep spell replies intact while other commands are in flight and require a primary click to start preparation.
+- Recover preparation estimates after rate-limited negotiation or reinstall, while retaining other add-ons’ subscriptions.
+- Preserve the original layout for rollback, remember the ROOM subtab, and keep CHAT clear of PLAYERS in short windows.
+- Preserve settings, custom commands and bid scores when saving fails.
+
 ## 2.5.0 - 2026-11-04
 
 - Combine MOBS and ITEMS in ROOM and give ROOM and PLAYERS the same default height.

@@ -70,7 +70,9 @@ remaining height is for affects. Character/chat tab rows retain an 18px minimum.
 Minimum full sizes are map 190x170, room 150x95, output 340x180,
 character 285x160, players 190x95, chat 285x110, vitals 150x110 and
 tank/target 220x110, in Qt logical pixels. Smaller viewports clamp displayed
-rectangles to available space without replacing saved normal rectangles.
+rectangles to available space without replacing saved normal rectangles. In a
+short window, docked ROOM and PLAYERS give up height before docked VITALS and
+CHAT overlap their consoles.
 
 The fixed Panels and Reset layout controls sit just above the root inside the
 existing header margin. They remain outside maximized frames. Footer credits
@@ -93,9 +95,11 @@ returns to that normal state. Private conversations use the same visibility rule
 unread counts clear only when the frame body is actually revealed, and repeated
 layout passes or covered open requests cannot acknowledge unseen messages.
 
-ROOM starts on MOBS. Both room lists receive updates in the background. Older
-layouts carry their floating MOBS rectangle into ROOM, falling back to ITEMS.
-The combined frame stays accessible if either old panel was visible.
+ROOM defaults to MOBS and remembers the selected subtab. Both room lists
+receive updates in the background. Older layouts carry their floating MOBS
+rectangle into ROOM, falling back to ITEMS. The combined frame stays accessible
+if either old panel was visible. Migration saves to the v2 file and leaves the
+v1 layout available to older package versions.
 
 The character tabs are **GROUP / STATS / GEAR / SPELLS / WHO / SHIP**, with GROUP
 selected initially. GEAR remembers the selected INV or EQ subtab during the UI
@@ -339,9 +343,11 @@ awards preserve scores, and session reset discards outstanding rolls.
 | HTTPS zone-map JSON | Zone nodes/edges used to construct local map views |
 
 ArjUI identifies the client/version with `Core.Hello` and advertises the
-consumed GMCP packages in one `Core.Supports.Add`. It uses `Duris.Capabilities`
-to request `Char.SpellPreparation 1` via `Duris.Subscribe` and clear the estimate
-when the stream is inactive. UI login detection
+consumed GMCP packages in one `Core.Supports.Add`, with bounded, rate-paced
+retries until `Duris.Capabilities` confirms support. It uses `Duris.Subscribe`
+to obtain an estimate, including when reinstalling on a socket with the
+stream already active. An inactive stream clears the estimate. Teardown cancels
+local retries and leaves the connection-wide interests intact. UI login detection
 primarily uses `Char.Status`; a default prompt pattern is a fallback.
 Text-dependent panels still depend on recognized server output.
 Inventory, equipment and spell interface captures recognize Telnet prompt boundaries,
@@ -393,14 +399,16 @@ or use `look` to obtain fresh room data and retry.
 
 | Storage | Contents and lifetime |
 | --- | --- |
-| `arjui_layout.json` | Versioned dashboard modes, normalized normal rectangles, locks and hidden/minimized flags; maximize is transient |
+| `arjui_layout_v2.json` | Dashboard modes, normal rectangles, locks, hidden/minimized flags and ROOM selection. Maximize is transient. |
 | `arjui_settings.json` | Seven display/input toggles: `compactHeader` defaults off; the other six default on |
 | `arjui_custom_commands.json` | Custom context-menu actions |
 | `arjauto.json` | Automation toggles, variables, rescue list, bidscores, and login commands |
 | Memory | Character state, captures, damage counters, chat/contact history, map cache and current location |
 
 JSON files live under the active Mudlet profile directory returned by
-`getMudletHomeDir()`. Chat/contact history is not written to disk and remains
+`getMudletHomeDir()`. Saves check writes and closes before replacing the
+previous document. Loads can recover a backup left by an interrupted
+replacement. Chat/contact history stays in memory and remains
 available across a connection reset within the loaded UI. UI teardown/profile
 restart clears it. Saved settings are separate from live character state.
 Settings load before background and geometry construction. A profile without

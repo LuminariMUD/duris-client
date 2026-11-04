@@ -123,7 +123,7 @@ end
 steps[#steps+1]={name="scenic-restored",run=function() ArjUI:setSetting("compactHeader",false) end}
 local existing={
  {name="portable-layout-replace",run=function()
-  local path=getMudletHomeDir().."/arjui_layout.json"
+  local path=getMudletHomeDir().."/arjui_layout_v2.json"
   ArjUI:saveLayout()
   local rename=os.rename
   local function read() local f=assert(io.open(path,"r")); local s=f:read("*a");f:close();return s end
@@ -269,6 +269,14 @@ local existing={
   ArjUI:resetLayout()
   expandAlias("ui panel room hide")
  end,actions=function() return {T.click(ArjUI.panelsButton)} end},
+ {name="short-dock",run=function()
+  ArjUI.uiRoot:resize(ArjUI.uiRoot:get_width(),450)
+  ArjUI:applyPanelLayout()
+  local players,chat=ArjUI.panels.players.frame,ArjUI.panels.chat.frame
+  T.check(players:get_y()+players:get_height()<=chat:get_y(),"docked Chat cannot overlap Players in the short viewport")
+  T.check(ArjUI.enemyBox:get_y()+ArjUI.enemyBox:get_height()<=chat:get_y(),"last Players row remains accessible")
+  ArjUI:layout()
+ end},
  {name="panels-recovery-menu",run=function()
   T.check(ArjUI.currentMenu,"fixed Panels button opens recovery menu")
  end,actions=function()
@@ -317,29 +325,41 @@ local existing={
   T.check(ArjUI.panels.room.state.rect[1]==.7,"clamp retains requested normal rectangle")
   ArjUI:layout()
   ArjUI:resetLayout()
-  local path=getMudletHomeDir().."/arjui_layout.json"
-  local function load(text) local f=assert(io.open(path,"w")); f:write(text); f:close(); ArjUI:loadLayout() end
-  load("{broken")
+  local dir=getMudletHomeDir().."/"
+  local current,legacy=dir.."arjui_layout_v2.json",dir.."arjui_layout.json"
+  local function write(path,text)
+   local f=assert(io.open(path,"wb")); assert(f:write(text)); assert(f:close())
+  end
+  write(current,"{broken")
+  ArjUI:loadLayout()
   T.check(ArjUI.panels.output.state.mode=="docked","corrupt layout keeps defaults")
-  load(yajl.to_string({version=999,panels={}}))
+  write(current,yajl.to_string({version=999,panels={}}))
+  ArjUI:loadLayout()
   T.check(ArjUI.panels.output.state.mode=="docked","unsupported layout keeps defaults")
-  load(yajl.to_string({version=1,panels={
+  write(current,yajl.to_string({version=2,panels={room={
+   mode="floating",locked=false,hidden=false,minimized=false,rect={2,0,-1,0},
+  }}}))
+  ArjUI:loadLayout()
+  T.check(ArjUI.panels.room.state.mode=="docked","invalid geometry resets affected panel")
+  assert(os.remove(current))
+  local original=yajl.to_string({version=1,panels={
    mobs={mode="floating",locked=false,hidden=true,minimized=false,rect={.2,.2,.22,.3}},
-   items={mode="docked",locked=true,hidden=false,minimized=false,rect={0,.555,.165,.235}},
-   unknown={}}}))
+   items={mode="floating",locked=true,hidden=false,minimized=false,rect={.4,.4,.3,.3}},
+  }})
+  write(legacy,original)
+  ArjUI:loadLayout()
   T.check(ArjUI.panels.room.state.mode=="floating" and ArjUI.panels.chat.state.mode=="docked","legacy MOBS position migrates and missing panels use defaults")
   T.check(not ArjUI.panels.room.state.hidden and ArjUI.activeRoomTab=="items","legacy visible ITEMS remains accessible")
   ArjUI:panelAction("items","dock")
   T.check(ArjUI.panels.room.state.mode=="docked","legacy panel alias addresses ROOM")
-  load(yajl.to_string({version=1,panels={room={mode="floating",locked=false,hidden=false,minimized=false,rect={2,0,-1,0}}}}))
-  -- Bad entries must replace even previously loaded geometry, not retain it.
-  T.check(ArjUI.panels.room.state.mode=="docked","invalid geometry resets affected panel")
-  ArjUI:resetLayout()
   expandAlias("ui panel room hide")
   expandAlias("ui panel chat minimize")
   expandAlias("ui panel room float")
   ArjUI.panels.room.state.rect={.2,.2,.22,.3}
   ArjUI:applyPanelLayout(); ArjUI:saveLayout()
+  local f=assert(io.open(legacy,"rb"))
+  local after=f:read("*a"); f:close()
+  T.check(after==original,"a rollback can still read both original floating layouts and visibility flags")
   T.check(ArjUI.panels.room.state.hidden and ArjUI.panels.chat.state.minimized,"mixed layout saved for restart")
  end}
 

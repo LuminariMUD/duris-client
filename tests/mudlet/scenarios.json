@@ -20,6 +20,7 @@
     "maps": "Zone/wilderness, zoom, cache, delayed/malformed/HTTP errors and reload recovery",
     "map-colors": "All 16 profile ANSI colors against game output, zone/custom/road/player markers, foreground/background transitions, resets, movement/look and zoom",
     "controls": "Numpad input, aliases, toggles, menu click, timer cancellation and settings",
+    "persistence": "Settings, custom commands and bid scores survive short writes and failed closes",
     "login": "One time query per character login, renewed after connection event",
     "time": "Bounded silent login reply, manual/HUD output visibility, incomplete replies and session cleanup",
     "split": "Local roll correlation, persisted scores, uniform weighted tickets and rejection retry",

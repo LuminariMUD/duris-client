@@ -113,8 +113,17 @@ python3 scripts/mudlet_test.py run --scenario server-wire
 Generation requires the server's native build dependencies. Ordinary client
 tests use the checked-in JSON and require no server checkout. The loopback
 server offers GMCP, records Core.Hello/Supports, writes frames in fragments,
-and sends populated and empty snapshots plus a custom Telnet-GA prompt. It
-never reads credentials or connects to a game server.
+and sends populated and empty snapshots plus a custom Telnet-GA prompt.
+It also models Duris's two-token Supports and Subscribe buckets. The scenario
+exhausts the opening Supports budget, delays the spell catalog until the
+login time query, and reinstalls the package on a socket with active interests.
+The fixture never reads credentials or connects to a game server.
+
+`persistence` injects a short write and a failed close into each profile
+writer. It checks that the failure is reported and the previous settings,
+commands, login automation, rescue list and bid scores still reload. The
+`layout` scenario exercises replacement and backup recovery on the same write
+path, and checks that migration leaves the v1 layout available for rollback.
 
 `assertion-error`, `timer-error` and `event-error` deliberately fail. A zero
 exit code from any of them is a harness regression. Readiness/profile/candidate

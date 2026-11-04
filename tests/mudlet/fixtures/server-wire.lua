@@ -1,4 +1,6 @@
 local T=DurisTest
+local nativeGMCP=sendGMCP
+local recordedSend=send
 local function withNativeSend(action)
   local recordedSend = send
   send = T.originalSend
@@ -8,9 +10,20 @@ local function withNativeSend(action)
 end
 T.steps({
  {name="negotiate",run=function()
+  -- Model another profile add-on sending its Add before this package's Add.
+  sendGMCP=function(message)
+    if message:match("^Core%.Hello") then
+      nativeGMCP('Core.Supports.Add ["Duris.Time 1"]')
+      sendGMCP=nativeGMCP
+    end
+    nativeGMCP(message)
+  end
   connectToServer("127.0.0.1",T.config.gmcp_port)
- end,wait=.8,verify=function()
+ end,wait=1.6,verify=function()
   T.check(select(3,getConnectionInfo()),"connected to loopback fixture")
+  local n=ArjUI.gmcpNegotiation
+  T.check(n.advertisements==2 and n.synced and not ArjUI.gmcpRetryTimer,
+    "ArjUI retries rate-limited Supports.Add and stops after acknowledged interest")
   ArjUI.playerName="Tester"
   ArjUI.initialDataRequested=true
   ArjUI:setSetting("damageTracker",true)
@@ -50,14 +63,22 @@ T.steps({
   T.check(ArjUI.state.inventory and #ArjUI.state.inventory.lines==1,"custom prompt excluded from inventory")
  end},
  {name="spell-catalog-wire",run=function()
-  withNativeSend(function() ArjUI:switchTab("spells") end)
- end,wait=.5,verify=function()
-  T.check(ArjUI.state.spellCommand=="commune","personal spell command decoded over Telnet")
+  send=T.originalSend
+  ArjUI.initialDataRequested=false
+  ArjUI:onLoginDetected()
+  ArjUI:switchTab("spells")
+ end,wait=1.4,verify=function()
+  send=recordedSend
+  T.check(ArjUI.state.spellCommand=="commune","catalog survives earlier prompt and intervening automatic time query")
+  T.check(not T.lines("ArjUI_SpellsBox"):find("Unrelated output",1,true),"previous response stays out of catalog")
  end},
  {name="spell-interface-wire",run=function()
   withNativeSend(function() ArjUI:requestSpellOutput("commune") end)
  end,wait=.5,verify=function()
-  T.check(ArjUI.state.spellView=="interface" and #ArjUI.state.spellOutput==2,"Telnet GA ends the spell interface response at a custom prompt")
+  T.check(ArjUI.state.spellView=="interface" and #ArjUI.state.spellOutput==2,
+    "only the recognized spell interface response is captured between unrelated and terminating GA prompts")
+  T.check(ArjUI.state.spellOutput[1]=="You currently have the following spell slots available:",
+    "unrelated output and prompt excluded from interface reply")
  end},
  {name="preparation-active",run=function()
   T.originalSend("prep-active",false)
@@ -82,6 +103,33 @@ T.steps({
  end,wait=.5,verify=function()
   T.check(ArjUI.prepLabel.message=="PREP —" and not ArjUI.prepTimer,"capability invalidation clears estimate")
  end},
+ {name="prepare-shared-socket",run=function()
+  T.originalSend("prep-paused",false)
+ end,wait=.4,verify=function()
+  T.check(ArjUI.prepLabel.message=="HOLD 0:17","paused stream ready for reinstall")
+  ArjUI:enableGMCP()
+  T.check(ArjUI.prepLabel.message=="HOLD 0:17","duplicate enable preserves snapshot")
+ end},
+ {name="uninstall-with-new-interest",run=function()
+  -- No event-loop turn for the capabilities acknowledgment before teardown.
+  nativeGMCP('Duris.Subscribe ["Char.SpellPreparation 1","Duris.Time 1"]')
+  uninstallPackage("Arjinius Client")
+  T.check(not ArjUI.main and not ArjUI.gmcpRetryTimer,"teardown completed on the live test socket")
+  T.originalSend("probe-interests",false)
+ end,wait=.4,verify=function()
+  T.check(gmcp.Test.Interests.names[2]=="Duris.Time",
+    "uninstall preserves a second add-on's in-flight interest update")
+ end},
+ {name="reinstall-active-stream",run=function()
+  installPackage(T.run.."/duris-client.mpackage")
+ end,wait=.65,verify=function()
+  T.check(ArjUI.gmcpNegotiation.subscriptions==1 and ArjUI.prepLabel.message=="HOLD 0:17"
+    and not ArjUI.gmcpRetryTimer,"reinstall requests and receives a fresh estimate for an already active stream")
+  T.originalSend("probe-interests",false)
+ end},
+ {name="refreshed-interests",run=function()
+  T.check(gmcp.Test.Interests.names[2]=="Duris.Time","resnapshot preserves other active interests")
+ end},
  {name="preparation-protocol-disabled",run=function()
   T.originalSend("prep-active",false)
  end,wait=.5,verify=function()
@@ -91,7 +139,12 @@ T.steps({
  {name="preparation-disabled-clear",run=function() end,verify=function()
   T.check(ArjUI.prepLabel.message=="PREP —" and not ArjUI.prepTimer,"WONT GMCP clears estimate and stops timer")
  end},
- {name="wire-disconnect",run=function() disconnect() end,wait=.5,verify=function()
+ {name="wire-disconnect",run=function()
+  ArjUI.state.spellCommand="commune"
+  ArjUI.state.spellList={"catalog"}
+  ArjUI.state.spellOutput={"response"}
+  disconnect()
+ end,wait=.5,verify=function()
   T.check(not select(3,getConnectionInfo()),"test socket disconnected")
   T.check(ArjUI.playerName==nil,"socket disconnect clears session")
   T.check(not ArjUI.state.spellCommand and not ArjUI.state.spellOutput and not ArjUI.state.spellList,"socket disconnect clears spell views")
