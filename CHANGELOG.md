@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.0 - 2026-11-04
+
+- Combine MOBS and ITEMS in ROOM and give ROOM and PLAYERS the same default height.
+- Move inventory and equipment under GEAR. Open SPELLS for your spell list and the preparation command Duris reports for your character.
+- Show the server’s spell preparation estimate beside your position, with distinct paused and complete states.
+
 ## 2.4.4 - 2026-11-01
 
 - Render wilderness foregrounds and backgrounds with the profile's ANSI colors, preserving the server's white zone-marker backgrounds and terrain contrast instead of dimming them with a separate map palette.

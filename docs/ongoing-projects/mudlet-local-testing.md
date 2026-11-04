@@ -1032,3 +1032,28 @@ No owner restoration, clipping, or Lua errors appear. Local release preparation
 and `git diff --check` pass. All final suite/focused candidates match payload:
 `06dffb73bfedbe7192d2aee61d25f099f4051cf77ba7c3524d4a7dd5b48773cc`.
 The live/minimum-version/platform limits above remain unchanged.
+
+## Room tabs, spell interface and preparation estimate — 2026-11-04
+
+Candidate **2.5.0** was built from client base e141619 plus the working-tree
+changes. The spell preparation fixtures follow Duris 7d722a314 and
+[server PR #649](https://github.com/LuminariMUD/Duris/pull/649).
+
+Mudlet 5.0.1 and Qt 6.11.1 under Xvfb on WSL2 passed **27/27** offline
+suite cases, including expected negative cases and saved layout migration
+and reopen. See `/tmp/duris-client-2.5.0-final-suite/suite-results.json`.
+The loopback Telnet case passed 37 assertions covering support and
+subscription, spell output with a custom prompt, active and elapsed
+estimates, pause, completion, invalidation, GMCP disable and disconnect.
+
+The information scenario passed 35 assertions at each of 1280×720,
+1366×768 and 1920×1080 at scale 1. Screenshot review covered MOBS, ITEMS,
+INV, EQ, the COMMUNE reply, the position/countdown row and the Errors view.
+The countdown states and Errors view were also reviewed in the wire run.
+Review notes are in each run's `results.json` under the suite root,
+`/tmp/duris-client-2.5.0-small` and `/tmp/duris-client-2.5.0-wide`.
+
+Lua 5.1 checks, 11 controller tests, 15 release tests and local release
+preparation passed. Package payload SHA-256 is
+2f14fcfbbe9a75b6929302cab972b313ad84ff0b1553aa0c0e13bfb28a45d4e2.
+Live Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.

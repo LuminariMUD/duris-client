@@ -18,7 +18,11 @@ These files belong to the test companion, never the distributable package.
 They exercise actual Mudlet events, text triggers, widgets, aliases and HTTP.
 Most scenarios inject events directly. `server-wire` additionally exercises
 real loopback Telnet negotiation, GMCP decoding and disconnects in Mudlet.
-These tests do not establish production gameplay coverage.
+Its supplemental spell text and preparation snapshots are synthetic, matching
+Duris `7d722a314` and the
+[spell preparation contract](https://github.com/LuminariMUD/Duris/pull/649).
+The replay gates these snapshots on the client's support and subscription
+messages. These tests do not establish production gameplay coverage.
 
 Payload fields were checked on 2026-10-14 against Duris server revision
 `d27e2b5ec5431d6489acd6258c264dcb1aeec29a` (`src/core/json_utils.c`,

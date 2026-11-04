@@ -1,4 +1,11 @@
 local T=DurisTest
+local function withNativeSend(action)
+  local recordedSend = send
+  send = T.originalSend
+  local ok, err = pcall(action)
+  send = recordedSend
+  assert(ok, err)
+end
 T.steps({
  {name="negotiate",run=function()
   connectToServer("127.0.0.1",T.config.gmcp_port)
@@ -42,8 +49,51 @@ T.steps({
   T.check(ArjUI.state.capturing==nil,"Telnet GA terminates capture with a custom prompt")
   T.check(ArjUI.state.inventory and #ArjUI.state.inventory.lines==1,"custom prompt excluded from inventory")
  end},
+ {name="spell-catalog-wire",run=function()
+  withNativeSend(function() ArjUI:switchTab("spells") end)
+ end,wait=.5,verify=function()
+  T.check(ArjUI.state.spellCommand=="commune","personal spell command decoded over Telnet")
+ end},
+ {name="spell-interface-wire",run=function()
+  withNativeSend(function() ArjUI:requestSpellOutput("commune") end)
+ end,wait=.5,verify=function()
+  T.check(ArjUI.state.spellView=="interface" and #ArjUI.state.spellOutput==2,"Telnet GA ends the spell interface response at a custom prompt")
+ end},
+ {name="preparation-active",run=function()
+  T.originalSend("prep-active",false)
+ end,wait=.5,verify=function()
+  T.check(ArjUI.state.prepMode=="active" and ArjUI.prepTimer,"opt-in stream negotiated and active snapshot decoded")
+ end},
+ {name="preparation-elapsed",run=function() end,wait=2.1,verify=function()
+  T.check(ArjUI.prepLabel.message=="PREP 0:00" and not ArjUI.prepTimer,"local zero does not claim server completion")
+ end},
+ {name="preparation-paused",run=function()
+  T.originalSend("prep-paused",false)
+ end,wait=1.2,verify=function()
+  T.check(ArjUI.prepLabel.message=="HOLD 0:17" and not ArjUI.prepTimer,"paused estimate stays fixed")
+ end},
+ {name="preparation-complete",run=function()
+  T.originalSend("prep-complete",false)
+ end,wait=.5,verify=function()
+  T.check(ArjUI.prepLabel.message=="PREP OK","server completion is distinct")
+ end},
+ {name="preparation-inactive",run=function()
+  T.originalSend("prep-inactive",false)
+ end,wait=.5,verify=function()
+  T.check(ArjUI.prepLabel.message=="PREP —" and not ArjUI.prepTimer,"capability invalidation clears estimate")
+ end},
+ {name="preparation-protocol-disabled",run=function()
+  T.originalSend("prep-active",false)
+ end,wait=.5,verify=function()
+  T.check(ArjUI.prepTimer,"timer can restart after invalidation")
+  T.originalSend("prep-wont",false)
+ end},
+ {name="preparation-disabled-clear",run=function() end,verify=function()
+  T.check(ArjUI.prepLabel.message=="PREP —" and not ArjUI.prepTimer,"WONT GMCP clears estimate and stops timer")
+ end},
  {name="wire-disconnect",run=function() disconnect() end,wait=.5,verify=function()
   T.check(not select(3,getConnectionInfo()),"test socket disconnected")
   T.check(ArjUI.playerName==nil,"socket disconnect clears session")
+  T.check(not ArjUI.state.spellCommand and not ArjUI.state.spellOutput and not ArjUI.state.spellList,"socket disconnect clears spell views")
  end}
 })
