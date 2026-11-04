@@ -29,9 +29,7 @@ function ArjUI:kill()
   if self.panels then self:saveLayout() end
   for _,panel in pairs(self.panels or {}) do self:disposeWidget(panel.frame) end
   self.panels=nil; self.maximizedPanel=nil
-  if gmod and gmod.disableModule then
-    for _, module in ipairs(self.gmcpModules or {}) do gmod.disableModule("ArjUI", module) end
-  end
+  self:clearGMCPNegotiation()
   for id in pairs(self.timers or {}) do killTimer(id) end
   self.timers = {}
   for _, id in ipairs(self.runtimeTriggers or {}) do killTrigger(id) end
@@ -83,6 +81,7 @@ function ArjUI:kill()
     if type(value)=="table" and type(value.name)=="string" and value.name:match("^ArjUI_") then self[key]=nil end
   end
   self.tabPanels,self.tabButtons,self.chatPanels,self.chatTabs=nil,nil,nil,nil
+  self.roomViews,self.roomTabs,self.gearViews,self.gearTabs,self.spellTabs=nil,nil,nil,nil,nil
   self.shipWidgets,self.shipControls,self.shipPaintTimer=nil,nil,nil
   self.shipActionHeight,self.shipPlotOpen=nil,nil
   self.privateChats, self.tellContacts = {}, {}
@@ -260,14 +259,36 @@ end
 -- PLAYER LAYOUT (normal rectangles are fractions of uiRoot)
 -- ============================================================
 
+local function makeTabs(parent, prefix, names, selectTab)
+  local buttons = {}
+  local width = 96 / #names
+  for i, name in ipairs(names) do
+    local button = Geyser.Label:new({name=prefix..name, x=(2+(i-1)*width).."%", y=1,
+      width=(width-1).."%", height=18}, parent)
+    button:echo("<center>"..name:upper().."</center>")
+    button:setClickCallback(function(event)
+      if event.button=="LeftButton" then selectTab(name) end
+    end)
+    button:setOnEnter(function() button:setCursor("PointingHand") end)
+    button:setOnLeave(function() button:setCursor("Arrow") end)
+    buttons[name] = button
+  end
+  return buttons
+end
+
+local function showTab(views, active)
+  for name, view in pairs(views) do
+    if name == active then view:show() else view:hide() end
+  end
+end
+
 ArjUI.panelDefinitions = {
-  {id="map", title="MAP", home={0,0,.165,.32}, minimum={190,170}},
-  {id="mobs", title="MOBS", home={0,.33,.165,.215}, minimum={150,95}},
-  {id="items", title="ITEMS", home={0,.555,.165,.235}, minimum={150,95}},
+  {id="map", title="MAP", home={0,0,.165,.45}, minimum={190,170}},
+  {id="room", title="ROOM", home={0,.46,.165,.33}, minimum={150,95}},
   {id="output", title="GAME OUTPUT", home={.167,0,.57,.79}, minimum={340,180}, essential=true},
   {id="character", title="CHARACTER", home={.739,0,.26,.45}, minimum={285,160}},
-  {id="players", title="PLAYERS", home={.739,.46,.26,.26}, minimum={190,95}},
-  {id="chat", title="CHAT", home={.739,.73,.26,.27}, minimum={285,110}},
+  {id="players", title="PLAYERS", home={.739,.46,.26,.33}, minimum={190,95}},
+  {id="chat", title="CHAT", home={.739,.80,.26,.20}, minimum={285,110}},
   {id="vitals", title="VITALS", home={0,.80,.165,.195}, minimum={150,110}},
   {id="tank", title="TANK / BUFFS", home={.167,.80,.283,.195}, minimum={220,110}},
   {id="target", title="TARGET / DEBUFFS", home={.455,.80,.282,.195}, minimum={220,110}},
@@ -286,69 +307,149 @@ local function validRect(rect)
     and rect[3]>0 and rect[3]<=1 and rect[4]>0 and rect[4]<=1
 end
 
-function ArjUI:loadLayout()
-  for _,def in ipairs(self.panelDefinitions) do self.panels[def.id].state=panelDefault(def) end
-  local path=getMudletHomeDir().."/arjui_layout.json"
-  local file=io.open(path,"r") or io.open(path..".bak","r")
-  if not file then return end
+-- Profile JSON files share one replacement and recovery path.
+local function readJSONFile(path)
+  local file=io.open(path,"rb")
+  if not file then return nil,false end
   local text=file:read("*a"); file:close()
   local ok,data=pcall(yajl.to_value,text)
-  if not ok or type(data)~="table" or data.version~=1 or type(data.panels)~="table" then
+  if ok and type(data)=="table" then return data,true end
+  return nil,true
+end
+
+function ArjUI:readProfileJSON(path)
+  local data,exists=readJSONFile(path)
+  if data then return data,true end
+  local backup,backupExists=readJSONFile(path..".bak")
+  return backup,exists or backupExists
+end
+
+function ArjUI:writeProfileJSON(path, data, label)
+  local tmp,backup=path..".tmp",path..".bak"
+  local ok,err=pcall(function()
+    local text=yajl.to_string(data)
+    local file=assert(io.open(tmp,"wb"))
+    local written,writeError=file:write(text)
+    local closed,closeError=file:close()
+    assert(written,writeError); assert(closed,closeError)
+    local installed,why=os.rename(tmp,path)
+    if not installed then
+      -- Windows cannot rename over an existing destination. Preserve the old
+      -- document before installing the new one, including after recovery.
+      local prior,exists=readJSONFile(path)
+      assert(exists,why)
+      local recovered=not prior and readJSONFile(backup)
+      if recovered then
+        assert(os.remove(path))
+      else
+        local _,backupExists=readJSONFile(backup)
+        if backupExists then assert(os.remove(backup)) end
+        assert(os.rename(path,backup))
+      end
+      installed,why=os.rename(tmp,path)
+      if not installed then
+        local restored=os.rename(backup,path)
+        error(tostring(why)..(restored and "" or ". Previous data retained at "..backup))
+      end
+    end
+    os.remove(backup)
+  end)
+  if not ok then
+    os.remove(tmp)
+    self:note("<indian_red>Cannot save "..label..": "..tostring(err))
+  end
+  return ok
+end
+
+local layoutFile="arjui_layout_v2.json"
+
+function ArjUI:loadLayout()
+  for _,def in ipairs(self.panelDefinitions) do self.panels[def.id].state=panelDefault(def) end
+  self.activeRoomTab="mobs"
+  local directory=getMudletHomeDir().."/"
+  local data,exists=self:readProfileJSON(directory..layoutFile)
+  local version=2
+  if not exists then
+    data,exists=self:readProfileJSON(directory.."arjui_layout.json")
+    version=1
+  end
+  if not exists then return end
+  if not data or data.version~=version or type(data.panels)~="table" then
     self:note("<indian_red>Saved panel layout is invalid or unsupported; using defaults.")
     return
+  end
+  if data.roomTab=="items" then self.activeRoomTab="items" end
+  local function validState(saved)
+    return type(saved)=="table" and validRect(saved.rect)
+      and (saved.mode=="docked" or saved.mode=="floating")
+      and type(saved.locked)=="boolean" and type(saved.hidden)=="boolean"
+      and type(saved.minimized)=="boolean"
   end
   local invalid=false
   for _,def in ipairs(self.panelDefinitions) do
     local saved=data.panels[def.id]
     if saved~=nil then
-      if type(saved)=="table" and validRect(saved.rect)
-        and (saved.mode=="docked" or saved.mode=="floating")
-        and type(saved.locked)=="boolean" and type(saved.hidden)=="boolean"
-        and type(saved.minimized)=="boolean" then
-        self.panels[def.id].state={rect=copyRect(saved.rect),mode=saved.mode,
+      if validState(saved) then
+        self.panels[def.id].state={rect=copyRect(saved.mode=="docked" and def.home or saved.rect),mode=saved.mode,
           locked=saved.locked,hidden=not def.essential and saved.hidden,
           minimized=not def.essential and saved.minimized}
       else invalid=true end
     end
   end
+  -- Combine old panels without hiding content that used to be visible.
+  if data.panels.room==nil then
+    local mobs,items=data.panels.mobs,data.panels.items
+    local room=self.panels.room.state
+    local function visible(saved) return validState(saved) and not saved.hidden and not saved.minimized end
+    local function floating(saved) return validState(saved) and saved.mode=="floating" end
+    local position=(floating(mobs) and mobs) or (floating(items) and items)
+    if visible(items) and not visible(mobs) then self.activeRoomTab="items" end
+    if position then
+      room.rect,room.mode,room.locked=copyRect(position.rect),position.mode,position.locked
+    elseif validState(mobs) then
+      room.locked=mobs.locked
+    elseif validState(items) then
+      room.locked=items.locked
+    end
+    if validState(mobs) and validState(items) then
+      room.hidden=mobs.hidden and items.hidden
+      room.minimized=not room.hidden and not visible(mobs) and not visible(items)
+    end
+  end
+  self:updateTabStyles()
   if invalid then self:note("<indian_red>Invalid saved panel entries replaced with defaults.") end
 end
 
 function ArjUI:saveLayout()
   if not self.panels then return end
-  local data={version=1,panels={}}
+  local data={version=2,panels={},roomTab=self.activeRoomTab}
   for _,def in ipairs(self.panelDefinitions) do data.panels[def.id]=self.panels[def.id].state end
-  local path=getMudletHomeDir().."/arjui_layout.json"
-  local ok,err=pcall(function()
-    local file=assert(io.open(path..".tmp","w"))
-    local written,why=file:write(yajl.to_string(data))
-    local closed,closeError=file:close()
-    assert(written,why); assert(closed,closeError)
-    local installed,why=os.rename(path..".tmp",path)
-    if not installed then
-      -- Windows rename cannot replace an existing destination. Retain the old
-      -- file until installation succeeds, and recover it on failure/restart.
-      local backup=path..".bak"
-      os.remove(backup)
-      assert(os.rename(path,backup),why)
-      installed,why=os.rename(path..".tmp",path)
-      if not installed then
-        local restored,restoreError=os.rename(backup,path)
-        error(tostring(why)..(restored and "" or "; previous layout retained at "..backup..": "..tostring(restoreError)))
-      end
-      os.remove(backup)
-    end
-  end)
-  if not ok then self:note("<indian_red>Cannot save panel layout: "..tostring(err)) end
+  return self:writeProfileJSON(getMudletHomeDir().."/"..layoutFile,data,"panel layout")
 end
+
+local dockNeighbor={room="vitals",vitals="room",players="chat",chat="players"}
 
 function ArjUI:panelBounds(panel)
   local w,h=math.max(1,self.uiRoot:get_width()),math.max(1,self.uiRoot:get_height())
-  local rect=panel.state.mode=="docked" and panel.def.home or panel.state.rect
-  if self.maximizedPanel==panel.def.id then return 0,0,w,h end
+  local docked=panel.state.mode=="docked"
+  local rect=docked and panel.def.home or panel.state.rect
+  local id=panel.def.id
+  if self.maximizedPanel==id then return 0,0,w,h end
   local pw=math.min(w,math.max(panel.def.minimum[1],rect[3]*w))
   local ph=math.min(h,math.max(panel.def.minimum[2],rect[4]*h))
   if panel.state.minimized then ph=math.min(h,22) end
+  local neighbor=self.panels[dockNeighbor[id]]
+  if docked and not self.maximizedPanel and not panel.state.hidden
+      and neighbor and neighbor.state.mode=="docked" and not neighbor.state.hidden then
+    local neighborTop=neighbor.def.home[2]*h
+    if rect[2]>neighbor.def.home[2] then
+      -- Keep some space for the upper title when minimum heights cannot fit.
+      ph=math.min(ph,h-neighborTop-math.min(22,h*.1))
+    else
+      local _,bottomTop=self:panelBounds(neighbor)
+      ph=math.min(ph,bottomTop-rect[2]*h-h*.01)
+    end
+  end
   return math.max(0,math.min(rect[1]*w,w-pw)),math.max(0,math.min(rect[2]*h,h-ph)),pw,ph
 end
 
@@ -360,9 +461,9 @@ function ArjUI:panelIsVisible(id)
 end
 
 function ArjUI:reconcilePanelViews()
-  for name,widget in pairs(self.tabPanels or {}) do
-    if name==self.activeTab then widget:show() else widget:hide() end
-  end
+  showTab(self.tabPanels, self.activeTab)
+  showTab(self.roomViews, self.activeRoomTab)
+  if self.activeTab=="gear" then showTab(self.gearViews, self.activeGearTab) end
   self:reconcileShipViews()
   for name,widget in pairs(self.chatPanels or {}) do
     if name==self.activeChatTab then widget:show() else widget:hide() end
@@ -434,6 +535,8 @@ function ArjUI:capturePanelGesture(panel)
   state.rect={math.max(0,x/w),math.max(0,y/h),math.min(1,frame:get_width()/w),
     state.minimized and state.rect[4] or math.min(1,frame:get_height()/h)}
   self:applyPanel(panel)
+  local neighbor=self.panels[dockNeighbor[panel.def.id]]
+  if neighbor then self:applyPanel(neighbor) end
   self:reconcilePanelViews()
 end
 
@@ -481,6 +584,8 @@ function ArjUI:refreshPanelContent(id)
 end
 
 function ArjUI:panelAction(id,action)
+  -- Keep saved aliases for the former frames usable.
+  if id=="mobs" or id=="items" then id="room" end
   local panel=self.panels and self.panels[id]
   local contact=type(id)=="string" and id:match("^tell:(.+)$")
   if not panel and contact and self.privateChats[contact] then
@@ -552,6 +657,7 @@ function ArjUI:resetLayout()
   end
   for _,chat in pairs(self.privateChats) do if chat.window then chat.visible=false end end
   self.activeTab="group"; self.activeChatTab="all"
+  self.activeRoomTab="mobs"; self.activeGearTab="inv"
   self:updateTabStyles(); self:updateChatTabStyles()
   self:applyPanelLayout(); self:renderActiveTab(); self:refreshPanelContent()
   self:saveLayout()
@@ -760,6 +866,8 @@ function ArjUI:resetCharacterState()
   }
 
   self.initialDataRequested = false
+  self.spellCapture, self.prepTimer = nil, nil
+  self.state.spellView = "list"
 
   self.playerName = nil
   self.timeQuerySilent = false
@@ -770,8 +878,9 @@ function ArjUI:resetCharacterState()
 end
 
 function ArjUI:endSession()
-  for id in pairs(self.timers or {}) do killTimer(id) end
-  self.timers = {}
+  for id in pairs(self.timers or {}) do
+    if id~=self.gmcpRetryTimer then killTimer(id); self.timers[id]=nil end
+  end
   if self.scanTimer then killTimer(self.scanTimer); self.scanTimer = nil end
   self.scanCounts = {}
   self:resetCharacterState()
@@ -783,23 +892,148 @@ function ArjUI:endSession()
   self:renderStats()
   self:renderInventory()
   self:renderEq()
+  self:renderSpells()
+  self:renderSpellPreparation()
   self:renderWho()
   self:renderShip()
 end
 
--- Advertise every package consumed by the UI and mapper.
+local preparationStream = "Char.SpellPreparation"
+
+-- Mudlet sends its own Supports.Set. Follow it with one Add so the Duris
+-- control rate limit still allows our versioned streams on a fresh socket.
 ArjUI.gmcpModules = {"Char.Vitals", "Char.Status", "Char.Affects", "Room.Info", "Room.Map",
-  "Group.Status", "Comm.Channel", "Combat.Update", "Quest.Status", "Ship.Info", "Ship.Contacts"}
+  "Group.Status", "Comm.Channel", "Combat.Update", "Quest.Status", "Ship.Info", "Ship.Contacts",
+  "Duris.Capabilities", preparationStream}
+
+local function contains(list, value)
+  if type(list)~="table" then return false end
+  for _, item in ipairs(list) do if item==value then return true end end
+  return false
+end
+
+function ArjUI:cancelGMCPRetry()
+  if not self.gmcpRetryTimer then return end
+  killTimer(self.gmcpRetryTimer)
+  self.timers[self.gmcpRetryTimer]=nil
+  self.gmcpRetryTimer=nil
+end
+
+function ArjUI:clearGMCPNegotiation()
+  self:cancelGMCPRetry()
+  self.gmcpNegotiation,self.preparationActive=nil,nil
+  -- The support and interest sets are shared by the socket. Leave them in
+  -- place until disconnect. Teardown cannot establish exclusive ownership or
+  -- safely replace the current interests with a cached capabilities reply.
+end
 
 function ArjUI:enableGMCP()
+  if self.gmcpNegotiation then return end
+  self.gmcpNegotiation={advertisements=0,subscriptions=0}
   sendGMCP('Core.Hello {"client":"Mudlet-ArjUI","version":"' .. ArjUI.VERSION .. '"}')
-  local modules = {}
-  for _, module in ipairs(self.gmcpModules) do modules[#modules+1] = module .. " 1" end
-  if gmod and gmod.enableModule then
-    for _, module in ipairs(self.gmcpModules) do gmod.enableModule("ArjUI", module) end
+  self:requestGMCPState()
+end
+
+function ArjUI:requestGMCPState()
+  local negotiation=self.gmcpNegotiation
+  if not negotiation or negotiation.synced then return end
+  local message,modules,attempts
+  local caps=negotiation.capabilities
+  if not caps then
+    message,modules="Core.Supports.Add ",{}
+    for _,module in ipairs(self.gmcpModules) do modules[#modules+1]=module.." 1" end
+    negotiation.advertisements=negotiation.advertisements+1
+    attempts=negotiation.advertisements
+  else
+    message,modules="Duris.Subscribe ",{preparationStream.." 1"}
+    -- Subscribe replaces all interests. Build the set from the latest reply.
+    for _,name in ipairs(type(caps.interested)=="table" and caps.interested or {}) do
+      local version=caps.features[name]
+      if name~=preparationStream and type(name)=="string" and finite(version) then
+        modules[#modules+1]=name.." "..version
+      end
+    end
+    negotiation.subscriptions=negotiation.subscriptions+1
+    attempts=negotiation.subscriptions
   end
-  -- gmod retains registrations across sockets; always renew this subscription.
-  sendGMCP("Core.Supports.Add " .. yajl.to_string(modules))
+  -- Duris refills each control family by one token per second. Schedule
+  -- before sending so a capability reply can cancel or advance the retry.
+  if attempts<3 then
+    self.gmcpRetryTimer=self:after(1.1,function()
+      self.gmcpRetryTimer=nil
+      self:requestGMCPState()
+    end)
+  end
+  if attempts<=3 then sendGMCP(message..yajl.to_string(modules)) end
+end
+
+function ArjUI:onDurisCapabilities()
+  local caps = gmcp and gmcp.Duris and gmcp.Duris.Capabilities
+  if type(caps)~="table" or caps.version~=1 then return end
+  self.preparationActive = contains(caps.active, preparationStream)
+  if not self.preparationActive then self:setSpellPreparation(nil) end
+
+  local negotiation=self.gmcpNegotiation
+  if not negotiation or negotiation.synced
+      or type(caps.features)~="table" or not contains(caps.supported,preparationStream) then return end
+  local firstReply=not negotiation.capabilities
+  negotiation.capabilities=caps
+  if contains(caps.interested,preparationStream) and not self.preparationActive then
+    -- An interested stream will send its first snapshot on character entry.
+    negotiation.synced=true
+    self:cancelGMCPRetry()
+  elseif firstReply then
+    -- An already active stream needs a new snapshot for this UI instance.
+    self:cancelGMCPRetry()
+    self:requestGMCPState()
+  end
+end
+
+function ArjUI:onSpellPreparation()
+  if not self.preparationActive then return end
+  local data = gmcp and gmcp.Char and gmcp.Char.SpellPreparation
+  if type(data)~="table" or not finite(data.estimatedSeconds) or data.estimatedSeconds<0 then return end
+  local mode = data.state
+  if mode=="active" or mode=="paused" or mode=="complete" then
+    if self.gmcpNegotiation then self.gmcpNegotiation.synced=true end
+    self:cancelGMCPRetry()
+    self:setSpellPreparation(mode, data.estimatedSeconds)
+  end
+end
+
+function ArjUI:setSpellPreparation(mode, seconds)
+  if self.prepTimer then
+    killTimer(self.prepTimer)
+    self.timers[self.prepTimer] = nil
+    self.prepTimer = nil
+  end
+  self.state.prepMode, self.state.prepSeconds = mode, seconds
+  self.state.prepDeadline = mode=="active" and getEpoch()+seconds or nil
+  self:renderSpellPreparation()
+end
+
+function ArjUI:renderSpellPreparation()
+  local mode = self.state.prepMode
+  local label, hint = "PREP —", "No spell preparation estimate from the server."
+  if mode=="complete" then
+    label, hint = "PREP OK", "Spell preparation complete."
+  elseif mode then
+    local seconds = self.state.prepSeconds
+    if mode=="active" then seconds = self.state.prepDeadline-getEpoch() end
+    seconds = math.max(0, math.ceil(seconds))
+    label = string.format("%s %d:%02d", mode=="paused" and "HOLD" or "PREP", math.floor(seconds/60), seconds%60)
+    if mode=="paused" then hint = "Spell preparation paused. Estimated time remaining."
+    elseif seconds==0 then hint = "Estimate elapsed. Awaiting server confirmation."
+    else hint = "Estimated time until all queued spells or missing slots are ready." end
+    if mode=="active" and seconds>0 and not self.prepTimer then
+      self.prepTimer = self:after(1, function()
+        self.prepTimer = nil
+        self:renderSpellPreparation()
+      end)
+    end
+  end
+  self.prepLabel:echo(label)
+  self.prepLabel:setToolTip(hint)
 end
 
 function ArjUI:workspaceGeometry(w,h)
@@ -962,17 +1196,21 @@ function ArjUI:init()
   self.timeLabel:echo("☀ Day")
   self.timeLabel:setClickCallback(function() send("time") end)
 
-  -- SECTION 3: Mobs (41% - 69%)
-  self.mobsSection = panel("mobs")
-  styleSafe(self.mobsSection, self.styles.panelGlass)
-  
-  self.mobsBox = makeConsole(self.mobsSection, "ArjUI_MobsBox", "3%", "3%", "94%", "94%", 9)
-
-  -- SECTION 4: Items (70% - 100%) - extends to match output window bottom
-  self.itemsSection = panel("items")
-  styleSafe(self.itemsSection, self.styles.panelGlass)
-  
-  self.objsBox = makeConsole(self.itemsSection, "ArjUI_ObjsBox", "3%", "3%", "94%", "94%", 9)
+  self.roomSection = panel("room")
+  styleSafe(self.roomSection, self.styles.panelGlass)
+  self.activeRoomTab = "mobs"
+  self.roomTabs = makeTabs(self.roomSection, "ArjUI_RoomTab_", {"mobs", "items"}, function(name)
+    if self.activeRoomTab == name then return end
+    self.activeRoomTab = name
+    showTab(self.roomViews, name)
+    self:updateTabStyles()
+    self:saveLayout()
+  end)
+  self.mobsBox = makeConsole(self.roomSection, "ArjUI_MobsBox", "3%", 21, "94%", "100%-23px", 9)
+  self.objsBox = makeConsole(self.roomSection, "ArjUI_ObjsBox", "3%", 21, "94%", "100%-23px", 9)
+  self.roomViews = {mobs=self.mobsBox, items=self.objsBox}
+  self.mobsBox:enableScrollBar()
+  self.objsBox:enableScrollBar()
 
   -- CENTER COLUMN (with gaps on sides) - opaque black behind the main MUD feed
   self.centerCol = panel("output")
@@ -992,26 +1230,11 @@ function ArjUI:init()
   self.tabSection = panel("character")
   styleSafe(self.tabSection, self.styles.panelGlass)
 
-  -- TABBED PANE (Group/Stats/Inv/Eq/Skills)
-  self.tabButtons = {}
   self.tabPanels = {}
   self.activeTab = "group"
-  
-  local tabNames = { "group", "stats", "inv", "eq", "who", "ship" }
-  local tabLabels = { "GROUP", "STATS", "INV", "EQ", "WHO", "SHIP" }
-  local tabW = 16  -- percentage width per tab
-  
-  for i, tabName in ipairs(tabNames) do
-    local xPos = string.format("%d%%", 2 + (i-1) * tabW)
-    local btn = Geyser.Label:new({ name = "ArjUI_Tab_" .. tabName, x = xPos, y = 1, width = (tabW - 1) .. "%", height = 18 }, self.tabSection)
-    btn:echo("<center>" .. tabLabels[i] .. "</center>")
-    self.tabButtons[tabName] = btn
-    
-    btn:setClickCallback(function() self:switchTab(tabName) end)
-    btn:setOnEnter(function() btn:setCursor("PointingHand") end)
-    btn:setOnLeave(function() btn:setCursor("Arrow") end)
-  end
-  
+  self.tabButtons = makeTabs(self.tabSection, "ArjUI_Tab_",
+    {"group", "stats", "gear", "spells", "who", "ship"}, function(name) self:switchTab(name) end)
+
   -- Tab content area
   self.tabContent = Geyser.Container:new({ name = "ArjUI_TabContent", x = "3%", y = 21, width = "94%", height = "100%-23px" }, self.tabSection)
   
@@ -1025,16 +1248,35 @@ function ArjUI:init()
   self.statsBox:hide()
   self.tabPanels.stats = self.statsBox
   
-  -- INVENTORY panel
-  self.invBox = makeConsole(self.tabContent, "ArjUI_InvBox", 0, 0, "100%", "100%", 9)
-  self.invBox:hide()
-  self.tabPanels.inv = self.invBox
-  
-  -- EQ panel (equipment)
-  self.eqBox = makeConsole(self.tabContent, "ArjUI_EqBox", 0, 0, "100%", "100%", 9)
-  self.eqBox:hide()
-  self.tabPanels.eq = self.eqBox
-  
+  local gear = Geyser.Container:new({name="ArjUI_Gear",x=0,y=0,width="100%",height="100%"},self.tabContent)
+  self.activeGearTab = "inv"
+  self.gearTabs = makeTabs(gear, "ArjUI_GearTab_", {"inv", "eq"}, function(name)
+    self.activeGearTab = name
+    showTab(self.gearViews, name)
+    self:updateTabStyles()
+    self:requestTabData(name)
+  end)
+  self.invBox = makeConsole(gear, "ArjUI_InvBox", 0, 21, "100%", "100%-23px", 9)
+  self.eqBox = makeConsole(gear, "ArjUI_EqBox", 0, 21, "100%", "100%-23px", 9)
+  self.gearViews = {inv=self.invBox, eq=self.eqBox}
+  self.invBox:enableScrollBar()
+  self.eqBox:enableScrollBar()
+  self.tabPanels.gear = gear
+
+  local spells = Geyser.Container:new({name="ArjUI_Spells",x=0,y=0,width="100%",height="100%"},self.tabContent)
+  self.spellTabs = makeTabs(spells, "ArjUI_SpellTab_", {"list", "interface"}, function(name)
+    if name=="list" then self:requestTabData("spells")
+    elseif self.state.spellCommand=="will" then
+      self.state.spellView="interface"
+      self:renderSpells()
+    elseif self.state.spellCommand then
+      self:requestSpellOutput(self.state.spellCommand)
+    end
+  end)
+  self.spellsBox = makeConsole(spells, "ArjUI_SpellsBox", 0, 21, "100%", "100%-23px", 9)
+  self.spellsBox:enableScrollBar()
+  self.tabPanels.spells = spells
+
   -- WHO panel
   self.whoBox = makeConsole(self.tabContent, "ArjUI_WhoBox", 0, 0, "100%", "100%", 9)
   self.whoBox:hide()
@@ -1053,13 +1295,13 @@ function ArjUI:init()
   
   self:updateTabStyles()
 
-  -- SECTION 2: Players (46% - 72%) - Players section above chat (expanded to fill gap)
+  -- PLAYERS mirrors the ROOM panel height.
   self.playersSection = panel("players")
   styleSafe(self.playersSection, self.styles.panelGlass)
 
   self.enemyBox = makeConsole(self.playersSection, "ArjUI_EnemyBox", "3%", "3%", "94%", "94%", 9)
 
-  -- SECTION 3: Chat (73% - 100%) - Chat at bottom, sits just above credit box
+  -- CHAT sits above the credit box.
   self.chatSection = panel("chat")
   styleSafe(self.chatSection, self.styles.panelGlass)
 
@@ -1202,9 +1444,10 @@ function ArjUI:init()
   self.mvGauge.back:setStyleSheet(self.gaugeStyles.mvBack)
   self.mvGauge.text:setStyleSheet(self.gaugeStyles.gaugeText)
 
-  self.posLabel = Geyser.Label:new({ name="ArjUI_PosLabel", x="4%", y="70%", width="92%", height="26%" }, self.myVitalsWrap)
+  self.posLabel = Geyser.Label:new({ name="ArjUI_PosLabel", x="4%", y="70%", width="45%", height="26%" }, self.myVitalsWrap)
   styleSafe(self.posLabel, self.styles.pos)
   labelSet(self.posLabel, "STANDING")
+  self.prepLabel = makePanel(self.myVitalsWrap, "ArjUI_Prep", "51%", "70%", "45%", "26%", self.styles.pos)
 
   -- TANK (with gap from vitals) - Name as header, HP gauge, buffs below
   -- Tank: 16.7% to 45.2% (first half under output window)
@@ -1289,6 +1532,8 @@ function ArjUI:init()
   self:registerGMCPHandlers()
   self:setupPorted()
   self:renderAll()
+  self:renderSpellPreparation()
+  self:renderSpells()
   
   -- If GMCP data already exists (reconnecting to existing session), render again after short delay
   self:after(1, function()
@@ -1420,7 +1665,10 @@ function ArjUI:showContextMenu(items, x, y)
           idx = tonumber(idx)
           if self.customCommands[cat] and idx and self.customCommands[cat][idx] then
             local removed = table.remove(self.customCommands[cat], idx)
-            self:saveCustomCommands()
+            if not self:saveCustomCommands() then
+              table.insert(self.customCommands[cat],idx,removed)
+              return
+            end
             cecho(string.format("<green>[ArjUI]<reset> Removed '%s'.\n", removed.text))
           end
         end
@@ -1453,30 +1701,16 @@ end
 -- ============================================================
 
 function ArjUI:loadCustomCommands()
-  local path = getMudletHomeDir() .. "/arjui_custom_commands.json"
-  local file = io.open(path, "r")
-  if file then
-    local content = file:read("*a")
-    file:close()
-    local ok, data = pcall(yajl.to_value, content)
-    if ok and data then
-      self.customCommands = data
-      cecho("<dim_gray>[ArjUI] Custom commands loaded.\n")
-    end
+  local data=self:readProfileJSON(getMudletHomeDir().."/arjui_custom_commands.json")
+  if data then
+    self.customCommands=data
+    cecho("<dim_gray>[ArjUI] Custom commands loaded.\n")
   end
 end
 
 function ArjUI:saveCustomCommands()
-  local path = getMudletHomeDir() .. "/arjui_custom_commands.json"
-  local ok, json = pcall(yajl.to_string, self.customCommands)
-  if ok then
-    local file = io.open(path, "w")
-    if file then
-      file:write(json)
-      file:close()
-      cecho("<dim_gray>[ArjUI] Custom commands saved.\n")
-    end
-  end
+  local path=getMudletHomeDir().."/arjui_custom_commands.json"
+  return self:writeProfileJSON(path,self.customCommands,"custom commands")
 end
 
 -- ============================================================
@@ -1560,7 +1794,10 @@ function ArjUI:showAddCommandPopup(category)
     if label and label ~= "" and cmd and cmd ~= "" then
       self.customCommands[category] = self.customCommands[category] or {}
       table.insert(self.customCommands[category], { text = label, cmd = cmd })
-      self:saveCustomCommands()
+      if not self:saveCustomCommands() then
+        table.remove(self.customCommands[category])
+        return
+      end
       cecho(string.format("<green>[ArjUI]<reset> Added '%s' to %s menu.\n", label, category))
       popup:hide()
       self.addCmdPopup = nil
@@ -1665,7 +1902,10 @@ function ArjUI:showAddSpellPopup(category)
       self.customCommands[category] = self.customCommands[category] or {}
       -- Store with spell flag so we know to format it specially
       table.insert(self.customCommands[category], { text = label, cmd = spell, isSpell = true })
-      self:saveCustomCommands()
+      if not self:saveCustomCommands() then
+        table.remove(self.customCommands[category])
+        return
+      end
       cecho(string.format("<green>[ArjUI]<reset> Added spell '%s' to %s menu.\n", label, category))
       popup:hide()
       self.addCmdPopup = nil
@@ -1949,6 +2189,10 @@ end
 function ArjUI:registerGMCPHandlers()
   local h
   
+  h = registerAnonymousEventHandler("gmcp.Duris.Capabilities", function() self:onDurisCapabilities() end)
+  table.insert(self.eventHandlers, h)
+  h = registerAnonymousEventHandler("gmcp.Char.SpellPreparation", function() self:onSpellPreparation() end)
+  table.insert(self.eventHandlers, h)
   h = registerAnonymousEventHandler("gmcp.Char.Vitals", function() self:onCharVitals() end)
   table.insert(self.eventHandlers, h)
   h = registerAnonymousEventHandler("gmcp.Room.Info", function() self:onRoomInfo() end)
@@ -1991,12 +2235,27 @@ function ArjUI:registerGMCPHandlers()
   table.insert(self.eventHandlers, h)
   
   h = registerAnonymousEventHandler("sysProtocolEnabled", function(_, protocol)
-    if protocol == "GMCP" then self:enableGMCP() end
+    if protocol=="GMCP" then
+      -- A package installed while the socket was opening may have attempted
+      -- to advertise before Telnet actually enabled GMCP.
+      self:clearGMCPNegotiation()
+      self:enableGMCP()
+    end
   end)
   table.insert(self.eventHandlers, h)
   h = registerAnonymousEventHandler("sysConnectionEvent", function() self:endSession() end)
   table.insert(self.eventHandlers, h)
-  h = registerAnonymousEventHandler("sysDisconnectionEvent", function() self:endSession() end)
+  h = registerAnonymousEventHandler("sysProtocolDisabled", function(_, protocol)
+    if protocol=="GMCP" then
+      self:clearGMCPNegotiation()
+      self:setSpellPreparation(nil)
+    end
+  end)
+  table.insert(self.eventHandlers, h)
+  h = registerAnonymousEventHandler("sysDisconnectionEvent", function()
+    self:clearGMCPNegotiation()
+    self:endSession()
+  end)
   table.insert(self.eventHandlers, h)
   -- Installing into an already negotiated session must advertise the package too.
   if getConnectionInfo and select(3, getConnectionInfo()) and gmcp then self:enableGMCP() end
@@ -2004,6 +2263,7 @@ function ArjUI:registerGMCPHandlers()
   -- Detect character login and render UI.
   -- Primary signal: first gmcp.Char.Status after connect (server sends it once on
   -- character entry, independent of prompt settings). Fallback: default prompt shape.
+  self:addRuntimeTrigger("^.*$", function() self:captureSpellLine(matches[1] or line) end)
   self.loginTrigger = self:addRuntimeTrigger("^< \\d+h/\\d+H \\d+v/\\d+V Pos:", function()
     if ArjUI then ArjUI:onLoginDetected() end
   end)
@@ -2392,7 +2652,16 @@ function ArjUI:onCharStatus()
   end
   
   -- Char.Status is only ever about ourselves: record identity fields
-  if type(s.name) == "string" and s.name ~= "" then self.playerName = s.name end
+  if type(s.name) == "string" and s.name ~= "" then
+    if self.playerName and self.playerName:lower()~=s.name:lower() then
+      self.spellCapture = nil
+      self.state.spellList, self.state.spellCommand, self.state.spellOutput = nil, nil, nil
+      self.state.spellView = "list"
+      self:renderSpells()
+      self:setSpellPreparation(nil)
+    end
+    self.playerName = s.name
+  end
   self.state.charLevel = toNum(s.level) or self.state.charLevel
   self.state.charClass = s.class and stripColors(s.class) or self.state.charClass
   self.state.charRace = s.race and stripColors(s.race) or self.state.charRace
@@ -3055,52 +3324,36 @@ end
 
 -- TAB SWITCHING
 function ArjUI:switchTab(tabName)
-  if self.activeTab == tabName then
-    -- If clicking same tab, refresh the data
-    self:requestTabData(tabName)
-    return
+  if not self.tabPanels[tabName] then return end
+  local refresh = self.activeTab == tabName
+  if not refresh then
+    self.activeTab = tabName
+    showTab(self.tabPanels, tabName)
+    if tabName=="gear" then showTab(self.gearViews, self.activeGearTab) end
+    self:updateTabStyles()
+    self:renderActiveTab()
   end
-  
-  -- Hide current panel
-  if self.tabPanels[self.activeTab] then
-    self.tabPanels[self.activeTab]:hide()
-  end
-  
-  -- Show new panel
-  self.activeTab = tabName
-  if self.tabPanels[tabName] then
-    self.tabPanels[tabName]:show()
-  end
-  
-  self:updateTabStyles()
-  self:renderActiveTab()
-  
-  -- Auto-request data if tab is empty
-  local hasData = false
-  if tabName == "stats" then hasData = self.state.statsRaw and #self.state.statsRaw > 0
-  elseif tabName == "skills" then hasData = self.state.skillsRaw and #self.state.skillsRaw > 0
-  elseif tabName == "inv" then hasData = self.state.invRaw and #self.state.invRaw > 0
-  elseif tabName == "eq" then hasData = self.state.eqRaw and #self.state.eqRaw > 0
-  elseif tabName == "group" then hasData = true  -- Group always has data from GMCP
-  elseif tabName == "ship" then hasData = self.state.ship and (self.state.ship.contacts or self.state.ship.textContacts) and true or false
-  end
-  
-  if not hasData then
-    self:requestTabData(tabName)
+  local s = self.state
+  local data = {
+    stats=s.statsRaw, spells=s.spellList, inv=s.inventory, eq=s.equipment,
+    ship=s.ship and (s.ship.contacts or s.ship.textContacts),
+  }
+  local view = tabName=="gear" and self.activeGearTab or tabName
+  if refresh or not data[view] then self:requestTabData(view) end
+end
+
+local function styleTabs(buttons, active)
+  local activeStyle = "background-color: #16140f; border: 1px solid #5a4b37; border-top: 1px solid #8c6e46; border-bottom: none; color: #e6e6e6; font-size: 8px; font-weight: bold;"
+  local inactiveStyle = "background-color: #0a0908; border: 1px solid #3c3832; color: #8a7a5a; font-size: 8px;"
+  for name, btn in pairs(buttons) do
+    btn:setStyleSheet(name == active and activeStyle or inactiveStyle)
   end
 end
 
 function ArjUI:updateTabStyles()
-  local activeStyle = "background-color: #16140f; border: 1px solid #5a4b37; border-top: 1px solid #8c6e46; border-bottom: none; color: #e6e6e6; font-size: 8px; font-weight: bold;"
-  local inactiveStyle = "background-color: #0a0908; border: 1px solid #3c3832; color: #706050; font-size: 8px;"
-  
-  for name, btn in pairs(self.tabButtons) do
-    if name == self.activeTab then
-      btn:setStyleSheet(activeStyle)
-    else
-      btn:setStyleSheet(inactiveStyle)
-    end
-  end
+  styleTabs(self.tabButtons, self.activeTab)
+  styleTabs(self.roomTabs, self.activeRoomTab)
+  styleTabs(self.gearTabs, self.activeGearTab)
 end
 
 -- CHAT TAB SWITCHING
@@ -3139,10 +3392,10 @@ function ArjUI:renderActiveTab()
     self:renderGroup()
   elseif self.activeTab == "stats" then
     self:renderStats()
-  elseif self.activeTab == "inv" then
-    self:renderInventory()
-  elseif self.activeTab == "eq" then
-    self:renderEq()
+  elseif self.activeTab == "gear" then
+    if self.activeGearTab=="eq" then self:renderEq() else self:renderInventory() end
+  elseif self.activeTab == "spells" then
+    self:renderSpells()
   elseif self.activeTab == "who" then
     self:renderWho()
   elseif self.activeTab == "ship" then
@@ -3230,6 +3483,97 @@ function ArjUI:renderEq()
     self.eqBox:cecho("<dim_gray>── Equipment ──\n\n")
     self.eqBox:cecho(eq and "<dim_gray>You aren't wearing anything!\n" or "<dim_gray>(click tab to refresh)\n")
   end
+end
+
+local spellCommands = {
+  memorize=true, pray=true, commune=true, deforest=true,
+  assimilate=true, tupor=true, focus=true, will=true,
+}
+
+function ArjUI:renderSpells()
+  local s, box = self.state, self.spellsBox
+  local command = s.spellCommand
+  self.spellTabs.interface:echo("<center>" .. (command and command:upper() or "INTERFACE") .. "</center>")
+  self.spellTabs.interface:setToolTip(command=="will" and "Show will syntax."
+    or command and ("Run " .. command .. ". May begin spell preparation.")
+    or "The server's spells listing identifies your character's command.")
+  styleTabs(self.spellTabs, s.spellView)
+  box:clear()
+  local lines = s.spellList
+  if s.spellView=="interface" then
+    lines = s.spellOutput
+    if command=="will" then lines = {"Use will '<spell>' [target] in the command line."} end
+  end
+  if not lines then
+    box:cecho("<dim_gray>Click LIST while in game to load your spells.\n")
+    return
+  end
+  for _, text in ipairs(lines) do box:echo(text .. "\n") end
+end
+
+function ArjUI:requestSpellOutput(command)
+  if not self.initialDataRequested then return end
+  if self.spellCapture and self.spellCapture.deadline>getEpoch() then return end
+  if command=="spells" then
+    self.state.spellView="list"
+    self:renderSpells()
+  end
+  self.spellCapture = {command=command, deadline=getEpoch()+8, lines={}}
+  send(command)
+end
+
+local function isSpellInterfaceStart(command,text)
+  if command=="memorize" or command=="pray" then
+    return text=="You have memorized the following spells:"
+      or text=="You are currently memorizing the following spells:"
+      or text=="You are currently praying for the following spells:"
+      or text:match("^You can memorize ") or text:match("^You can pray ")
+      or text=="The gods ignore you." or text=="You aren't trained in magic."
+      or text=="Try using Assimilate in this form."
+  end
+  return text=="You currently have the following spell slots available:"
+    or text=="The powers of the dark ignore you..."
+    or text=="The forces of nature ignore you..."
+    or text=="You wave your hands trying to absorb the forces of nature."
+    or text=="You have no idea how to even begin."
+    or text=="You don't know how to do that!"
+end
+
+function ArjUI:captureSpellLine(text)
+  local request = self.spellCapture
+  if not request then return end
+  local s, lines = self.state, request.lines
+  if getEpoch()>request.deadline or #lines>=1024 then
+    self.spellCapture = nil
+    return
+  end
+  if (isPrompt and isPrompt()) or text:match("^%s*<%s*%d+h") then
+    -- Prompts can belong to commands already queued ahead of this request.
+    if #lines==0 then return end
+    self.spellCapture = nil
+    if request.command~="spells" then
+      s.spellOutput, s.spellView = lines, "interface"
+      self:renderSpells()
+    end
+    return
+  end
+  if request.command=="spells" then
+    if #lines==0 then
+      local owner=text:match("^>====%[ (%S+) | .+ | Max Circle %d+ %]====<$")
+      if not owner or (self.playerName and owner:lower()~=self.playerName:lower()) then return end
+    end
+    local command = text:match("^(%l+) is your spell interface$")
+    if spellCommands[command] then request.interface = command end
+    if text=="See: spells <class or specialization> | spells info <spell name>" then
+      self.spellCapture = nil
+      s.spellList, s.spellCommand, s.spellOutput = lines, request.interface, nil
+      self:renderSpells()
+      return
+    end
+  elseif #lines==0 and not isSpellInterfaceStart(request.command,text) then
+    return
+  end
+  lines[#lines+1] = text
 end
 
 function ArjUI:renderWho()
@@ -3511,7 +3855,10 @@ end
 
 -- Request data when clicking on a tab - sends command to main console
 function ArjUI:requestTabData(tabName)
-  if tabName == "stats" then
+  if tabName == "gear" then tabName=self.activeGearTab end
+  if tabName == "spells" then
+    self:requestSpellOutput("spells")
+  elseif tabName == "stats" then
     send("score")
   elseif tabName == "who" then
     send("who")
@@ -3542,17 +3889,11 @@ function ArjUI:loadSettings()
   self.settings = {}
   self.shipMode = "bridge"
   for k, v in pairs(self.settingsDefaults) do self.settings[k] = v end
-  local path = getMudletHomeDir() .. "/arjui_settings.json"
-  local f = io.open(path, "r")
-  if f then
-    local content = f:read("*a")
-    f:close()
-    local ok, data = pcall(yajl.to_value, content)
-    if ok and type(data) == "table" then
-      self.shipMode = data.shipMode=="details" and "details" or "bridge"
-      for k, v in pairs(data) do
-        if self.settingsDefaults[k] ~= nil then self.settings[k] = (v == true) end
-      end
+  local data=self:readProfileJSON(getMudletHomeDir().."/arjui_settings.json")
+  if data then
+    self.shipMode = data.shipMode=="details" and "details" or "bridge"
+    for k, v in pairs(data) do
+      if self.settingsDefaults[k] ~= nil then self.settings[k] = (v == true) end
     end
   end
 end
@@ -3561,17 +3902,17 @@ function ArjUI:saveSettings()
   local path = getMudletHomeDir() .. "/arjui_settings.json"
   local data = {}; for key,value in pairs(self.settings or self.settingsDefaults) do data[key]=value end
   data.shipMode=self.shipMode or "bridge"
-  local ok, json = pcall(yajl.to_string, data)
-  if ok then
-    local f = io.open(path, "w")
-    if f then f:write(json); f:close() end
-  end
+  return self:writeProfileJSON(path,data,"UI settings")
 end
 
 function ArjUI:setSetting(key, on)
   if self.settingsDefaults[key] == nil then return false end
+  local prior=self.settings[key]
   self.settings[key] = on
-  self:saveSettings()
+  if not self:saveSettings() then
+    self.settings[key]=prior
+    return false
+  end
   if key == "keypad" then self:setupKeypad() end
   if key == "compactHeader" then
     self:applyBackground()
@@ -4682,7 +5023,7 @@ function ArjUI:setupAliases()
     local key, val = matches[2], matches[3] == "on"
     if ArjUI:setSetting(key, val) then
       ArjUI:note(string.format("<cyan>[ArjUI] %s is now %s.", key, val and "on" or "off"))
-    else
+    elseif ArjUI.settingsDefaults[key] == nil then
       ArjUI:note("<indian_red>[ArjUI] Unknown toggle '" .. key .. "'. Type 'ui set' to list them.")
     end
   end))

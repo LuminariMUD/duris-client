@@ -47,30 +47,32 @@ bounds. Layout uses the existing accepted-map refresh path on show and resize.
 When `mapper off` pauses updates, those layout changes retain the displayed
 map; they must not render the incoming GMCP payloads ignored by the mapper.
 
-Ten `Adjustable.Container` frames are siblings under the content root. The
+Nine `Adjustable.Container` frames are siblings under the content root. The
 package owns one descriptor list for geometry, minimum logical sizes and reset.
 Panels default to locked, visible and docked. A title drag or border resize
 floats a panel; Dock returns its named home rectangle. Native border attachment
 and frame auto-save/load are disabled. Frame content uses a 22px title band and
-5px side/bottom clearance. Titles replace duplicate mobs/items/players headers.
+5px side/bottom clearance.
 
 Default rectangles (x, y, width, height as percentages of the content root):
 
-- Map: (0, 0, 16.5, 32), including area/world links, exits and time.
-- Mobs: (0, 33, 16.5, 21.5); items: (0, 55.5, 16.5, 23.5).
+- Map: (0, 0, 16.5, 45), including area/world links, exits and time.
+- Room: (0, 46, 16.5, 33), with MOBS and ITEMS tabs.
 - Output: (16.7, 0, 57, 79), including experience and room title.
-- Character: (73.9, 0, 26, 45); players: (73.9, 46, 26, 26);
-  chat: (73.9, 73, 26, 27).
+- Character: (73.9, 0, 26, 45); players: (73.9, 46, 26, 33);
+  chat: (73.9, 80, 26, 20).
 - Vitals: (0, 80, 16.5, 19.5); tank: (16.7, 80, 28.3, 19.5);
   target: (45.5, 80, 28.2, 19.5).
 
 The bottom strip is slightly taller to preserve combat labels below the new
 frame controls. Names/positions use 16px, HP uses 16px, affects headers 14px;
 remaining height is for affects. Character/chat tab rows retain an 18px minimum.
-Minimum full sizes are map 190x170, mobs/items 150x95, output 340x180,
+Minimum full sizes are map 190x170, room 150x95, output 340x180,
 character 285x160, players 190x95, chat 285x110, vitals 150x110 and
 tank/target 220x110, in Qt logical pixels. Smaller viewports clamp displayed
-rectangles to available space without replacing saved normal rectangles.
+rectangles to available space without replacing saved normal rectangles. In a
+short window, docked ROOM and PLAYERS give up height before docked VITALS and
+CHAT overlap their consoles.
 
 The fixed Panels and Reset layout controls sit just above the root inside the
 existing header margin. They remain outside maximized frames. Footer credits
@@ -82,7 +84,7 @@ Existing tell conversations appear in the scrollable Panels menu even before
 first opening. `tell:<name>` frames use the same owner, start unlocked/floating
 at 300x220 (minimum 260x160), and remain session-only. Their console and input
 sizes follow the inner frame, preserving drafts/history across full reset.
-Parent show reconciles active character/chat/map views without switching tabs
+Parent show reconciles active room, gear, character, chat and map views without switching tabs
 or sending commands. Map viewport refresh coalesces through one owned timer,
 redraws accepted zone/wilderness data, and performs no network request.
 A maximized frame hides all other dashboard frame trees without changing their
@@ -93,8 +95,18 @@ returns to that normal state. Private conversations use the same visibility rule
 unread counts clear only when the frame body is actually revealed, and repeated
 layout passes or covered open requests cannot acknowledge unseen messages.
 
-The character tabs are **GROUP / STATS / INV / EQ / WHO / SHIP**, with GROUP
-selected initially. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
+ROOM defaults to MOBS and remembers the selected subtab. Both room lists
+receive updates in the background. Older layouts carry their floating MOBS
+rectangle into ROOM, falling back to ITEMS. The combined frame stays accessible
+if either old panel was visible. Migration saves to the v2 file and leaves the
+v1 layout available to older package versions.
+
+The character tabs are **GROUP / STATS / GEAR / SPELLS / WHO / SHIP**, with GROUP
+selected initially. GEAR remembers the selected INV or EQ subtab during the UI
+session. SPELLS requests the personal `spells` listing and reads the interface
+command from its footer. Running that command requires an explicit click because
+it can begin spell preparation. Its reply is shown through the next prompt. For
+mana users, WILL displays the casting syntax. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
 with ALL selected initially. STATS includes identity, coins, and bartender
 quest information. SHIP offers **Bridge** and **Details**, remembering only this
 view preference. Bridge is a native Geyser ScrollBox inside the existing frame:
@@ -137,7 +149,10 @@ mode on reveal. Widgets retain identities; only changed label content/styles and
 geometry update. No ship heartbeat, local timer countdown or persisted ship snapshot
 is introduced. Native labels provide the complete schematic without an image dependency.
 
-The bottom strip puts HP, MP, movement, and position below the left column.
+The bottom strip puts HP, MP, and movement below the left column. Position
+shares the bottom row with the spell preparation estimate. An active estimate
+counts down from the latest server snapshot. A paused estimate holds its value,
+and PREP OK requires server confirmation. An unavailable stream shows PREP —.
 Tank and target displays split the space below the console. **BUFFS and
 DEBUFFS both describe the player's affects**, even though they sit below the
 tank and target respectively. DMG shows the current fight's damage total.
@@ -235,7 +250,10 @@ real Mudlet when changing fonts or measurements.
 | Exit label | Sends the corresponding direction. Closed and locked doors receive distinct styles. |
 | World icon / area name | Opens the world map / current zone's wiki page. |
 | Time display | Sends `time`. |
-| Character tab | Selects its view; clicking the active STATS, INV, EQ, WHO, or SHIP tab requests `score`, `inv`, `eq`, `who`, or `look ship`. |
+| Character tab | Selects a view. Click STATS, WHO or SHIP again to refresh. |
+| ROOM tabs | Switch between the live MOBS and ITEMS lists. |
+| GEAR tabs | Select and refresh inventory or equipment. |
+| SPELLS tabs | LIST refreshes the personal catalog. The reported command opens the character's spell interface. |
 | Entity link / group member | Opens contextual actions; custom actions are saved by category. |
 | TELLS contact | Opens a private conversation window; unread counts mark new messages. |
 | DMG | Prints the session damage report. |
@@ -313,6 +331,7 @@ awards preserve scores, and session reset discards outstanding rolls.
 | `Char.Vitals` | HP/mana/movement, experience, position, coins, fighting state, mana applicability |
 | `Char.Status` | Identity and character-entry detection |
 | `Char.Affects` | Player buffs/debuffs, classified locally by name |
+| `Char.SpellPreparation` | Owner-only active, paused or complete preparation estimate |
 | `Room.Info` | Room/area, exits and doors, mobs/items/players, zone and position |
 | `Room.Map` | Server-colored wilderness map |
 | `Group.Status` | Membership, capacity, HP/movement, positions, NPC and away markers |
@@ -324,10 +343,14 @@ awards preserve scores, and session reset discards outstanding rolls.
 | HTTPS zone-map JSON | Zone nodes/edges used to construct local map views |
 
 ArjUI identifies the client/version with `Core.Hello` and advertises the
-eleven consumed GMCP packages with `Core.Supports.Add`. UI login detection
+consumed GMCP packages in one `Core.Supports.Add`, with bounded, rate-paced
+retries until `Duris.Capabilities` confirms support. It uses `Duris.Subscribe`
+to obtain an estimate, including when reinstalling on a socket with the
+stream already active. An inactive stream clears the estimate. Teardown cancels
+local retries and leaves the connection-wide interests intact. UI login detection
 primarily uses `Char.Status`; a default prompt pattern is a fallback.
 Text-dependent panels still depend on recognized server output.
-Inventory/equipment captures also recognize Telnet prompt boundaries,
+Inventory, equipment and spell interface captures recognize Telnet prompt boundaries,
 including custom prompts.
 
 Damage tracking prefers `Combat.Update.round`. The text fallback reads
@@ -376,14 +399,16 @@ or use `look` to obtain fresh room data and retry.
 
 | Storage | Contents and lifetime |
 | --- | --- |
-| `arjui_layout.json` | Versioned dashboard modes, normalized normal rectangles, locks and hidden/minimized flags; maximize is transient |
+| `arjui_layout_v2.json` | Dashboard modes, normal rectangles, locks, hidden/minimized flags and ROOM selection. Maximize is transient. |
 | `arjui_settings.json` | Seven display/input toggles: `compactHeader` defaults off; the other six default on |
 | `arjui_custom_commands.json` | Custom context-menu actions |
 | `arjauto.json` | Automation toggles, variables, rescue list, bidscores, and login commands |
 | Memory | Character state, captures, damage counters, chat/contact history, map cache and current location |
 
 JSON files live under the active Mudlet profile directory returned by
-`getMudletHomeDir()`. Chat/contact history is not written to disk and remains
+`getMudletHomeDir()`. Saves check writes and closes before replacing the
+previous document. Loads can recover a backup left by an interrupted
+replacement. Chat/contact history stays in memory and remains
 available across a connection reset within the loaded UI. UI teardown/profile
 restart clears it. Saved settings are separate from live character state.
 Settings load before background and geometry construction. A profile without

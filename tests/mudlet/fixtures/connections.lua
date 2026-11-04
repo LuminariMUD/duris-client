@@ -162,14 +162,22 @@ T.steps({
   T.check(ArjUI.playerName==nil and not ArjUI.initialDataRequested,"disconnect clears next session too")
  end},
  {name="supported-packages",run=function()
-  local seen={}
-  local oldGmod,oldSend=gmod,sendGMCP
-  gmod={enableModule=function(owner,module) T.check(owner=="ArjUI","GMCP module owner"); seen[module]=true end}
-  local hello
-  sendGMCP=function(message) if message:find("Core.Hello",1,true) then hello=message end end
+  local oldSend, hello, supports = sendGMCP
+  sendGMCP=function(message)
+   hello=message:match("^Core.Hello (.+)$") or hello
+   supports=message:match("^Core.Supports.Add (.+)$") or supports
+  end
   ArjUI:enableGMCP()
-  gmod,sendGMCP=oldGmod,oldSend
-  for _,module in ipairs({"Char.Vitals","Char.Status","Char.Affects","Room.Info","Room.Map","Combat.Update","Group.Status","Comm.Channel","Quest.Status","Ship.Info","Ship.Contacts"}) do T.check(seen[module],"advertises "..module) end
+  local retry=ArjUI.gmcpRetryTimer
+  T.check(retry and ArjUI.timers[retry],"negotiation retry belongs to UI")
+  raiseEvent("sysProtocolDisabled","GMCP")
+  T.check(not ArjUI.gmcpRetryTimer and not ArjUI.timers[retry],"GMCP disable cancels pending retry")
+  sendGMCP=oldSend
+  local seen={}
+  for _,module in ipairs(yajl.to_value(supports)) do seen[module]=true end
+  for _,module in ipairs({"Char.Vitals","Char.Status","Char.Affects","Room.Info","Room.Map","Combat.Update","Group.Status","Comm.Channel","Quest.Status","Ship.Info","Ship.Contacts","Duris.Capabilities","Char.SpellPreparation"}) do
+   T.check(seen[module.." 1"],"advertises "..module.." in one batch")
+  end
   T.check(hello:find('"version":"'..ArjUI.VERSION..'"',1,true),"hello advertises built version")
  end}
 })

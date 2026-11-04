@@ -49,16 +49,12 @@ function ArjAuto:load()
   self.rescueList = {}
   self.bidScores = {}
   self.loginCommands = {}
-  local f = io.open(self:path(), "r")
-  if not f then return end
-  local content = f:read("*a")
-  f:close()
-  local ok, data = pcall(yajl.to_value, content)
-  if not ok or type(data) ~= "table" then return end
-  for k, v in pairs(data.settings or {}) do
+  local data=ArjUI:readProfileJSON(self:path())
+  if not data then return end
+  for k, v in pairs(type(data.settings)=="table" and data.settings or {}) do
     if self.toggleDefaults[k] ~= nil then self.settings[k] = (v == true) end
   end
-  for k, v in pairs(data.vars or {}) do
+  for k, v in pairs(type(data.vars)=="table" and data.vars or {}) do
     if self.varDefaults[k] ~= nil then self.vars[k] = tostring(v) end
   end
   if type(data.rescueList) == "table" then self.rescueList = data.rescueList end
@@ -67,13 +63,10 @@ function ArjAuto:load()
 end
 
 function ArjAuto:save()
-  local ok, json = pcall(yajl.to_string, {
+  return ArjUI:writeProfileJSON(self:path(),{
     settings = self.settings, vars = self.vars, rescueList = self.rescueList,
     bidScores = self.bidScores, loginCommands = self.loginCommands,
-  })
-  if not ok then return end
-  local f = io.open(self:path(), "w")
-  if f then f:write(json); f:close() end
+  },"automation settings and bid scores (changes remain in this session)")
 end
 
 -- ============================================================
@@ -966,12 +959,12 @@ function ArjAuto:setupAliases()
   -- rescue list
   addAlias("^rescue add (\\w+)$", function()
     ArjAuto.rescueList[matches[2]:lower()] = true
-    ArjAuto:save()
+    if not ArjAuto:save() then return end
     note("<cyan>[auto] " .. matches[2] .. " added to the rescue list.")
   end)
   addAlias("^rescue del (\\w+)$", function()
     ArjAuto.rescueList[matches[2]:lower()] = nil
-    ArjAuto:save()
+    if not ArjAuto:save() then return end
     note("<cyan>[auto] " .. matches[2] .. " removed from the rescue list.")
   end)
   addAlias("^rescue group$", function()
@@ -979,7 +972,7 @@ function ArjAuto:setupAliases()
     for _, m in ipairs(groupMembers()) do
       if (m.name or ""):lower() ~= myName():lower() then ArjAuto.rescueList[m.name:lower()] = true; n = n + 1 end
     end
-    ArjAuto:save()
+    if not ArjAuto:save() then return end
     note("<cyan>[auto] Added " .. n .. " group members to the rescue list.")
   end)
   addAlias("^rescue list$", function()
@@ -988,7 +981,10 @@ function ArjAuto:setupAliases()
     table.sort(names)
     note("<cyan>[auto] Rescue list: <white>" .. (#names > 0 and table.concat(names, ", ") or "(empty)") .. "<cyan>  autoRescue is " .. (on("autoRescue") and "on" or "off"))
   end)
-  addAlias("^rescue clear$", function() ArjAuto.rescueList = {}; ArjAuto:save(); note("<cyan>[auto] Rescue list cleared.") end)
+  addAlias("^rescue clear$", function()
+    ArjAuto.rescueList = {}
+    if ArjAuto:save() then note("<cyan>[auto] Rescue list cleared.") end
+  end)
 
   -- group casting helpers: cast a spell on every player in the group, skipping yourself
   addAlias("^castall '?([^']+)'?$", function()
@@ -1018,10 +1014,14 @@ function ArjAuto:setupAliases()
 
   -- login commands
   addAlias("^login add (.+)$", function()
-    table.insert(ArjAuto.loginCommands, matches[2]); ArjAuto:save()
+    table.insert(ArjAuto.loginCommands, matches[2])
+    if not ArjAuto:save() then return end
     note("<cyan>[auto] Will send '" .. matches[2] .. "' on login.")
   end)
-  addAlias("^login clear$", function() ArjAuto.loginCommands = {}; ArjAuto:save(); note("<cyan>[auto] Login commands cleared.") end)
+  addAlias("^login clear$", function()
+    ArjAuto.loginCommands = {}
+    if ArjAuto:save() then note("<cyan>[auto] Login commands cleared.") end
+  end)
   addAlias("^login list$", function()
     note("<cyan>[auto] Login commands: <white>" .. (#ArjAuto.loginCommands > 0 and table.concat(ArjAuto.loginCommands, "; ") or "(none)"))
   end)
@@ -1088,10 +1088,14 @@ function ArjAuto:setupAliases()
   addAlias("^split free$", function() ArjAuto:splitRoll(true) end)
   addAlias("^split scores$", function() ArjAuto:splitScores() end)
   addAlias("^split set (\\w+) (\\d+)$", function()
-    ArjAuto.bidScores[matches[2]] = tonumber(matches[3]); ArjAuto:save()
+    ArjAuto.bidScores[matches[2]] = tonumber(matches[3])
+    if not ArjAuto:save() then return end
     note("<cyan>[split] " .. matches[2] .. " = " .. ArjAuto:bidScore(matches[2]))
   end)
-  addAlias("^split flush$", function() ArjAuto.bidScores = {}; ArjAuto:save(); note("<cyan>[split] Bidscores cleared.") end)
+  addAlias("^split flush$", function()
+    ArjAuto.bidScores = {}
+    if ArjAuto:save() then note("<cyan>[split] Bidscores cleared.") end
+  end)
 
   -- epic zones
   addAlias("^epic report$", function() ArjAuto:epicReport() end)

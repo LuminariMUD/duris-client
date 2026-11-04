@@ -43,7 +43,7 @@ The package is named **Arjinius Client** inside Mudlet. For updates, download th
 | **A cohesive interface** | A dark fantasy frame, percentage-based layout, central game console, and Mudlet's native command line. |
 | **Character and quests** | HP, mana, movement, progress toward the next level, position, character identity, coins, and active bartender quest details. Non-mana classes show **MP n/a**. |
 | **Zone and wilderness maps** | Zone layouts from the Duris map API and wilderness maps from GMCP, with zoom controls, room tooltips, and a current-position marker. |
-| **Room awareness** | Clickable exits, distinct closed/locked exit styles, lists of mobs, items, and players, plus NPC annotations showing whom they are fighting. |
+| **Room awareness** | Clickable exits, distinct closed/locked exit styles, MOBS and ITEMS tabs in ROOM, a separate PLAYERS panel, plus NPC annotations showing whom they are fighting. |
 | **Combat and groups** | Target health and position, a prompt-derived tank display, affects, a per-fight damage counter, group size/capacity, moves per member, the most hurt member highlighted, and dimmed **AWAY** markers for members outside your room. |
 | **Chat that stays organized** | **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**, with timestamps, individual tell windows, contact history for the current session, and alignment-colored nchat/jchat senders. |
 | **Useful details nearby** | Inventory, equipment, who-list, and ship panels; context menus for common actions; in-game time; links to the world map and current zone's wiki page. |
@@ -81,17 +81,23 @@ Type these into the Mudlet command input:
 
 Toggles for `ui set`: `compactHeader` (off by default), `keypad` (numpad keys), `chatTimestamps`, `damageTracker`, `scanFormat`, `alerts`, and `expTracker` (the latter six default to on). All are saved to `arjui_settings.json` in your Mudlet profile folder. Changing the presentation preserves your output history, selected tabs, and live state; the saved mode also applies after reopening Mudlet.
 
-Panel IDs are `map`, `mobs`, `items`, `output`, `character`, `players`, `chat`,
+Panel IDs are `map`, `room`, `output`, `character`, `players`, `chat`,
 `vitals`, `tank`, and `target`. Existing conversations also use `tell:<name>`.
 Private windows share move/resize and minimize/maximize controls, retain drafts
 and history through reset, and start closed after reset. Their geometry and
 history remain session-only.
 
+In CHARACTER, GEAR contains INV and EQ. SPELLS lists the character's spells and
+shows the spell command reported by Duris. A primary click on that command can start
+preparation. VITALS shows the estimated time remaining next to position on
+servers that publish spell preparation over GMCP.
+
 Panels start locked in their named home positions. Unlock to move or resize them;
 adjusting a panel makes it float. **Dock** returns it home. Only one panel can
 maximize at a time; **Restore** returns its previous state. Game output cannot
 be hidden or minimized independently. Dashboard choices are saved in
-`arjui_layout.json` in this profile and survive reconnects and restarts. A reset
+`arjui_layout_v2.json` in this profile and survive reconnects and restarts.
+The original `arjui_layout.json` remains available if you roll back. A reset
 restores defaults even while `ui off`, without turning the UI on.
 
 Use the map's **+ / −** controls to zoom. Click the active **STATS**, **INV**, **EQ**, **WHO**, or **SHIP** tab to send `score`, `inv`, `eq`, `who`, or `look ship` and refresh the corresponding information.
