@@ -54,7 +54,7 @@ local function verify(hp)
   T.check(gmcp.Char.Vitals.hp == hp and gmcp.Group.Status.members[1].hp == hp,
     "presentation leaves incoming GMCP values intact")
   if previousGroupGauge then
-    T.check(gauges.group ~= previousGroupGauge, "replacement group rows also contain HP fills")
+    T.check(gauges.group == previousGroupGauge, "HP changes reuse the group row")
   end
   previousGroupGauge = gauges.group
 end

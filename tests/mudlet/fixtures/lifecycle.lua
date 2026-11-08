@@ -30,7 +30,10 @@ for _,panel in pairs(ArjUI.panels) do ownedNames[#ownedNames+1]=panel.frame.name
 ArjUI:openPrivateChat("Companion")
 ownedNames[#ownedNames+1]=ArjUI.panels["tell:companion"].frame.name
 ArjMapper:refreshViewport()
+T.emit("Group.Status",{members={{name="Companion",hp=5,maxHp=10}},size=1,maxSize=8})
+T.check(ArjUI.groupPaintTimer~=nil,"group paint pending before uninstall")
 uninstallPackage("Arjinius Client")
+T.check(ArjUI.groupPaintTimer==nil,"uninstall cancels pending group paint")
 for _,name in ipairs(ownedNames) do T.check(Adjustable.Container.all[name]==nil,"owned frame unregistered "..name) end
 T.check(Adjustable.Container.all.DurisTest_ThirdParty==thirdParty,"uninstall preserves third party frame")
 T.check(ArjMapper.viewportTimer==nil,"uninstall cancels pending viewport redraw")

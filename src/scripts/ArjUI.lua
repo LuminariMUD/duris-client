@@ -85,7 +85,7 @@ function ArjUI:kill()
   self.shipWidgets,self.shipControls,self.shipPaintTimer=nil,nil,nil
   self.shipActionHeight,self.shipPlotOpen=nil,nil
   self.privateChats, self.tellContacts = {}, {}
-  self.exitButtonsStatic, self.groupWidgets = nil, {}
+  self.exitButtonsStatic, self.groupWidgets, self.groupPaintTimer = nil, {}, nil
   self.playerName, self.damage = nil, nil
   -- Restore default borders so main console is visible again
   setBorderTop(0)
@@ -581,6 +581,8 @@ function ArjUI:refreshPanelContent(id)
     ArjMapper:refreshViewport()
   end
   if (not id or id=="character") and self.activeTab=="ship" then self:renderShipIfActive() end
+  -- Restoring another maximized panel also uncovers Character.
+  if self.activeTab=="group" then self:requestGroupPaint() end
 end
 
 function ArjUI:panelAction(id,action)
@@ -874,6 +876,7 @@ function ArjUI:resetCharacterState()
   self.timeQueryTimer = nil
   self.accountMenuBorder = false
   self.capturing, self.captureBuffer = nil, {}
+  self:cancelGroupPaint()
   self:resetShip()
 end
 
@@ -2635,7 +2638,7 @@ function ArjUI:onGroupStatus()
   self.state.groupSize = toNum(g.size) or #self.state.group
   self.state.groupMax = toNum(g.maxSize) or 0
   if self.state.assistTarget then self:updateAssistTarget() end
-  self:renderGroup()
+  self:requestGroupPaint()
   self:renderTank()  -- Update tank when group changes
 end
 
@@ -3161,16 +3164,32 @@ function ArjUI:renderTank()
   end
 end
 
-function ArjUI:clearGroupWidgets(shrinking)
-  for _, w in pairs(self.groupWidgets or {}) do
-    if w.container then
-      -- Qt defers deletion and does not recompute ScrollBox extents on child
-      -- removal. Hide departing rows first when shrinking to clamp scrolling.
-      if shrinking then w.container:hide() end
-      self:disposeWidget(w.container)
-    end
-  end
-  self.groupWidgets = {}
+-- Group.Status can arrive several times in one receive batch. State is updated
+-- by the handler; widgets are painted after the batch, so game text is not held
+-- behind Qt work. Painting uses the newest state and skips an unreadable panel.
+function ArjUI:requestGroupPaint()
+  if self.groupPaintTimer or self.activeTab~="group" or not self:panelIsVisible("character") then return end
+  self.groupPaintTimer=self:after(0,function()
+    self.groupPaintTimer=nil
+    self:renderGroup()
+  end)
+end
+
+function ArjUI:cancelGroupPaint()
+  if not self.groupPaintTimer then return end
+  killTimer(self.groupPaintTimer)
+  self.timers[self.groupPaintTimer]=nil
+  self.groupPaintTimer=nil
+end
+
+function ArjUI:retireGroupWidget(key)
+  local entry=self.groupWidgets[key]
+  if not entry then return end
+  -- Qt defers deletion and does not recompute ScrollBox extents on child
+  -- removal. Hide departing rows first to clamp scrolling.
+  entry.container:hide()
+  self:disposeWidget(entry.container)
+  self.groupWidgets[key]=nil
 end
 
 function ArjUI:getGroupHpStyle(pct)
@@ -3185,40 +3204,146 @@ function ArjUI:getGroupHpStyle(pct)
   end
 end
 
-function ArjUI:renderGroup()
-  local members = self.state.group or {}
-  self:clearGroupWidgets(#members < (self.groupMemberCount or 0))
-  self.groupMemberCount = #members
-  
-  -- Styles
-  local headerStyle = "background-color: transparent; color: #50c878; font-size: 10px; font-weight: bold; qproperty-alignment: 'AlignLeft';"
-  local nameStyle = "background-color: transparent; color: #d0d0d0; font-size: 9px; font-weight: bold; qproperty-alignment: 'AlignLeft';"
-  local posStyle = "background-color: transparent; color: #888888; font-size: 9px; qproperty-alignment: 'AlignRight';"
-  local posAlertStyle = "background-color: transparent; color: #ff6666; font-size: 9px; font-weight: bold; qproperty-alignment: 'AlignRight';"
-  local gaugeBack = "background-color: #08080c; border: 1px solid #153015; border-radius: 3px;"
-  local mvFront = "background-color: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #105050,stop:0.5 #207070,stop:1 #105050); border: none; border-radius: 2px;"
-  local gaugeText = "color: #e0e0e0; font-size: 8px; font-weight: bold;"
-  
-  if #members == 0 then 
-    local soloLabel = Geyser.Label:new({ name = "ArjUI_GroupSolo", x = "2%", y = "2%", width = "90%", height = "40%" }, self.groupContainer)
-    soloLabel:setStyleSheet(headerStyle)
-    soloLabel:echo("── Group ──<br/>(solo)<br/>Type 'group &lt;name&gt;' to invite")
-    self.groupWidgets.solo = { container = soloLabel }
-    return 
+local groupStyles = {
+  header = "background-color: transparent; color: #50c878; font-size: 10px; font-weight: bold; qproperty-alignment: 'AlignLeft';",
+  name = "background-color: transparent; color: #d0d0d0; font-size: 9px; font-weight: bold; qproperty-alignment: 'AlignLeft';",
+  nameAway = "background-color: transparent; color: #707070; font-size: 9px; font-weight: bold; qproperty-alignment: 'AlignLeft';",
+  nameWeakest = "background-color: transparent; color: #ff8080; font-size: 9px; font-weight: bold; qproperty-alignment: 'AlignLeft';",
+  pos = "background-color: transparent; color: #888888; font-size: 9px; qproperty-alignment: 'AlignRight';",
+  posAlert = "background-color: transparent; color: #ff6666; font-size: 9px; font-weight: bold; qproperty-alignment: 'AlignRight';",
+  gaugeBack = "background-color: #08080c; border: 1px solid #153015; border-radius: 3px;",
+  gaugeText = "color: #e0e0e0; font-size: 8px; font-weight: bold;",
+}
+local groupRowTop, groupRowHeight, groupRowStep = 26, 38, 42
+
+-- Stylesheets and echoes are the expensive Qt calls: issue them only on change.
+local function paintGroupLabel(label, style, text)
+  if label.groupStyle ~= style then label.groupStyle = style; label:setStyleSheet(style) end
+  -- Geyser's default inline foreground overrides stylesheet warning colors.
+  if label.groupText ~= text then label.groupText = text; label:echo(text, "nocolor") end
+end
+
+local function paintGroupGauge(gauge, style, pct, text)
+  if gauge.groupStyle ~= style then gauge.groupStyle = style; gauge.front:setStyleSheet(style) end
+  if gauge.groupPct ~= pct or gauge.groupText ~= text then
+    gauge.groupPct, gauge.groupText = pct, text
+    gauge:setValue(pct, 100, text)
   end
-  
-  -- Header
-  local header = Geyser.Label:new({ name = "ArjUI_GroupHeader", x = "2%", y = 0, width = "90%", height = 22 }, self.groupContainer)
-  header:setStyleSheet(headerStyle)
+end
+
+function ArjUI:createGroupRow(i)
+  local container = Geyser.Container:new({
+    name = "ArjUI_GroupMem_" .. i,
+    x = "2%", y = groupRowTop + (i - 1) * groupRowStep,
+    width = "90%", height = groupRowHeight
+  }, self.groupContainer)
+  local row = { container = container }
+
+  local nameLabel = Geyser.Label:new({ name = "ArjUI_GroupName_" .. i, x = 0, y = 0, width = "52%", height = "45%" }, container)
+  -- Slots are reused across membership changes: resolve the occupant on click.
+  nameLabel:setClickCallback(function()
+    self:showContextMenu(self:getContextMenuItems("players", row.memberName))
+  end)
+  nameLabel:setOnEnter(function() nameLabel:setCursor("PointingHand") end)
+  nameLabel:setOnLeave(function() nameLabel:setCursor("Arrow") end)
+  row.nameLabel = nameLabel
+
+  row.mvLabel = Geyser.Label:new({ name = "ArjUI_GroupMv_" .. i, x = "52%", y = 0, width = "20%", height = "45%" }, container)
+  row.posLabel = Geyser.Label:new({ name = "ArjUI_GroupPos_" .. i, x = "72%", y = 0, width = "28%", height = "45%" }, container)
+
+  local hpGauge = Geyser.Gauge:new({ name = "ArjUI_GroupHP_" .. i, x = 0, y = "50%", width = "100%", height = "45%", strict = true }, container)
+  hpGauge.back:setStyleSheet(groupStyles.gaugeBack)
+  hpGauge.text:setStyleSheet(groupStyles.gaugeText)
+  row.hpGauge = hpGauge
+  return row
+end
+
+function ArjUI:paintGroupRow(row, mem, isWeakest)
+  local name = mem.name or "Unknown"
+  local displayName = normalizeTargetName(name)
+  local hp = toNum(pick(mem, "hp", "health", "hitpoints"))
+  local maxHp = toNum(pick(mem, "maxHp", "maxhp", "max_health", "hpmax"))
+  local pos = mem.position or "sta"
+  local cond = mem.condition or mem.health_desc or ""
+
+  -- Calculate HP% - use condition if no numeric HP available
+  local hpPct
+  if hp and maxHp and maxHp > 0 then
+    hpPct = math.floor((hp / maxHp) * 100)
+  elseif hp and hp > 0 and hp <= 100 then
+    -- HP might already be a percentage
+    hpPct = hp
+  else
+    hpPct = 100
+  end
+
+  local posUpper = (pos or ""):upper():sub(1,3)
+  local isAlert = posUpper ~= "STA" and posUpper ~= ""
+  local inRoom = (mem.inRoom ~= false)  -- Group.Status.members[].inRoom
+  local mv = toNum(pick(mem, "move", "mv"))
+  local maxMv = toNum(pick(mem, "maxMove", "maxmove", "maxMv"))
+  local mvPct = (mv and maxMv and maxMv > 0) and math.floor((mv / maxMv) * 100) or nil
+
+  row.memberName = name
+  local nameStyle = not inRoom and groupStyles.nameAway or (isWeakest and groupStyles.nameWeakest or groupStyles.name)
+  paintGroupLabel(row.nameLabel, nameStyle, displayName:sub(1, mem.isNpc and 13 or 14) .. (mem.isNpc and "*" or ""))
+  if row.nameLabel.groupTip ~= displayName then
+    row.nameLabel.groupTip = displayName
+    row.nameLabel:setToolTip(displayName)
+  end
+
+  -- Moves (middle) - coloured by how spent they are
+  if mvPct then
+    local mvColor = mvPct < 33 and "#ff6060" or (mvPct < 70 and "#d4a855" or "#60a080")
+    paintGroupLabel(row.mvLabel, (groupStyles.pos:gsub("#888888", mvColor)), mvPct .. "mv")
+  else
+    paintGroupLabel(row.mvLabel, groupStyles.pos, "")
+  end
+
+  paintGroupLabel(row.posLabel, isAlert and groupStyles.posAlert or groupStyles.pos,
+    inRoom and ("[" .. posUpper .. "]") or "[AWAY]")
+
+  -- HP gauge with condition text
+  local hpText
+  if hp and maxHp and maxHp > 0 then
+    local missing = maxHp - hp
+    hpText = missing > 0 and string.format("%d/%d  -%d", hp, maxHp, missing) or string.format("%d/%d", hp, maxHp)
+  elseif cond ~= "" then
+    hpText = string.format("%d%% %s", hpPct, cond)
+  else
+    hpText = string.format("HP %d%%", hpPct)
+  end
+  paintGroupGauge(row.hpGauge, self:getGroupHpStyle(hpPct), hpPct, hpText)
+end
+
+function ArjUI:renderGroup()
+  if not self.groupContainer or self.activeTab ~= "group" or not self:panelIsVisible("character") then return end
+  self:cancelGroupPaint()
+  self.groupPaintCount = (self.groupPaintCount or 0) + 1
+  local members = self.state.group or {}
+  local widgets = self.groupWidgets
+
+  -- Retire departing rows; the rest are reused so scrolling and callbacks stay.
+  for i = #widgets, #members + 1, -1 do self:retireGroupWidget(i) end
+
+  if #members == 0 then
+    self:retireGroupWidget("header")
+    if not widgets.solo then
+      local soloLabel = Geyser.Label:new({ name = "ArjUI_GroupSolo", x = "2%", y = "2%", width = "90%", height = "40%" }, self.groupContainer)
+      paintGroupLabel(soloLabel, groupStyles.header, "── Group ──<br/>(solo)<br/>Type 'group &lt;name&gt;' to invite")
+      widgets.solo = { container = soloLabel }
+    end
+    return
+  end
+  self:retireGroupWidget("solo")
+
+  if not widgets.header then
+    widgets.header = { container = Geyser.Label:new({ name = "ArjUI_GroupHeader", x = "2%", y = 0, width = "90%", height = 22 }, self.groupContainer) }
+  end
   local sizeText = tostring(self.state.groupSize or #members)
   if (self.state.groupMax or 0) > 0 then sizeText = sizeText .. "/" .. self.state.groupMax end
-  header:echo("── Group (" .. sizeText .. ") ──")
-  self.groupWidgets.header = { container = header }
-  
-  -- Keep rows readable at every group size; overflow scrolls within the panel.
-  local yOffset = 26
-  local rowHeight = 38
-  
+  paintGroupLabel(widgets.header.container, groupStyles.header, "── Group (" .. sizeText .. ") ──")
+
   -- Find the most hurt player (not NPC, in room) so their name can be highlighted
   local weakestIdx, weakestPct = nil, 100
   for i, mem in ipairs(members) do
@@ -3230,95 +3355,11 @@ function ArjUI:renderGroup()
     end
   end
   if weakestPct >= 100 then weakestIdx = nil end
-  
+
+  -- Keep rows readable at every group size; overflow scrolls within the panel.
   for i, mem in ipairs(members) do
-    local name = mem.name or "Unknown"
-    local displayName = normalizeTargetName(name)
-    local hp = toNum(pick(mem, "hp", "health", "hitpoints"))
-    local maxHp = toNum(pick(mem, "maxHp", "maxhp", "max_health", "hpmax"))
-    local pos = mem.position or "sta"
-    local cond = mem.condition or mem.health_desc or ""
-    
-    -- Calculate HP% - use condition if no numeric HP available
-    local hpPct
-    if hp and maxHp and maxHp > 0 then
-      hpPct = math.floor((hp / maxHp) * 100)
-    elseif hp and hp > 0 and hp <= 100 then
-      -- HP might already be a percentage
-      hpPct = hp
-    else
-      hpPct = 100
-    end
-    
-    local posUpper = (pos or ""):upper():sub(1,3)
-    local isAlert = posUpper ~= "STA" and posUpper ~= ""
-    local inRoom = (mem.inRoom ~= false)  -- Group.Status.members[].inRoom
-    local mv = toNum(pick(mem, "move", "mv"))
-    local maxMv = toNum(pick(mem, "maxMove", "maxmove", "maxMv"))
-    local mvPct = (mv and maxMv and maxMv > 0) and math.floor((mv / maxMv) * 100) or nil
-    
-    -- Container for this member (percentage-based positioning)
-    local memContainer = Geyser.Container:new({ 
-      name = "ArjUI_GroupMem_" .. i, 
-      x = "2%", y = yOffset,
-      width = "90%", height = rowHeight
-    }, self.groupContainer)
-    
-    -- Name label (left)
-    local nameLabel = Geyser.Label:new({ name = "ArjUI_GroupName_" .. i, x = 0, y = 0, width = "52%", height = "45%" }, memContainer)
-    local thisNameStyle = nameStyle
-    if not inRoom then thisNameStyle = nameStyle:gsub("#d0d0d0", "#707070")
-    elseif i == weakestIdx then thisNameStyle = nameStyle:gsub("#d0d0d0", "#ff8080") end
-    nameLabel:setStyleSheet(thisNameStyle)
-    nameLabel:echo(displayName:sub(1, mem.isNpc and 13 or 14) .. (mem.isNpc and "*" or ""))
-    nameLabel:setToolTip(displayName)
-    nameLabel:setClickCallback(function()
-      self:showContextMenu(self:getContextMenuItems("players", name))
-    end)
-    nameLabel:setOnEnter(function() nameLabel:setCursor("PointingHand") end)
-    nameLabel:setOnLeave(function() nameLabel:setCursor("Arrow") end)
-    
-    -- Moves (middle) - coloured by how spent they are
-    local mvLabel = Geyser.Label:new({ name = "ArjUI_GroupMv_" .. i, x = "52%", y = 0, width = "20%", height = "45%" }, memContainer)
-    if mvPct then
-      local mvColor = mvPct < 33 and "#ff6060" or (mvPct < 70 and "#d4a855" or "#60a080")
-      mvLabel:setStyleSheet((posStyle:gsub("#888888", mvColor)))
-      mvLabel:echo(mvPct .. "mv")
-    else
-      mvLabel:setStyleSheet(posStyle)
-      mvLabel:echo("")
-    end
-    
-    -- Position label (right)
-    local posLabel = Geyser.Label:new({ name = "ArjUI_GroupPos_" .. i, x = "72%", y = 0, width = "28%", height = "45%" }, memContainer)
-    posLabel:setStyleSheet(isAlert and posAlertStyle or posStyle)
-    posLabel:echo(inRoom and ("[" .. posUpper .. "]") or "[AWAY]")
-    
-    -- HP gauge with condition text
-    local hpGauge = Geyser.Gauge:new({ name = "ArjUI_GroupHP_" .. i, x = 0, y = "50%", width = "100%", height = "45%", strict = true }, memContainer)
-    hpGauge.front:setStyleSheet(self:getGroupHpStyle(hpPct))
-    hpGauge.back:setStyleSheet(gaugeBack)
-    hpGauge.text:setStyleSheet(gaugeText)
-    local hpText
-    if hp and maxHp and maxHp > 0 then
-      local missing = maxHp - hp
-      hpText = missing > 0 and string.format("%d/%d  -%d", hp, maxHp, missing) or string.format("%d/%d", hp, maxHp)
-    elseif cond ~= "" then
-      hpText = string.format("%d%% %s", hpPct, cond)
-    else
-      hpText = string.format("HP %d%%", hpPct)
-    end
-    hpGauge:setValue(hpPct, 100, hpText)
-    
-    self.groupWidgets[i] = { 
-      container = memContainer, 
-      nameLabel = nameLabel, 
-      mvLabel = mvLabel,
-      posLabel = posLabel,
-      hpGauge = hpGauge
-    }
-    
-    yOffset = yOffset + rowHeight + 4
+    if not widgets[i] then widgets[i] = self:createGroupRow(i) end
+    self:paintGroupRow(widgets[i], mem, i == weakestIdx)
   end
 end
 
