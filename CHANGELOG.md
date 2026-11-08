@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.2 - 2026-11-08
+
+- Keep game text moving during busy group updates: the GROUP panel now updates only what changed, once per burst of server updates, and waits until it is visible.
+- Keep your scroll position in GROUP when members' health or position changes.
+
 ## 2.5.1 - 2026-11-04
 
 - Keep spell replies intact while other commands are in flight and require a primary click to start preparation.

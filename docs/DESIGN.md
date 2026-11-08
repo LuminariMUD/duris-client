@@ -240,6 +240,10 @@ Percentage geometry does not guarantee readable text at every window size or
 DPI. Preserve wrapping in text consoles and scrolling in GROUP instead of
 shrinking rows to fit an arbitrarily large group. Group rows currently use a
 38 px height with 4 px spacing; shortened names have full-name tooltips.
+`Group.Status` updates state synchronously, then coalesces painting into one
+zero-delay timer so widget work follows the received game text. GROUP reuses
+row widgets and calls Qt only for changed values; a hidden tab or covered panel
+does no widget work until it is readable again.
 Check room/area names, crowded groups, long messages, symbols, and tabs in
 real Mudlet when changing fonts or measurements.
 
