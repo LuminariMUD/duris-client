@@ -1,4 +1,10 @@
 local T=DurisTest
+-- Observe the HTML actually sent to Mudlet, not just the desired stylesheet.
+local labelHtml, originalEcho = {}, echo
+echo=function(name, text, ...)
+ if type(name)=="string" and name:match("^ArjUI_Group") then labelHtml[name]=text end
+ return originalEcho(name, text, ...)
+end
 ArjUI.initialDataRequested=true
 local function roster(n,overrides)
  local members={}
@@ -48,6 +54,11 @@ T.steps({
  end,verify=function()
   T.check(rows()==12 and header():find("(12/13)",1,true),"twelve rows and capacity painted")
   T.check(hpText(12):find("700/1000",1,true),"last row painted")
+  for _,label in ipairs({ArjUI.groupWidgets.header.container,ArjUI.groupWidgets[1].nameLabel,
+      ArjUI.groupWidgets[1].mvLabel,ArjUI.groupWidgets[1].posLabel}) do
+   T.check(labelHtml[label.name] and not labelHtml[label.name]:find("color:",1,true),
+     label.name.." renders stylesheet colors without an inline override")
+  end
  end,actions=function()
   return {{type="scroll",x=ArjUI.tabContent:get_x()+80,y=ArjUI.tabContent:get_y()+100}}
  end},

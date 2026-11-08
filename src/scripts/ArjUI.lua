@@ -3219,7 +3219,8 @@ local groupRowTop, groupRowHeight, groupRowStep = 26, 38, 42
 -- Stylesheets and echoes are the expensive Qt calls: issue them only on change.
 local function paintGroupLabel(label, style, text)
   if label.groupStyle ~= style then label.groupStyle = style; label:setStyleSheet(style) end
-  if label.groupText ~= text then label.groupText = text; label:echo(text) end
+  -- Geyser's default inline foreground overrides stylesheet warning colors.
+  if label.groupText ~= text then label.groupText = text; label:echo(text, "nocolor") end
 end
 
 local function paintGroupGauge(gauge, style, pct, text)

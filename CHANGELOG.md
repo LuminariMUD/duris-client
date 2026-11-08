@@ -4,6 +4,7 @@
 
 - Keep game text moving during busy group updates: the GROUP panel now updates only what changed, once per burst of server updates, and waits until it is visible.
 - Keep your scroll position in GROUP when members' health or position changes.
+- Restore GROUP text colors for the weakest member, absent members, low movement and alert postures.
 
 ## 2.5.1 - 2026-11-04
 

@@ -1113,3 +1113,26 @@ crowded and Errors captures. Evidence was retained only in the session scratch
 directory. Live Duris, Mudlet 4.19.1, native Windows/macOS and desktop DPI
 remain unverified. The separate server output ordering in Duris #823 is
 unaffected.
+
+## PR #33 adversarial review — 2026-11-08
+
+Visual review found an inherited GROUP warning-color defect: Geyser's default
+`echo` adds an inline white foreground that overrides the label stylesheet.
+Passing `nocolor` in the existing cached label helper restores the weakest-member,
+away, movement and posture colors without repainting unchanged labels. No new
+rendering mechanism was needed.
+
+The added HTML-output regression fails against the original PR in
+`/tmp/duris-pr33-color-before/20261108T160455Z-f55649b1-group-render` and passes
+all 102 assertions after the fix in
+`/tmp/duris-pr33-final/group-render/20261108T160540Z-6d1d22b8-group-render`.
+The final suite at `/tmp/duris-pr33-final` passed 28/29 expectations on its
+first attempt. The `no-readiness` fault hit an Xvfb/Openbox startup failure;
+its isolated rerun at `/tmp/duris-pr33-no-readiness-retry/20261108T160825Z-a5e6bfd2-lowhp`
+produced the expected acknowledgment timeout, normal shutdown and cleanup,
+completing all 29 expectations. The initial unmodified suite also passed 29/29.
+Inspected the scrolled burst, resize, shrink, solo, crowded warning colors and
+Errors-view captures on Mudlet 5.0.1 / Qt 6.11.1 under WSL2/Xvfb. Lua 5.1,
+11 controller tests, 15 release tests and local release preparation pass.
+The unreleased version remains **2.5.2**; the package was rebuilt.
+Live Duris, Mudlet 4.19.1, native Windows/macOS and physical DPI were not tested.
