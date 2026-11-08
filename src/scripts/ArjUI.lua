@@ -499,7 +499,10 @@ function ArjUI:applyPanel(panel)
     end
   end
   local x,y,w,h=self:panelBounds(panel)
+  local previousWidth=frame:get_width()
   frame:move(x,y); frame:resize(w,h)
+  -- SHIP uses pixel-sized cards/buttons; a covered resize needs a later paint.
+  if panel.def.id=="character" and frame:get_width()~=previousWidth then self.shipDirty=true end
   frame.locked=state.locked or self.maximizedPanel==panel.def.id
   local maximized=self.maximizedPanel==panel.def.id
   frame.minimized=state.minimized and not maximized
@@ -580,7 +583,7 @@ function ArjUI:refreshPanelContent(id)
   if ArjMapper and ArjMapper.state.enabled and self:panelIsVisible("map") then
     ArjMapper:refreshViewport()
   end
-  if (not id or id=="character") and self.activeTab=="ship" then self:renderShipIfActive() end
+  if (not id or id=="character" or self.shipDirty) and self.activeTab=="ship" then self:renderShipIfActive() end
   -- Restoring another maximized panel also uncovers Character.
   if self.activeTab=="group" then self:requestGroupPaint() end
 end
@@ -4514,7 +4517,7 @@ function ArjUI:renderShipBridge()
     if widget.shipGeometry~=geometry then widget:move(x,y); widget:resize(w,h); widget.shipGeometry=geometry end
     local style="background-color:#12110f; color:#d8cfbd; border:1px solid #443b2c; padding:3px; font-family:monospace; font-size:9pt;"..(css or "")
     if widget.shipStyle~=style then widget:setStyleSheet(style); widget.shipStyle=style end
-    if widget.shipHTML~=html then widget:echo(html); widget.shipHTML=html end
+    if widget.shipHTML~=html then widget:echo(html,"nocolor"); widget.shipHTML=html end
     widget:setClickCallback(callback or function() end); widget:show()
     return widget
   end

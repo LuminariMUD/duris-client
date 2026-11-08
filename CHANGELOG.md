@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.3 - 2026-11-08
+
+- Show the latest ship information in SHIP as soon as another maximized panel is restored, instead of waiting for the next ship update.
+- Refit SHIP cards and buttons after transferring maximization between panels, even without new ship data.
+- Restore critical, damaged and sound text colors in the ship bridge.
+
 ## 2.5.2 - 2026-11-08
 
 - Keep game text moving during busy group updates: the GROUP panel now updates only what changed, once per burst of server updates, and waits until it is visible.

@@ -145,7 +145,9 @@ view changes and resizing never send commands. Existing opt-in ArjAuto polling i
 
 Visible updates coalesce into one owned deferred paint. Hidden/minimized/covered
 Character keeps accepting snapshots without painting, then reconciles its selected
-mode on reveal. Widgets retain identities; only changed label content/styles and
+mode on reveal. Character width changes also invalidate SHIP, so transferring
+maximization cannot leave its wide cards and controls in a compact panel.
+Widgets retain identities; only changed label content/styles and
 geometry update. No ship heartbeat, local timer countdown or persisted ship snapshot
 is introduced. Native labels provide the complete schematic without an image dependency.
 
