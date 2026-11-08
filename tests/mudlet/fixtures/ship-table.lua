@@ -1,4 +1,10 @@
 local T=DurisTest
+-- Check the rendered HTML too: inline foregrounds can mask warning CSS.
+local labelHtml, originalEcho = {}, echo
+echo=function(name, text, ...)
+ if type(name)=="string" and name:match("^ArjUI_Ship_") then labelHtml[name]=text end
+ return originalEcho(name, text, ...)
+end
 ArjUI.initialDataRequested=true
 local function pageClick(widget)
  local action=T.click(widget)
@@ -25,6 +31,11 @@ T.steps({
   T.check(ArjUI.shipWidgets.portArmor.shipStyle:find("#d4b56e",1,true),"33 of 100 reaches damaged band")
   T.check(ArjUI.shipWidgets.starboardArmor.shipStyle:find("#d4b56e",1,true),"65 of 100 remains damaged")
   T.check(ArjUI.shipWidgets.sternArmor.shipStyle:find("#7aa889",1,true),"66 of 100 reaches sound band")
+  for _,key in ipairs({"bowArmor","portArmor","starboardArmor","sternArmor"}) do
+   local label=ArjUI.shipWidgets[key]
+   T.check(labelHtml[label.name] and not labelHtml[label.name]:find("color:",1,true),
+     key.." renders damage colors without an inline override")
+  end
   T.check(not ArjUI.shipWidgets.bowHullfill,"zero maximum produces no inferred gauge")
   T.check(#T.commands==0,"maximizing and painting send no game command")
   ArjUI.shipWidgets.badge2.clickCallback()
@@ -153,6 +164,22 @@ T.steps({
   ArjUI:panelAction("room","restore")
  end,verify=function()
   T.check(ArjUI.shipPaintCount==T.paintCount and ArjUI.shipPaintTimer==nil,"unrelated panel actions do not repaint current ship data")
+ end},
+ {name="maximize-character-before-cover",run=function()
+  ArjUI:panelAction("character","maximize")
+ end,verify=function()
+  T.check(ArjUI.shipRoot:get_width()>=720 and not ArjUI.shipDirty,"wide ship layout is current before transferring maximize")
+  T.paintCount=ArjUI.shipPaintCount
+  ArjUI:panelAction("output","maximize")
+ end},
+ {name="transfer-maximize-without-data",run=function()
+  T.check(ArjUI.shipRoot:get_width()<720 and ArjUI.shipPaintCount==T.paintCount,"covering the wide ship shrinks it without painting")
+  ArjUI:panelAction("output","restore")
+ end},
+ {name="transfer-maximize-reveal",run=function()
+  T.check(ArjUI.shipWidgets.identity:get_width()<=ArjUI.shipRoot:get_width(),"revealed ship cards fit after maximize transfers without new data")
+  T.check(ArjUI.shipPaintCount==T.paintCount+1 and not ArjUI.shipDirty,"revealing a changed ship width repaints once")
+  T.check(ArjUI.shipActionHeight==46,"revealed compact ship restores the two-row action strip")
  end},
  {name="mode-restore",run=function()
   ArjUI:resetShip()
