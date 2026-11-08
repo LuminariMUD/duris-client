@@ -580,7 +580,7 @@ function ArjUI:refreshPanelContent(id)
   if ArjMapper and ArjMapper.state.enabled and self:panelIsVisible("map") then
     ArjMapper:refreshViewport()
   end
-  if (not id or id=="character") and self.activeTab=="ship" then self:renderShipIfActive() end
+  if (not id or id=="character" or self.shipDirty) and self.activeTab=="ship" then self:renderShipIfActive() end
   -- Restoring another maximized panel also uncovers Character.
   if self.activeTab=="group" then self:requestGroupPaint() end
 end

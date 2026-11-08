@@ -138,9 +138,21 @@ T.steps({
   ArjUI:panelAction("output","maximize")
   T.paintCount=ArjUI.shipPaintCount
   T.emit("Ship.Contacts",{shipKey="3:3",heading=0,speed=0,contacts={}})
+  T.emit("Ship.Info",{shipKey="3:3",name="Covered vessel",id="**"})
  end,verify=function()
   T.check(ArjUI.shipPaintCount==T.paintCount and ArjUI.shipPaintTimer==nil,"covered Character does not paint")
   ArjUI:panelAction("output","restore")
+ end},
+ {name="covered-reveal",run=function()
+  T.check(ArjUI.shipPaintCount==T.paintCount+1 and not ArjUI.shipDirty,"restoring another panel paints once")
+  T.check(ArjUI.shipWidgets.identity.shipHTML:find("Covered vessel",1,true),"restoring another panel shows the latest ship state")
+  T.paintCount=ArjUI.shipPaintCount
+  ArjUI:panelAction("output","maximize")
+  ArjUI:panelAction("output","restore")
+  ArjUI:panelAction("room","minimize")
+  ArjUI:panelAction("room","restore")
+ end,verify=function()
+  T.check(ArjUI.shipPaintCount==T.paintCount and ArjUI.shipPaintTimer==nil,"unrelated panel actions do not repaint current ship data")
  end},
  {name="mode-restore",run=function()
   ArjUI:resetShip()

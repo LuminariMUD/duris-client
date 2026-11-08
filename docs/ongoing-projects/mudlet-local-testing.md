@@ -1136,3 +1136,18 @@ Errors-view captures on Mudlet 5.0.1 / Qt 6.11.1 under WSL2/Xvfb. Lua 5.1,
 11 controller tests, 15 release tests and local release preparation pass.
 The unreleased version remains **2.5.2**; the package was rebuilt.
 Live Duris, Mudlet 4.19.1, native Windows/macOS and physical DPI were not tested.
+
+## SHIP refresh after another panel is restored — 2026-11-08
+
+With SHIP active and Output maximized, ship updates were accepted but not
+painted, and restoring Output left SHIP stale until the next ship update. The
+extended `ship-table` case failed on this check before the fix and passes 61
+assertions after it. Unrelated panel actions do not repaint a current SHIP view.
+
+Candidate **2.5.3** passed **29/29** cases on Mudlet 5.0.1 (Qt 6.11.1) under
+Xvfb in WSL2/Ubuntu 24.04, including the expected negative cases. Lua 5.1
+checks, 11 controller tests, 15 release tests and local release preparation
+passed. Package payload SHA-256 is
+`6ddbf55d6709ad0cfb196ec430e74794d4b0e86d6b0d7979d8147e67e6ada9c6`.
+Reviewed the reveal and Errors captures. Live Duris, Mudlet 4.19.1, native
+Windows/macOS and desktop DPI remain unverified.
