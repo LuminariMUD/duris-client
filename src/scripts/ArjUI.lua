@@ -867,7 +867,7 @@ function ArjUI:resetCharacterState()
     usesMana = true, fighting = nil,
     charLevel = nil, charClass = nil, charRace = nil, charGuild = nil, charTitle = nil,
     quest = nil,
-    timeOfDay = "day",  -- day, night, dawn, dusk
+    timeOfDay = nil,  -- unknown until structured time or a legacy reply arrives
   }
 
   self.initialDataRequested = false
@@ -884,13 +884,15 @@ function ArjUI:resetCharacterState()
 end
 
 function ArjUI:endSession()
+  self:invalidateOwnerItems()
+  self.combatRevision,self.damageSequence=nil,nil
   for id in pairs(self.timers or {}) do
     if id~=self.gmcpRetryTimer then killTimer(id); self.timers[id]=nil end
   end
   if self.scanTimer then killTimer(self.scanTimer); self.scanTimer = nil end
   self.scanCounts = {}
   self:resetCharacterState()
-  self.damage = {fight=0, fightHits=0, session=0, sessionHits=0, sessionStart=os.time(), lastHit=0}
+  self.damage = {fight=0, fightHits=0, session=0, sessionHits=0, sessionStart=os.time(), lastHit=0,incomplete=self.combatStopped==true}
   if ArjAuto and ArjAuto.resetSession then ArjAuto:resetSession() end
   if ArjMapper and ArjMapper.resetSession then ArjMapper:resetSession() end
   self:renderAll()
@@ -910,7 +912,8 @@ local preparationStream = "Char.SpellPreparation"
 -- control rate limit still allows our versioned streams on a fresh socket.
 ArjUI.gmcpModules = {"Char.Vitals", "Char.Status", "Char.Affects", "Room.Info", "Room.Map",
   "Group.Status", "Comm.Channel", "Combat.Update", "Quest.Status", "Ship.Info", "Ship.Contacts",
-  "Duris.Capabilities", preparationStream}
+  "Duris.Capabilities", preparationStream, "Duris.Links", "Duris.Time", "Duris.Session",
+  "Duris.Combat", "Char.Items"}
 
 local function contains(list, value)
   if type(list)~="table" then return false end
@@ -925,9 +928,16 @@ function ArjUI:cancelGMCPRetry()
   self.gmcpRetryTimer=nil
 end
 
-function ArjUI:clearGMCPNegotiation()
+function ArjUI:clearGMCPNegotiation(preserveEntry)
   self:cancelGMCPRetry()
   self.gmcpNegotiation,self.preparationActive=nil,nil
+  if (self.protocolActive or {})["Duris.Time"] and self.state then self.state.timeOfDay,self.state.gameHour=nil,nil end
+  self.protocolActive={}
+  self.session=nil
+  if not preserveEntry then self.initializedEntry,self.damageSequence=nil,nil end
+  self.timeRevision,self.timeProcess,self.combatRevision=nil,nil,nil
+  self.combatStopped=nil
+  self:invalidateOwnerItems()
   -- The support and interest sets are shared by the socket. Leave them in
   -- place until disconnect. Teardown cannot establish exclusive ownership or
   -- safely replace the current interests with a cached capabilities reply.
@@ -951,12 +961,19 @@ function ArjUI:requestGMCPState()
     negotiation.advertisements=negotiation.advertisements+1
     attempts=negotiation.advertisements
   else
-    message,modules="Duris.Subscribe ",{preparationStream.." 1"}
+    message,modules="Duris.Subscribe ",{}
+    local wanted=self:protocolInterests()
+    negotiation.pendingInterests=wanted
     -- Subscribe replaces all interests. Build the set from the latest reply.
     for _,name in ipairs(type(caps.interested)=="table" and caps.interested or {}) do
       local version=caps.features[name]
-      if name~=preparationStream and type(name)=="string" and finite(version) then
+      if wanted[name]==nil and type(name)=="string" and finite(version) then
         modules[#modules+1]=name.." "..version
+      end
+    end
+    for _,name in ipairs({preparationStream,"Duris.Time","Duris.Combat","Char.Items"}) do
+      if wanted[name] and caps.features[name]==1 and contains(caps.supported,name) then
+        modules[#modules+1]=name.." 1"
       end
     end
     negotiation.subscriptions=negotiation.subscriptions+1
@@ -976,17 +993,48 @@ end
 function ArjUI:onDurisCapabilities()
   local caps = gmcp and gmcp.Duris and gmcp.Duris.Capabilities
   if type(caps)~="table" or caps.version~=1 then return end
+  local before=self.protocolActive or {}
+  self.protocolActive={}
+  if caps.enabled==true then
+    for _,name in ipairs(type(caps.active)=="table" and caps.active or {}) do self.protocolActive[name]=true end
+  end
+  if self.protocolActive["Duris.Time"] then self:cancelTimeQuery()
+  elseif before["Duris.Time"] then
+    self.timeRevision,self.timeProcess,self.state.timeOfDay=nil,nil,nil
+    self:renderTime()
+  end
+  if before["Char.Items"] and not self.protocolActive["Char.Items"] then
+    self:invalidateOwnerItems(); self:renderInventory(); self:renderEq()
+  end
+  if before["Duris.Combat"] and not self.protocolActive["Duris.Combat"] then
+    if caps.enabled==true and not contains(caps.interested,"Duris.Combat") then self.combatStopped=true end
+    self.damage.incomplete=true
+    self:renderDamage()
+  end
+  if caps.enabled==false then self.combatRevision=nil end
+  if self.session and type(caps.control)=="table" and not contains(caps.control,"Duris.Session") then
+    self:endSession(); self.session=nil
+  end
   self.preparationActive = contains(caps.active, preparationStream)
   if not self.preparationActive then self:setSpellPreparation(nil) end
 
   local negotiation=self.gmcpNegotiation
-  if not negotiation or negotiation.synced
-      or type(caps.features)~="table" or not contains(caps.supported,preparationStream) then return end
+  if not negotiation or type(caps.features)~="table" then return end
   local firstReply=not negotiation.capabilities
   negotiation.capabilities=caps
-  if contains(caps.interested,preparationStream) and not self.preparationActive then
-    -- An interested stream will send its first snapshot on character entry.
+  if negotiation.synced then return end
+  local matched=true
+  for name,wanted in pairs(self:protocolInterests()) do
+    local expected=wanted and caps.features[name]==1 and contains(caps.supported,name) or false
+    if contains(caps.interested,name)~=expected then matched=false end
+  end
+  if firstReply and matched and type(caps.active)=="table" and #caps.active>0 then
+    -- Reinstall on an already streaming socket needs fresh snapshots too.
+    self:cancelGMCPRetry()
+    self:requestGMCPState()
+  elseif matched then
     negotiation.synced=true
+    negotiation.pendingInterests=nil
     self:cancelGMCPRetry()
   elseif firstReply then
     -- An already active stream needs a new snapshot for this UI instance.
@@ -995,14 +1043,366 @@ function ArjUI:onDurisCapabilities()
   end
 end
 
+function ArjUI:protocolInterests()
+  return {[preparationStream]=true,["Duris.Time"]=true,
+    ["Duris.Combat"]=self.settings and self.settings.damageTracker and not self.combatStopped or false,
+    ["Char.Items"]=self.activeTab=="gear"}
+end
+
+function ArjUI:changeProtocolInterest()
+  local n=self.gmcpNegotiation
+  if not n or not n.capabilities then return end
+  local caps,wanted=n.capabilities,self:protocolInterests()
+  local matched,pending=true,n.pendingInterests~=nil
+  for name,enabled in pairs(wanted) do
+    local expected=enabled and caps.features[name]==1 and contains(caps.supported,name) or false
+    if contains(caps.interested,name)~=expected then matched=false end
+    if n.pendingInterests and n.pendingInterests[name]~=enabled then pending=false end
+  end
+  if pending or (matched and not n.pendingInterests) then return end
+  n.synced=false; n.subscriptions=0
+  self:cancelGMCPRetry()
+  self:requestGMCPState()
+end
+
+-- Compare protocol counters without converting uint64 strings to Lua doubles.
+local function decimal(value)
+  return type(value)=="string" and #value<=20 and value:match("^%d+$") and value or nil
+end
+local function newer(value, previous)
+  if not decimal(value) then return false end
+  if not previous then return true end
+  local a,b=value:gsub("^0+",""),previous:gsub("^0+","")
+  return #a>#b or (#a==#b and a>b)
+end
+local function marker(value)
+  return type(value)=="string" and #value>0 and #value<=128 and not value:find("[%c%s]")
+end
+
+function ArjUI:cancelTimeQuery()
+  if self.timeQueryTimer then killTimer(self.timeQueryTimer); self.timers[self.timeQueryTimer]=nil end
+  self.timeQueryTimer,self.timeQuerySilent=nil,false
+end
+
+function ArjUI:onDurisTime()
+  local data=gmcp.Duris.Time
+  if not (self.protocolActive or {})["Duris.Time"] or type(data)~="table"
+      or not decimal(data.revision) or not marker(data.process)
+      or not finite(data.hour) or data.hour%1~=0 or data.hour<0 or data.hour>23 then return end
+  local phase=data.hour<4 and "night" or data.hour<9 and "dawn" or data.hour<16 and "day" or data.hour<19 and "dusk" or "night"
+  if data.phase~=phase then return end
+  if self.session and (self.session.state~="playing" or data.process~=self.session.process) then return end
+  if data.process==self.timeProcess and not newer(data.revision,self.timeRevision) then return end
+  self.timeProcess,self.timeRevision=data.process,data.revision
+  self.state.timeOfDay,self.state.gameHour=phase,data.hour
+  self:cancelTimeQuery(); self:renderTime()
+end
+
+function ArjUI:protocolScope(data)
+  local s=self.session
+  return s and s.state=="playing" and data.context==s.context and data.process==s.process
+    and data.generation==s.generation and data.bodyRevision==s.bodyRevision
+end
+
+function ArjUI:onDurisSession()
+  local data=gmcp.Duris.Session
+  if type(data)~="table" or not marker(data.context) or not marker(data.process)
+      or not decimal(data.generation) or not ({account=true,chargen=true,playing=true})[data.state] then return end
+  local character=type(data.character)=="table" and data.character or nil
+  if data.state=="playing" and (not character or not decimal(character.bodyRevision)
+      or type(character.name)~="string") then return end
+  local previous=self.session
+  if previous and previous.context==data.context and newer(previous.generation,data.generation) then return end
+  local entry=data.context..":"..data.generation
+  -- Legacy bootstrap can precede the first Supports acknowledgment. Adopt its
+  -- already initialized entry rather than running login actions a second time.
+  if not previous and not self.initializedEntry and self.initialDataRequested and data.state=="playing" then
+    self.initializedEntry=entry
+  end
+  -- The server sends no second bootstrap for a Supports acknowledgment, so the
+  -- first snapshot of an entry this instance already shows must keep its state.
+  local adopted=not previous and data.state=="playing" and self.initialDataRequested and self.initializedEntry==entry
+  local boundary=not adopted and (not previous or previous.context~=data.context or previous.generation~=data.generation
+    or previous.process~=data.process or previous.bodyRevision~=(character and character.bodyRevision)
+    or previous.state~=data.state)
+  if boundary then
+    local initialized=self.initializedEntry==entry
+    local damage=self.damage
+    local clock={phase=self.state.timeOfDay,hour=self.state.gameHour,revision=self.timeRevision,process=self.timeProcess}
+    local sameEntryProcess=previous and previous.context==data.context and previous.process==data.process
+      and previous.generation==data.generation and previous.state=="playing" and data.state=="playing"
+    self:endSession()
+    if initialized then
+      self.damage=damage; self.damage.fight,self.damage.fightHits,self.damage.lastBest=0,0,nil
+      if previous and previous.process~=data.process then self.damage.incomplete=true end
+    end
+    self.timeRevision,self.timeProcess,self.combatRevision,self.damageSequence=nil,nil,nil,nil
+    if sameEntryProcess then
+      -- Time belongs to the connection/process, not the morphed/switched body.
+      self.state.timeOfDay,self.state.gameHour,self.timeRevision,self.timeProcess=clock.phase,clock.hour,clock.revision,clock.process
+    else self.state.timeOfDay,self.state.gameHour=nil,nil end
+    self:renderTime()
+    self:invalidateOwnerItems()
+  end
+  self.session={context=data.context,process=data.process,generation=data.generation,
+    state=data.state,bodyRevision=character and character.bodyRevision}
+  if data.state=="playing" then
+    if self.initializedEntry~=entry then
+      self.initializedEntry=entry
+      self:onLoginDetected()
+    else self.initialDataRequested=true end
+  end
+end
+
+function ArjUI:onDurisCombat()
+  local data=gmcp.Duris.Combat
+  if not (self.protocolActive or {})["Duris.Combat"] or type(data)~="table" or data.version~=1
+      or not self:protocolScope(data) or not newer(data.sequence,self.damageSequence)
+      or data.kind~="damage" or data.outcome~="applied" or not finite(data.damage)
+      or data.damage<=0 or data.damage%1~=0 then return end
+  self.damageSequence=data.sequence
+  self.damage.gmcpAvailable=true
+  self:addDamage(data.damage,"gmcp")
+end
+
+function ArjUI:invalidateOwnerItems()
+  if self.itemGetTimer then killTimer(self.itemGetTimer); self.timers[self.itemGetTimer]=nil; self.itemGetTimer=nil end
+  self.itemGetRequest=nil
+  if self.currentMenu and self.currentMenu.itemEpoch then self:disposeWidget(self.currentMenu); self.currentMenu=nil end
+  self.itemViews,self.itemPages={},{}
+  self.itemEpoch={}
+  self.itemRevision,self.itemTopRevision,self.itemRequested,self.itemLocation=nil,nil,nil,nil
+  if self.state then
+    self.state.inventory,self.state.equipment,self.state.invCapture,self.state.eqCapture=nil,nil,nil,nil
+    if self.state.capturing=="inv" or self.state.capturing=="eq" then self.state.capturing=nil end
+  end
+end
+
+local function itemSelector(value)
+  return type(value)=="string" and #value<=512 and value:sub(1,3)=="@i:"
+    and not value:find("[%c%s;|]")
+end
+
+function ArjUI:onOwnerItems()
+  local data=gmcp.Char and gmcp.Char.Items and gmcp.Char.Items.List
+  if not (self.protocolActive or {})["Char.Items"] or type(data)~="table" or data.version~=1
+      or not self:protocolScope(data) or not decimal(data.revision)
+      or type(data.page)~="number" or data.page<0 or data.page%1~=0
+      or type(data.available)~="boolean" or type(data.complete)~="boolean"
+      or type(data.items)~="table" or #data.items>128 then return end
+  local location=data.location
+  local top=location=="inv" or location=="eq"
+  if not top and (not itemSelector(location) or location~=self.itemRequested) then return end
+  if self.itemRevision and newer(self.itemRevision,data.revision) then return end
+  local items={}
+  for _,item in ipairs(data.items) do
+    local condition=type(item)=="table" and item.condition
+    if type(item)~="table" or type(item.description)~="string" or #item.description>383
+        or item.description:find("[%z\1-\31\127]") or item.quantity~=1
+        or (condition~=nil and condition~=yajl.null and type(condition)~="string")
+        or (type(condition)=="string" and (#condition>128 or condition:find("[%z\1-\31\127]")))
+        or (item.selector~=nil and item.selector~=yajl.null and not itemSelector(item.selector))
+        or (item.slotName~=nil and (type(item.slotName)~="string" or #item.slotName>128 or item.slotName:find("[%z\1-\31\127]"))) then
+      return
+    end
+    items[#items+1]={description=item.description,quantity=1,condition=type(condition)=="string" and condition or "",
+      selector=itemSelector(item.selector) and item.selector or nil,
+      slotName=type(item.slotName)=="string" and item.slotName or nil,
+      flags=type(item.flags)=="table" and item.flags or {}}
+  end
+  if top and data.page==0 and newer(data.revision,self.itemTopRevision) then
+    -- Validate the whole page before advancing any revision or expiring actions.
+    self:invalidateOwnerItems()
+    self.itemTopRevision=data.revision
+  end
+  local stage=self.itemPages[location]
+  if data.page==0 then stage={revision=data.revision,page=0,items={}} end
+  if not stage or stage.revision~=data.revision or stage.page~=data.page then
+    self.itemPages[location]=nil; return
+  end
+  self.itemRevision=data.revision
+  for _,item in ipairs(items) do stage.items[#stage.items+1]=item end
+  stage.page=stage.page+1
+  if not data.available then
+    self.itemViews[location]={available=false,items={}}
+    self.itemPages[location]=nil
+  elseif data.complete then
+    self.itemViews[location]={available=true,items=stage.items}
+    self.itemPages[location]=nil
+  else self.itemPages[location]=stage end
+  self:renderInventory(); self:renderEq()
+end
+
+function ArjUI:ownerItemsSupported()
+  local n=self.gmcpNegotiation
+  local caps=n and n.capabilities
+  return caps and caps.enabled==true and type(caps.features)=="table" and caps.features["Char.Items"]==1
+    and contains(caps.supported,"Char.Items")
+end
+
+function ArjUI:queueOwnerItemsGet(selector)
+  self.itemGetRequest=selector or false
+  if self.itemGetTimer then return end
+  local epoch=self.itemEpoch
+  local function request()
+    self.itemGetTimer=nil
+    if self.itemEpoch~=epoch or not (self.protocolActive or {})["Char.Items"] then return end
+    local latest=self.itemGetRequest
+    self.itemGetRequest=nil
+    self.itemGetAt=getEpoch()
+    sendGMCP("Char.Items.Get "..yajl.to_string(latest and {latest} or {}))
+  end
+  local delay=math.max(0,1.1-(getEpoch()-(self.itemGetAt or 0)))
+  if delay==0 then request() else self.itemGetTimer=self:after(delay,request) end
+end
+
+function ArjUI:requestOwnerContainer(selector)
+  if not (self.protocolActive or {})["Char.Items"] or not itemSelector(selector)
+      or not self.itemViews.inv or not self.itemViews.eq then return end
+  self.itemRequested,self.itemLocation=selector,selector
+  for location in pairs(self.itemPages) do
+    if location~="inv" and location~="eq" then self.itemPages[location]=nil end
+  end
+  for location in pairs(self.itemViews) do
+    if location~="inv" and location~="eq" then self.itemViews[location]=nil end
+  end
+  self.itemViews[selector]=nil
+  self:queueOwnerItemsGet(selector)
+  self:renderInventory(); self:renderEq()
+end
+
+function ArjUI:renderOwnerItems(box,location,category)
+  if not self:ownerItemsSupported() then return false end
+  local selected=self.itemLocation or location
+  local view=(self.itemViews or {})[selected]
+  local epoch=self.itemEpoch
+  box:clear()
+  box:cecho("<dim_gray>── "..(self.itemLocation and "Contents" or location=="inv" and "Inventory" or "Equipment").." ──\n")
+  if self.itemLocation then
+    box:echoLink("Back to inventory / equipment\n",function()
+      self.itemLocation=nil; self:renderInventory(); self:renderEq()
+    end,"Return to top-level lists",true)
+  end
+  if not view then box:echo("Waiting for item snapshot...\n"); return true end
+  if not view.available then box:echo("Contents unavailable. Normal access and visibility rules apply.\n"); return true end
+  if #view.items==0 then box:echo("(empty)\n"); return true end
+  for _,item in ipairs(view.items) do
+    local suffix={}
+    for _,flag in ipairs(item.flags) do
+      if ({invisible=true,glowing=true,humming=true,illuminating=true,magic=true})[flag] then suffix[#suffix+1]=flag end
+    end
+    local text=(item.slotName and item.slotName.." " or "")..item.description..item.condition
+      ..(#suffix>0 and " ("..table.concat(suffix,", ")..")" or "").."\n"
+    if item.selector then
+      local selector=item.selector
+      box:echoLink(text,function()
+        if self.itemEpoch~=epoch or not (self.protocolActive or {})["Char.Items"] then return end
+        local menu=self:getContextMenuItems(category,selector)
+        table.insert(menu,1,{text="View contents",callback=function()
+          if self.itemEpoch==epoch then self:requestOwnerContainer(selector) end
+        end})
+        for _,action in ipairs(menu) do
+          local cmd=action.cmd
+          if cmd and cmd~="" and not cmd:match("^arjui_") then
+            action.cmd=nil
+            action.callback=function() if self.itemEpoch==epoch then send(cmd) end end
+          end
+        end
+        self:showContextMenu(menu)
+        self.currentMenu.itemEpoch=epoch
+      end,"Item actions / view direct contents",true)
+    else box:echo(text) end
+  end
+  return true
+end
+
+-- Optional chat snapshots contain literal UTF-8, never Mudlet color markup or
+-- executable Lua. Offsets are code points, not UTF-8 bytes.
+function ArjUI:decodeChatPresentation(value, maximum)
+  if type(value)~="table" or value.version~=1 or type(value.text)~="string"
+      or #value.text>(maximum or 65536)*4 or type(value.underline)~="boolean"
+      or value.text:find("[%z\1-\8\11-\31\127]") or value.text:find("\194[\128-\159]")
+      or type(value.runs)~="table" or #value.runs>4096 then return end
+  local ok,length=pcall(utf8.len,value.text)
+  if not ok or type(length)~="number" or length>(maximum or 65536) then return end
+  local result={version=1,text=value.text,underline=value.underline,runs={},links={}}
+  local offset=0
+  local function color(id) return type(id)=="number" and id%1==0 and (id==0 or id>=16 and id<=31) end
+  for _,run in ipairs(value.runs) do
+    if type(run)~="table" or #run~=4 or run[1]~=offset or type(run[2])~="number"
+        or run[2]%1~=0 or run[2]<=offset or run[2]>length or not color(run[3]) or not color(run[4]) then return end
+    result.runs[#result.runs+1]={run[1],run[2],run[3],run[4]}; offset=run[2]
+  end
+  if offset~=length then return end
+  if value.links~=nil and (type(value.links)~="table" or #value.links>128) then return end
+  offset=0
+  local bytes=0
+  for _,link in ipairs(value.links or {}) do
+    if type(link)~="table" or type(link.start)~="number" or type(link["end"])~="number"
+        or link.start%1~=0 or link["end"]%1~=0 or link.start<offset or link["end"]<=link.start
+        or link["end"]>length or link.kind~="url" or type(link.target)~="string" or #link.target>2048
+        or not link.target:match("^[Hh][Tt][Tt][Pp][Ss]?://[^/?#%s]+")
+        or link.target:find("[%z\1-\32\127\\\"'<>`]") or link.target:find("\194[\128-\159]") then return end
+    bytes=bytes+#link.target; if bytes>32768 then return end
+    result.links[#result.links+1]={start=link.start,["end"]=link["end"],kind="url",target=link.target}
+    offset=link["end"]
+  end
+  return result
+end
+
+function ArjUI:chatSnapshots(packet)
+  local full=self:decodeChatPresentation(packet.presentation,16384)
+  local channel=({say={11,"chat.say"},tell={12,"chat.tell"},gcc={18,"chat.guild"}})[packet.channel]
+  local p=packet.presentation
+  if not channel or not full or p.channelId~=channel[1] or p.channel~=channel[2]
+      or not ({preserve=true,static=true,animated=true})[p.policy] then full=nil
+  else full.policy=p.policy end
+  return {full=full,body=self:decodeChatPresentation(packet.bodyPresentation,65536)}
+end
+
+local chatAnsi={0,4,2,6,1,5,3,7,8,12,10,14,9,13,11,15}
+function ArjUI:renderChatSnapshot(box,value)
+  local snapshot=self:decodeChatPresentation(value,65536)
+  if not snapshot then return false end
+  local offset,linkIndex=0,1
+  for _,run in ipairs(snapshot.runs) do
+    local fg=run[3]==0 and {200,200,200} or color_table[string.format("ansi_%03d",chatAnsi[run[3]-15])]
+    local bg=run[4]==0 and {12,11,9} or color_table[string.format("ansi_%03d",chatAnsi[(run[4]-16)%8+1])]
+    setFgColor(box.name,unpack(fg)); setBgColor(box.name,unpack(bg))
+    setBold(box.name,run[3]>=24); setUnderline(box.name,run[4]>=24 and snapshot.underline)
+    while offset<run[2] do
+      local link=snapshot.links[linkIndex]
+      if link and link["end"]<=offset then linkIndex=linkIndex+1
+      else
+        local active=link and link.start<=offset and link or nil
+        local last=math.min(run[2],active and active["end"] or link and link.start or run[2])
+        local text=utf8.sub(snapshot.text,offset+1,last)
+        if active then
+          local target=active.target
+          box:echoLink(text,function() openUrl(target) end,target,true)
+        else box:echo(text) end
+        offset=last
+      end
+    end
+  end
+  resetFormat(box.name)
+  return true
+end
+
+function ArjUI:displayChannelMessage(box,snapshots,prefix,text)
+  if snapshots.full and snapshots.full.policy~="preserve" then
+    self:renderChatSnapshot(box,snapshots.full); box:echo("\n")
+  elseif snapshots.body then
+    box:cecho(prefix); self:renderChatSnapshot(box,snapshots.body); box:echo("\n")
+  else box:cecho(prefix); box:echo(text.."\n") end
+end
+
 function ArjUI:onSpellPreparation()
   if not self.preparationActive then return end
   local data = gmcp and gmcp.Char and gmcp.Char.SpellPreparation
   if type(data)~="table" or not finite(data.estimatedSeconds) or data.estimatedSeconds<0 then return end
   local mode = data.state
   if mode=="active" or mode=="paused" or mode=="complete" then
-    if self.gmcpNegotiation then self.gmcpNegotiation.synced=true end
-    self:cancelGMCPRetry()
     self:setSpellPreparation(mode, data.estimatedSeconds)
   end
 end
@@ -1199,7 +1599,7 @@ function ArjUI:init()
   
   self.timeLabel = Geyser.Label:new({ name = "ArjUI_TimeLabel", x = "5%", y = "5%", width = "90%", height = "90%" }, self.timeSection)
   self.timeLabel:setStyleSheet("background-color: transparent; color: #a0a0b0; font-size: 10px; qproperty-alignment: 'AlignCenter';")
-  self.timeLabel:echo("☀ Day")
+  self.timeLabel:echo("? Unknown")
   self.timeLabel:setClickCallback(function() send("time") end)
 
   self.roomSection = panel("room")
@@ -1258,6 +1658,7 @@ function ArjUI:init()
   self.activeGearTab = "inv"
   self.gearTabs = makeTabs(gear, "ArjUI_GearTab_", {"inv", "eq"}, function(name)
     self.activeGearTab = name
+    self.itemLocation=nil
     showTab(self.gearViews, name)
     self:updateTabStyles()
     self:requestTabData(name)
@@ -2067,14 +2468,14 @@ function ArjUI:openPrivateChat(playerName)
     chat.sendButton:echo("Send")
     chat.sendButton:setClickCallback(function() submit(chat.inputBox:getText()) end)
     chat.displayName=displayName
-    for _,msg in ipairs(chat.history) do self:displayPrivateMessage(name,msg.sender,msg.text,msg.outgoing) end
+    for _,msg in ipairs(chat.history) do self:displayPrivateMessage(name,msg.sender,msg.text,msg.outgoing,msg.snapshots,msg.time) end
   end
   self:panelAction(id,"show")
   self:addTellContact(displayName)
   self:renderTellContacts()
 end
 
-function ArjUI:addPrivateChatMessage(playerName, sender, text, outgoing)
+function ArjUI:addPrivateChatMessage(playerName, sender, text, outgoing, snapshots)
   local name = playerName:lower()
   
   -- Initialize if needed
@@ -2085,6 +2486,7 @@ function ArjUI:addPrivateChatMessage(playerName, sender, text, outgoing)
     sender = sender,
     text = text,
     outgoing = outgoing,
+    snapshots = snapshots,
     time = os.date("%H:%M")
   })
   
@@ -2097,7 +2499,7 @@ function ArjUI:addPrivateChatMessage(playerName, sender, text, outgoing)
   local windowOpen = self.privateChats[name].window and self.privateChats[name].visible
   
   -- Retained consoles keep receiving data while hidden/minimized.
-  if self.privateChats[name].historyBox then self:displayPrivateMessage(name, sender, text, outgoing) end
+  if self.privateChats[name].historyBox then self:displayPrivateMessage(name, sender, text, outgoing, snapshots) end
   if windowOpen then
     -- Window is open, so mark as read
     self.privateChats[name].unread = 0
@@ -2110,17 +2512,14 @@ function ArjUI:addPrivateChatMessage(playerName, sender, text, outgoing)
   end
 end
 
-function ArjUI:displayPrivateMessage(playerName, sender, text, outgoing)
+function ArjUI:displayPrivateMessage(playerName, sender, text, outgoing, snapshots, stamp)
   local name = playerName:lower()
   local chat = self.privateChats[name]
   if not chat or not chat.historyBox then return end
   
-  local time = os.date("%H:%M")
-  if outgoing then
-    chat.historyBox:cecho(string.format("<dim_gray>[%s] <medium_orchid>You<reset>: %s\n", time, text))
-  else
-    chat.historyBox:cecho(string.format("<dim_gray>[%s] <gold>%s<reset>: %s\n", time, sender, text))
-  end
+  local prefix=string.format("<dim_gray>[%s] %s<reset>: ",stamp or os.date("%H:%M"),
+    outgoing and "<medium_orchid>You" or "<gold>"..sender)
+  self:displayChannelMessage(chat.historyBox,snapshots or {},prefix,text)
 end
 
 function ArjUI:addTellContact(playerName)
@@ -2144,7 +2543,7 @@ function ArjUI:addTellContact(playerName)
   self:renderTellContacts()
 end
 
-function ArjUI:handleIncomingTell(sender, text)
+function ArjUI:handleIncomingTell(sender, text, snapshots)
   local name = sender:lower()
   local displayName = sender:sub(1,1):upper() .. sender:sub(2):lower()
   
@@ -2152,7 +2551,7 @@ function ArjUI:handleIncomingTell(sender, text)
   self:addTellContact(displayName)
   
   -- Add message to history (this handles unread count internally)
-  self:addPrivateChatMessage(name, displayName, text, false)
+  self:addPrivateChatMessage(name, displayName, text, false, snapshots)
 end
 
 function ArjUI:renderTellContacts()
@@ -2194,6 +2593,12 @@ end
 
 function ArjUI:registerGMCPHandlers()
   local h
+  for event,method in pairs({["Duris.Time"]="onDurisTime",["Duris.Session"]="onDurisSession",
+      ["Duris.Combat"]="onDurisCombat",["Char.Items.List"]="onOwnerItems"}) do
+    local callback=method
+    h=registerAnonymousEventHandler("gmcp."..event,function() self[callback](self) end)
+    table.insert(self.eventHandlers,h)
+  end
   
   h = registerAnonymousEventHandler("gmcp.Duris.Capabilities", function() self:onDurisCapabilities() end)
   table.insert(self.eventHandlers, h)
@@ -2244,7 +2649,7 @@ function ArjUI:registerGMCPHandlers()
     if protocol=="GMCP" then
       -- A package installed while the socket was opening may have attempted
       -- to advertise before Telnet actually enabled GMCP.
-      self:clearGMCPNegotiation()
+      self:clearGMCPNegotiation(true)
       self:enableGMCP()
     end
   end)
@@ -2253,8 +2658,11 @@ function ArjUI:registerGMCPHandlers()
   table.insert(self.eventHandlers, h)
   h = registerAnonymousEventHandler("sysProtocolDisabled", function(_, protocol)
     if protocol=="GMCP" then
-      self:clearGMCPNegotiation()
+      self:clearGMCPNegotiation(true)
       self:setSpellPreparation(nil)
+      self.damage.gmcpAvailable,self.damage.source=false,nil
+      self.damage.incomplete=true
+      self:renderInventory(); self:renderEq(); self:renderDamage()
     end
   end)
   table.insert(self.eventHandlers, h)
@@ -2285,6 +2693,7 @@ function ArjUI:registerGMCPHandlers()
   
   -- Trigger to detect when a mob dies (clears target and resets tank bar to self)
   self.deathTrigger = self:addRuntimeTrigger("^.+ is dead! R\\.I\\.P\\.$", function()
+    if ArjUI.combatRevision then return end
     -- Clear target
     ArjUI.state.target = nil
     ArjUI.state.targetHpPct = 100
@@ -2303,6 +2712,7 @@ function ArjUI:registerGMCPHandlers()
   
   -- Trigger to detect flee (clears target and resets tank bar to self)
   self.fleeTrigger = self:addRuntimeTrigger("^You flee ", function()
+    if ArjUI.combatRevision then return end
     -- Clear target
     ArjUI.state.target = nil
     ArjUI.state.targetHpPct = 100
@@ -2322,6 +2732,7 @@ function ArjUI:registerGMCPHandlers()
   -- The server menu follows this border immediately; mentions in chat or room
   -- descriptions must not discard character state or pending actions.
   self.playerDeathTrigger = self:addRuntimeTrigger("^.*$", function()
+    if self.session then return end
     local text = matches[1]
     local precededByBorder = self.accountMenuBorder
     self.accountMenuBorder = text == "/" .. string.rep("=", 43) .. "\\"
@@ -2333,6 +2744,7 @@ function ArjUI:registerGMCPHandlers()
   
   -- Assist changes the tank display; the player's own vitals stay independent.
   self.assistTrigger = self:addRuntimeTrigger("^You are now assisting (.+)\\.$", function()
+    if ArjUI.combatRevision then return end
     local assistName = matches[2]
     if assistName and assistName ~= "" then
       ArjUI.state.assistTarget = assistName
@@ -2344,6 +2756,7 @@ function ArjUI:registerGMCPHandlers()
   
   -- Trigger to detect stop assisting
   self.stopAssistTrigger = self:addRuntimeTrigger("^You are no longer assisting ", function()
+    if ArjUI.combatRevision then return end
     ArjUI.state.assistTarget = nil
     ArjUI.state.iAmTank = true
     ArjUI:renderTank()
@@ -2351,18 +2764,22 @@ function ArjUI:registerGMCPHandlers()
   
   -- Time of day triggers (automatic announcements)
   self.timeDayTrigger = self:addRuntimeTrigger("^The day has begun\\.$", function()
+    if (ArjUI.protocolActive or {})["Duris.Time"] then return end
     ArjUI.state.timeOfDay = "day"
     ArjUI:renderTime()
   end)
   self.timeNightTrigger = self:addRuntimeTrigger("^The night has begun\\.$", function()
+    if (ArjUI.protocolActive or {})["Duris.Time"] then return end
     ArjUI.state.timeOfDay = "night"
     ArjUI:renderTime()
   end)
   self.timeDawnTrigger = self:addRuntimeTrigger("^(?:The first hint of daylight can be seen on the northern horizon\\.|The first rays of sunlight signal that day is approaching\\.|The sun rises over the northern horizon\\.)$", function()
+    if (ArjUI.protocolActive or {})["Duris.Time"] then return end
     ArjUI.state.timeOfDay = "dawn"
     ArjUI:renderTime()
   end)
   self.timeDuskTrigger = self:addRuntimeTrigger("^(?:The sun starts to set in the south\\.|Shadows stretch across the land as the sun limps towards the horizon\\.|The sun vanishes behind the southern horizon\\.)$", function()
+    if (ArjUI.protocolActive or {})["Duris.Time"] then return end
     ArjUI.state.timeOfDay = "dusk"
     ArjUI:renderTime()
   end)
@@ -2370,6 +2787,7 @@ function ArjUI:registerGMCPHandlers()
   -- Parse 'time' command output: "It is 9pm, on the Day of the Deception"
   -- Gag the output if it was from our silent auto-query
   self.timeCommandTrigger = self:addRuntimeTrigger("^It is (\\d+)(am|pm)", function()
+    if (ArjUI.protocolActive or {})["Duris.Time"] then return end
     local hour = tonumber(matches[2])
     local ampm = matches[3]
     -- Convert to 24h for easier day/night detection
@@ -2408,6 +2826,7 @@ function ArjUI:registerGMCPHandlers()
   -- Trigger to parse combat prompt line for tank, target, and positions
   -- Format: < T: Seveiwyn TP: sta TC: excellent E: wolf EP: sta EC: small wounds>
   self.combatPromptTrigger = self:addRuntimeTrigger("^< T: (.+?) TP: (\\w+) TC: (.+?) E: (.+?) EP: (\\w+) EC: ([^>]+)>", function()
+    if ArjUI.combatRevision then return end
     local tankName = matches[2]:gsub("%s+$", "")  -- trim trailing space
     local tankPos = matches[3]
     local tankCond = matches[4]:gsub("%s+$", "")  -- trim trailing space
@@ -2433,6 +2852,7 @@ end
 
 -- Called once per character login (from Char.Status or the prompt fallback)
 function ArjUI:onLoginDetected()
+  if self.session and self.session.state~="playing" then return end
   if self.initialDataRequested then return end
   self.initialDataRequested = true
   -- Render after short delay to allow any pending GMCP data to arrive
@@ -2443,6 +2863,7 @@ function ArjUI:onLoginDetected()
   self.timeQueryTimer = self:after(1.0, function()
     -- Clear ownership before send(), so our native send event cannot cancel us.
     self.timeQueryTimer = nil
+    if (self.protocolActive or {})["Duris.Time"] then return end
     send("time", false)
     -- send() raises sysDataSendRequest synchronously; arm gagging afterward.
     self.timeQuerySilent = true
@@ -2511,6 +2932,7 @@ function ArjUI:setTankInfo(info, replace)
 end
 
 function ArjUI:onCharVitals()
+  if self.session and self.session.state~="playing" then return end
   if not gmcp or not gmcp.Char or not gmcp.Char.Vitals then return end
   local v = gmcp.Char.Vitals
   local pname = pick(v, "name", "char", "player")
@@ -2544,6 +2966,7 @@ function ArjUI:onCharVitals()
 end
 
 function ArjUI:onRoomInfo()
+  if self.session and self.session.state~="playing" then return end
   if not gmcp or not gmcp.Room or not gmcp.Room.Info then return end
   local r = gmcp.Room.Info
   self.state.room = r.name or self.state.room
@@ -2575,12 +2998,17 @@ function ArjUI:onRoomInfo()
 end
 
 function ArjUI:onCombatUpdate()
+  if self.session and self.session.state~="playing" then return end
   if not gmcp or not gmcp.Combat or not gmcp.Combat.Update then return end
   local c = gmcp.Combat.Update
   if type(c) ~= "table" then return end
+  if decimal(c.revision) then
+    if not newer(c.revision,self.combatRevision) then return end
+    self.combatRevision=c.revision
+  end
   
   -- Per-round damage dealt by us (Combat.Update.round {attacker, damage, damageType, critical})
-  if type(c.round) == "table" and c.round.damage and self.addDamage then
+  if not (self.protocolActive or {})["Duris.Combat"] and type(c.round) == "table" and c.round.damage and self.addDamage then
     self.damage.gmcpAvailable = true
     local atk = tostring(c.round.attacker or ""):lower()
     local me = (self.playerName or ""):lower()
@@ -2635,6 +3063,7 @@ function ArjUI:onCombatUpdate()
 end
 
 function ArjUI:onGroupStatus()
+  if self.session and self.session.state~="playing" then return end
   if not gmcp or not gmcp.Group or not gmcp.Group.Status then return end
   local g = gmcp.Group.Status
   self.state.group = g.members or {}
@@ -2646,6 +3075,7 @@ function ArjUI:onGroupStatus()
 end
 
 function ArjUI:onCharStatus()
+  if self.session and self.session.state~="playing" then return end
   -- Handle Char.Status for position updates AND player alignment tracking
   if not gmcp or not gmcp.Char or not gmcp.Char.Status then return end
   local s = gmcp.Char.Status
@@ -2686,6 +3116,7 @@ function ArjUI:onCharStatus()
 end
 
 function ArjUI:onQuestStatus()
+  if self.session and self.session.state~="playing" then return end
   if not gmcp or not gmcp.Quest or not gmcp.Quest.Status then return end
   local q = gmcp.Quest.Status
   if q.active == true then
@@ -2702,6 +3133,7 @@ function ArjUI:onQuestStatus()
 end
 
 function ArjUI:onCommChannel()
+  if self.session and self.session.state~="playing" then return end
   if not gmcp or not gmcp.Comm or not gmcp.Comm.Channel then return end
   local c = gmcp.Comm.Channel
   local channel = c.channel or "unknown"
@@ -2733,33 +3165,35 @@ function ArjUI:onCommChannel()
     local ok, t = pcall(getTime, true, "hh:mm")
     if ok and t then stamp = "<dim_gray>" .. t .. " " end
   end
-  local formatted = string.format("%s%s[%s] %s<reset>: %s\n", stamp, color, channel, senderColored, text)
+  local prefix=string.format("%s%s[%s] %s<reset>: ",stamp,color,channel,senderColored)
+  local snapshots=self:chatSnapshots(c)
   
   -- Always send to ALL tab
-  self.chatBox:cecho(formatted)
+  self:displayChannelMessage(self.chatBox,snapshots,prefix,text)
   
   -- Route to specific tab based on channel
   local channelLower = channel:lower()
   if channelLower == "tell" or channelLower == "tells" then
     -- Route to private messaging system only (don't echo to TELLS tab)
     if isOutgoing then
-      self:handleOutgoingTell(actualSender, text)
+      self:handleOutgoingTell(actualSender, text, snapshots)
     else
-      self:handleIncomingTell(actualSender, text)
+      self:handleIncomingTell(actualSender, text, snapshots)
     end
     return  -- Don't continue to other tabs
   elseif channelLower == "nchat" or channelLower == "newbie" or channelLower == "jchat" then
-    self.nchatBox:cecho(formatted)
+    self:displayChannelMessage(self.nchatBox,snapshots,prefix,text)
   elseif channelLower == "say" or channelLower == "yell" or channelLower == "shout" then
-    self.roomBox:cecho(formatted)
+    self:displayChannelMessage(self.roomBox,snapshots,prefix,text)
   elseif channelLower == "gcc" or channelLower == "guild" or channelLower == "clan" then
-    self.guildBox:cecho(formatted)
+    self:displayChannelMessage(self.guildBox,snapshots,prefix,text)
   elseif channelLower == "group" or channelLower == "gtell" or channelLower == "party" or channelLower == "gsay" then
-    self.groupChatBox:cecho(formatted)
+    self:displayChannelMessage(self.groupChatBox,snapshots,prefix,text)
   end
 end
 
 function ArjUI:onCharAffects()
+  if self.session and self.session.state~="playing" then return end
   if not gmcp or not gmcp.Char or not gmcp.Char.Affects then return end
   self.state.affects = gmcp.Char.Affects or {}
   self:renderAffects()
@@ -3093,6 +3527,7 @@ end
 
 -- Find group member by name and update assist target info
 function ArjUI:updateAssistTarget()
+  if self.combatRevision then return end
   local assistName = self.state.assistTarget
   if not assistName then return end
   
@@ -3372,6 +3807,7 @@ function ArjUI:switchTab(tabName)
   local refresh = self.activeTab == tabName
   if not refresh then
     self.activeTab = tabName
+    self:changeProtocolInterest()
     showTab(self.tabPanels, tabName)
     if tabName=="gear" then showTab(self.gearViews, self.activeGearTab) end
     self:updateTabStyles()
@@ -3496,6 +3932,7 @@ function ArjUI:renderStats()
 end
 
 function ArjUI:renderInventory()
+  if self:renderOwnerItems(self.invBox,"inv","inventory") then return end
   self.invBox:clear()
   local inv = self.state.inventory
   
@@ -3514,6 +3951,7 @@ function ArjUI:renderInventory()
 end
 
 function ArjUI:renderEq()
+  if self:renderOwnerItems(self.eqBox,"eq","equipment") then return end
   self.eqBox:clear()
   local eq = self.state.equipment
   
@@ -3744,7 +4182,7 @@ end
 
 function ArjUI:renderTime()
   if not self.timeLabel then return end
-  local t = self.state.timeOfDay or "day"
+  local t = self.state.timeOfDay
   local icon, color, text
   if t == "day" then
     icon, color, text = "☀", "#e0c060", "Day"
@@ -3755,11 +4193,12 @@ function ArjUI:renderTime()
   elseif t == "dusk" then
     icon, color, text = "🌇", "#c08060", "Dusk"
   else
-    icon, color, text = "☀", "#a0a0b0", "Day"
+    icon, color, text = "?", "#a0a0b0", "Unknown"
   end
   self.timeLabel:setStyleSheet(string.format(
     "background-color: transparent; color: %s; font-size: 10px; qproperty-alignment: 'AlignCenter';", color))
   self.timeLabel:echo(icon .. " " .. text)
+  self.timeLabel:setToolTip(t and "Click for the full time report" or "Game time unavailable; click for the time report")
 end
 
 function ArjUI:renderAll()
@@ -3795,6 +4234,7 @@ function ArjUI:setupCaptureTriggers()
   
   -- Inventory header trigger
   local invId = tempTrigger("You are carrying:", function()
+    if ArjUI:ownerItemsSupported() then return end
     ArjUI.state.invCapture = { lines = {}, header = matches[1] or line }
     ArjUI.state.capturing = "inv"
     ArjUI.state.captureCount = 0
@@ -3804,6 +4244,7 @@ function ArjUI:setupCaptureTriggers()
   
   -- Equipment header trigger
   local eqId = tempTrigger("You are using:", function()
+    if ArjUI:ownerItemsSupported() then return end
     ArjUI.state.eqCapture = { lines = {}, header = matches[1] or line }
     ArjUI.state.capturing = "eq"
     ArjUI.state.captureCount = 0
@@ -3812,6 +4253,7 @@ function ArjUI:setupCaptureTriggers()
   table.insert(self.captureTriggerIds, eqId)
 
   local emptyEqId = tempRegexTrigger("^You aren't wearing anything!$", function()
+    if ArjUI:ownerItemsSupported() then return end
     ArjUI.state.equipment = { lines = {} }
     ArjUI.state.capturing = nil
     ArjUI:renderEq()
@@ -3870,7 +4312,7 @@ function ArjUI:setupCaptureTriggers()
 end
 
 -- Handle outgoing tells (sent by player)
-function ArjUI:handleOutgoingTell(target, text)
+function ArjUI:handleOutgoingTell(target, text, snapshots)
   local name = target:lower()
   local displayName = target:sub(1,1):upper() .. target:sub(2):lower()
   
@@ -3878,7 +4320,7 @@ function ArjUI:handleOutgoingTell(target, text)
   self:addTellContact(displayName)
   
   -- Add message to history as outgoing
-  self:addPrivateChatMessage(name, "You", text, true)
+  self:addPrivateChatMessage(name, "You", text, true, snapshots)
 end
 
 function ArjUI:finishCapture()
@@ -3900,6 +4342,15 @@ end
 -- Request data when clicking on a tab - sends command to main console
 function ArjUI:requestTabData(tabName)
   if tabName == "gear" then tabName=self.activeGearTab end
+  if (tabName=="inv" or tabName=="eq") and self:ownerItemsSupported() then
+    self.itemLocation=nil
+    self:changeProtocolInterest()
+    if (self.protocolActive or {})["Char.Items"] then
+      self:queueOwnerItemsGet()
+    end
+    self:renderInventory(); self:renderEq()
+    return
+  end
   if tabName == "spells" then
     self:requestSpellOutput("spells")
   elseif tabName == "stats" then
@@ -3958,6 +4409,7 @@ function ArjUI:setSetting(key, on)
     return false
   end
   if key == "keypad" then self:setupKeypad() end
+  if key=="damageTracker" then self.combatStopped=nil; self:changeProtocolInterest() end
   if key == "compactHeader" then
     self:applyBackground()
     self:layout()
@@ -4105,16 +4557,17 @@ function ArjUI:renderDamage()
   if not self.damageLabel then return end
   local d = self.damage or { fight = 0 }
   if d.fight > 0 then
-    self.damageLabel:echo(string.format("<center>⚔ %s</center>", fmtNum(d.fight)))
+    self.damageLabel:echo(string.format("<center>⚔ %s%s</center>", fmtNum(d.fight),d.incomplete and "*" or ""))
   else
     self.damageLabel:echo("<center>⚔ DMG</center>")
   end
+  self.damageLabel:setToolTip(d.incomplete and "Damage history is incomplete; the event stream stopped or changed process." or "Outgoing applied damage")
 end
 
 function ArjUI:reportDamage(reset)
   local d = self.damage
   if reset then
-    self.damage = { fight = 0, fightHits = 0, session = 0, sessionHits = 0, sessionStart = os.time(), lastHit = 0, source = d and d.source or nil, gmcpAvailable = d and d.gmcpAvailable or nil }
+    self.damage = { fight = 0, fightHits = 0, session = 0, sessionHits = 0, sessionStart = os.time(), lastHit = 0, source = d and d.source or nil, gmcpAvailable = d and d.gmcpAvailable or nil, incomplete = self.combatStopped==true }
     self:renderDamage()
     self:note("<cyan>[ArjUI] Damage counters reset.")
     return
@@ -4316,6 +4769,7 @@ function ArjUI:setupShipText()
 end
 
 function ArjUI:onShipInfo()
+  if self.session and self.session.state~="playing" then return end
   if not gmcp or not gmcp.Ship or not gmcp.Ship.Info then return end
   if not self.state.ship then self:resetShip() end
   local info = gmcp.Ship.Info
@@ -4338,6 +4792,7 @@ function ArjUI:onShipInfo()
 end
 
 function ArjUI:onShipContacts()
+  if self.session and self.session.state~="playing" then return end
   if not gmcp or not gmcp.Ship or not gmcp.Ship.Contacts then return end
   if not self.state.ship then self:resetShip() end
   local c = gmcp.Ship.Contacts

@@ -19,9 +19,11 @@ end
 
 function T.emit(event, data)
   gmcp = gmcp or {}
-  local parent, key = event:match("^([^.]+)%.(.+)$")
-  gmcp[parent] = gmcp[parent] or {}
-  gmcp[parent][key] = data
+  local parent=gmcp
+  local parts={}
+  for part in event:gmatch("[^.]+") do parts[#parts+1]=part end
+  for i=1,#parts-1 do parent[parts[i]]=parent[parts[i]] or {}; parent=parent[parts[i]] end
+  parent[parts[#parts]]=data
   raiseEvent("gmcp." .. event)
 end
 

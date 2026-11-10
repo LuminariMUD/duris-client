@@ -7,6 +7,8 @@
   ],
   "scale2_geometry": "2732x1536",
   "offline": {
+    "protocol": "Versioned time/session/combat/items, lossless scopes, staged/nested lists, chat links and actual link activation",
+    "protocol-wire": "Production versioned contract fixtures through real Telnet/GMCP negotiation, scopes, damage and GEAR views",
     "ship-table": "Captain's Table visual modes, arc inspection, copy/reference actions, coalesced rendering, widget reuse and hidden/covered lifecycle",
     "ship-bridge": "Bridge contract, keyed snapshot ordering, unseen lock, duplicate IDs, legacy fallback and authoritative departure",
     "lowhp": "Startup, assets, identity, vitals, two-member group, routing and off defaults",

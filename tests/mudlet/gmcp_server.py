@@ -8,7 +8,7 @@ import time
 
 
 class GMCPServer:
-    def __init__(self, log):
+    def __init__(self, log, interfaces=False):
         self.log = Path(log)
         self.received = []
         self.sockets = []
@@ -23,6 +23,8 @@ class GMCPServer:
                 command = bytearray()
                 preparation = 'Char.SpellPreparation'
                 versioned = {"Duris.Time 1", preparation + " 1"}
+                if interfaces:
+                    versioned.update({'Duris.Session 1', 'Duris.Combat 1', 'Char.Items 1', 'Duris.Links 1'})
                 supports = set()
                 interests = set()
                 buckets = {}
@@ -49,10 +51,12 @@ class GMCPServer:
                     self.request.sendall(frame[5:])
 
                 def capabilities(active):
+                    features = {'Duris.Capabilities': 1, 'Duris.Subscribe': 1, 'Duris.Time': 1, preparation: 1}
+                    if interfaces:
+                        features.update({'Duris.Session': 1, 'Duris.Combat': 1, 'Char.Items': 1, 'Duris.Links': 1})
                     packet('Duris.Capabilities', {
                         'version': 1, 'enabled': True,
-                        'features': {'Duris.Capabilities': 1, 'Duris.Subscribe': 1,
-                                     'Duris.Time': 1, preparation: 1},
+                        'features': features,
                         'supported': names(supports & versioned),
                         'interested': names(interests),
                         'active': names(interests) if active else [],
@@ -118,6 +122,25 @@ class GMCPServer:
                         if byte == 10:
                             phase = command.decode('utf-8').strip()
                             command.clear()
+                            if interfaces and phase == 'interfaces':
+                                playing = True
+                                capabilities(True)
+                                # The producer phases are independent sessions. Rebase only
+                                # their synthetic scope markers into one loopback entry.
+                                for name in ['session-enter', 'time', 'snapshot', 'combat-subjects', 'damage-secondary',
+                                             'items-empty', 'items-equipment']:
+                                    for captured in packets.get(name, []):
+                                        if name == 'snapshot' and captured['package'] not in {'Char.Status', 'Char.Vitals'}:
+                                            continue
+                                        payload = dict(captured['data'])
+                                        if 'context' in payload: payload['context'] = 'wire-context'
+                                        if 'process' in payload: payload['process'] = 'wire-process'
+                                        if 'generation' in payload: payload['generation'] = '1'
+                                        if 'bodyRevision' in payload: payload['bodyRevision'] = '1'
+                                        if captured['package'] == 'Char.Items.List': payload['revision'] = '1'
+                                        if captured['package'] == 'Duris.Session' and isinstance(payload.get('character'), dict):
+                                            payload['character'] = {**payload['character'], 'bodyRevision': '1'}
+                                        packet(captured['package'], payload)
                             if phase == 'inventory':
                                 self.request.sendall(b'You are carrying:\r\na bronze sword\r\nCustom HP prompt>\xff\xf9')
                             for captured in packets.get(phase, []):
