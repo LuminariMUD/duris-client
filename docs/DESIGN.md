@@ -303,7 +303,10 @@ state and render affected panels; text triggers fill gaps in the protocol.
 While the UI is visible, its routing trigger copies game lines into the
 central MiniConsole and removes them from the underlying main console.
 
-Character login requests `time` once to initialize the time display. Its four
+On supporting servers, `Duris.Time` supplies the clock and suppresses the
+background `time` query. Phase/revision updates replace text guesses; stale
+process or revision packets cannot overwrite the current clock. On older
+servers character login requests `time` once. Its four
 ordinary response lines are hidden through `Current time is:`, the final ordinary line
 of the current server reply. Suppression expires three seconds after the query
 or stops on the next outgoing command, preserving manual requests and time-display
@@ -341,27 +344,38 @@ awards preserve scores, and session reset discards outstanding rolls.
 | `Room.Info` | Room/area, exits and doors, mobs/items/players, zone and position |
 | `Room.Map` | Server-colored wilderness map |
 | `Group.Status` | Membership, capacity, HP/movement, positions, NPC and away markers |
-| `Combat.Update` | Target and optional damage rounds; explicit null ends the target display |
-| `Comm.Channel` | Chat routing, incoming/outgoing tells, sender alignment when supplied |
+| `Combat.Update` | Independent target/tank state, lossless revisions and explicit null clears; legacy optional damage rounds |
+| `Comm.Channel` | Chat routes, tells/history, validated recipient color runs and explicit HTTP/HTTPS links |
+| `Duris.Session` / `Duris.Time` | Once-per-entry initialization, body/process invalidation and authoritative clock |
+| `Duris.Combat` | Scoped, deduplicated outgoing positive applied hits, including secondary victims |
+| `Char.Items.List` / `Char.Items.Get` | Staged owner gear snapshots, opaque action selectors and requested direct-container contents |
 | `Quest.Status` | Bartender quest display; `remaining` means quests still available today |
 | `Ship.Info` / `Ship.Contacts` | Ship details, heading/speed, contacts, allegiance and target lock |
-| Game text and prompts | Tank condition, time, inventory/equipment/who captures, ship fallback, scan and alert helpers |
+| Game text and prompts | WHO, legacy tank/time/gear fallback, ship fallback, scan and alert helpers |
 | HTTPS zone-map JSON | Zone nodes/edges used to construct local map views |
 
 ArjUI identifies the client/version with `Core.Hello` and advertises the
 consumed GMCP packages in one `Core.Supports.Add`, with bounded, rate-paced
 retries until `Duris.Capabilities` confirms support. It uses `Duris.Subscribe`
-to obtain an estimate, including when reinstalling on a socket with the
+to obtain time, damage events and preparation estimates, adding owner items
+while GEAR is interested. The replacement interest array preserves the latest
+reported interests of other add-ons. Reinstall requests current snapshots on a socket with the
 stream already active. An inactive stream clears the estimate. Teardown cancels
 local retries and leaves the connection-wide interests intact. UI login detection
-primarily uses `Char.Status`; a default prompt pattern is a fallback.
+uses the lossless Session `(context,generation)` key when available. Re-enable
+and hotboot resync views without repeating entry actions; controlled-body or
+process changes retire pages, selectors and revision baselines. `Char.Status`
+and a default prompt remain legacy entry detection.
 Text-dependent panels still depend on recognized server output.
 Inventory, equipment and spell interface captures recognize Telnet prompt boundaries,
 including custom prompts.
 
-Damage tracking prefers `Combat.Update.round`. The text fallback reads
+Damage tracking prefers `Duris.Combat`, then legacy `Combat.Update.round`. The text fallback reads
 `[Damage: N]`; once GMCP rounds have been observed, late text must not count
-the same damage again. Tank identification/condition depends on prompt text;
+the same damage again. Interrupted event history is marked incomplete and quota
+removal is not automatically retried; the player explicitly re-enables future
+events. Structured target/tank state prevents late prompt/death text from
+overwriting it. Tank identification/condition uses prompt text on legacy peers;
 the self-tank display uses the player's vitals.
 
 For exact protocol examples, use the checked-in

@@ -1,5 +1,53 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Versioned interfaces — 2026-11-10
+
+Candidate **2.6.0**, branch `branch/gmcp-interface-adoption` based on
+`e4f6cc694ec509c9ebc96bfdb5c52e89c3bf43b1`, implements the
+[GMCP adoption](gmcp-interface-adoption.md). The package has been rebuilt;
+this qualification performs no release publication or production operation.
+
+- Primary **Mudlet 5.0.1 / Qt 6.11.1**, isolated WSL/Xvfb: all **31 suite
+  expectations pass**, including six deliberately failing/isolation cases and
+  verified normal shutdown/cleanup. Evidence:
+  `~/.local/share/duris-client-dev/gmcp-adoption-final-package-20261110/suite-results.json`.
+- Final small clock-availability/caption and stopped-counter refinements were
+  tested separately on the final archive with `protocol` **54 assertions**,
+  `protocol-wire` **15**, and legacy `time` **107**. Run IDs respectively:
+  `20261110T145128Z-8bd89af9-protocol`,
+  `20261110T145128Z-4891da13-protocol-wire`,
+  `20261110T145128Z-b726b1c1-time`, under
+  `~/.local/share/duris-client-dev/runs/`.
+- Inspected gear/empty/unavailable, item-action and nested Contents/Back,
+  chat click and private-history, independent HP, process/body, account/unknown
+  clock, disconnect and Errors captures. Final screenshot names include
+  `03-paged-items.png`, `04-item-actions-after-input.png`, `06-nested-items.png`,
+  `08-chat-links-after-input.png`, `09-tell-history.png`,
+  `10-process-and-body.png`, `11-quota-and-menu.png`, `02-producer-contracts.png`,
+  `03-disconnect.png`, and `errors-view.png`. The final warrior fixture includes
+  the server's `usesMana:false`; an earlier synthetic omission produced a Geyser
+  zero-mana diagnostic and was corrected. No Lua errors are present in the final
+  affected runs. Archive entries are compared byte-for-byte with the candidate
+  used by each final focused run, ignoring ZIP timestamps.
+- **11 controller tests**, **15 release tests**, Lua 5.1/XML and release-payload
+  checks pass. `python3 scripts/release.py --output
+  /tmp/duris-client-gmcp-release-2.6.0` validates locally without publishing.
+- Optional **Mudlet 5.1.1 / Qt 6.11.3** passes the focused new-interface
+  scenario with **54 assertions**, final run
+  `20261110T145528Z-2f930c83-protocol`, also matching the final package payload.
+  Its exploratory full-suite ship-scroll and scenic Panels-click
+  failures also reproduce on untouched 2.5.3; the same scenarios pass on 5.0.1.
+  These existing compatibility limits are recorded, not weakened or hidden.
+
+Final archive SHA-256:
+`a7ccda932b2d32b2e5872e8ef7f6094ac2919963b02132013d76cac3e7bd2699`.
+The native validation checkout is disposable; all run candidates, source diffs,
+fixture hashes, transport logs and screenshots remain in the evidence roots.
+
+This is offline/loopback qualification. Production gameplay, an actual new
+copyover journey, Mudlet 4.19.1 and native desktop DPI remain unverified. URL
+activation captures the exact native callback rather than opening an OS browser.
+
 ## Sequential PR integration — 2026-11-01
 
 The map palette package advances to **2.4.4**, retaining the **2.4.3** HP

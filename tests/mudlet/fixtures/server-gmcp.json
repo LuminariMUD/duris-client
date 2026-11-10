@@ -1,34 +1,34 @@
 {
   "provenance": {
     "description": "Production functions with isolated world/mechanics dependencies; no live player data.",
-    "server_commit": "0c580ba4453f670e75b300393f909ebd3ae58dcd",
+    "server_commit": "08b98339dbfb6b2541f6647558428673c1735498",
     "source_sha256": {
-      "src/net/gmcp.c": "fa82c1acd7f01f0847d628784bfc33664617ea52d4775d4481ea18855eb91adb",
-      "src/core/json_utils.c": "6ac6d2031bffaabbb9e1d66c74141dbcec05e16131c62b4b8334751fc4631756",
-      "src/core/structs.h": "58cbe8f90e7b9a94c5a08c1c704d030d072465d3524769efa564f445908d56b2",
-      "src/combat/fight.c": "85f1e64e2f779df99b6f1ed3e143f8ed31430c62f3f3d21f00a190400471ff93",
-      "src/ships/ships.h": "59e4eb9de496a04b18a260add2381ebb61ca03e2c516c5db0eb978cf43ae4320",
-      "src/ships/ship_utils.c": "1713e1e7cf926698ec5f17f8533b827c45ff5e9150f5cbac29be482bf9cce7de",
-      "src/core/utility.c": "8a4ce3acee1fec149a0583854ae11bb842c15b2e83ec9981fd09b08985a078b2",
-      "src/net/comm.c": "1fab46953bc7d0960516d9628877a9e2a064df30d416ed506432255dc1b139cc",
-      "src/net/ws_handlers.c": "a11f34ea2ba76635c0b4b844a175d066f5e3ee6cad52b97ed25d4e5d72a2157d",
-      "src/world/handler.c": "a189fc0711cd76a54844fdaf2eb3e81239cd352572b80993c70d2449588c5b33",
-      "src/world/condition.c": "04696bd1df79c4ad90ddf93f0e4526729ba2f6d403416a6d9e71b9cc0aef7fb7",
+      "src/net/gmcp.c": "acd2ff41f953ea7fc81eb45ac775db5a7e500117cf3a5cd3ec69c607ac3fe211",
+      "src/core/json_utils.c": "8e02f97976f697e1733912277688ed67f2547f5a4eeb9e0b1fd5220a8c50ad5d",
+      "src/core/structs.h": "a363be3cc722180f6146fbb7e7025d7c224c834ec4785d43a8e6ee5c37cfd91c",
+      "src/combat/fight.c": "d3733d3436ce5ddbeab88ed91315fa68f492cc5ea3ad76ce46cad6b3fd65ea49",
+      "src/ships/ships.h": "c5a9303ffc6c94d37c105383f9d177e46ae868ffde4b39dfaa103d8f65b65e06",
+      "src/ships/ship_utils.c": "de96519a881bfe64efb5f7f9a51145db07b6083bc1f60b64f6f0cdb0bbc83239",
+      "src/core/utility.c": "bf8850ec626bd99ac81cf82373c3f754d81e1287c3f5fb0143669a8b0d7e35bd",
+      "src/net/comm.c": "3658c4bd0f01086dd660937a782ea3a30cd3455f9afc8107a142b949d276ea8f",
+      "src/net/ws_handlers.c": "839c1172b5c1ed8a720c6ad4b1ba5c20842a3990a49ac7b510d7fc3394c36b3c",
+      "src/world/handler.c": "d147c088afbfe3fa6e4b0b5f1a7b156611f6dcee9eb18efc03e0abf97f88b844",
+      "src/world/condition.c": "e72613442f8a90c053716627204effae8fcc04c80819d8335597eca6d5532480",
       "src/world/weather.c": "1d6a98b99d608cfebe818660a064af1ae4e6dfa19df838ea3405d94e38702067",
-      "src/world/world_quest.c": "c1a48b50c253894424292de325296583bf465e2b56bfaf0a3f9082a2f16d7887",
-      "src/cmd/actinf.c": "ba8965f201435419367b54b4d1bc9995e8363c4de818f71a206b3a357cc69a02",
-      "src/cmd/actnew.c": "28775b026bc0cecb2f69452722dbb10bc8c31922e753c1a4b0c4b73c13f1c4a6",
-      "src/cmd/actobj.c": "57553e8f687f23512f4591346852caaca3301beb8e9fc8aa2575b4f236fc28bd",
-      "src/cmd/interp.c": "f62e0eddbe9c258d0a0e12eb16877f091d58352e923e88ccd6df628e4292fc4e",
-      "src/classes/salchemist.c": "467ffd6ed444132283f5863fa05c6a5c32ea8efd45883bbf31c2c8d706334b11",
-      "src/magic/magic.c": "7deb815487108c77c13e75aae7b2f4a5368120e446100e17fb4a9bd98ab011fa",
-      "src/item/random_equipment.c": "03c39e7be9e527312a4f8876cec9074b2fb91075c288d446ee029eef9d739efc",
+      "src/world/world_quest.c": "a373017375ef66994e5a9eb580a1e43eb0796105cc6db2728dccd0aa606c8ff4",
+      "src/cmd/actinf.c": "ca6ded03d61a1b19f0f11b3f48f3c922c5567120c5e95a56c573ec006025b825",
+      "src/cmd/actnew.c": "58e73115f291dbc2609e499431d06e041c95efcddf027e6ba23006f022a5fd60",
+      "src/cmd/actobj.c": "afb4961e59f06452556c90a5be1f17f04c87041d92833428732c3030074c68b6",
+      "src/cmd/interp.c": "35bfb9cd4009765252c1e063d022aea2e924ac6e8c5d758b1246200efc3aea37",
+      "src/classes/salchemist.c": "d84bb4fc896613f5bae7fbe508ddd938a4eacbfdbe37c4b5ae8c6784c7d2c8dc",
+      "src/magic/magic.c": "625a0e32619e313d8a3a5461074dc8f0c04ee728f4f54e8c685fb202781b8f50",
+      "src/item/random_equipment.c": "f8e32700c470e4cc08b2934acf50be43294b315fc29a11ed5c6b702b2a2526d3",
       "src/item/random_equipment_tables.c": "475ad1af3ed5684d1b09a35f485a7b7dd4b8c641cc1559436e635540a83cde30",
       "src/core/safe_format.c": "c4d8266e5192bcc734b70d9675e274b3f7915a2643ae3b29f040d228b2c383c3",
-      "src/sql/sql.c": "1d888fb895b7692bab00df4cbb862c814163b61874717980cd943810109d12c9",
-      "tests/async/harness_stubs.cpp": "199155d67d47a17e2fef2ac8b503c24c338db01329706dfad454d99b90656338",
-      "tests/async/gui_gmcp_contract_harness.cpp": "29b2105a8ec5bf7b65af704589d7009a6fc902badeec0b3fe02fae99ebec7a2e",
-      "tests/async/test_gui_gmcp_contract.py": "cb58e2a6bed38fcd69849948858630308784bc4a26168ab0bf2ca25c47e4c34c"
+      "src/sql/sql.c": "76e69ee1942a7f8afba7ccff74ef8cde79d493975c8cb38b7fe6b46a518b4a78",
+      "tests/async/harness_stubs.cpp": "35f55109dfd82a2be416a5f023cb6fc55ef4ab73525789b6ee8669aae4c3387c",
+      "tests/async/gui_gmcp_contract_harness.cpp": "08903e3df14b33f6d8150cdbf8081690ec7ad62b2579d6c5a31e85353aaace6f",
+      "tests/async/test_gui_gmcp_contract.py": "6e9869283c08fea5e6abb03f7b55a59cb9ad02ed805b8fd2c8c3e580f9c9c61c"
     }
   },
   "phases": {
@@ -38,8 +38,8 @@
         "data": {
           "items": [],
           "version": 1,
-          "context": "40b5b126d899da027440c1fc68fec27b",
-          "process": "62e4bdd8d1d8b8e17ca68d840056af4d",
+          "context": "6658d8c0328bf81bfc0fa38e970b1c1a",
+          "process": "b3824104f8de60b170cecfad587bda5f",
           "generation": "1",
           "bodyRevision": "1",
           "revision": "4",
@@ -60,14 +60,14 @@
               "description": "a blade",
               "quantity": 1,
               "slot": 16,
-              "selector": "@i:9ed86ff3277bd99c598b9f74bcf0fc9a:77",
+              "selector": "@i:445d2b482e917f3082bc2ceaffbbb5d3:77",
               "condition": " [ 0%]",
               "slotName": "wielded"
             }
           ],
           "version": 1,
-          "context": "40b5b126d899da027440c1fc68fec27b",
-          "process": "62e4bdd8d1d8b8e17ca68d840056af4d",
+          "context": "6658d8c0328bf81bfc0fa38e970b1c1a",
+          "process": "b3824104f8de60b170cecfad587bda5f",
           "generation": "1",
           "bodyRevision": "1",
           "revision": "5",
@@ -88,17 +88,17 @@
               "description": "an inner bag",
               "quantity": 1,
               "slot": null,
-              "selector": "@i:594003c839af0bcbb109c091770018cb:502",
+              "selector": "@i:7f1ff64011377d57f7a8093ccd073228:502",
               "condition": " [ 0%]"
             }
           ],
           "version": 1,
-          "context": "b5ea2d9be6cb07db024132b2df509856",
-          "process": "62e4bdd8d1d8b8e17ca68d840056af4d",
+          "context": "dcabbf228a230d5b88468ff7e9b44c37",
+          "process": "b3824104f8de60b170cecfad587bda5f",
           "generation": "1",
           "bodyRevision": "1",
           "revision": "2",
-          "location": "@i:594003c839af0bcbb109c091770018cb:501",
+          "location": "@i:7f1ff64011377d57f7a8093ccd073228:501",
           "page": 0,
           "available": true,
           "complete": true
@@ -148,8 +148,8 @@
         "package": "Duris.Combat",
         "data": {
           "version": 1,
-          "context": "606614e844470938859b62f04170aee6",
-          "process": "62e4bdd8d1d8b8e17ca68d840056af4d",
+          "context": "d2ba4f8e81d0b15485e035c5ab492e9f",
+          "process": "b3824104f8de60b170cecfad587bda5f",
           "generation": "1",
           "bodyRevision": "1",
           "sequence": "1",
@@ -167,8 +167,8 @@
         "package": "Duris.Combat",
         "data": {
           "version": 1,
-          "context": "981fd862514a61d8c4f502bc3a2640b7",
-          "process": "62e4bdd8d1d8b8e17ca68d840056af4d",
+          "context": "6e86f630e2f345df8ba03ed9983084d7",
+          "process": "b3824104f8de60b170cecfad587bda5f",
           "generation": "1",
           "bodyRevision": "1",
           "sequence": "1",
@@ -560,7 +560,7 @@
           "sender": "Tester",
           "text": "hello",
           "alignment": "good",
-          "timestamp": 1793529259
+          "timestamp": 1794318783
         }
       },
       {
@@ -682,7 +682,9 @@
             "Duris.Session": 1,
             "Duris.Combat": 1,
             "Char.Items": 1,
-            "Char.Items.Get": 1
+            "Char.Items.Get": 1,
+            "Char.SpellPreparation": 1,
+            "Duris.Links": 1
           },
           "supported": [
             "Duris.Time",
@@ -705,7 +707,7 @@
           "revision": "14",
           "hour": 10,
           "phase": "day",
-          "process": "62e4bdd8d1d8b8e17ca68d840056af4d"
+          "process": "b3824104f8de60b170cecfad587bda5f"
         }
       }
     ],
@@ -713,8 +715,8 @@
       {
         "package": "Duris.Session",
         "data": {
-          "context": "07965f288c0afa7ffdbf09aa566b06e4",
-          "process": "62e4bdd8d1d8b8e17ca68d840056af4d",
+          "context": "167019b38eb794f62e5cfa45d5657d85",
+          "process": "b3824104f8de60b170cecfad587bda5f",
           "generation": "0",
           "state": "account",
           "resumed": false,
@@ -726,8 +728,8 @@
       {
         "package": "Duris.Session",
         "data": {
-          "context": "07965f288c0afa7ffdbf09aa566b06e4",
-          "process": "62e4bdd8d1d8b8e17ca68d840056af4d",
+          "context": "167019b38eb794f62e5cfa45d5657d85",
+          "process": "b3824104f8de60b170cecfad587bda5f",
           "generation": "1",
           "state": "playing",
           "resumed": false,
@@ -742,8 +744,8 @@
       {
         "package": "Duris.Session",
         "data": {
-          "context": "07965f288c0afa7ffdbf09aa566b06e4",
-          "process": "62e4bdd8d1d8b8e17ca68d840056af4d",
+          "context": "167019b38eb794f62e5cfa45d5657d85",
+          "process": "b3824104f8de60b170cecfad587bda5f",
           "generation": "2",
           "state": "account",
           "resumed": false,

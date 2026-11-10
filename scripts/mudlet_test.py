@@ -217,9 +217,9 @@ def session(run):
     map_server = MapServer(run / "map-requests.json")
     config["map_base"] = map_server.base
     wire_server = None
-    if config["scenario"] == "server-wire":
+    if config["scenario"] in {"server-wire", "protocol-wire"}:
         from gmcp_server import GMCPServer
-        wire_server = GMCPServer(run / "gmcp-client-messages.json")
+        wire_server = GMCPServer(run / "gmcp-client-messages.json", interfaces=config["scenario"] == "protocol-wire")
         config["gmcp_port"] = wire_server.port
     write_json(run / "run.json", config)
     result = {"run_id": config["run_id"], "scenario": config["scenario"], "status": "FAIL",

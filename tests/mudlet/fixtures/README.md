@@ -1,9 +1,21 @@
 # Fixture provenance
 
-Current capture (2026-11-01): `server-gmcp.json` records Duris
-`0c580ba4453f670e75b300393f909ebd3ae58dcd`, with 26 source hashes and 12
+Current capture (2026-11-10): `server-gmcp.json` records Duris
+`08b98339dbfb6b2541f6647558428673c1735498`, with 26 source hashes and 12
 phases. See [the server handoff](../../../docs/ongoing-projects/server-interface-handoff.md)
 for the time/session/combat/item examples and their independent-session limits.
+
+`protocol` adds synthetic ordering, large counter, staged/nested/hidden item,
+quota and session/body/process cases. Its native pointer actions activate both
+an item menu's contents request and a chat URL. No command or URL executes on
+receipt. Private history retains validated snapshots. `protocol-wire` replays
+the production Session, Time, combat and item records through real Telnet/GMCP,
+rebasing their independent synthetic scope markers into a single test entry and
+aligning the two top-level item revisions. It deliberately repeats a captured
+hit to verify deduplication; it does not claim those independent producer phases
+were one original server session. The legacy `server-wire` scenario continues
+to verify shared interests and preparation; its interleaved `time` request is
+explicit now that supporting peers no longer need background time commands.
 
 Historical Captain's Table capture (2026-10-23) used Duris
 `e86bf7f24c52449b1260bb378443efafd1d9c491` (merged server PR #304).

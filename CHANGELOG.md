@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.6.0 - 2026-11-10
+
+- Keep clickable server-provided web links and recipient colors in chat tabs and private conversation history.
+- Use the server clock and explicit session/body transitions, with text fallback on older servers.
+- Count outgoing applied damage, including secondary targets, once per scoped event and mark interrupted history incomplete.
+- Show paged owner inventory/equipment in GEAR, with safe snapshot-scoped item actions and requested direct-container contents.
+
 ## 2.5.3 - 2026-11-08
 
 - Show the latest ship information in SHIP as soon as another maximized panel is restored, instead of waiting for the next ship update.

@@ -124,7 +124,7 @@ flowchart TB
         maps["Zone and wilderness views<br/>inside ArjUI's map area"]
 
         gmcp -->|"Character, room, combat, group, chat, quest"| ui
-        text -->|"Console, tank, time, inventory, equipment, who"| ui
+        text -->|"Console, WHO and legacy fallback"| ui
         gmcp -->|"Room.Info · Room.Map"| mapper
         ui --> panels
         ui -.->|"Provides map container"| mapper
@@ -149,7 +149,7 @@ flowchart TB
     linkStyle default stroke:#8c6e46,stroke-width:1.5px
 ```
 
-Most live panels use GMCP. Inventory, equipment, and who lists capture game text; tank and time displays also depend on text triggers. The damage counter reads `Combat.Update.round` when the server sends it and falls back to `[Damage: N]` display lines. Several display helpers were adapted from the community "lielz scripts" collection; see [`docs/ongoing-projects/lielz-port.md`](docs/ongoing-projects/lielz-port.md) for what was taken and what was left out. Zone layouts come from `https://duris.sbs/api/wiki/zones/{zoneId}/map-data` and are cached in memory. The mapper listens to `Room.Info` and `Room.Map` directly.
+Most live panels use GMCP. Supporting servers supply the clock, explicit session/body transitions, outgoing applied-damage events and owner inventory/equipment snapshots. GEAR item links open normal actions or request a container's direct contents; expired selectors never become keyword targets. Chat tabs and private history retain validated server URL links and recipient colors. Older servers keep the text/prompt fallback for time, tank and gear, and the legacy damage-round/text source. WHO still captures game text. Several display helpers were adapted from the community "lielz scripts" collection; see [`docs/ongoing-projects/lielz-port.md`](docs/ongoing-projects/lielz-port.md). Zone layouts come from `https://duris.sbs/api/wiki/zones/{zoneId}/map-data` and are cached in memory. The mapper listens to `Room.Info` and `Room.Map` directly.
 
 See the [design guide](docs/DESIGN.md) for panel proportions, visual conventions, interactions, data sources, and lifecycle behavior.
 
@@ -157,12 +157,13 @@ See the [design guide](docs/DESIGN.md) for panel proportions, visual conventions
 
 - **Empty vitals or room panels:** run `ui debug`, check that GMCP is enabled, then reconnect and enter the game. Initial character setup uses `Char.Status` on login.
 - **Blank or stale zone map:** run `mapper status` and `mapper debug`, check access to the Duris website, then try `mapper reload` followed by `look`.
-- **Missing tank, inventory, equipment, who, or time information:** these displays depend on recognized text and prompt formats. Custom prompts or changed server output can affect capture even when GMCP panels work.
+- **Missing gear or clock information:** enable GMCP and open GEAR to subscribe to owner items. The clock subscribes automatically. An unavailable item view differs from an empty one; normal visibility and access rules still apply. Older servers and WHO depend on recognized text/prompt formats.
+- **Damage counter has an asterisk:** the event history is incomplete after interruption, hotboot or quota removal. Re-enabling `ui set damageTracker on` explicitly requests future events; it does not replay lost hits. Reset the counters after restoring the stream to start a new baseline.
 - **Need to restore the main console:** use `ui off`; `ui on` shows the existing interface again without rebuilding it.
 
 The **SHIP** tab opens the **Captain's Table**: spatial armor/internal gauges, actual/ordered helm instruments, arc badges, a numbered manifest, crew watch and a contact bearing glass. Resize or maximize Character for the expanded composition. Narrow frames stack the sections; **Plot** expands the bearing glass locally. **Details** retains the complete selectable ledger, and **Copy** exports it. Your Bridge/Details preference is remembered. Ship data stays session-local.
 
-Markers and badges inspect locally. **Look ship**, **Look crew** and **Contacts** each send their named reference command once. Timers are server counters; timer-ready does not mean a weapon can fire. The contact plot uses reported bearing/range, including altitude, with north at the top; X/Y remain tactical coordinates around our 50/50 reference. Updated servers supply weight/load, orders and richer slot/stamina/target facts. Older servers remain usable with unavailable facts shown as unknown. Quest-map rendering and structured chat color runs remain unimplemented. The [Captain's Table plan](docs/ongoing-projects/plan-ship-bridge.md) records qualification and remaining limits.
+Markers and badges inspect locally. **Look ship**, **Look crew** and **Contacts** each send their named reference command once. Timers are server counters; timer-ready does not mean a weapon can fire. The contact plot uses reported bearing/range, including altitude, with north at the top; X/Y remain tactical coordinates around our 50/50 reference. Updated servers supply weight/load, orders and richer slot/stamina/target facts. Older servers remain usable with unavailable facts shown as unknown. Quest-map rendering remains unimplemented. The [Captain's Table plan](docs/ongoing-projects/plan-ship-bridge.md) records qualification and remaining limits.
 
 ## Build and contribute
 

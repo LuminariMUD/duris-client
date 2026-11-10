@@ -1,5 +1,11 @@
 # Server interface handoff for client #26
 
+**2026-11-10 update:** v2.6.0 adopts the time/session/combat/item contracts below
+and `Duris.Links` chat snapshots in the existing UI. See the
+[adoption and qualification record](gmcp-interface-adoption.md). The historical
+capture/review notes below remain evidence for their original revisions;
+current fixture provenance is recorded separately in the JSON and its README.
+
 The first server delivery provides time, lifecycle, combat target/tank and applied
 outgoing damage, plus owner inventory/equipment. It is a useful subset of
 [client #26](https://github.com/LuminariMUD/duris-client/issues/26).
