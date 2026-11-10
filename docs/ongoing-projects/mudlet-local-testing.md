@@ -45,8 +45,12 @@ A later review commit keeps legacy bootstrap state on the first Session
 snapshot, stops the item-menu separator sending an empty command, lets an
 explicit GEAR refresh resync without complete views, renders unsnapshotted chat
 text literally and keeps stored times in private history replay. Those changes
-and their added `protocol` assertions were run by CI's offline Mudlet suite
-only; their screenshots were not reviewed locally.
+and their added `protocol` assertions passed CI's offline Mudlet suite before
+the merge. After the merge, master `a79c628` passed `protocol` (58 assertions),
+`protocol-wire` (15), `server-wire` (46), `chat` (17), `controls` (144),
+`connections` (110), `group-render` (102) and `layout` (183) locally on Mudlet
+5.0.1 with clean Errors views. Only the `protocol` tell-history and `chat` tell
+screenshots were inspected; the full suite was not rerun locally.
 The native validation checkout is disposable; all run candidates, source diffs,
 fixture hashes, transport logs and screenshots remain in the evidence roots.
 
