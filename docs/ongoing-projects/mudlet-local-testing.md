@@ -39,8 +39,14 @@ this qualification performs no release publication or production operation.
   failures also reproduce on untouched 2.5.3; the same scenarios pass on 5.0.1.
   These existing compatibility limits are recorded, not weakened or hidden.
 
-Final archive SHA-256:
+Locally reviewed archive SHA-256:
 `a7ccda932b2d32b2e5872e8ef7f6094ac2919963b02132013d76cac3e7bd2699`.
+A later review commit keeps legacy bootstrap state on the first Session
+snapshot, stops the item-menu separator sending an empty command, lets an
+explicit GEAR refresh resync without complete views, renders unsnapshotted chat
+text literally and keeps stored times in private history replay. Those changes
+and their added `protocol` assertions were run by CI's offline Mudlet suite
+only; their screenshots were not reviewed locally.
 The native validation checkout is disposable; all run candidates, source diffs,
 fixture hashes, transport logs and screenshots remain in the evidence roots.
 

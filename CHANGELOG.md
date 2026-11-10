@@ -6,6 +6,8 @@
 - Use the server clock and explicit session/body transitions, with text fallback on older servers.
 - Count outgoing applied damage, including secondary targets, once per scoped event and mark interrupted history incomplete.
 - Show paged owner inventory/equipment in GEAR, with safe snapshot-scoped item actions and requested direct-container contents.
+- Keep the HUD, room and map when the package starts or reloads while a character is already playing.
+- Show player chat text literally when the server sends no chat snapshot, and keep each message's own time when a private conversation is reopened.
 
 ## 2.5.3 - 2026-11-08
 

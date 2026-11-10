@@ -34,7 +34,7 @@ local function damage(sequence,n,extra)
 end
 local url="https://example.test/?x=1&name=two"
 local snapshot={version=1,text="LINK",underline=false,runs={{0,4,19,0}},links={{start=0,["end"]=4,kind="url",target=url}}}
-local oldItemAction
+local oldItemAction,separator
 local initialized=0
 local login=ArjUI.onLoginDetected
 ArjUI.onLoginDetected=function(self)
@@ -47,7 +47,7 @@ T.steps({
   ArjUI:clearGMCPNegotiation(); ArjUI:endSession(); ArjUI:enableGMCP()
   T.emit("Char.Status",{name="Tester",level=10,class="Warrior",race="Human"})
   ArjUI:switchTab("gear"); caps(); caps(); session()
-  T.emit("Char.Status",{name="Tester",level=10,class="Warrior",race="Human"})
+  T.check(ArjUI.state.charLevel==10,"first Session keeps legacy bootstrap state the server will not resend")
   T.emit("Duris.Time",{process=process,revision="9007199254740993",hour=20,phase="night"})
   T.emit("Duris.Time",{process=process,revision="9007199254740992",hour=9,phase="day"})
   feedTriggers("The day has begun.\n")
@@ -94,6 +94,7 @@ T.steps({
   local menu=assert(ArjUI.currentMenu,"item click opens normal action menu")
   local entries=menu.windowList[menu.name.."_entries"]
   oldItemAction=entries.windowList[menu.name.."_3"].clickCallback
+  separator=entries.windowList[menu.name.."_7"].clickCallback
  end,actions=function()
   local menu=ArjUI.currentMenu
   -- Labels inside a ScrollBox report scroll-local coordinates. Position the
@@ -102,6 +103,8 @@ T.steps({
  end},
  {name="paced-container-request",run=function() end,wait=1.2,verify=function()
   T.check(messages[#messages]:find(selector,1,true),"paced container request uses opaque selector")
+  local sent=#T.commands; separator()
+  T.check(#T.commands==sent,"menu separator sends no game command")
  end},
  {name="nested-items",run=function()
   items(selector,"8",0,{item("a nested gem")},true)
@@ -151,8 +154,12 @@ T.steps({
    version=1,text="🧭 <literal> LINK",underline=false,runs={{0,16,19,0}},
    links={{start=12,["end"]=16,kind="url",target=url}}}})
   T.check(T.lines(ArjUI.nchatBox.name):find("🧭 <literal> LINK",1,true),"Unicode and markup-like chat labels render literally")
+  T.emit("Comm.Channel",{channel="nchat",sender="Mallory",text="<red>RAW markup"})
+  T.check(T.lines(ArjUI.nchatBox.name):find("<red>RAW markup",1,true),"chat without a snapshot keeps player text literal")
   T.emit("Comm.Channel",{channel="tell",sender="Alice",text="LINK",bodyPresentation=snapshot})
+  ArjUI.privateChats.alice.history[1].time="01:23"
   ArjUI:openPrivateChat("Alice")
+  T.check(T.lines(ArjUI.privateChats.alice.historyBox.name):find("[01:23]",1,true),"history replay keeps each message's own time")
   T.check(ArjUI.privateChats.alice.history[1].snapshots.body.links[1].target==url,"private history retains frozen links")
   T.check(T.lines(ArjUI.privateChats.alice.historyBox.name):find("LINK",1,true),"private replay renders retained snapshot")
  end},

@@ -1119,9 +1119,12 @@ function ArjUI:onDurisSession()
   if not previous and not self.initializedEntry and self.initialDataRequested and data.state=="playing" then
     self.initializedEntry=entry
   end
-  local boundary=not previous or previous.context~=data.context or previous.generation~=data.generation
+  -- The server sends no second bootstrap for a Supports acknowledgment, so the
+  -- first snapshot of an entry this instance already shows must keep its state.
+  local adopted=not previous and data.state=="playing" and self.initialDataRequested and self.initializedEntry==entry
+  local boundary=not adopted and (not previous or previous.context~=data.context or previous.generation~=data.generation
     or previous.process~=data.process or previous.bodyRevision~=(character and character.bodyRevision)
-    or previous.state~=data.state
+    or previous.state~=data.state)
   if boundary then
     local initialized=self.initializedEntry==entry
     local damage=self.damage
@@ -1300,7 +1303,7 @@ function ArjUI:renderOwnerItems(box,location,category)
         end})
         for _,action in ipairs(menu) do
           local cmd=action.cmd
-          if cmd and not cmd:match("^arjui_") then
+          if cmd and cmd~="" and not cmd:match("^arjui_") then
             action.cmd=nil
             action.callback=function() if self.itemEpoch==epoch then send(cmd) end end
           end
@@ -1386,12 +1389,12 @@ function ArjUI:renderChatSnapshot(box,value)
   return true
 end
 
-function ArjUI:displayChannelMessage(box,snapshots,prefix,fallback)
+function ArjUI:displayChannelMessage(box,snapshots,prefix,text)
   if snapshots.full and snapshots.full.policy~="preserve" then
     self:renderChatSnapshot(box,snapshots.full); box:echo("\n")
   elseif snapshots.body then
     box:cecho(prefix); self:renderChatSnapshot(box,snapshots.body); box:echo("\n")
-  else box:cecho(fallback) end
+  else box:cecho(prefix); box:echo(text.."\n") end
 end
 
 function ArjUI:onSpellPreparation()
@@ -2465,7 +2468,7 @@ function ArjUI:openPrivateChat(playerName)
     chat.sendButton:echo("Send")
     chat.sendButton:setClickCallback(function() submit(chat.inputBox:getText()) end)
     chat.displayName=displayName
-    for _,msg in ipairs(chat.history) do self:displayPrivateMessage(name,msg.sender,msg.text,msg.outgoing,msg.snapshots) end
+    for _,msg in ipairs(chat.history) do self:displayPrivateMessage(name,msg.sender,msg.text,msg.outgoing,msg.snapshots,msg.time) end
   end
   self:panelAction(id,"show")
   self:addTellContact(displayName)
@@ -2509,22 +2512,14 @@ function ArjUI:addPrivateChatMessage(playerName, sender, text, outgoing, snapsho
   end
 end
 
-function ArjUI:displayPrivateMessage(playerName, sender, text, outgoing, snapshots)
+function ArjUI:displayPrivateMessage(playerName, sender, text, outgoing, snapshots, stamp)
   local name = playerName:lower()
   local chat = self.privateChats[name]
   if not chat or not chat.historyBox then return end
   
-  local time = os.date("%H:%M")
-  if snapshots then
-    local prefix=string.format("<dim_gray>[%s] <gold>%s<reset>: ",time,outgoing and "You" or sender)
-    self:displayChannelMessage(chat.historyBox,snapshots,prefix,prefix..text.."\n")
-    return
-  end
-  if outgoing then
-    chat.historyBox:cecho(string.format("<dim_gray>[%s] <medium_orchid>You<reset>: %s\n", time, text))
-  else
-    chat.historyBox:cecho(string.format("<dim_gray>[%s] <gold>%s<reset>: %s\n", time, sender, text))
-  end
+  local prefix=string.format("<dim_gray>[%s] %s<reset>: ",stamp or os.date("%H:%M"),
+    outgoing and "<medium_orchid>You" or "<gold>"..sender)
+  self:displayChannelMessage(chat.historyBox,snapshots or {},prefix,text)
 end
 
 function ArjUI:addTellContact(playerName)
@@ -3170,12 +3165,11 @@ function ArjUI:onCommChannel()
     local ok, t = pcall(getTime, true, "hh:mm")
     if ok and t then stamp = "<dim_gray>" .. t .. " " end
   end
-  local formatted = string.format("%s%s[%s] %s<reset>: %s\n", stamp, color, channel, senderColored, text)
   local prefix=string.format("%s%s[%s] %s<reset>: ",stamp,color,channel,senderColored)
   local snapshots=self:chatSnapshots(c)
   
   -- Always send to ALL tab
-  self:displayChannelMessage(self.chatBox,snapshots,prefix,formatted)
+  self:displayChannelMessage(self.chatBox,snapshots,prefix,text)
   
   -- Route to specific tab based on channel
   local channelLower = channel:lower()
@@ -3188,13 +3182,13 @@ function ArjUI:onCommChannel()
     end
     return  -- Don't continue to other tabs
   elseif channelLower == "nchat" or channelLower == "newbie" or channelLower == "jchat" then
-    self:displayChannelMessage(self.nchatBox,snapshots,prefix,formatted)
+    self:displayChannelMessage(self.nchatBox,snapshots,prefix,text)
   elseif channelLower == "say" or channelLower == "yell" or channelLower == "shout" then
-    self:displayChannelMessage(self.roomBox,snapshots,prefix,formatted)
+    self:displayChannelMessage(self.roomBox,snapshots,prefix,text)
   elseif channelLower == "gcc" or channelLower == "guild" or channelLower == "clan" then
-    self:displayChannelMessage(self.guildBox,snapshots,prefix,formatted)
+    self:displayChannelMessage(self.guildBox,snapshots,prefix,text)
   elseif channelLower == "group" or channelLower == "gtell" or channelLower == "party" or channelLower == "gsay" then
-    self:displayChannelMessage(self.groupChatBox,snapshots,prefix,formatted)
+    self:displayChannelMessage(self.groupChatBox,snapshots,prefix,text)
   end
 end
 
@@ -4351,7 +4345,7 @@ function ArjUI:requestTabData(tabName)
   if (tabName=="inv" or tabName=="eq") and self:ownerItemsSupported() then
     self.itemLocation=nil
     self:changeProtocolInterest()
-    if (self.protocolActive or {})["Char.Items"] and self.itemViews.inv and self.itemViews.eq then
+    if (self.protocolActive or {})["Char.Items"] then
       self:queueOwnerItemsGet()
     end
     self:renderInventory(); self:renderEq()
