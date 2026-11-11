@@ -4068,7 +4068,12 @@ end
 -- passive: the player typed the command; only watch its reply.
 function ArjUI:requestSpellOutput(command, runAfter, passive)
   if not self.initialDataRequested then return end
-  if self.spellCapture and self.spellCapture.deadline>getEpoch() then return end
+  local active = self.spellCapture
+  if active and active.deadline>getEpoch() then
+    -- An INTERFACE click during catalog discovery runs the command when it is learned.
+    if runAfter and active.command=="spells" then active.runAfter = true end
+    return
+  end
   self.spellCapture = {command=command, deadline=getEpoch()+8, lines={}, runAfter=runAfter, passive=passive}
   if not passive then send(command) end
   self:renderSpells()
@@ -4076,6 +4081,14 @@ end
 
 -- Keep the panel in step when the player types spells, mem, pray, comm, ...
 function ArjUI:watchSpellCommand(command)
+  local request = self.spellCapture
+  if request and request.waiting then
+    -- The player owns this pager. Return shows the next page; any other input
+    -- quits or reorders it (show_string in src/net/modify.c).
+    if tostring(command or "")=="" then request.waiting, request.deadline = nil, getEpoch()+8
+    else self.spellCapture = nil; self:renderSpells() end
+    return -- The pager consumes this input; it never runs as a command.
+  end
   local word = tostring(command or ""):lower():match("^%s*(%a+)%s*$")
   if not word then return end
   local interface = self.state.spellCommand
@@ -4127,12 +4140,18 @@ function ArjUI:captureSpellLine(text)
     self:renderSpells()
     return
   end
+  -- Nothing on this socket continues the reply until the player answers the pager.
+  if request.waiting then return end
   if text:match(pagerPattern) then
     -- Only a reply already being collected can own the pager.
     if #lines==0 then return end
-    request.deadline, request.paged = getEpoch()+8, true
+    request.paged = true
     if lines[#lines]=="" then lines[#lines] = nil end
-    if not request.passive then
+    if request.passive then
+      -- Wait for the player's answer, however long they read the page.
+      request.waiting, request.deadline = true, math.huge
+    else
+      request.deadline = getEpoch()+8
       deleteLine()
       send("", false)
     end

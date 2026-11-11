@@ -4,7 +4,8 @@
 
 - CHARACTER > SPELLS now opens on INTERFACE, which shows your class's preparation list (memorize, pray, commune, ...). The old LIST subtab is renamed SPELLS and comes second.
 - The spell master list loads for casters whose list spans more than one server page. Previously the pager stopped the capture and the panel stayed empty.
-- Typing your preparation command, or an abbreviation such as `mem`, refreshes INTERFACE.
+- Typing your preparation command, or an abbreviation such as `mem`, refreshes INTERFACE. If you page through a typed list yourself, the panel waits for you, however long you read each page.
+- Clicking INTERFACE while the client is still learning your preparation command runs it as soon as the command is known.
 - Spell panels highlight titles and circles and dim future circles; INTERFACE explains when a character has no preparation command.
 
 ## 2.6.2 - 2026-11-11

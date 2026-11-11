@@ -112,7 +112,10 @@ because it can resume spell preparation; its reply is shown through the next
 prompt. Typing the command or an abbreviation of at least three letters (`mem`)
 also refreshes the view. For mana users, INTERFACE displays the `will` syntax.
 The SPELLS subtab shows the personal master list. Captures continue across the
-server pager and keep its prompt out of the panel. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
+server pager and keep its prompt out of the panel. For a command the player
+typed, the pager stays with the player: the capture waits without a timeout,
+continues on Return, and is dropped on any other answer. An INTERFACE click
+while the command is still being learned runs it once the list arrives. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
 with ALL selected initially. STATS includes identity, coins, and bartender
 quest information. SHIP offers **Bridge** and **Details**, remembering only this
 view preference. Bridge is a native Geyser ScrollBox inside the existing frame:

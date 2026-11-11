@@ -71,6 +71,25 @@ T.steps({
     "a typed abbreviation is watched without sending anything")
   feedTriggers("You currently have the following spell slots available:\n  1st circle:  3 of  3\n< 100h/100H 100v/100V Pos: standing>\n")
   T.check(T.lines("ArjUI_SpellsBox"):find("3 of  3",1,true),"typed interface reply refreshes the panel")
+ end},
+ {name="spell-player-pager",run=function()
+  -- A typed command's pager belongs to the player, however long they read it.
+  raiseEvent("sysDataSendRequest","spells")
+  feedTriggers(">====[ VisualTester | Druid | Max Circle 5 ]====<\n1st CIRCLE:\ncure light\n\n[Return to continue, (q)uit, (r)efresh, (b)ack, or page number (1/2)]\n")
+  T.check(T.commands[#T.commands].command=="commune" and ArjUI.spellCapture,"a typed list's pager is left to the player")
+ end,wait=8.5,verify=function()
+  feedTriggers("Someone tells you 'hi'\n< 100h/100H 100v/100V Pos: standing>\n")
+  T.check(ArjUI.spellCapture,"reading a page longer than the reply timeout keeps the capture")
+  raiseEvent("sysDataSendRequest","")
+  feedTriggers("\n2nd CIRCLE:\nbarkskin\n\ncommune is your spell interface\nSee: spells <class or specialization> | spells info <spell name>\n")
+  local list=table.concat(ArjUI.state.spellList,"\n")
+  T.check(not ArjUI.spellCapture and list:find("barkskin",1,true) and not list:find("tells you",1,true),
+    "Return continues the typed list without output that arrived while the pager waited")
+  raiseEvent("sysDataSendRequest","spells")
+  feedTriggers(">====[ VisualTester | Druid | Max Circle 5 ]====<\n1st CIRCLE:\n\n[Return to continue, (q)uit, (r)efresh, (b)ack, or page number (1/2)]\n")
+  raiseEvent("sysDataSendRequest","q")
+  T.check(not ArjUI.spellCapture and table.concat(ArjUI.state.spellList,"\n"):find("barkskin",1,true),
+    "quitting the pager drops the partial list")
  end,actions=function() return {T.click(ArjUI.spellTabs.spells)} end},
  {name="spell-catalog",run=function()
   T.check(ArjUI.state.spellView=="spells" and T.commands[#T.commands].command=="spells","SPELLS click requests an updated catalog")
@@ -79,6 +98,15 @@ T.steps({
   T.check(ArjUI.state.spellCommand==nil and not ArjUI.state.spellOutput,"new catalog clears the prior interface")
   ArjUI:selectSpellView("interface")
   T.check(T.lines("ArjUI_SpellsBox"):find("no spell interface",1,true),"non-casters are told they have no interface")
+  ArjUI.state.spellList=nil
+  ArjUI:requestTabData("spells")
+  local sent=#T.commands
+  ArjUI:selectSpellView("interface")
+  T.check(#T.commands==sent and T.commands[sent].command=="spells","INTERFACE during discovery sends no duplicate catalog request")
+  feedTriggers(">====[ VisualTester | Druid | Max Circle 5 ]====<\n1st CIRCLE:\ncure light\ncommune is your spell interface\nSee: spells <class or specialization> | spells info <spell name>\n")
+  T.check(T.commands[#T.commands].command=="commune","INTERFACE clicked during discovery runs the learned command")
+  feedTriggers("You currently have the following spell slots available:\n  1st circle:  3 of  3\n< 100h/100H 100v/100V Pos: standing>\n")
+  T.check(not ArjUI.spellCapture,"discovered interface reply completes")
  end,actions=function() return {T.click(ArjUI.tabButtons.who)} end},
  {name="who",run=function()
   T.check(ArjUI.activeTab=="who" and T.commands[#T.commands].command=="who","WHO click request")
