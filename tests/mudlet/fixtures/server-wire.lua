@@ -72,7 +72,8 @@ T.steps({
   ArjUI:after(.2,function() T.originalSend("time",false) end)
  end,wait=1.4,verify=function()
   send=recordedSend
-  T.check(ArjUI.state.spellCommand=="commune","catalog survives earlier prompt and deliberately interleaved time query")
+  T.check(ArjUI.state.spellCommand=="commune","catalog survives earlier prompt, interleaved time query and a server page break")
+  T.check(table.concat(ArjUI.state.spellList,"\n"):find("barkskin",1,true),"second page joins the catalog")
   T.check(not T.lines("ArjUI_SpellsBox"):find("Unrelated output",1,true),"previous response stays out of catalog")
  end},
  {name="spell-interface-wire",run=function()

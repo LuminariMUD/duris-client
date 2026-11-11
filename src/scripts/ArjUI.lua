@@ -889,7 +889,7 @@ function ArjUI:resetCharacterState()
 
   self.initialDataRequested = false
   self.spellCapture, self.prepTimer = nil, nil
-  self.state.spellView = "list"
+  self.state.spellView = "interface"
 
   self.playerName = nil
   self.timeQuerySilent = false
@@ -1701,14 +1701,8 @@ function ArjUI:init()
   self.tabPanels.gear = gear
 
   local spells = Geyser.Container:new({name="ArjUI_Spells",x=0,y=0,width="100%",height="100%"},self.tabContent)
-  self.spellTabs = makeTabs(spells, "ArjUI_SpellTab_", {"list", "interface"}, function(name)
-    if name=="list" then self:requestTabData("spells")
-    elseif self.state.spellCommand=="will" then
-      self.state.spellView="interface"
-      self:renderSpells()
-    elseif self.state.spellCommand then
-      self:requestSpellOutput(self.state.spellCommand)
-    end
+  self.spellTabs = makeTabs(spells, "ArjUI_SpellTab_", {"interface", "spells"}, function(name)
+    self:selectSpellView(name)
   end)
   self.spellsBox = makeConsole(spells, "ArjUI_SpellsBox", 0, 21, "100%", "100%-23px", 9)
   self.spellsBox:enableScrollBar()
@@ -2666,6 +2660,7 @@ function ArjUI:registerGMCPHandlers()
     -- Prefer visible output once another command is sent, including a manual
     -- time request while the automatic reply is missing or still in flight.
     self.timeQuerySilent = false
+    self:watchSpellCommand(command)
     if self.timeQueryTimer and tostring(command):lower():match("^%s*time%s*$") then
       killTimer(self.timeQueryTimer)
       self.timers[self.timeQueryTimer] = nil
@@ -3124,7 +3119,7 @@ function ArjUI:onCharStatus()
     if self.playerName and self.playerName:lower()~=s.name:lower() then
       self.spellCapture = nil
       self.state.spellList, self.state.spellCommand, self.state.spellOutput = nil, nil, nil
-      self.state.spellView = "list"
+      self.state.spellView = "interface"
       self:renderSpells()
       self:setSpellPreparation(nil)
     end
@@ -4006,36 +4001,104 @@ local spellCommands = {
   assimilate=true, tupor=true, focus=true, will=true,
 }
 
+-- Server pager prompt (src/net/prompt.c). Paging is on by default with a
+-- 40-line screen, so a caster's personal list or a full memorize reply spans pages.
+local pagerPattern = "^%[Return to continue, %(q%)uit, %(r%)efresh, %(b%)ack, or page number %(%d+/%d+%)%]$"
+
+local spellColors = {
+  text = {200, 200, 200}, heading = {200, 170, 110}, circle = {120, 160, 220},
+  dim = {120, 115, 105}, future = {110, 110, 110},
+}
+
+local function spellLineColor(view, text)
+  if view=="spells" then
+    if text:match("^>====%[") then return spellColors.heading end
+    if text:match("^%d+%a%a CIRCLE:$") then return spellColors.circle end
+    if text:find("[future circle]",1,true) then return spellColors.future end
+    if text:match(" is your spell interface$") or text:match("^See: spells ") then return spellColors.dim end
+    return spellColors.text
+  end
+  if text:match(":$") or text:match("^You can ") then return spellColors.heading end
+  return spellColors.text
+end
+
 function ArjUI:renderSpells()
   local s, box = self.state, self.spellsBox
   local command = s.spellCommand
-  self.spellTabs.interface:echo("<center>" .. (command and command:upper() or "INTERFACE") .. "</center>")
   self.spellTabs.interface:setToolTip(command=="will" and "Show will syntax."
-    or command and ("Run " .. command .. ". May begin spell preparation.")
-    or "The server's spells listing identifies your character's command.")
+    or command and ("Run " .. command .. " to show prepared spells and open slots.")
+    or "Show your spell preparation (memorize, pray, commune...).")
+  self.spellTabs.spells:setToolTip("List every spell your character knows (spells).")
   styleTabs(self.spellTabs, s.spellView)
   box:clear()
-  local lines = s.spellList
-  if s.spellView=="interface" then
+  local function say(r, g, b, text)
+    box:setFgColor(r, g, b)
+    box:echo(text .. "\n")
+  end
+  local loading = self.spellCapture and self.spellCapture.deadline>getEpoch()
+  local lines
+  if s.spellView=="spells" then
+    lines = s.spellList
+    if not lines then
+      say(128, 128, 128, loading and "Loading your spells..." or "Click SPELLS while in game to list your spells.")
+    end
+  elseif command=="will" then
+    say(200, 170, 110, "── WILL ──")
+    say(200, 200, 200, "Use will '<spell>' [target] in the command line.")
+  elseif s.spellOutput then
+    if command then say(200, 170, 110, "── " .. command:upper() .. " ──") end
     lines = s.spellOutput
-    if command=="will" then lines = {"Use will '<spell>' [target] in the command line."} end
+  elseif command then
+    say(128, 128, 128, loading and ("Running " .. command .. "...")
+      or ("Click INTERFACE to run " .. command .. " and show your prepared spells."))
+  elseif s.spellList then
+    say(128, 128, 128, "This character has no spell interface.")
+  else
+    say(128, 128, 128, loading and "Loading your spell interface..."
+      or "Click INTERFACE while in game to show your prepared spells.")
   end
-  if not lines then
-    box:cecho("<dim_gray>Click LIST while in game to load your spells.\n")
-    return
+  for _, text in ipairs(lines or {}) do
+    local color = spellLineColor(s.spellView, text)
+    say(color[1], color[2], color[3], text)
   end
-  for _, text in ipairs(lines) do box:echo(text .. "\n") end
+  box:setFgColor(200, 200, 200)
 end
 
-function ArjUI:requestSpellOutput(command)
+-- runAfter: a deliberate INTERFACE click that first has to learn the command.
+-- passive: the player typed the command; only watch its reply.
+function ArjUI:requestSpellOutput(command, runAfter, passive)
   if not self.initialDataRequested then return end
   if self.spellCapture and self.spellCapture.deadline>getEpoch() then return end
-  if command=="spells" then
-    self.state.spellView="list"
-    self:renderSpells()
+  self.spellCapture = {command=command, deadline=getEpoch()+8, lines={}, runAfter=runAfter, passive=passive}
+  if not passive then send(command) end
+  self:renderSpells()
+end
+
+-- Keep the panel in step when the player types spells, mem, pray, comm, ...
+function ArjUI:watchSpellCommand(command)
+  local word = tostring(command or ""):lower():match("^%s*(%a+)%s*$")
+  if not word then return end
+  local interface = self.state.spellCommand
+  if word=="spells" then
+    self:requestSpellOutput("spells", false, true)
+  elseif interface and interface~="will" and #word>=3 and interface:sub(1, #word)==word then
+    self:requestSpellOutput(interface, false, true)
   end
-  self.spellCapture = {command=command, deadline=getEpoch()+8, lines={}}
-  send(command)
+end
+
+function ArjUI:selectSpellView(name)
+  local s = self.state
+  s.spellView = name
+  if name=="spells" then
+    self:requestSpellOutput("spells")
+  elseif s.spellCommand=="will" then
+    -- Mana casters have nothing to prepare.
+  elseif s.spellCommand then
+    self:requestSpellOutput(s.spellCommand)
+  elseif not s.spellList then
+    self:requestSpellOutput("spells", true)
+  end
+  self:renderSpells()
 end
 
 local function isSpellInterfaceStart(command,text)
@@ -4061,16 +4124,33 @@ function ArjUI:captureSpellLine(text)
   local s, lines = self.state, request.lines
   if getEpoch()>request.deadline or #lines>=1024 then
     self.spellCapture = nil
+    self:renderSpells()
     return
+  end
+  if text:match(pagerPattern) then
+    -- Only a reply already being collected can own the pager.
+    if #lines==0 then return end
+    request.deadline, request.paged = getEpoch()+8, true
+    if lines[#lines]=="" then lines[#lines] = nil end
+    if not request.passive then
+      deleteLine()
+      send("", false)
+    end
+    return
+  end
+  if request.paged then
+    request.paged = nil
+    if text=="" then return end
   end
   if (isPrompt and isPrompt()) or text:match("^%s*<%s*%d+h") then
     -- Prompts can belong to commands already queued ahead of this request.
     if #lines==0 then return end
     self.spellCapture = nil
     if request.command~="spells" then
-      s.spellOutput, s.spellView = lines, "interface"
-      self:renderSpells()
+      while lines[#lines]=="" do lines[#lines] = nil end
+      s.spellOutput = lines
     end
+    self:renderSpells()
     return
   end
   if request.command=="spells" then
@@ -4082,8 +4162,14 @@ function ArjUI:captureSpellLine(text)
     if spellCommands[command] then request.interface = command end
     if text=="See: spells <class or specialization> | spells info <spell name>" then
       self.spellCapture = nil
-      s.spellList, s.spellCommand, s.spellOutput = lines, request.interface, nil
-      self:renderSpells()
+      while lines[#lines]=="" do lines[#lines] = nil end
+      if s.spellCommand~=request.interface then s.spellOutput = nil end
+      s.spellList, s.spellCommand = lines, request.interface
+      if request.runAfter and s.spellCommand and s.spellCommand~="will" then
+        self:requestSpellOutput(s.spellCommand)
+      else
+        self:renderSpells()
+      end
       return
     end
   elseif #lines==0 and not isSpellInterfaceStart(request.command,text) then
@@ -4386,7 +4472,11 @@ function ArjUI:requestTabData(tabName)
     return
   end
   if tabName == "spells" then
-    self:requestSpellOutput("spells")
+    -- Opening the panel never runs the interface command: it can resume
+    -- preparation. The read-only list tells INTERFACE which command to offer.
+    if self.state.spellView=="spells" or not self.state.spellList then
+      self:requestSpellOutput("spells")
+    end
   elseif tabName == "stats" then
     send("score")
   elseif tabName == "who" then
