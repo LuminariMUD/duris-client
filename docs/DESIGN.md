@@ -36,11 +36,16 @@ design decisions change. Player commands are documented in the
 ## Interface layout
 
 `ArjUI:init()` creates a full-window background and a transparent UI container.
-The content root is inset **2.5%** from each side and leaves **2.8%** at the
-bottom. Its top is **max(2.8% of logical height, 24 logical pixels)** in both
-presentation modes. Width stays **95%**. Compared with the old 10.5% banner,
-the root recovers `0.105 * H - max(0.028 * H, 24)` pixels; actual game-output
-gain depends on panel arrangement. The fixed 22px Panels/Reset buttons occupy
+The content root is inset by the frame's rail, `floor(min(2.5% of width,
+2.8% of height))`, on the left, right and bottom, so panels meet the decorated
+border on every side; the rail's corners are square, so a wider side inset left
+a strip of backdrop on wide windows. Its top is **max(rail, 24 logical
+pixels)** in both presentation modes. Docked side columns keep the
+share of a 95%-wide root their home rectangles were drawn for, and the center
+column (output, tank, target) takes all of the reclaimed width
+(`ArjUI:dockedRect()`). Compared
+with the old 10.5% banner, the root recovers `0.105 * H - max(rail, 24)`
+pixels of height; actual game-output gain depends on panel arrangement. The fixed 22px Panels/Reset buttons occupy
 the clearance immediately above the root, raised above maximized panels.
 `ArjUI:workspaceGeometry()` supplies startup and `layout()` with the same
 bounds. Layout uses the existing accepted-map refresh path on show and resize.
@@ -194,7 +199,34 @@ key, aliases, normalized rectangles and layout schema version 1 remain intact.
 Changing presentation repaints existing widgets, retaining output, tabs, chat,
 character state and map cache/zoom, and keeps a hidden UI hidden.
 Primary output has its own opaque black panel, so
-artwork cannot show through the game feed. Secondary panels use warm dark
+artwork cannot show through the game feed. GAME OUTPUT is a mini-console with
+the main window's scrollbar; scrolling up opens Mudlet's split view with live
+text below. A router copies each server line into it and leaves the
+line in the covered main window, so Mudlet's own logging (format, timestamps,
+order) and the main view after `ui off` stay complete. Lines Mudlet or scripts
+write straight to the main window (echoed commands per the profile's echo
+setting, including a command inserted after a GA prompt, `echo()`/`cecho()`
+without a window, Mudlet notices) are mirrored in order with their colors.
+Mudlet hard-wraps main-window lines at its wrap width, marking later rows with
+a dashed timestamp; the mirror skips a routed line's rows and joins a mirrored
+line's rows in a hidden scratch line before appending it, so links keep their
+actions and GAME OUTPUT wraps only at its own width. The main window's last
+row waits until a later one follows, as it may still be receiving text. A
+0.25 s timer also mirrors completed rows when no server line or command
+follows them (a timer's echo, a disconnect notice).
+`ui set timestamps on` shows Mudlet's per-line time column, which the main
+window's clock button cannot reach. Mudlet's
+search box and F3 search only the covered main window, so GAME OUTPUT has its
+own box at the right of the room-name row: Enter or ▲ (Shift+F3) finds the next
+older match, ▼ (F3) the next newer one. The match is highlighted in gold,
+restored when the search moves on, and scrolled into the split view. When
+GAME OUTPUT trims its oldest lines, the search position, the highlight and
+earlier `ui find` links are rebased. Mudlet's
+optional F3 shortcut would take the key first, so `f3SearchEnabled` is paused
+while the UI is shown and restored when it is hidden or removed. The pause is
+recorded in `arjui_settings.json`, because Mudlet saves its own settings on exit
+without the UI's teardown. `ui find
+<text>` lists the ten latest matches as links that scroll back to them. Secondary panels use warm dark
 surfaces and softer borders. The
 [README header](assets/header-prompt.md) is separate illustrative artwork;
 it is not a screenshot or the in-client frame.
@@ -279,6 +311,7 @@ real Mudlet when changing fonts or measurements.
 | DMG | Prints the session damage report. |
 | Map + / − | Changes zone room size or wilderness text zoom according to the current mode. |
 | `ui off` / `ui on` | Hides/shows the existing interface while retaining its state and widgets. |
+| `ui find <text>` | Lists recent GAME OUTPUT lines containing the text; click one to scroll there. |
 
 Hiding the UI restores Mudlet's main output area. It does not unload the
 package or turn off enabled automation. The native command line stays

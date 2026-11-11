@@ -6,11 +6,13 @@ end
 local function measure(mode)
  local w,h=getMainWindowSize()
  local b={window={width=w,height=h},root=bounds(ArjUI.uiRoot),console=bounds(ArjUI.console)}
- local top=math.max(24,h*.028)
+ -- Panels meet the frame's square rail on every side, not a wider side inset.
+ local rail=math.floor(math.min(w*.025,h*.028))
+ local top=math.max(24,rail)
  T.check(math.abs(b.root.y-top)<2,mode.." root top")
- T.check(math.abs(b.root.height-(h*.972-top))<2,mode.." root height")
- T.check(math.abs(b.root.y+b.root.height-h*.972)<2,mode.." root bottom")
- T.check(math.abs(b.root.x-w*.025)<2 and math.abs(b.root.width-w*.95)<2,mode.." root width/inset")
+ T.check(math.abs(b.root.height-(h-rail-top))<2,mode.." root height")
+ T.check(math.abs(b.root.y+b.root.height-(h-rail))<2,mode.." root bottom")
+ T.check(math.abs(b.root.x-rail)<2 and math.abs(b.root.x+b.root.width-(w-rail))<2,mode.." root sides meet the frame rail")
  return b
 end
 local original,full,compact
