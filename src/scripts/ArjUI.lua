@@ -964,6 +964,8 @@ function ArjUI:requestGMCPState()
     message,modules="Duris.Subscribe ",{}
     local wanted=self:protocolInterests()
     negotiation.pendingInterests=wanted
+    -- Replies to this request may arrive after Combat is wanted again.
+    if not wanted["Duris.Combat"] then negotiation.droppedCombat=true end
     -- Subscribe replaces all interests. Build the set from the latest reply.
     for _,name in ipairs(type(caps.interested)=="table" and caps.interested or {}) do
       local version=caps.features[name]
@@ -1007,7 +1009,8 @@ function ArjUI:onDurisCapabilities()
     self:invalidateOwnerItems(); self:renderInventory(); self:renderEq()
   end
   if before["Duris.Combat"] and not self.protocolActive["Duris.Combat"] then
-    if caps.enabled==true and not contains(caps.interested,"Duris.Combat") then self.combatStopped=true end
+    local own=self.gmcpNegotiation and self.gmcpNegotiation.droppedCombat
+    if caps.enabled==true and not own and not contains(caps.interested,"Duris.Combat") then self.combatStopped=true end
     self.damage.incomplete=true
     self:renderDamage()
   end
@@ -1034,7 +1037,7 @@ function ArjUI:onDurisCapabilities()
     self:requestGMCPState()
   elseif matched then
     negotiation.synced=true
-    negotiation.pendingInterests=nil
+    negotiation.pendingInterests,negotiation.droppedCombat=nil,nil
     self:cancelGMCPRetry()
   elseif firstReply then
     -- An already active stream needs a new snapshot for this UI instance.
@@ -1049,9 +1052,11 @@ function ArjUI:protocolInterests()
     ["Char.Items"]=self.activeTab=="gear"}
 end
 
-function ArjUI:changeProtocolInterest()
+function ArjUI:changeProtocolInterest(retry)
   local n=self.gmcpNegotiation
   if not n or not n.capabilities then return end
+  -- An explicit request restarts an unanswered subscription once retries are spent.
+  retry=retry and not n.synced and not self.gmcpRetryTimer
   local caps,wanted=n.capabilities,self:protocolInterests()
   local matched,pending=true,n.pendingInterests~=nil
   for name,enabled in pairs(wanted) do
@@ -1059,7 +1064,7 @@ function ArjUI:changeProtocolInterest()
     if contains(caps.interested,name)~=expected then matched=false end
     if n.pendingInterests and n.pendingInterests[name]~=enabled then pending=false end
   end
-  if pending or (matched and not n.pendingInterests) then return end
+  if not retry and (pending or (matched and not n.pendingInterests)) then return end
   n.synced=false; n.subscriptions=0
   self:cancelGMCPRetry()
   self:requestGMCPState()
@@ -1165,12 +1170,19 @@ function ArjUI:onDurisCombat()
   self:addDamage(data.damage,"gmcp")
 end
 
-function ArjUI:invalidateOwnerItems()
+function ArjUI:invalidateOwnerItems(keepTop)
+  local inv,eq=self.itemViews and self.itemViews.inv,self.itemViews and self.itemViews.eq
   if self.itemGetTimer then killTimer(self.itemGetTimer); self.timers[self.itemGetTimer]=nil; self.itemGetTimer=nil end
   self.itemGetRequest=nil
   if self.currentMenu and self.currentMenu.itemEpoch then self:disposeWidget(self.currentMenu); self.currentMenu=nil end
   self.itemViews,self.itemPages={},{}
   self.itemEpoch={}
+  if keepTop then
+    -- Old selectors expire with the revision. Keep the lists visible, unlinked, until replaced.
+    for location,view in pairs({inv=inv,eq=eq}) do
+      self.itemViews[location]={available=view.available,items=view.items,stale=true}
+    end
+  end
   self.itemRevision,self.itemTopRevision,self.itemRequested,self.itemLocation=nil,nil,nil,nil
   if self.state then
     self.state.inventory,self.state.equipment,self.state.invCapture,self.state.eqCapture=nil,nil,nil,nil
@@ -1203,16 +1215,15 @@ function ArjUI:onOwnerItems()
         or (type(condition)=="string" and (#condition>128 or condition:find("[%z\1-\31\127]")))
         or (item.selector~=nil and item.selector~=yajl.null and not itemSelector(item.selector))
         or (item.slotName~=nil and (type(item.slotName)~="string" or #item.slotName>128 or item.slotName:find("[%z\1-\31\127]"))) then
-      return
-    end
-    items[#items+1]={description=item.description,quantity=1,condition=type(condition)=="string" and condition or "",
+      -- Skip only the invalid row so a resync of the same list stays usable.
+    else items[#items+1]={description=item.description,quantity=1,condition=type(condition)=="string" and condition or "",
       selector=itemSelector(item.selector) and item.selector or nil,
       slotName=type(item.slotName)=="string" and item.slotName or nil,
-      flags=type(item.flags)=="table" and item.flags or {}}
+      flags=type(item.flags)=="table" and item.flags or {}} end
   end
   if top and data.page==0 and newer(data.revision,self.itemTopRevision) then
     -- Validate the whole page before advancing any revision or expiring actions.
-    self:invalidateOwnerItems()
+    self:invalidateOwnerItems(true)
     self.itemTopRevision=data.revision
   end
   local stage=self.itemPages[location]
@@ -1293,7 +1304,7 @@ function ArjUI:renderOwnerItems(box,location,category)
     end
     local text=(item.slotName and item.slotName.." " or "")..item.description..item.condition
       ..(#suffix>0 and " ("..table.concat(suffix,", ")..")" or "").."\n"
-    if item.selector then
+    if item.selector and not view.stale then
       local selector=item.selector
       box:echoLink(text,function()
         if self.itemEpoch~=epoch or not (self.protocolActive or {})["Char.Items"] then return end
@@ -1661,7 +1672,8 @@ function ArjUI:init()
     self.itemLocation=nil
     showTab(self.gearViews, name)
     self:updateTabStyles()
-    self:requestTabData(name)
+    if self:ownerItemsSupported() then self:renderInventory(); self:renderEq()
+    else self:requestTabData(name) end
   end)
   self.invBox = makeConsole(gear, "ArjUI_InvBox", 0, 21, "100%", "100%-23px", 9)
   self.eqBox = makeConsole(gear, "ArjUI_EqBox", 0, 21, "100%", "100%-23px", 9)
@@ -4344,7 +4356,7 @@ function ArjUI:requestTabData(tabName)
   if tabName == "gear" then tabName=self.activeGearTab end
   if (tabName=="inv" or tabName=="eq") and self:ownerItemsSupported() then
     self.itemLocation=nil
-    self:changeProtocolInterest()
+    self:changeProtocolInterest(true)
     if (self.protocolActive or {})["Char.Items"] then
       self:queueOwnerItemsGet()
     end
