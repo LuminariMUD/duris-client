@@ -30,6 +30,7 @@ class GMCPServer:
                 buckets = {}
                 playing = False
                 spell_reply_pending = False
+                pager = []
                 estimate = {"state": "complete", "estimatedSeconds": 0}
 
                 def allow(family):
@@ -72,11 +73,14 @@ class GMCPServer:
                     preparation_snapshot()
 
                 def spell_catalog():
+                    # Paging is on by default (src/net/modify.c); the pager prompt ends with GA.
                     self.request.sendall(
                         b'>====[ Tester | Druid | Max Circle 5 ]====<\r\n'
-                        b'1st CIRCLE:\r\ncure light\r\ncommune is your spell interface\r\n'
-                        b'See: spells <class or specialization> | spells info <spell name>\r\n'
-                        b'Custom HP prompt>\xff\xf9')
+                        b'1st CIRCLE:\r\ncure light\r\n\r\n'
+                        b'[Return to continue, (q)uit, (r)efresh, (b)ack, or page number (1/2)]\r\n\xff\xf9')
+                    pager.append(b'\r\n2nd CIRCLE:\r\nbarkskin\r\ncommune is your spell interface\r\n'
+                                 b'See: spells <class or specialization> | spells info <spell name>\r\n'
+                                 b'Custom HP prompt>\xff\xf9')
 
                 while True:
                     chunk = self.request.recv(16384)
@@ -174,6 +178,8 @@ class GMCPServer:
                                     b'Unrelated output.\r\nCustom HP prompt>\xff\xf9'
                                     b'You currently have the following spell slots available:\r\n'
                                     b'  1st circle:  2 of  3\r\nCustom HP prompt>\xff\xf9')
+                            if phase == '' and pager:
+                                self.request.sendall(pager.pop(0))
                             if phase == 'clear':
                                 self.request.sendall(b'[Damage: 8]\r\n')
                         else:

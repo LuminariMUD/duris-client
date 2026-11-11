@@ -87,9 +87,10 @@ Private windows share move/resize and minimize/maximize controls, retain drafts
 and history through reset, and start closed after reset. Their geometry and
 history remain session-only.
 
-In CHARACTER, GEAR contains INV and EQ. SPELLS lists the character's spells and
-shows the spell command reported by Duris. A primary click on that command can start
-preparation. VITALS shows the estimated time remaining next to position on
+In CHARACTER, GEAR contains INV and EQ. SPELLS has INTERFACE, which shows
+your class's preparation list (`memorize`, `pray`, `commune`, ...), and SPELLS, the
+master list of known spells. A primary click on INTERFACE runs the command and can
+resume preparation. VITALS shows the estimated time remaining next to position on
 servers that publish spell preparation over GMCP.
 
 Panels start locked in their named home positions. Unlock to move or resize them;

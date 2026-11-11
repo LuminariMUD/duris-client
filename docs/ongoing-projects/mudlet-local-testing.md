@@ -1273,3 +1273,17 @@ group-render, ship-table, ship-bridge, information, crowded and controls pass, a
 the full suite passes **31/31**. A light desktop theme, native Windows/macOS and
 Mudlet 4.19.1 remain unverified. Scrollbars keep the system style.
 
+
+## 2.6.3 review fixes: player-owned pager and INTERFACE during discovery — 2026-11-11
+
+Two findings from the 2.6.3 review. First, a typed `spells` or preparation
+command left the server pager to the player, but its capture still expired
+8 s after the prompt, so reading a page longer than that lost the reply. The
+capture now waits without a timeout, ignores unrelated lines while it waits,
+continues on Return, and is dropped on any other answer (`show_string` in
+`src/net/modify.c` consumes that input). Second, an INTERFACE click while the
+read-only list was still in flight was dropped. It now runs the learned command.
+The `information` scenario adds `spell-player-pager` (8.5 s real wait) and
+discovery-click checks. With either fix removed, its own check fails. The full
+suite passes **31/31** under Mudlet 5.0.1/Xvfb with an empty Errors view.
+Live Duris paging and Mudlet 4.19.1 remain unverified.

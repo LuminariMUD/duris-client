@@ -103,10 +103,19 @@ v1 layout available to older package versions.
 
 The character tabs are **GROUP / STATS / GEAR / SPELLS / WHO / SHIP**, with GROUP
 selected initially. GEAR remembers the selected INV or EQ subtab during the UI
-session. SPELLS requests the personal `spells` listing and reads the interface
-command from its footer. Running that command requires an explicit click because
-it can begin spell preparation. Its reply is shown through the next prompt. For
-mana users, WILL displays the casting syntax. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
+session. SPELLS has **INTERFACE / SPELLS** subtabs, with INTERFACE selected
+initially. INTERFACE shows the class's preparation reply (`memorize`, `pray`,
+`commune`, `deforest`, `tupor`, `assimilate` or `focus`); the server names the
+command in the footer of the personal `spells` listing, which the panel requests
+when first opened. Running the command requires an explicit INTERFACE click
+because it can resume spell preparation; its reply is shown through the next
+prompt. Typing the command or an abbreviation of at least three letters (`mem`)
+also refreshes the view. For mana users, INTERFACE displays the `will` syntax.
+The SPELLS subtab shows the personal master list. Captures continue across the
+server pager and keep its prompt out of the panel. For a command the player
+typed, the pager stays with the player: the capture waits without a timeout,
+continues on Return, and is dropped on any other answer. An INTERFACE click
+while the command is still being learned runs it once the list arrives. Chat has **ALL / TELLS / NCHAT / ROOM / GUILD / GROUP**,
 with ALL selected initially. STATS includes identity, coins, and bartender
 quest information. SHIP offers **Bridge** and **Details**, remembering only this
 view preference. Bridge is a native Geyser ScrollBox inside the existing frame:
@@ -264,7 +273,7 @@ real Mudlet when changing fonts or measurements.
 | Character tab | Selects a view. Click STATS, WHO or SHIP again to refresh. |
 | ROOM tabs | Switch between the live MOBS and ITEMS lists. |
 | GEAR tabs | Select inventory or equipment. On item-streaming servers the switch sends nothing; click GEAR again to resync. Legacy servers refresh the selected list. |
-| SPELLS tabs | LIST refreshes the personal catalog. The reported command opens the character's spell interface. |
+| SPELLS tabs | INTERFACE runs the reported preparation command (or learns it first). SPELLS refreshes the personal master list. |
 | Entity link / group member | Opens contextual actions; custom actions are saved by category. |
 | TELLS contact | Opens a private conversation window; unread counts mark new messages. |
 | DMG | Prints the session damage report. |
