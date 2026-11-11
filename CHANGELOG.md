@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.2 - 2026-11-11
+
+- GROUP, the SHIP bridge and context menus keep the dark panel background on every desktop theme. Previously the system palette could show through as light grey, making the green GROUP header hard to read.
+
 ## 2.6.1 - 2026-11-11
 
 - Keep the other GEAR list visible while inventory or equipment updates, and switch between them without requesting a new snapshot.

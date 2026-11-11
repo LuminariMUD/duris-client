@@ -1258,3 +1258,18 @@ passes all **29/29** expectations on the first attempt, including 70 SHIP and
 102 GROUP assertions, lifecycle/reopen, loopback GMCP and deliberate failures.
 Live Duris, Mudlet 4.19.1, native Windows/macOS and
 physical DPI remain unverified.
+
+## 2.6.2 ScrollBox panel fill (issue #37) — 2026-11-11
+
+Mudlet has no ScrollBox stylesheet API (`Geyser.ScrollBox:setStyleSheet` is
+commented out upstream), so the viewport takes the Qt palette: black under this
+Xvfb profile, light grey on the reporter's desktop. Before the fix GROUP sampled
+`srgb(0,0,0)` beside panels at `srgb(12,11,9)`. After the fix GROUP solo,
+12-member scrolled and regrouped views sample `srgb(12,11,9)`, with no stray
+scrollbars. A first attempt at a 100% fill added both scrollbars in the solo view
+because of the ScrollBox frame, and the fill is now inset by 4 px. The SHIP bridge
+(`ship-table`) and context menu (`controls`) were inspected the same way.
+group-render, ship-table, ship-bridge, information, crowded and controls pass, and
+the full suite passes **31/31**. A light desktop theme, native Windows/macOS and
+Mudlet 4.19.1 remain unverified. Scrollbars keep the system style.
+
