@@ -12,6 +12,7 @@
     "ship-table": "Captain's Table visual modes, arc inspection, copy/reference actions, coalesced rendering, widget reuse and hidden/covered lifecycle",
     "ship-bridge": "Bridge contract, keyed snapshot ordering, unseen lock, duplicate IDs, legacy fallback and authoritative departure",
     "lowhp": "Startup, assets, identity, vitals, two-member group, routing and off defaults",
+    "console": "Center-only widening, GAME OUTPUT scrollbar, ordered command/script/GA-prompt echoes, joined wraps, native logging, timestamps, link click, right-click select/copy, search box with typed Enter/F3/Shift+F3 and ui find",
     "vitals": "Full/zero health, non-mana class, zero/missing maxima and experience",
     "vamp-overheal": "Player, self-tank, group and target HP fill bounds during vamp overheal, group row reuse and recovery; actual numbers preserved",
     "crowded": "Full group, scrolling, NPC/away/weakest markers, crowded room and removal",

@@ -41,6 +41,7 @@ function ArjUI:kill()
   end
   for _, id in ipairs(self.portAliases or {}) do killAlias(id) end
   self.portAliases = {}
+  self:bindSearchKeys(false)
   for _, handler in ipairs(self.eventHandlers) do
     killAnonymousEventHandler(handler)
   end
@@ -152,6 +153,9 @@ function ArjUI:setVisible(visible)
   if not self.main then return end
   self.hidden = not visible
   if visible then
+    -- Text read in the main window while the UI was hidden stays there.
+    self:resetMainMirror()
+    self:bindSearchKeys(true)
     self.bg:show()
     self.main:show()
     self:layout()
@@ -159,6 +163,8 @@ function ArjUI:setVisible(visible)
   else
     self.main:hide()
     self.bg:hide()
+    -- The main window is readable again, so Mudlet's own F3 search returns.
+    self:bindSearchKeys(false)
     if self.currentMenu then self.currentMenu:hide() end
     for _, chat in pairs(self.privateChats) do
       if chat.window then chat.window:hide() end
@@ -192,11 +198,18 @@ function ArjUI:applyBackground()
   self:layoutBackground(getMainWindowSize())
 end
 
+-- The decorated frame's rail is square at every corner, so it is as thick on
+-- the sides as at the top and bottom. Inset the panels by that same rail on
+-- all edges, otherwise wide windows leave a strip of backdrop at each side.
+local function frameRail(w,h)
+  return math.max(1,math.floor(math.min(w*.025,h*.028)))
+end
+
 function ArjUI:layoutBackground(w,h)
   if not self.bg then return end
   self.bg:move(0,0); self.bg:resize(w,h)
   -- Equal logical corner dimensions avoid stretching the decorated rectangle.
-  local rail=math.max(1,math.floor(math.min(w*.025,h*.028)))
+  local rail=frameRail(w,h)
   self.frameArt:resize(w,h)
   local frame=self.artwork and self.artwork.frame
   if frame then
@@ -446,10 +459,28 @@ end
 
 local dockNeighbor={room="vitals",vitals="room",players="chat",chat="players"}
 
+-- Home rectangles were drawn for a root 95% of the window wide. The root now
+-- reaches the frame rail, so the side columns keep their old share of the
+-- window and the center column (GAME OUTPUT, TANK, TARGET) takes the rest.
+local centerLeft,centerRight=.167,.737
+function ArjUI:dockedRect(def)
+  local home=def.home
+  local rootW=math.max(1,self.uiRoot:get_width())
+  local k=math.min(1,getMainWindowSize()*.95/rootW)
+  local left,right=centerLeft*k,1-(1-centerRight)*k
+  local function edge(e)
+    if e<=centerLeft then return e*k end
+    if e>=centerRight then return 1-(1-e)*k end
+    return left+(e-centerLeft)*(right-left)/(centerRight-centerLeft)
+  end
+  local x1,x2=edge(home[1]),edge(home[1]+home[3])
+  return {x1,home[2],x2-x1,home[4]}
+end
+
 function ArjUI:panelBounds(panel)
   local w,h=math.max(1,self.uiRoot:get_width()),math.max(1,self.uiRoot:get_height())
   local docked=panel.state.mode=="docked"
-  local rect=docked and panel.def.home or panel.state.rect
+  local rect=docked and self:dockedRect(panel.def) or panel.state.rect
   local id=panel.def.id
   if self.maximizedPanel==id then return 0,0,w,h end
   local pw=math.min(w,math.max(panel.def.minimum[1],rect[3]*w))
@@ -1471,7 +1502,8 @@ function ArjUI:renderSpellPreparation()
 end
 
 function ArjUI:workspaceGeometry(w,h)
-  local x,top,bottom=w*.025,math.max(h*.028,24),h*.028
+  local rail=frameRail(w,h)
+  local x,top,bottom=rail,math.max(rail,24),rail
   return x,top,math.max(0,w-2*x),math.max(0,h-top-bottom),bottom
 end
 
@@ -1655,10 +1687,41 @@ function ArjUI:init()
   self.xpGauge.back:setStyleSheet(self.gaugeStyles.xpBack)
   self.xpGauge.text:setStyleSheet(self.gaugeStyles.gaugeText)
 
-  self.roomLabel = Geyser.Label:new({ name = "ArjUI_RoomLabel", x = "0.5%", y = "3.0%", width = "99%", height = "3.2%" }, self.centerCol)
+  self.roomLabel = Geyser.Label:new({ name = "ArjUI_RoomLabel", x = "0.5%", y = "3.0%", width = "99%-232px", height = "3.2%" }, self.centerCol)
   styleSafe(self.roomLabel, self.styles.roomName)
+  -- Mudlet's search box and F3 only search its own (covered) main window.
+  -- This one searches GAME OUTPUT: Enter or the up arrow finds older matches.
+  self.searchBox = Geyser.CommandLine:new({ name = "ArjUI_OutputSearch", x = "99.5%-228px", y = "3.0%", width = "164px", height = "3.2%" }, self.centerCol)
+  self.searchBox:setStyleSheet(string.format("QPlainTextEdit { background-color: %s; color: %s; border: 1px solid %s; font-size: 11px; }",
+    colors.bgDark, colors.textMid, colors.borderDivider))
+  self.searchBox:setAction(function(text)
+    ArjUI:searchOutput("older", text)
+    -- The box may clear itself after Enter (profile setting); keep the query.
+    ArjUI:after(0, function()
+      if ArjUI.searchBox and getCmdLine(ArjUI.searchBox.name) == "" then ArjUI.searchBox:print(text) end
+    end)
+  end)
+  for _, spec in ipairs({{"Up", "▲", "-62px", "older", "Older match (Enter, Shift+F3)"}, {"Down", "▼", "-30px", "newer", "Newer match (F3)"}}) do
+    local button = Geyser.Label:new({ name = "ArjUI_OutputSearch" .. spec[1], x = "99.5%" .. spec[3], y = "3.0%", width = "28px", height = "3.2%" }, self.centerCol)
+    styleSafe(button, self.styles.roomName)
+    button:echo("<center>" .. spec[2] .. "</center>")
+    button:setToolTip(spec[5])
+    button:setClickCallback(function(event) if event.button == "LeftButton" then ArjUI:searchOutput(spec[4]) end end)
+    button:setOnEnter(function() button:setCursor("PointingHand") end)
+    button:setOnLeave(function() button:setCursor("Arrow") end)
+    self["search" .. spec[1]] = button
+  end
+  self.outputSearch = {}
+  self:bindSearchKeys(true)
 
   self.console = makeConsole(self.centerCol, "ArjUI_Console", "0.5%", "6.5%", "99%", "93%", 10, {0, 0, 0})
+  -- Mini-consoles start without the main window's scrollbar. Scrolling up
+  -- still opens Mudlet's split view, with live output in the lower pane.
+  self.console:enableScrollBar()
+  -- Echoed commands and script output written to the hidden main window are
+  -- mirrored from here on; earlier main-window lines stay where they are.
+  self:resetMainMirror()
+  self:applyTimestamps()
 
   -- SECTION 1: Tabbed Pane (0% - 45%) - Info tabs fill top space
   self.tabSection = panel("character")
@@ -1944,6 +2007,18 @@ function ArjUI:init()
 
   local h
   h = registerAnonymousEventHandler("sysWindowResizeEvent", function() self:layout() end)
+  table.insert(self.eventHandlers, h)
+  -- Trimming the main window's oldest lines renumbers those still to mirror.
+  h = registerAnonymousEventHandler("sysBufferShrinkEvent", function(_, name, removed)
+    if name ~= "main" or not self.mainRow then return end
+    removed = tonumber(removed) or 0
+    if self.mainRow < removed then self:resetMainMirror(); return end
+    self.mainRow = self.mainRow - removed
+    if self.mainPending then
+      self.mainPending.row = self.mainPending.row - removed
+      if self.mainPending.row < 0 then self.mainPending = nil end
+    end
+  end)
   table.insert(self.eventHandlers, h)
 
   h = registerAnonymousEventHandler("sysConnectionEvent", function()
@@ -2660,6 +2735,8 @@ function ArjUI:registerGMCPHandlers()
     -- Prefer visible output once another command is sent, including a manual
     -- time request while the automatic reply is missing or still in flight.
     self.timeQuerySilent = false
+    -- Mudlet echoes the command to the main window just before this event.
+    self:mirrorMain()
     self:watchSpellCommand(command)
     if self.timeQueryTimer and tostring(command):lower():match("^%s*time%s*$") then
       killTimer(self.timeQueryTimer)
@@ -4517,6 +4594,7 @@ ArjUI.settingsDefaults = {
   compactHeader = false,  -- quiet gradient instead of Stormwatch; same slim frame and workspace
   keypad = true,          -- numpad movement keys
   chatTimestamps = true,  -- [hh:mm] prefix on chat lines
+  timestamps = false,     -- Mudlet's per-line time column in GAME OUTPUT
   damageTracker = true,   -- per-fight / session damage tracking
   scanFormat = true,      -- rewrite 'scan' output into aligned columns
   alerts = true,          -- console banners for notable events
@@ -4543,6 +4621,13 @@ function ArjUI:saveSettings()
   return self:writeProfileJSON(path,data,"UI settings")
 end
 
+-- The main window's clock button cannot reach a mini-console; this setting
+-- drives Mudlet's same timestamp column on GAME OUTPUT (Mudlet 4.x may lack it).
+function ArjUI:applyTimestamps()
+  if not (self.console and enableTimeStamps and disableTimeStamps) then return end
+  if self.settings.timestamps then enableTimeStamps(self.console.name) else disableTimeStamps(self.console.name) end
+end
+
 function ArjUI:setSetting(key, on)
   if self.settingsDefaults[key] == nil then return false end
   local prior=self.settings[key]
@@ -4552,6 +4637,7 @@ function ArjUI:setSetting(key, on)
     return false
   end
   if key == "keypad" then self:setupKeypad() end
+  if key == "timestamps" then self:applyTimestamps() end
   if key=="damageTracker" then self.combatStopped=nil; self:changeProtocolInterest() end
   if key == "compactHeader" then
     self:applyBackground()
@@ -4578,6 +4664,8 @@ local function fmtDuration(seconds)
 end
 
 function ArjUI:note(text)
+  -- An alias's own echoed command precedes its reply.
+  self:mirrorMain()
   if self.console then self.console:cecho(text .. "<reset>\n") else cecho(text .. "<reset>\n") end
 end
 
@@ -5557,6 +5645,7 @@ function ArjUI:showHelp()
   self:note("<white>ui layout<dim_gray>             panel controls and reset; right-click a panel title for actions")
   self:note("<white>ui set<dim_gray>                list toggles; <white>ui set <name> on|off<dim_gray> changes one")
   self:note("<white>ui set compactHeader on|off<dim_gray>  quiet gradient (on) or Stormwatch scenery (off)")
+  self:note("<white>ui find <text><dim_gray>       list recent GAME OUTPUT lines containing text; click one to scroll there")
   self:note("<white>SHIP: Bridge / Details<dim_gray>  local views; Copy exports Details. Look ship / Look crew / Contacts request reference text.")
   self:note("<white>mapper<dim_gray>                mapper help")
   self:note("<white>auto<dim_gray>                  automation and utility aliases (ArjAuto)")
@@ -5568,6 +5657,7 @@ function ArjUI:showSettings()
   local desc = {
     compactHeader = "quiet gradient instead of Stormwatch; same panel bounds",
     keypad = "numpad movement keys", chatTimestamps = "[hh:mm] on chat lines",
+    timestamps = "time each GAME OUTPUT line arrived (main window's clock button)",
     damageTracker = "damage counter in the target panel", scanFormat = "aligned, coloured scan output",
     alerts = "banners for sanc/rage/disarm/scry/skill-up", expTracker = "+exp notices with kills-to-level",
   }
@@ -5601,12 +5691,269 @@ function ArjUI:setupRouteAll()
   -- Pattern "^.*$" matches entire line (same as working manual trigger)
   self.routeAllTriggerId = tempRegexTrigger("^.*$", function()
     if ArjUI and ArjUI.console and not ArjUI.hidden then
-      selectCurrentLine()
-      copy()
-      appendBuffer("ArjUI_Console")
-      deleteLine()
+      local row = getLineNumber()
+      -- Commands echoed before this line belong above it.
+      ArjUI:mirrorMain(row)
+      -- A capture trigger may already have gagged the line.
+      if getCurrentLine() == line then
+        selectCurrentLine()
+        copy()
+        appendBuffer("ArjUI_Console")
+        -- The line stays in the covered main window, so Mudlet's own logging
+        -- records it; mirrorMain() skips its rows once Mudlet has wrapped it.
+        ArjUI.mainPending = {row = row, text = line}
+      end
     end
   end)
+end
+
+-- Mudlet's search box searches the main window, which the router empties, so
+-- GAME OUTPUT has its own: list the latest matches, each scrolling to its line.
+ArjUI.findMarker = "⌕ "
+function ArjUI:findInOutput(text)
+  if not self.console then return end
+  self:mirrorMain()
+  local needle = (text or ""):lower()
+  local name = self.console.name
+  local last = getLastLineNumber(name)
+  local lines = getLines(name, 0, last + 1) or {}
+  local hits = {}
+  for i = #lines, 1, -1 do
+    local line = lines[i]
+    -- Skip earlier results and the echoed find command itself.
+    if line:sub(1, #self.findMarker) ~= self.findMarker and line:lower() ~= "ui find " .. needle
+      and line:lower():find(needle, 1, true) then
+      table.insert(hits, 1, {line = i - 1, text = line})
+      if #hits == 10 then break end
+    end
+  end
+  if #hits == 0 then
+    self.console:cecho("<dim_gray>" .. self.findMarker .. "No GAME OUTPUT line contains '" .. text .. "'.<reset>\n")
+    return
+  end
+  self.console:cecho(string.format("<gold>%sLatest %d match%s for '%s' (click to scroll there):<reset>\n",
+    self.findMarker, #hits, #hits == 1 and "" or "es", text))
+  for _, hit in ipairs(hits) do
+    local shown = hit.text:gsub("^%s+", "")
+    if #shown > 120 then shown = shown:sub(1, 117) .. "..." end
+    self.console:cecho("<dim_gray>" .. self.findMarker .. "<reset>")
+    self.console:echoLink(string.format("line %d: %s", hit.line + 1, shown),
+      "ArjUI:scrollOutputTo(" .. hit.line .. ")", "Scroll GAME OUTPUT to this line", true)
+    self.console:echo("\n")
+  end
+end
+
+-- scrollTo() names the bottom line of the upper pane, which takes about three
+-- quarters of the console once split. Aim to show the match in its upper half.
+function ArjUI:scrollOutputTo(line)
+  if not (self.console and scrollTo) then return end
+  local _, rowHeight = calcFontSize(self.console.name)
+  local rows = math.max(1, math.floor(self.console:get_height() * .75 / math.max(1, rowHeight or 14)))
+  scrollTo(self.console.name, math.min(getLastLineNumber(self.console.name), line + math.floor(rows * .6)))
+end
+
+-- Character (not byte) length, as Mudlet cursor columns count characters.
+local function chars(text) return utf8 and utf8.len(text) or #text end
+
+-- F3 / Shift+F3 step through GAME OUTPUT matches, as in Mudlet's main window.
+-- Mudlet's optional F3 shortcut would take the key first, so it is paused
+-- while the UI covers the main window and restored when hidden or removed.
+function ArjUI:bindSearchKeys(on)
+  for _, id in ipairs(self.searchKeys or {}) do pcall(killKey, id) end
+  self.searchKeys = {}
+  if self.f3Restore ~= nil then pcall(setConfig, "f3SearchEnabled", self.f3Restore); self.f3Restore = nil end
+  if not on then return end
+  local ok, f3 = pcall(getConfig, "f3SearchEnabled")
+  if ok and f3 == true and pcall(setConfig, "f3SearchEnabled", false) then self.f3Restore = true end
+  local shift = mudlet and mudlet.keymodifier and mudlet.keymodifier.Shift or 0x02000000
+  local f3key = mudlet and mudlet.key and mudlet.key.F3 or 0x01000032
+  local none = mudlet and mudlet.keymodifier and mudlet.keymodifier.None or 0
+  for _, spec in ipairs({{none, "newer"}, {shift, "older"}}) do
+    local ok2, id = pcall(tempKey, spec[1], f3key, function() ArjUI:searchOutput(spec[2]) end)
+    if ok2 and id then table.insert(self.searchKeys, id) end
+  end
+end
+
+-- Put back the colors under the previous match's highlight.
+function ArjUI:clearSearchHighlight()
+  local mark = self.outputSearch and self.outputSearch.mark
+  if not (mark and self.console) then return end
+  self.outputSearch.mark = nil
+  local name = self.console.name
+  if ((getLines(name, mark.row, mark.row + 1) or {})[1] or "") ~= mark.text then return end
+  moveCursor(name, mark.x, mark.row)
+  for i, c in ipairs(mark.colors) do
+    selectSection(name, mark.x + i - 1, 1)
+    setFgColor(name, c[1], c[2], c[3])
+    setBgColor(name, c[4], c[5], c[6])
+  end
+  deselect(name)
+  moveCursorEnd(name)
+end
+
+-- direction "older" searches up from the newest line, "newer" back down.
+-- A new query starts from the bottom, like Mudlet's search box.
+function ArjUI:searchOutput(direction, query)
+  if not self.console then return end
+  local search = self.outputSearch
+  if query ~= nil then
+    query = query:gsub("^%s+", ""):gsub("%s+$", "")
+    if query ~= search.query then search.query, search.row = query, nil end
+  end
+  self:clearSearchHighlight()
+  if not search.query or search.query == "" then return end
+  local name = self.console.name
+  local last = getLastLineNumber(name)
+  local lines = getLines(name, 0, last + 1) or {}
+  local needle = search.query:lower()
+  local from = search.row or (last + 1)
+  local step = direction == "newer" and 1 or -1
+  local found
+  for row = from + step, step > 0 and last or 0, step do
+    local text = lines[row + 1] or ""
+    local at = text:lower():find(needle, 1, true)
+    if at then found = {row = row, text = text, at = at}; break end
+  end
+  self.searchBox:setStyleSheet(string.format("QPlainTextEdit { background-color: %s; color: %s; border: 1px solid %s; font-size: 11px; }",
+    self.colors.bgDark, self.colors.textMid, found and self.colors.borderDivider or self.colors.textRed))
+  if not found then return end
+  search.row = found.row
+  local x = chars(found.text:sub(1, found.at - 1))
+  local length = chars(search.query)
+  local mark = {row = found.row, x = x, text = found.text, colors = {}}
+  moveCursor(name, x, found.row)
+  for i = 0, length - 1 do
+    selectSection(name, x + i, 1)
+    local r, g, b = getFgColor(name)
+    local rb, gb, bb = getBgColor(name)
+    mark.colors[i + 1] = {r, g, b, rb, gb, bb}
+  end
+  selectSection(name, x, length)
+  setFgColor(name, 0, 0, 0)
+  setBgColor(name, 201, 162, 39)
+  deselect(name)
+  moveCursorEnd(name)
+  -- The highlighted text differs from the plain line only in color.
+  search.mark = mark
+  self:scrollOutputTo(found.row)
+end
+
+-- Mudlet writes echoed commands (per the profile's command-echo preference),
+-- echo()/cecho() without a window, and its own notices to the main window,
+-- which the UI covers. Copy those into GAME OUTPUT, in order and with their
+-- colors. Server lines are routed by the trigger above and stay in the main
+-- window for logging; Mudlet wraps them into several rows after the trigger,
+-- so the next call skips rows until the routed text's non-space characters
+-- are used up. A command typed at a GA prompt is inserted into the prompt's
+-- row, so the rest of that row is mirrored as the echo. The main window's last
+-- row may still be receiving text and waits; inside the router, `current` is
+-- the server line's row, and only rows above it are mirrored.
+local function nonSpace(text) return #(text:gsub("%s", "")) end
+
+function ArjUI:resetMainMirror()
+  self.mainRow, self.mainCol, self.mainPending = getLastLineNumber("main"), 0, nil
+end
+
+function ArjUI:skipRoutedRows(pending, limit)
+  local rows = getLines("main", pending.row, limit + 1) or {}
+  local want = pending.text:gsub("%s", "")
+  local first = (rows[1] or ""):gsub("%s", "")
+  -- A gagged or trimmed line no longer starts here: skip nothing.
+  if want ~= "" and (first == "" or want:sub(1, #first) ~= first:sub(1, #want)) then return pending.row, 0 end
+  local need = #want
+  for i, text in ipairs(rows) do
+    local n = nonSpace(text)
+    if n >= need or i == #rows then
+      local col, count = 0, 0
+      if need > 0 then
+        for j = 1, #text do
+          if text:sub(j, j):find("%S") then
+            count = count + 1
+            if count == need then col = j; break end
+          end
+        end
+        if count < need then col = #text end
+      end
+      -- Keep the routed line's own trailing spaces out of an inserted echo.
+      local trail = #(pending.text:match("%s*$"))
+      col = col + math.min(trail, #(text:sub(col + 1):match("^%s*")))
+      -- A routed blank line is already handled (see the sentinel below).
+      return pending.row + i - 1, math.max(col, 1)
+    end
+    need = need - n
+  end
+  return pending.row, 1
+end
+
+-- Mudlet stamps a wrapped line's later rows with a dashed placeholder time.
+local function continues(row)
+  if row < 1 then return false end
+  local stamp = getTimestamp("main", row)
+  return type(stamp) == "string" and stamp:sub(1, 1) == "-"
+end
+
+-- One main row from byte `from` as decho text, so wrapped rows can be joined.
+local function rowDecho(row, text, from)
+  local first, count = chars(text:sub(1, from)), chars(text)
+  local out, fg, bg = {}, nil, nil
+  moveCursor("main", first, row)
+  for i = first, count - 1 do
+    selectSection("main", i, 1)
+    local r, g, b = getFgColor("main")
+    local rb, gb, bb = getBgColor("main")
+    local key = table.concat({r, g, b, rb, gb, bb}, ",")
+    if key ~= fg then
+      fg = key
+      out[#out + 1] = string.format("<%d,%d,%d:%d,%d,%d>", r, g, b, rb, gb, bb)
+    end
+    out[#out + 1] = utf8 and utf8.sub(text, i + 1, i + 1) or text:sub(i + 1, i + 1)
+  end
+  return table.concat(out)
+end
+
+function ArjUI:mirrorMain(current)
+  if not self.console or self.hidden or not self.mainRow then return end
+  local limit = current and current - 1 or getLastLineNumber("main") - 1
+  if self.mainPending then
+    if self.mainPending.row > limit then return end
+    self.mainRow, self.mainCol = self:skipRoutedRows(self.mainPending, limit)
+    self.mainPending = nil
+  end
+  local row, col, moved = self.mainRow, self.mainCol, false
+  while row <= limit do
+    local text = (getLines("main", row, row + 1) or {})[1] or ""
+    -- Mudlet's wrap rows of this line, joined back into one GAME OUTPUT line.
+    local last = row
+    while last < limit and continues(last + 1) do last = last + 1 end
+    local tail = text:sub(col + 1)
+    local rest = last > row and table.concat(getLines("main", row + 1, last + 1) or {}) or ""
+    if (tail .. rest):find("%S") then
+      moved = true
+      if last == row then
+        local x = chars(text:sub(1, col))
+        moveCursor("main", x, row)
+        if col == 0 then selectCurrentLine("main") else selectSection("main", x, chars(tail)) end
+        copy("main")
+        appendBuffer("ArjUI_Console")
+      else
+        local parts = {rowDecho(row, text, col)}
+        for r = row + 1, last do parts[#parts + 1] = rowDecho(r, (getLines("main", r, r + 1) or {})[1] or "", 0) end
+        self.console:decho(table.concat(parts) .. "<r>\n")
+      end
+    elseif col == 0 then
+      self.console:echo("\n")
+    end
+    -- Column 1 past an empty row marks it handled without emitting it again.
+    if last < limit then row, col = last + 1, 0
+    else
+      row = last
+      col = math.max(#((getLines("main", last, last + 1) or {})[1] or ""), 1)
+      break
+    end
+  end
+  self.mainRow, self.mainCol = row, col
+  -- Leave the main cursor on the line a running trigger is processing.
+  if moved then moveCursorEnd("main") end
 end
 
 function ArjUI:setupAliases()
@@ -5664,6 +6011,8 @@ function ArjUI:setupAliases()
   table.insert(self.portAliases, tempAlias("^ui damage reset$", function() ArjUI:reportDamage(true) end))
   -- ui set [<name> on|off]
   table.insert(self.portAliases, tempAlias("^ui set$", function() ArjUI:showSettings() end))
+  -- ui find <text>
+  table.insert(self.portAliases, tempAlias("^ui find (.+)$", function() ArjUI:findInOutput(matches[2]) end))
   table.insert(self.portAliases, tempAlias("^ui set (\\w+) (on|off)$", function()
     local key, val = matches[2], matches[3] == "on"
     if ArjUI:setSetting(key, val) then

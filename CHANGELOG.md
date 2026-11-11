@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.7.0 - 2026-11-11
+
+- Panels now reach the decorated frame on the left and right, as they already did at the top and bottom. The side columns keep their width and GAME OUTPUT, TANK and TARGET take the extra space.
+- GAME OUTPUT has a scrollbar. Scrolling up opens Mudlet's split view, with new text still arriving below.
+- Commands you type now appear in GAME OUTPUT, in Mudlet's command color and following the profile's command-echo setting. Text that scripts or Mudlet itself write to the main window is shown there too. Previously it went to the hidden main window.
+- Mudlet's log button records the game again. Previously server text was removed from the hidden main window as it was shown in GAME OUTPUT, so logs held only your commands. `ui off` now also shows the full session.
+- Long commands and messages wrap at the GAME OUTPUT width instead of breaking at Mudlet's wrap column.
+- New `ui set timestamps on` shows the time each GAME OUTPUT line arrived, like the main window's clock button. Off by default.
+- GAME OUTPUT has its own search box next to the room name, replacing Mudlet's search box and F3, which only search the hidden main window. Press Enter or ▲ (Shift+F3) for the next older match and ▼ (F3) for the next newer one; the match is highlighted and scrolled into view. If Mudlet's F3 search option is on, it is paused while the UI is shown.
+- New `ui find <text>` lists the latest GAME OUTPUT lines containing the text. Click one to scroll back to it.
+
 ## 2.6.3 - 2026-11-11
 
 - CHARACTER > SPELLS now opens on INTERFACE, which shows your class's preparation list (memorize, pray, commune, ...). The old LIST subtab is renamed SPELLS and comes second.
