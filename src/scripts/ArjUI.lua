@@ -255,6 +255,23 @@ local function makeConsole(parent, name, x, y, w, h, fontSize, bgColor)
   return console
 end
 
+-- Mudlet cannot style a ScrollBox, so its viewport shows the desktop palette
+-- (light grey on some systems). A colored label under the content hides it.
+local function makeScrollFill(box, color)
+  local fill = Geyser.Label:new({name=box.name.."_Fill", x=0, y=0, width="100%-4px", height="100%-4px"}, box)
+  fill:setStyleSheet("background-color: "..(color or "#0c0b09").."; border: none;")
+  return fill
+end
+
+-- Cover content down to `bottom`. Stay inside the frame, and while content
+-- scrolls leave the gutter it reserves for the scrollbar, so the fill never
+-- adds a scrollbar of its own.
+local function fitScrollFill(fill, box, bottom, gutter)
+  local overflow = bottom > box:get_height()-4
+  local w, h = overflow and "100%-"..gutter.."px" or "100%-4px", overflow and bottom or "100%-4px"
+  if fill.fitW ~= w or fill.fitH ~= h then fill.fitW, fill.fitH = w, h; fill:resize(w, h) end
+end
+
 -- ============================================================
 -- PLAYER LAYOUT (normal rectangles are fractions of uiRoot)
 -- ============================================================
@@ -1657,6 +1674,7 @@ function ArjUI:init()
   
   -- GROUP panel (default) - Container for dynamic gauge widgets
   self.groupContainer = Geyser.ScrollBox:new({ name = "ArjUI_GroupContainer", x = 0, y = 0, width = "100%", height = "100%" }, self.tabContent)
+  self.groupFill = makeScrollFill(self.groupContainer)
   self.tabPanels.group = self.groupContainer
   self.groupWidgets = {}  -- Store dynamically created group member widgets
   
@@ -1707,6 +1725,7 @@ function ArjUI:init()
   self.shipBox:enableScrollBar()
   self.shipBox:hide()
   self.shipPage = Geyser.ScrollBox:new({name="ArjUI_ShipPage",x=0,y=44,width="100%",height="100%-44px"},self.shipRoot)
+  self.shipFill = makeScrollFill(self.shipPage)
   self.shipWidgets,self.shipControls={},{}
   self:setupShipBridge()
   self.shipRoot:hide()
@@ -2055,6 +2074,7 @@ function ArjUI:showContextMenu(items, x, y)
   end)
 
   local entries=Geyser.ScrollBox:new({name=menu.name.."_entries",x=2,y=22,width=menuW-4,height=menuH-24},menu)
+  fitScrollFill(makeScrollFill(entries, "#0f0e0c"), entries, #items*22-2, 16)
   for i, item in ipairs(items) do
     local btn = Geyser.Label:new({
       name = menu.name .. "_" .. i, x = 0, y = (i-1) * 22, width = menuW-20, height = 20,
@@ -3783,6 +3803,7 @@ function ArjUI:renderGroup()
       paintGroupLabel(soloLabel, groupStyles.header, "── Group ──<br/>(solo)<br/>Type 'group &lt;name&gt;' to invite")
       widgets.solo = { container = soloLabel }
     end
+    fitScrollFill(self.groupFill, self.groupContainer, 0, 20)
     return
   end
   self:retireGroupWidget("solo")
@@ -3811,6 +3832,7 @@ function ArjUI:renderGroup()
     if not widgets[i] then widgets[i] = self:createGroupRow(i) end
     self:paintGroupRow(widgets[i], mem, i == weakestIdx)
   end
+  fitScrollFill(self.groupFill, self.groupContainer, groupRowTop + (#members - 1) * groupRowStep + groupRowHeight, 20)
 end
 
 -- TAB SWITCHING
@@ -4973,7 +4995,9 @@ function ArjUI:renderShipBridge()
     return table.concat(html,"<br>"),#lines*lineH+8
   end
   for _,widget in pairs(self.shipWidgets) do widget.shipUsed=false end
+  local bottom=0
   local function label(key,x,y,w,h,html,callback,css)
+    bottom=math.max(bottom,y+h)
     local widget=self.shipWidgets[key]
     if not widget then
       widget=Geyser.Label:new({name="ArjUI_Ship_"..key,x=x,y=y,width=w,height=h},self.shipPage)
@@ -5180,6 +5204,7 @@ function ArjUI:renderShipBridge()
     end
   end
   for _,widget in pairs(self.shipWidgets) do if not widget.shipUsed then widget:hide() end end
+  fitScrollFill(self.shipFill,self.shipPage,bottom,20)
   self:reconcileShipViews()
 end
 

@@ -26,6 +26,7 @@ T.steps({
   T.commands={}; ArjUI:panelAction("character","maximize")
  end,verify=function()
   T.check(ArjUI.shipMode=="bridge" and ArjUI.shipBox.hidden and not ArjUI.shipPage.hidden,"Bridge is the single visible mode")
+  T.check(ArjUI.shipFill:get_height()>=ArjUI.shipPage:get_height(),"panel fill covers the bridge page")
   T.check(#ArjUI:shipView().slots==16,"all sixteen occupied slots reach the numbered manifest")
   T.check(ArjUI.shipWidgets.bowArmor.shipStyle:find("#ce7974",1,true),"32 of 100 is critical")
   T.check(ArjUI.shipWidgets.portArmor.shipStyle:find("#d4b56e",1,true),"33 of 100 reaches damaged band")

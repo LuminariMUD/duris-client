@@ -54,6 +54,9 @@ T.steps({
  end,verify=function()
   T.check(rows()==12 and header():find("(12/13)",1,true),"twelve rows and capacity painted")
   T.check(hpText(12):find("700/1000",1,true),"last row painted")
+  local fill,box=ArjUI.groupFill,ArjUI.groupContainer
+  T.check(fill:get_height()==26+11*42+38 and fill:get_width()==box:get_width()-20,
+    "panel fill covers scrolled rows and leaves the scrollbar gutter")
   for _,label in ipairs({ArjUI.groupWidgets.header.container,ArjUI.groupWidgets[1].nameLabel,
       ArjUI.groupWidgets[1].mvLabel,ArjUI.groupWidgets[1].posLabel}) do
    T.check(labelHtml[label.name] and not labelHtml[label.name]:find("color:",1,true),
@@ -164,6 +167,8 @@ T.steps({
  end},
  {name="clear-to-solo",run=function() arm(); T.emit("Group.Status",{members={},size=0,maxSize=13}) end,verify=function()
   T.check(rows()==0 and ArjUI.groupWidgets.solo and not ArjUI.groupWidgets.header,"empty group shows only the solo notice")
+  local fill,box=ArjUI.groupFill,ArjUI.groupContainer
+  T.check(fill:get_width()==box:get_width()-4 and fill:get_height()==box:get_height()-4,"panel fill covers the solo view")
  end},
  {name="regroup",run=function() status(2) end,verify=function()
   T.check(rows()==2 and ArjUI.groupWidgets.header and not ArjUI.groupWidgets.solo,"regrouping replaces the solo notice")
