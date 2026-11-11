@@ -258,7 +258,7 @@ real Mudlet when changing fonts or measurements.
 | Time display | Sends `time`. |
 | Character tab | Selects a view. Click STATS, WHO or SHIP again to refresh. |
 | ROOM tabs | Switch between the live MOBS and ITEMS lists. |
-| GEAR tabs | Select and refresh inventory or equipment. |
+| GEAR tabs | Select inventory or equipment. On item-streaming servers the switch sends nothing; click GEAR again to resync. Legacy servers refresh the selected list. |
 | SPELLS tabs | LIST refreshes the personal catalog. The reported command opens the character's spell interface. |
 | Entity link / group member | Opens contextual actions; custom actions are saved by category. |
 | TELLS contact | Opens a private conversation window; unread counts mark new messages. |
@@ -359,7 +359,10 @@ consumed GMCP packages in one `Core.Supports.Add`, with bounded, rate-paced
 retries until `Duris.Capabilities` confirms support. It uses `Duris.Subscribe`
 to obtain time, damage events and preparation estimates, adding owner items
 while GEAR is interested. The replacement interest array preserves the latest
-reported interests of other add-ons. Reinstall requests current snapshots on a socket with the
+reported interests of other add-ons. Clicking GEAR again restarts an unanswered
+subscription once its retries are spent. A new top-level item revision keeps
+the last completed lists visible, without action links, until each location's
+complete page replaces it; an invalid item row is skipped. Reinstall requests current snapshots on a socket with the
 stream already active. An inactive stream clears the estimate. Teardown cancels
 local retries and leaves the connection-wide interests intact. UI login detection
 uses the lossless Session `(context,generation)` key when available. Re-enable
@@ -373,7 +376,7 @@ including custom prompts.
 Damage tracking prefers `Duris.Combat`, then legacy `Combat.Update.round`. The text fallback reads
 `[Damage: N]`; once GMCP rounds have been observed, late text must not count
 the same damage again. Interrupted event history is marked incomplete and quota
-removal is not automatically retried; the player explicitly re-enables future
+removal (not the reply to ArjUI's own unsubscribe) is not automatically retried; the player explicitly re-enables future
 events. Structured target/tank state prevents late prompt/death text from
 overwriting it. Tank identification/condition uses prompt text on legacy peers;
 the self-tank display uses the player's vitals.

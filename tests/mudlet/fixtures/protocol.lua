@@ -84,6 +84,8 @@ T.steps({
   local before=#messages
   ArjUI:requestTabData("inv")
   T.check(#messages==before+1 and messages[#messages]=="Char.Items.Get []","gear refresh resyncs once without redundant subscriptions")
+  ArjUI.gearTabs.eq.clickCallback({button="LeftButton"}); ArjUI.gearTabs.inv.clickCallback({button="LeftButton"})
+  T.check(#messages==before+1 and ArjUI.itemViews.eq,"sub-tab switches send no resync and keep the other list")
   items("eq","7",0,{{description="Something.",quantity=1,slotName="held",flags={}}},true)
   T.check(not ArjUI.itemViews.eq.items[1].selector and ArjUI.itemViews.eq.items[1].description=="Something.","unseen equipped placeholder needs no selector or condition")
  end,actions=function()
@@ -112,15 +114,18 @@ T.steps({
  end},
  {name="expire-item-scope",run=function()
   items("inv","9",0,{},true)
+  T.check(ArjUI.itemViews.eq.stale and ArjUI.itemViews.eq.items[1].description=="Something.","new revision keeps the last completed list until its replacement completes")
   local sent=#T.commands; oldItemAction()
   T.check(#T.commands==sent,"stale action menu cannot act on expired selector")
   T.check(not ArjUI.itemViews[selector] and not ArjUI.itemRequested,"new top-level revision retires nested contents/selectors")
   items(selector,"8",0,{item("stale contents")},true)
   T.check(not ArjUI.itemViews[selector],"stale nested response cannot resurrect contents")
   local previous=ArjUI.itemViews.inv
-  items("inv","999",0,{{description="bad\nrecord",quantity=1,condition=""}},true)
+  items("inv","999",0.5,{},true)
   T.check(ArjUI.itemViews.inv==previous and ArjUI.itemRevision=="9","malformed page cannot poison a revision or expire valid views")
-  items("eq","9",0,{},true,false)
+  items("inv","999",0,{{description="bad\nrecord",quantity=1,condition=""},item("kept bag")},true)
+  T.check(#ArjUI.itemViews.inv.items==1 and ArjUI.itemViews.inv.items[1].description=="kept bag","one invalid row is skipped without dropping its page")
+  items("eq","999",0,{},true,false)
   ArjUI.activeGearTab="eq"; ArjUI:renderEq()
   T.check(T.lines(ArjUI.eqBox.name):find("unavailable",1,true),"unavailable is distinct from known-empty")
  end},
@@ -179,6 +184,19 @@ T.steps({
   T.check(ArjUI.initialDataRequested,"body change is not a second login")
  end},
  {name="quota-and-menu",run=function()
+  local n=ArjUI.gmcpNegotiation
+  n.synced,n.subscriptions,n.pendingInterests=false,3,ArjUI:protocolInterests()
+  ArjUI:cancelGMCPRetry()
+  local before=#messages
+  ArjUI:switchTab("gear")
+  T.check(#messages>before and messages[before+1]:find("Duris.Subscribe",1,true),"GEAR click retries an unanswered Items subscription")
+  caps()
+  T.check(n.synced,"retried subscription resyncs")
+  ArjUI:setSetting("damageTracker",false); ArjUI:setSetting("damageTracker",true)
+  caps({"Duris.Time","Char.SpellPreparation","Char.Items"})
+  T.check(not ArjUI.combatStopped,"late reply to the client's own unsubscribe is not a quota removal")
+  caps()
+  T.check(n.synced and not n.droppedCombat,"resubscribed combat resyncs")
   caps({"Duris.Time","Char.SpellPreparation","Char.Items"})
   T.check(ArjUI.damage.incomplete and ArjUI.combatStopped,"quota removal marks incomplete history without automatic resubscription")
   ArjUI:reportDamage(true)

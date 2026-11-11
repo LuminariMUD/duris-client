@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.6.1 - 2026-11-11
+
+- Keep the other GEAR list visible while inventory or equipment updates, and switch between them without requesting a new snapshot.
+- Skip a single unreadable item instead of hiding the whole list.
+- Clicking GEAR again retries an item subscription the server never answered.
+- Turning the damage tracker off and quickly back on no longer marks combat events as stopped by the server.
+
 ## 2.6.0 - 2026-11-10
 
 - Keep clickable server-provided web links and recipient colors in chat tabs and private conversation history.

@@ -1,5 +1,24 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Issue #36 GEAR resync, combat flag and Items retry — 2026-11-11
+
+Candidate **2.6.1**, branch `fix/issue-36-gear-resync-combat-retry` based on
+`ee8d9a2`. The `protocol` fixture adds assertions for: sub-tab switches sending
+no `Char.Items.Get`; a new top-level revision keeping the other completed list
+visible and unlinked; skipping one invalid item row; a GEAR click restarting an
+exhausted Items subscription; and a late reply to the client's own Combat
+unsubscribe not setting the stopped flag.
+
+- Mudlet 5.0.1 AppImage (reinstalled from the release asset, SHA-256 checked)
+  under Xvfb in WSL2/Ubuntu 24.04: all **31/31** suite expectations pass, with
+  `protocol` run `20261111T132342Z-d6bccb3a-protocol` under
+  `~/.local/share/duris-client-dev/runs/protocol/`.
+- Inspected `07-expire-item-scope.png` (kept row renders) and the Errors view
+  (no errors). 11 controller tests and 15 release tests pass.
+- Package SHA-256 `e74a612679502866ed7752d1eda8fa452e9ffa53bac4a7a2527f180ea0292781`.
+
+Live Duris, Mudlet 4.19.1, native Windows/macOS and desktop DPI remain unverified.
+
 ## Versioned interfaces — 2026-11-10
 
 Candidate **2.6.0**, branch `branch/gmcp-interface-adoption` based on
