@@ -209,16 +209,23 @@ setting, including a command inserted after a GA prompt, `echo()`/`cecho()`
 without a window, Mudlet notices) are mirrored in order with their colors.
 Mudlet hard-wraps main-window lines at its wrap width, marking later rows with
 a dashed timestamp; the mirror skips a routed line's rows and joins a mirrored
-line's rows, so GAME OUTPUT wraps only at its own width. The main window's last
-row waits until a later one follows, as it may still be receiving text.
+line's rows in a hidden scratch line before appending it, so links keep their
+actions and GAME OUTPUT wraps only at its own width. The main window's last
+row waits until a later one follows, as it may still be receiving text. A
+0.25 s timer also mirrors completed rows when no server line or command
+follows them (a timer's echo, a disconnect notice).
 `ui set timestamps on` shows Mudlet's per-line time column, which the main
 window's clock button cannot reach. Mudlet's
 search box and F3 search only the covered main window, so GAME OUTPUT has its
 own box at the right of the room-name row: Enter or ▲ (Shift+F3) finds the next
 older match, ▼ (F3) the next newer one. The match is highlighted in gold,
-restored when the search moves on, and scrolled into the split view. Mudlet's
+restored when the search moves on, and scrolled into the split view. When
+GAME OUTPUT trims its oldest lines, the search position, the highlight and
+earlier `ui find` links are rebased. Mudlet's
 optional F3 shortcut would take the key first, so `f3SearchEnabled` is paused
-while the UI is shown and restored when it is hidden or removed. `ui find
+while the UI is shown and restored when it is hidden or removed. The pause is
+recorded in `arjui_settings.json`, because Mudlet saves its own settings on exit
+without the UI's teardown. `ui find
 <text>` lists the ten latest matches as links that scroll back to them. Secondary panels use warm dark
 surfaces and softer borders. The
 [README header](assets/header-prompt.md) is separate illustrative artwork;

@@ -1287,3 +1287,24 @@ The `information` scenario adds `spell-player-pager` (8.5 s real wait) and
 discovery-click checks. With either fix removed, its own check fails. The full
 suite passes **31/31** under Mudlet 5.0.1/Xvfb with an empty Errors view.
 Live Duris paging and Mudlet 4.19.1 remain unverified.
+
+## 2.7.0 review fixes: idle echoes, wrapped links, trimmed search, F3 restart — 2026-11-11
+
+Four findings from the 2.7.0 review, each with a `console` scenario check that
+fails when its fix is removed:
+
+1. Completed main-window echoes were mirrored only when the next server line,
+   command, note or find arrived. A 0.25 s timer now flushes them.
+2. Wrapped main rows were rebuilt with `decho`, which dropped link actions. They
+   are now joined in a hidden scratch line with `copy`/`paste`, then appended. A
+   real click on a wrapped link runs it, and continuation rows still carry the
+   dashed timestamp.
+3. GAME OUTPUT trimming left `outputSearch.row`, the highlight and `ui find`
+   links on stale numbers. A real trim (`setConsoleBufferSize`, then 30 lines)
+   now keeps the search on its line.
+4. The `f3SearchEnabled` pause lived only in memory, and Mudlet saves profile
+   settings on exit. A simulated restart now restores the user's setting.
+
+`console` passes 61 assertions and the full suite passes **32/32** under Mudlet 5.0.1/Xvfb,
+with empty Errors views. Live Duris, Mudlet 4.19.1 (which may lack
+`getTimestamp`, `enableTimeStamps` or `f3SearchEnabled`) and native DPI remain unverified.

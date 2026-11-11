@@ -54,6 +54,7 @@ function ArjUI:kill()
   self.capturing = nil
   self.captureBuffer = {}
   if self.teardownPorted then self:teardownPorted() end
+  if self.mirrorTimer then killTimer(self.mirrorTimer); self.mirrorTimer = nil end
   -- Kill routeall trigger
   if self.routeAllTriggerId then
     pcall(function() killTrigger(self.routeAllTriggerId) end)
@@ -2010,8 +2011,9 @@ function ArjUI:init()
   table.insert(self.eventHandlers, h)
   -- Trimming the main window's oldest lines renumbers those still to mirror.
   h = registerAnonymousEventHandler("sysBufferShrinkEvent", function(_, name, removed)
-    if name ~= "main" or not self.mainRow then return end
     removed = tonumber(removed) or 0
+    if self.console and name == self.console.name then self:outputTrimmed(removed); return end
+    if name ~= "main" or not self.mainRow then return end
     if self.mainRow < removed then self:resetMainMirror(); return end
     self.mainRow = self.mainRow - removed
     if self.mainPending then
@@ -4603,11 +4605,12 @@ ArjUI.settingsDefaults = {
 
 function ArjUI:loadSettings()
   self.settings = {}
-  self.shipMode = "bridge"
+  self.shipMode, self.f3Paused = "bridge", false
   for k, v in pairs(self.settingsDefaults) do self.settings[k] = v end
   local data=self:readProfileJSON(getMudletHomeDir().."/arjui_settings.json")
   if data then
     self.shipMode = data.shipMode=="details" and "details" or "bridge"
+    self.f3Paused = data.f3Paused == true
     for k, v in pairs(data) do
       if self.settingsDefaults[k] ~= nil then self.settings[k] = (v == true) end
     end
@@ -4618,6 +4621,7 @@ function ArjUI:saveSettings()
   local path = getMudletHomeDir() .. "/arjui_settings.json"
   local data = {}; for key,value in pairs(self.settings or self.settingsDefaults) do data[key]=value end
   data.shipMode=self.shipMode or "bridge"
+  if self.f3Paused then data.f3Paused = true end
   return self:writeProfileJSON(path,data,"UI settings")
 end
 
@@ -5687,6 +5691,11 @@ function ArjUI:setupRouteAll()
     self.routeAllHandler = nil
   end
   
+  -- Script echoes and Mudlet notices can arrive with no server line after
+  -- them (a timer, a disconnect). Mirror completed main rows while idle too.
+  if self.mirrorTimer then killTimer(self.mirrorTimer) end
+  self.mirrorTimer = tempTimer(.25, function() if ArjUI then ArjUI:mirrorMain() end end, true)
+
   -- Create a regex trigger that matches every line
   -- Pattern "^.*$" matches entire line (same as working manual trigger)
   self.routeAllTriggerId = tempRegexTrigger("^.*$", function()
@@ -5738,15 +5747,30 @@ function ArjUI:findInOutput(text)
     if #shown > 120 then shown = shown:sub(1, 117) .. "..." end
     self.console:cecho("<dim_gray>" .. self.findMarker .. "<reset>")
     self.console:echoLink(string.format("line %d: %s", hit.line + 1, shown),
-      "ArjUI:scrollOutputTo(" .. hit.line .. ")", "Scroll GAME OUTPUT to this line", true)
+      "ArjUI:scrollOutputTo(" .. hit.line .. "," .. (self.outputTrim or 0) .. ")", "Scroll GAME OUTPUT to this line", true)
     self.console:echo("\n")
+  end
+end
+
+-- Trimming GAME OUTPUT's oldest lines renumbers the rest. Keep the search
+-- position and highlight on their lines, and let older find links resolve.
+function ArjUI:outputTrimmed(removed)
+  self.outputTrim = (self.outputTrim or 0) + removed
+  local search = self.outputSearch or {}
+  if search.row then search.row = search.row >= removed and search.row - removed or nil end
+  if search.mark then
+    search.mark.row = search.mark.row - removed
+    if search.mark.row < 0 then search.mark = nil end
   end
 end
 
 -- scrollTo() names the bottom line of the upper pane, which takes about three
 -- quarters of the console once split. Aim to show the match in its upper half.
-function ArjUI:scrollOutputTo(line)
+function ArjUI:scrollOutputTo(line, trim)
   if not (self.console and scrollTo) then return end
+  -- A find link names its line as numbered when it was listed.
+  if trim then line = line - ((self.outputTrim or 0) - trim) end
+  if line < 0 then return end
   local _, rowHeight = calcFontSize(self.console.name)
   local rows = math.max(1, math.floor(self.console:get_height() * .75 / math.max(1, rowHeight or 14)))
   scrollTo(self.console.name, math.min(getLastLineNumber(self.console.name), line + math.floor(rows * .6)))
@@ -5761,10 +5785,14 @@ local function chars(text) return utf8 and utf8.len(text) or #text end
 function ArjUI:bindSearchKeys(on)
   for _, id in ipairs(self.searchKeys or {}) do pcall(killKey, id) end
   self.searchKeys = {}
-  if self.f3Restore ~= nil then pcall(setConfig, "f3SearchEnabled", self.f3Restore); self.f3Restore = nil end
-  if not on then return end
+  -- The pause is saved with the UI settings: Mudlet saves its own profile
+  -- settings on exit, often without this script's teardown having run.
+  if not on then
+    if self.f3Paused and pcall(setConfig, "f3SearchEnabled", true) then self.f3Paused = false; self:saveSettings() end
+    return
+  end
   local ok, f3 = pcall(getConfig, "f3SearchEnabled")
-  if ok and f3 == true and pcall(setConfig, "f3SearchEnabled", false) then self.f3Restore = true end
+  if ok and f3 == true and pcall(setConfig, "f3SearchEnabled", false) then self.f3Paused = true; self:saveSettings() end
   local shift = mudlet and mudlet.keymodifier and mudlet.keymodifier.Shift or 0x02000000
   local f3key = mudlet and mudlet.key and mudlet.key.F3 or 0x01000032
   local none = mudlet and mudlet.keymodifier and mudlet.keymodifier.None or 0
@@ -5892,25 +5920,6 @@ local function continues(row)
   return type(stamp) == "string" and stamp:sub(1, 1) == "-"
 end
 
--- One main row from byte `from` as decho text, so wrapped rows can be joined.
-local function rowDecho(row, text, from)
-  local first, count = chars(text:sub(1, from)), chars(text)
-  local out, fg, bg = {}, nil, nil
-  moveCursor("main", first, row)
-  for i = first, count - 1 do
-    selectSection("main", i, 1)
-    local r, g, b = getFgColor("main")
-    local rb, gb, bb = getBgColor("main")
-    local key = table.concat({r, g, b, rb, gb, bb}, ",")
-    if key ~= fg then
-      fg = key
-      out[#out + 1] = string.format("<%d,%d,%d:%d,%d,%d>", r, g, b, rb, gb, bb)
-    end
-    out[#out + 1] = utf8 and utf8.sub(text, i + 1, i + 1) or text:sub(i + 1, i + 1)
-  end
-  return table.concat(out)
-end
-
 function ArjUI:mirrorMain(current)
   if not self.console or self.hidden or not self.mainRow then return end
   local limit = current and current - 1 or getLastLineNumber("main") - 1
@@ -5936,9 +5945,29 @@ function ArjUI:mirrorMain(current)
         copy("main")
         appendBuffer("ArjUI_Console")
       else
-        local parts = {rowDecho(row, text, col)}
-        for r = row + 1, last do parts[#parts + 1] = rowDecho(r, (getLines("main", r, r + 1) or {})[1] or "", 0) end
-        self.console:decho(table.concat(parts) .. "<r>\n")
+        -- Join the rows in a hidden scratch line, then append that line, so
+        -- links survive and GAME OUTPUT wraps it at its own width.
+        local scratch = "ArjUI_MirrorScratch"
+        createMiniConsole(scratch, 0, 0, 1, 1)
+        hideWindow(scratch)
+        clearWindow(scratch)
+        for r = row, last do
+          local rowText = r == row and text or (getLines("main", r, r + 1) or {})[1] or ""
+          local x = chars(rowText:sub(1, r == row and col or 0))
+          local n = chars(rowText) - x
+          if n > 0 then
+            moveCursor("main", x, r)
+            selectSection("main", x, n)
+            copy("main")
+            moveCursor(scratch, chars((getLines(scratch, 0, 1) or {})[1] or ""), 0)
+            paste(scratch)
+          end
+        end
+        moveCursor(scratch, 0, 0)
+        selectCurrentLine(scratch)
+        copy(scratch)
+        appendBuffer("ArjUI_Console")
+        clearWindow(scratch)
       end
     elseif col == 0 then
       self.console:echo("\n")

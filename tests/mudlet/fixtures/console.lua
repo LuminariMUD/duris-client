@@ -140,8 +140,37 @@ T.steps({
   for back=1,2 do acts[#acts+1]={type="click",x=c:get_x()+cw*4,y=c:get_y()+(rows-back)*fh+fh/2} end
   return acts
  end},
- {name="context-copy",run=function()
+ {name="wrapped-link",wait=.4,run=function()
   T.check(ArjUI.testLinkClicked==true,"clicking a GAME OUTPUT link runs it")
+  -- A link on a line the main window wraps still works once the rows are joined.
+  ArjUI.testLinkClicked=nil
+  scrollTo("ArjUI_Console")
+  -- Long enough to wrap in the main window, short enough for one GAME OUTPUT row.
+  echo("main",string.rep("wrapped link prefix ",4).."padpadpad ")
+  echoLink("main","CONSOLE-WRAPPED-LINK",[[ArjUI.testLinkClicked=true]],"wrapped test link",true)
+  echo("main","\n")
+ end,verify=function()
+  local text=T.lines("ArjUI_Console")
+  T.check(count(text,"CONSOLE-WRAPPED-LINK")==1,"the wrapped link is mirrored once, without a server line or command after it")
+  T.check(text:gsub("\n",""):find("padpadpad CONSOLE-WRAPPED-LINK",1,true),"wrapped main rows are joined into one GAME OUTPUT line")
+  local main=getLines("main",0,getLastLineNumber("main")+1)
+  local wrapped=false
+  for _,row in ipairs(main) do if row:find("WRAPPED-LINK",1,true) and not row:find("padpadpad",1,true) then wrapped=true end end
+  T.check(wrapped,"the main window wrapped the link line")
+ end,actions=function()
+  local c=ArjUI.console
+  local _,fh=calcFontSize(c.name)
+  local cw=calcFontSize(c.name)
+  local rows=math.floor(c:get_height()/fh)
+  local text=T.lines(c.name)
+  local line=text:match("([^\n]*CONSOLE%-WRAPPED%-LINK[^\n]*)") or ""
+  local at=(line:find("CONSOLE-WRAPPED-LINK",1,true) or 1)-1
+  local acts={}
+  for back=1,2 do acts[#acts+1]={type="click",x=c:get_x()+cw*(at+3),y=c:get_y()+(rows-back)*fh+fh/2} end
+  return acts
+ end},
+ {name="context-copy",run=function()
+  T.check(ArjUI.testLinkClicked==true,"clicking a link on a wrapped main-window line runs it")
   setClipboardText("")
  end,actions=function()
   local c=ArjUI.console
@@ -190,5 +219,35 @@ T.steps({
  end,actions=function() return {{type="key",key="shift+F3"},{type="key",key="shift+F3"},{type="key",key="F3"}} end},
  {name="search-keys-result",run=function()
   T.check(ArjUI.outputSearch.row==lineIndex(T.lines("ArjUI_Console"),"CONSOLE-FILL-048"),"Shift+F3 twice then F3 lands on the expected match")
+ end},
+ {name="search-trim",wait=.4,run=function()
+  -- A long session trims GAME OUTPUT's oldest lines and renumbers the rest.
+  ArjUI:searchOutput("older","CONSOLE-FILL-11")
+  T.check(ArjUI.outputSearch.row==lineIndex(T.lines("ArjUI_Console"),"CONSOLE-FILL-119"),"search finds the newest fill match")
+  setConsoleBufferSize("ArjUI_Console",getLastLineNumber("ArjUI_Console")+20,40)
+  for i=1,30 do feedTriggers(string.format("CONSOLE-TRIM-%03d\n",i)) end
+ end,verify=function()
+  T.check((ArjUI.outputTrim or 0)>0,"GAME OUTPUT trimmed its oldest lines")
+  local text=T.lines("ArjUI_Console")
+  T.check(ArjUI.outputSearch.row==lineIndex(text,"CONSOLE-FILL-119"),"the search position follows its line after a trim")
+  local marked=ArjUI.outputSearch.row
+  ArjUI:searchOutput("older")
+  T.check(ArjUI.outputSearch.row==lineIndex(text,"CONSOLE-FILL-118"),"the next search continues from the trimmed position")
+  moveCursor("ArjUI_Console",8,marked); selectSection("ArjUI_Console",8,1)
+  local r,g,b=getBgColor("ArjUI_Console"); deselect("ArjUI_Console"); moveCursorEnd("ArjUI_Console")
+  T.check(r..","..g..","..b=="0,0,0","the earlier highlight is removed after a trim")
+  ArjUI:searchOutput("older","")
+ end},
+ {name="f3-restart",run=function()
+  -- Mudlet saves its settings on exit without running the UI's teardown.
+  setConfig("f3SearchEnabled",true); ArjUI:bindSearchKeys(true)
+  T.check(getConfig("f3SearchEnabled")==false,"F3 is paused while the UI is shown")
+  ArjUI.f3Paused,ArjUI.f3Restore=nil,nil -- nothing in memory survives a restart
+  ArjUI:loadSettings(); ArjUI:bindSearchKeys(true)
+  ArjUI:setVisible(false)
+  T.check(getConfig("f3SearchEnabled")==true,"a pause saved in an earlier session is still restored")
+  ArjUI:setVisible(true); ArjUI:setVisible(false)
+  T.check(getConfig("f3SearchEnabled")==true,"the restored setting is not paused twice")
+  ArjUI:setVisible(true)
  end},
 })
