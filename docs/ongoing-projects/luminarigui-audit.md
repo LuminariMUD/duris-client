@@ -52,7 +52,15 @@ each lands.
 | R3 (chat unread), R4 (group leader/rank/level/class), `build.py` Lua 5.1, luacheck blocking | Implemented in 2.8.0. Unread tabs show a gold `•` with the count in the tooltip: a number did not fit the tabs at 1366×768. Fixing the 14 luacheck warnings changed no behaviour. A new lint rule rejects Lua 5.2+ escapes such as `\u{...}`, which Lua 5.1 compiles but reads as plain letters. |
 | R5 (`ui debug` report) | Implemented in 2.9.0. `ArjUI:debugReportLines()` reports the versions, profile, window and UI state, connection, GMCP setting, session, server features, the age of each of 17 GMCP messages, resource counts for the three scripts, and artwork. Each probe is wrapped in `pcall`. |
 | R2 (casting progress) | Implemented in 2.10.0. Triggers match the `sparser.c` start lines (chant, silent hands, prepared weave), `Casting:` progress lines, completion lines (both forms) and the three Duris class aborts. The spell name comes from a typed `cast`/`c`/`will '<spell>'` command when the server prints no progress line. A 12 s idle expiry covers casts with no outcome. The new `cast` scenario covers it. A GMCP cast event, which would be exact, remains a possible server addition. |
-| R1 | Pending |
+| R1 (sound alerts) | Implemented in 2.11.0. Five channels: tell, chat, lowhp, lowmove, alert. Master switch off by default; per-channel cooldowns; low-vitals latch (25/40% HP, 20/35% moves); one `arjui` media tag for stop and uninstall. Settings are in `arjui_settings.json` under `sound`, validated on load. LuminariGUI's audio files have an undocumented origin, so the sounds are original tones from `scripts/gen_sounds.py` (stdlib, byte-identical output). The new `sound` scenario makes one real `playSoundFile` call; whether the table form is accepted on Mudlet 4.19.1 is still unverified. |
+
+Not implemented, as planned:
+- the [Deferred](#deferred) items, which need a live-server check or Duris sector data first;
+- the optional LuaLS stubs from T6;
+- the [rejected](#not-worth-porting) ports.
+
+Remaining checks: a live Duris server, Mudlet 4.19.1, and Windows/macOS fonts
+and audio. See the [testing log](mudlet-local-testing.md).
 
 ## Runtime features
 

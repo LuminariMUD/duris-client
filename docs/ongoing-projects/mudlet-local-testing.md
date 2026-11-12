@@ -1,5 +1,21 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Sound alerts — 2026-11-13
+
+Candidate **2.11.0**, branch `branch/sound-alerts` (LuminariGUI audit R1). The
+new `sound` scenario makes one real `playSoundFile` table-form call. Mudlet's
+`TMedia` accepted it and the Errors view stayed empty. It then records
+playback to check: off-by-default, low HP/moves latch and cooldown, tell and
+outgoing tell, chat only for tabs you are not reading, your own lines, the
+alert banner, commands, tag-scoped stop, persistence across reload, and
+corrupt saved values.
+
+- Mudlet 5.0.1 under Xvfb: all **34/34** suite expectations pass. Focused run
+  `20261112T225650Z-afebe686-sound`.
+- Package SHA-256 `68f2b4b0842e4503ddd4d957c96ccca46132bd81a8e99a92a5ffbfd691623936`.
+
+Audible output, Mudlet 4.19.1 media behavior and Windows/macOS audio are unverified.
+
 ## Spell-casting progress — 2026-11-13
 
 Candidate **2.10.0**, branch `branch/cast-progress` (LuminariGUI audit R2). The
