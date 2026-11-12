@@ -38,7 +38,7 @@ jobs:
       - name: Summarize scenario results
         if: always()
         run: |
-          python3 - "$MUDLET_ARTIFACTS/suite-results.json" >> "$GITHUB_STEP_SUMMARY" <<'PY'
+          python3 - "$MUDLET_ARTIFACTS/suite-results.json" <<'PY' | tee -a "$GITHUB_STEP_SUMMARY"
           import json, sys
           from pathlib import Path
           path = Path(sys.argv[1])
@@ -46,10 +46,14 @@ jobs:
               print("### Mudlet scenarios: no results written")
               raise SystemExit
           cases = json.loads(path.read_text()).get("cases", [])
-          failed = [c["case"] for c in cases if not c.get("passed")]
+          failed = [c for c in cases if not c.get("passed")]
           print(f"### Mudlet scenarios: {len(cases) - len(failed)}/{len(cases)} passed")
-          for name in failed:
-              print(f"- FAILED: `{name}`")
+          for case in failed:
+              print(f"- FAILED: `{case['case']}` (exit {case.get('exit_code')})")
+              result = Path(case["run"] or "") / "results.json"
+              error = json.loads(result.read_text()).get("error") if case.get("run") and result.is_file() else None
+              detail = (error or case.get("stderr") or "no error recorded").strip()
+              print("\n```\n" + detail[:3000] + "\n```")
           print("\nVisual review of screenshots is still manual.")
           PY
       - name: Checks left the checkout unchanged
