@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.10.0 - 2026-11-13
+
+- While you cast, the PREP box in VITALS shows the spell and its remaining `*` steps, for example `fireball ***`. It then shows `OK` or `ABORTED` for a few seconds before switching back to the preparation timer. The spell name comes from the game's `Casting:` lines, or from your `cast '<spell>'` command when the game doesn't print one. A cast that never finishes clears itself after 12 seconds.
+
 ## 2.9.0 - 2026-11-13
 
 - `ui debug` now prints a full diagnostic report to paste into bug reports. It shows the package, Mudlet and OS versions, the profile, the window size and UI state, the connection, whether GMCP is enabled, the server session and the features the server reports. It also shows how long ago each GMCP message last arrived, how many triggers, aliases and timers the client is running, and whether the frame artwork was found.

@@ -1,5 +1,19 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Spell-casting progress — 2026-11-13
+
+Candidate **2.10.0**, branch `branch/cast-progress` (LuminariGUI audit R2). The
+new `cast` scenario feeds the server's text lines through real triggers: chant,
+silent and weave starts; the progress countdown; completion; a psionic abort; idle
+expiry; session end; and a quoted line that must not match.
+
+- Mudlet 5.0.1 under Xvfb: all **33/33** suite expectations pass. Focused run
+  `20261112T225010Z-3686747d-cast`; `05-session-end-clears.png` shows
+  `lightning … ****` fitting the PREP box at 1366×768. The Errors view is empty.
+- Package SHA-256 `9ef13cd6247b2bbe398ae299faa68d4041e70004cb1d70f3348083f60473dbf8`.
+
+Live Duris casting (skill-roll gaps between `Casting:` lines, lag) is unverified.
+
 ## ui debug diagnostic report — 2026-11-13
 
 Candidate **2.9.0**, branch `branch/ui-debug-report` (LuminariGUI audit R5).

@@ -941,6 +941,7 @@ function ArjUI:endSession()
   end
   if self.scanTimer then killTimer(self.scanTimer); self.scanTimer = nil end
   self.scanCounts = {}
+  self:clearCast()
   self:resetCharacterState()
   self.damage = {fight=0, fightHits=0, session=0, sessionHits=0, sessionStart=os.time(), lastHit=0,incomplete=self.combatStopped==true}
   if ArjAuto and ArjAuto.resetSession then ArjAuto:resetSession() end
@@ -1480,6 +1481,13 @@ function ArjUI:setSpellPreparation(mode, seconds)
 end
 
 function ArjUI:renderSpellPreparation()
+  -- An in-flight or just-finished cast takes the slot; preparation returns after.
+  local castLabel, castHint = self:castDisplay()
+  if castLabel then
+    self.prepLabel:echo(castLabel)
+    self.prepLabel:setToolTip(castHint)
+    return
+  end
   local mode = self.state.prepMode
   local label, hint = "PREP —", "No spell preparation estimate from the server."
   if mode=="complete" then
@@ -2858,6 +2866,7 @@ function ArjUI:registerGMCPHandlers()
     -- Mudlet echoes the command to the main window just before this event.
     self:mirrorMain()
     self:watchSpellCommand(command)
+    self:watchCastCommand(command)
     if self.timeQueryTimer and tostring(command):lower():match("^%s*time%s*$") then
       killTimer(self.timeQueryTimer)
       self.timers[self.timeQueryTimer] = nil
@@ -4866,6 +4875,7 @@ function ArjUI:setupPorted()
   self:setupDamageTracker()
   self:setupScanFormatter()
   self:setupAlerts()
+  self:setupCastTracker()
   self:setupShipText()
   self:setupKeypad()
 end
@@ -5082,6 +5092,111 @@ function ArjUI:setupAlerts()
       local text = label:gsub("%%(%d)", function(i) return matches[tonumber(i) + 1] or "" end)
       ArjUI:note(string.format("\n%s ══ %s ══", style, text))
     end)
+  end
+end
+
+-- ------------------------------------------------------------
+-- SPELL CASTING PROGRESS
+-- Duris prints the cast lifecycle as text (src/net/sparser.c): a start line,
+-- "Casting: <spell> ***" progress lines (one * per remaining step, printed
+-- only when a skill roll passes, or always for psionicists, mindflayers,
+-- druids and blighters), then a completion or abort line. VITALS shows it in
+-- the PREP slot while a cast is in flight and returns to preparation after.
+ArjUI.CAST_IDLE_SECONDS = 12   -- clear a cast that never resolves (target lost, lag, ...)
+ArjUI.CAST_RESULT_SECONDS = 3  -- keep "done"/"aborted" visible briefly
+
+ArjUI.CAST_LINES = {
+  start = {
+    "^You start chanting\\.\\.\\.$",
+    "^You call forth your prepared spell\\.\\.\\.$",
+    "^With the absence of sound, you begin using your hands to channel the weave\\.\\.\\.$",
+  },
+  progress = "^Casting: (.+?) ?(\\**)$",
+  complete = {
+    "^You complete your spell\\.\\.\\.$",
+    "^Your mental manipulations become a reality\\.\\.\\.$",
+  },
+  abort = {
+    "^You abort your spell before it's done!$",
+    "^You abort your mental image before it has become reality!$",
+    "^You abort your prayer before it's done!$",
+  },
+}
+
+-- cast 'fireball' target / c 'fireball' / will 'mind blast' -> spell name
+function ArjUI:watchCastCommand(command)
+  local verb, spell = tostring(command or ""):lower():match("^%s*(%a+)%s+'([^']+)'")
+  if spell and (verb == "will" or ("cast"):sub(1, #verb) == verb) then
+    self.pendingCastSpell = spell
+  end
+end
+
+function ArjUI:castEvent(kind, spell, stars)
+  local now = getEpoch()
+  local cast = self.state.cast
+  if kind == "start" then
+    cast = { spell = self.pendingCastSpell, phase = "casting", at = now }
+  elseif kind == "progress" then
+    cast = cast and cast.phase == "casting" and cast or { phase = "casting" }
+    cast.spell, cast.stars, cast.at = spell, #(stars or ""), now
+  elseif kind == "complete" or kind == "abort" then
+    cast = { spell = cast and cast.spell or self.pendingCastSpell, phase = kind == "complete" and "done" or "aborted", at = now }
+  end
+  if kind ~= "progress" then self.pendingCastSpell = nil end
+  self.state.cast = cast
+  self:scheduleCastExpiry()
+  self:renderSpellPreparation()
+end
+
+function ArjUI:scheduleCastExpiry()
+  if self.castTimer then
+    killTimer(self.castTimer); self.timers[self.castTimer] = nil; self.castTimer = nil
+  end
+  local cast = self.state.cast
+  if not cast then return end
+  local wait = cast.phase == "casting" and self.CAST_IDLE_SECONDS or self.CAST_RESULT_SECONDS
+  self.castTimer = self:after(wait, function()
+    self.castTimer = nil
+    self.state.cast = nil
+    self:renderSpellPreparation()
+  end)
+end
+
+function ArjUI:clearCast()
+  if self.castTimer then
+    killTimer(self.castTimer); self.timers[self.castTimer] = nil; self.castTimer = nil
+  end
+  self.state.cast, self.pendingCastSpell = nil, nil
+end
+
+-- Label text and tooltip while a cast is shown, or nil to show preparation.
+function ArjUI:castDisplay()
+  local cast = self.state.cast
+  if not cast then return nil end
+  local spell = cast.spell and stripColors(cast.spell) or nil
+  local short = spell and (#spell > 11 and spell:sub(1, 10) .. "…" or spell) or nil
+  if cast.phase == "done" then
+    return (short or "CAST") .. " OK", (spell and ("Cast " .. spell) or "Spell") .. " complete."
+  elseif cast.phase == "aborted" then
+    return "ABORTED", (spell and ("Cast of " .. spell) or "Spell") .. " aborted."
+  end
+  local label = (short or "CASTING") .. (cast.stars and cast.stars > 0 and (" " .. string.rep("*", math.min(cast.stars, 6))) or "")
+  local hint = "Casting " .. (spell or "a spell")
+  if cast.stars then hint = hint .. string.format(" — %d step%s left", cast.stars, cast.stars == 1 and "" or "s") end
+  return label, hint .. "."
+end
+
+function ArjUI:setupCastTracker()
+  local L = self.CAST_LINES
+  for _, pattern in ipairs(L.start) do
+    addTrigger(self, pattern, function() if ArjUI then ArjUI:castEvent("start") end end)
+  end
+  addTrigger(self, L.progress, function() if ArjUI then ArjUI:castEvent("progress", matches[2], matches[3]) end end)
+  for _, pattern in ipairs(L.complete) do
+    addTrigger(self, pattern, function() if ArjUI then ArjUI:castEvent("complete") end end)
+  end
+  for _, pattern in ipairs(L.abort) do
+    addTrigger(self, pattern, function() if ArjUI then ArjUI:castEvent("abort") end end)
   end
 end
 

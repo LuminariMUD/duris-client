@@ -169,6 +169,11 @@ The bottom strip puts HP, MP, and movement below the left column. Position
 shares the bottom row with the spell preparation estimate. An active estimate
 counts down from the latest server snapshot. A paused estimate holds its value,
 and PREP OK requires server confirmation. An unavailable stream shows PREP —.
+While a spell is being cast, the same slot shows the spell and its remaining
+`*` steps from the server's `Casting:` text lines, then `OK` or `ABORTED` for 3
+seconds. A cast with no outcome clears after 12 seconds. Duris prints progress
+only when a skill roll passes, so the slot also starts from the chant line or a
+typed `cast '<spell>'` command.
 Tank and target displays split the space below the console. **BUFFS and
 DEBUFFS both describe the player's affects**, even though they sit below the
 tank and target respectively. DMG shows the current fight's damage total.
