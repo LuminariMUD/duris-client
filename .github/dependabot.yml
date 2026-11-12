@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # Workflows pin actions to commit SHAs; Dependabot proposes updates with the
+  # matching version comment. The package and its tooling have no other
+  # dependencies.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

@@ -13,7 +13,9 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - name: Set artifact directory
         run: echo "MUDLET_ARTIFACTS=$RUNNER_TEMP/mudlet-runs" >> "$GITHUB_ENV"
       - name: Install pinned Mudlet and desktop dependencies
@@ -42,7 +44,7 @@ jobs:
               python3 scripts/mudlet_test.py stop --run-dir "$(dirname "$owner")"
             done
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: mudlet-runtime-${{ github.sha }}

@@ -47,7 +47,7 @@ each lands.
 | Items | Status |
 | --- | --- |
 | T1 (globals guard), T3 (link checker), T4 (pattern/ownership lint), dead `duris-v1.png` links | Implemented: `tests/lint/`, run by CI. The `build.py` Lua 5.1 requirement ships with the first runtime PR because `build.py` changes need a `VERSION` bump. |
-| T2, T5 | Pending |
+| T2 (workflow hardening), T5 (gitleaks) | Implemented: actions pinned to v4 SHAs (Dependabot proposes majors), `persist-credentials: false` outside release, build timeout, PR-only CI cancellation, `.github/workflows/security.yml` with gitleaks 8.30.1. The canary is random per run because gitleaks 8.30 ignores LuminariGUI's sequential fake token. |
 | T6, T7 | Pending |
 | R3, R4 | Pending |
 | R5 | Pending |

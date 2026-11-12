@@ -1,0 +1,4 @@
+title = "duris-client"
+
+[extend]
+useDefault = true
