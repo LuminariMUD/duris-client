@@ -35,6 +35,27 @@ jobs:
           python3 -m unittest discover -s tests/mudlet -p 'test_*.py'
       - name: Real Mudlet scenarios and deliberate failures
         run: python3 scripts/mudlet_suite.py --root "$MUDLET_ARTIFACTS"
+      - name: Summarize scenario results
+        if: always()
+        run: |
+          python3 - "$MUDLET_ARTIFACTS/suite-results.json" >> "$GITHUB_STEP_SUMMARY" <<'PY'
+          import json, sys
+          from pathlib import Path
+          path = Path(sys.argv[1])
+          if not path.exists():
+              print("### Mudlet scenarios: no results written")
+              raise SystemExit
+          cases = json.loads(path.read_text()).get("cases", [])
+          failed = [c["case"] for c in cases if not c.get("passed")]
+          print(f"### Mudlet scenarios: {len(cases) - len(failed)}/{len(cases)} passed")
+          for name in failed:
+              print(f"- FAILED: `{name}`")
+          print("\nVisual review of screenshots is still manual.")
+          PY
+      - name: Checks left the checkout unchanged
+        run: |
+          git status --porcelain --untracked-files=all
+          test -z "$(git status --porcelain --untracked-files=all)"
       - name: Stop any remaining owned desktops
         if: always()
         shell: bash

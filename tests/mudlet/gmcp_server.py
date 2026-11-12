@@ -137,11 +137,16 @@ class GMCPServer:
                                         if name == 'snapshot' and captured['package'] not in {'Char.Status', 'Char.Vitals'}:
                                             continue
                                         payload = dict(captured['data'])
-                                        if 'context' in payload: payload['context'] = 'wire-context'
-                                        if 'process' in payload: payload['process'] = 'wire-process'
-                                        if 'generation' in payload: payload['generation'] = '1'
-                                        if 'bodyRevision' in payload: payload['bodyRevision'] = '1'
-                                        if captured['package'] == 'Char.Items.List': payload['revision'] = '1'
+                                        if 'context' in payload:
+                                            payload['context'] = 'wire-context'
+                                        if 'process' in payload:
+                                            payload['process'] = 'wire-process'
+                                        if 'generation' in payload:
+                                            payload['generation'] = '1'
+                                        if 'bodyRevision' in payload:
+                                            payload['bodyRevision'] = '1'
+                                        if captured['package'] == 'Char.Items.List':
+                                            payload['revision'] = '1'
                                         if captured['package'] == 'Duris.Session' and isinstance(payload.get('character'), dict):
                                             payload['character'] = {**payload['character'], 'bodyRevision': '1'}
                                         packet(captured['package'], payload)

@@ -64,6 +64,20 @@ python3 scripts/release.py --output /tmp/duris-release
 
 The lint tests reject accidental Lua globals (a missing `local` or a misspelled API name), risky Lua patterns such as string-code timers or discarded handler ids, and broken relative links or anchors in Markdown. A new real Mudlet API name goes in `tests/lint/lua_globals.txt`. This requires `lua5.1`, writes the package copies, checksums, and notes to the specified directory, and does not contact GitHub. The output directory must be separate from the repository root. Runtime and visual checks still apply as described above.
 
+## CI checks
+
+| Check | Workflow / job | Blocking | Reproduce locally |
+| --- | --- | --- | --- |
+| Lua globals, risky patterns, Markdown links | CI / build | Yes | `python3 -m unittest discover -s tests/lint -v` |
+| Release automation tests | CI / build | Yes | `python3 -m unittest discover -s tests/release -v` |
+| Changelog, Lua 5.1 syntax, XML, committed package | CI / build | Yes | `python3 scripts/release.py --output /tmp/duris-release` |
+| Python tooling (ruff, `ruff.toml`) | CI / lint | Yes | `ruff check .` |
+| Lua static analysis (luacheck, `.luacheckrc`) | CI / lint | Report-only | `luacheck src/scripts --codes` (`luarocks --lua-version 5.1 install luacheck 1.2.0-1`) |
+| Real Mudlet scenarios | Mudlet runtime | Yes | `python3 scripts/mudlet_suite.py` ([setup](LINUX_DEVELOPMENT.md#automated-offline-tests)) |
+| Secret scan (gitleaks) | Security | Yes | `gitleaks detect --source . --config .gitleaks.toml --redact` |
+
+Each job ends by checking that the checkout is unchanged, so checks cannot modify the files they are checking without failing. The run summary shows the package checksums, luacheck findings and the Mudlet scenario pass count. Publishing waits for build, lint and runtime.
+
 ## Retry or fix a release
 
 - If validation fails, fix the reported problem and push to `master` again.
