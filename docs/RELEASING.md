@@ -55,11 +55,12 @@ Publish to `LuminariMUD/duris-client`. Use `origin` as the only remote, pointing
 To validate the release files locally before pushing:
 
 ```bash
+python3 -m unittest discover -s tests/lint -v
 python3 -m unittest discover -s tests/release -v
 python3 scripts/release.py --output /tmp/duris-release
 ```
 
-This requires `lua5.1`, writes the package copies, checksums, and notes to the specified directory, and does not contact GitHub. The output directory must be separate from the repository root. Runtime and visual checks still apply as described above.
+The lint tests reject accidental Lua globals (a missing `local` or a misspelled API name), risky Lua patterns such as string-code timers or discarded handler ids, and broken relative links or anchors in Markdown. A new real Mudlet API name goes in `tests/lint/lua_globals.txt`. This requires `lua5.1`, writes the package copies, checksums, and notes to the specified directory, and does not contact GitHub. The output directory must be separate from the repository root. Runtime and visual checks still apply as described above.
 
 ## Retry or fix a release
 

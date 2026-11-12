@@ -39,6 +39,21 @@ flow. Some pieces are still worth taking.
 Lower-value or blocked ideas are under [Deferred](#deferred). Rejections are
 under [Not worth porting](#not-worth-porting).
 
+## Implementation status
+
+Delivered as a stack of pull requests, one group per PR. Rows are updated as
+each lands.
+
+| Items | Status |
+| --- | --- |
+| T1 (globals guard), T3 (link checker), T4 (pattern/ownership lint), dead `duris-v1.png` links | Implemented: `tests/lint/`, run by CI. The `build.py` Lua 5.1 requirement ships with the first runtime PR because `build.py` changes need a `VERSION` bump. |
+| T2, T5 | Pending |
+| T6, T7 | Pending |
+| R3, R4 | Pending |
+| R5 | Pending |
+| R2 | Pending |
+| R1 | Pending |
+
 ## Runtime features
 
 ### R1. Opt-in sound alerts (M)

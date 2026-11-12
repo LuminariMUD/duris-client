@@ -19,6 +19,9 @@ jobs:
       - name: Install luac (Lua 5.1, matching Mudlet)
         run: sudo apt-get update -q && sudo apt-get install -y -q lua5.1
 
+      - name: Lint Lua globals, risky Lua patterns and doc links
+        run: python3 -m unittest discover -s tests/lint -v
+
       - name: Release automation tests
         run: python3 -m unittest discover -s tests/release -v
 
