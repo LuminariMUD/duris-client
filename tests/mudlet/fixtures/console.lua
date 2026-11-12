@@ -213,12 +213,24 @@ T.steps({
   return acts
  end},
  {name="search-keys",run=function()
+  -- Record what the key bindings deliver, so a CI-only failure reports it.
+  local search=ArjUI.searchOutput
+  T.searchOriginal,T.searchKeyLog=search,{}
+  ArjUI.searchOutput=function(self,direction,query)
+   T.searchKeyLog[#T.searchKeyLog+1]=tostring(direction)
+   return search(self,direction,query)
+  end
   T.check(ArjUI.outputSearch.query=="fill-04","typing in the search box sets the query")
   T.check(ArjUI.outputSearch.row==lineIndex(T.lines("ArjUI_Console"),"CONSOLE-FILL-049"),"Enter finds the newest match")
   T.check(getScroll("ArjUI_Console")<getLastLineNumber("ArjUI_Console"),"the match is scrolled into view")
  end,actions=function() return {{type="key",key="shift+F3"},{type="key",key="shift+F3"},{type="key",key="F3"}} end},
  {name="search-keys-result",run=function()
-  T.check(ArjUI.outputSearch.row==lineIndex(T.lines("ArjUI_Console"),"CONSOLE-FILL-048"),"Shift+F3 twice then F3 lands on the expected match")
+  local text=T.lines("ArjUI_Console")
+  T.check(ArjUI.outputSearch.row==lineIndex(text,"CONSOLE-FILL-048"),string.format(
+   "Shift+F3 twice then F3 lands on the expected match (keys delivered: %s; row %s, expected %s; 049 at %s)",
+   table.concat(T.searchKeyLog or {},","),tostring(ArjUI.outputSearch.row),tostring(lineIndex(text,"CONSOLE-FILL-048")),
+   tostring(lineIndex(text,"CONSOLE-FILL-049"))))
+  ArjUI.searchOutput=T.searchOriginal
  end},
  {name="search-trim",wait=.4,run=function()
   -- A long session trims GAME OUTPUT's oldest lines and renumbers the rest.
