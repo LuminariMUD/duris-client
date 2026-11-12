@@ -17,6 +17,12 @@ function T.check(value, description)
   assert(value, description)
 end
 
+-- Record a check that this environment cannot exercise. It stays visible in
+-- results.json and the report instead of silently passing.
+function T.skip(description)
+  T.assertions[#T.assertions+1] = {description=description, passed=true, skipped=true}
+end
+
 function T.emit(event, data)
   gmcp = gmcp or {}
   local parent=gmcp
