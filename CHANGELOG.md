@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.9.0 - 2026-11-13
+
+- `ui debug` now prints a full diagnostic report to paste into bug reports. It shows the package, Mudlet and OS versions, the profile, the window size and UI state, the connection, whether GMCP is enabled, the server session and the features the server reports. It also shows how long ago each GMCP message last arrived, how many triggers, aliases and timers the client is running, and whether the frame artwork was found.
+
 ## 2.8.0 - 2026-11-13
 
 - Chat tabs show how many new messages arrived while you were reading another tab, for example `NCHAT 3`, in gold. Opening the tab clears it. TELLS shows the number of unread private messages.

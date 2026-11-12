@@ -1,5 +1,19 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## ui debug diagnostic report — 2026-11-13
+
+Candidate **2.9.0**, branch `branch/ui-debug-report` (LuminariGUI audit R5).
+`lowhp` checks the report: package and Mudlet versions, GMCP ages, `never` for
+messages that never arrived, artwork, resource counts, and that `ui debug` prints it.
+
+- Mudlet 5.0.1 under Xvfb: all **32/32** suite expectations pass. Focused run
+  `20261112T224500Z-600a4552-lowhp`; `scenario.png` shows the report in
+  GAME OUTPUT and the Errors view is empty.
+- Package SHA-256 `b3ce9fda82ce720417db10d8bc069fdb23eae7ec9e205f4aa898c3ec9c6dc0b4`.
+
+`getConfig("enableGMCP")` and the other probes are wrapped in `pcall` and show
+`unknown` where unavailable. Their output on Mudlet 4.19.1 is unverified.
+
 ## Chat unread markers and group leader — 2026-11-13
 
 Candidate **2.8.0**, branch `branch/chat-unread-group-leader` (LuminariGUI
