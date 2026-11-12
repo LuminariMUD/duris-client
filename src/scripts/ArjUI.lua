@@ -694,7 +694,7 @@ function ArjUI:showPanelsMenu()
       self:panelAction(def.id,"show"); self:showPanelMenu(def.id)
     end})
   end
-  for name,chat in pairs(self.privateChats) do
+  for name in pairs(self.privateChats) do
     table.insert(items,{text="Tell: "..name,callback=function() self:openPrivateChat(name); self:showPanelMenu("tell:"..name) end})
   end
   self:showContextMenu(items)
@@ -711,6 +711,7 @@ function ArjUI:resetLayout()
   end
   for _,chat in pairs(self.privateChats) do if chat.window then chat.visible=false end end
   self.activeTab="group"; self.activeChatTab="all"
+  if self.chatUnread then self.chatUnread.all=nil end
   self.activeRoomTab="mobs"; self.activeGearTab="inv"
   self:updateTabStyles(); self:updateChatTabStyles()
   self:applyPanelLayout(); self:renderActiveTab(); self:refreshPanelContent()
@@ -1263,7 +1264,7 @@ function ArjUI:onOwnerItems()
         or (condition~=nil and condition~=yajl.null and type(condition)~="string")
         or (type(condition)=="string" and (#condition>128 or condition:find("[%z\1-\31\127]")))
         or (item.selector~=nil and item.selector~=yajl.null and not itemSelector(item.selector))
-        or (item.slotName~=nil and (type(item.slotName)~="string" or #item.slotName>128 or item.slotName:find("[%z\1-\31\127]"))) then
+        or (item.slotName~=nil and (type(item.slotName)~="string" or #item.slotName>128 or item.slotName:find("[%z\1-\31\127]"))) then -- luacheck: ignore 542
       -- Skip only the invalid row so a resync of the same list stays usable.
     else items[#items+1]={description=item.description,quantity=1,condition=type(condition)=="string" and condition or "",
       selector=itemSelector(item.selector) and item.selector or nil,
@@ -1805,9 +1806,12 @@ function ArjUI:init()
   self.chatTabs = {}
   self.chatPanels = {}
   self.activeChatTab = "all"
+  self.chatUnread = {}
   
   local chatTabNames = { "all", "tells", "nchat", "room", "guild", "group" }
   local chatTabLabels = { "ALL", "TELLS", "NCHAT", "ROOM", "GUILD", "GROUP" }
+  self.chatTabLabels = {}
+  for i, tabName in ipairs(chatTabNames) do self.chatTabLabels[tabName] = chatTabLabels[i] end
   local chatTabW = 16  -- percentage width per tab
   
   for i, tabName in ipairs(chatTabNames) do
@@ -2006,11 +2010,11 @@ function ArjUI:init()
   self:setupPanelControls()
   self:loadLayout()
 
-  local h
-  h = registerAnonymousEventHandler("sysWindowResizeEvent", function() self:layout() end)
-  table.insert(self.eventHandlers, h)
+  local hid
+  hid = registerAnonymousEventHandler("sysWindowResizeEvent", function() self:layout() end)
+  table.insert(self.eventHandlers, hid)
   -- Trimming the main window's oldest lines renumbers those still to mirror.
-  h = registerAnonymousEventHandler("sysBufferShrinkEvent", function(_, name, removed)
+  hid = registerAnonymousEventHandler("sysBufferShrinkEvent", function(_, name, removed)
     removed = tonumber(removed) or 0
     if self.console and name == self.console.name then self:outputTrimmed(removed); return end
     if name ~= "main" or not self.mainRow then return end
@@ -2021,19 +2025,19 @@ function ArjUI:init()
       if self.mainPending.row < 0 then self.mainPending = nil end
     end
   end)
-  table.insert(self.eventHandlers, h)
+  table.insert(self.eventHandlers, hid)
 
-  h = registerAnonymousEventHandler("sysConnectionEvent", function()
+  hid = registerAnonymousEventHandler("sysConnectionEvent", function()
     self:applyBackground()
     self:after(0.2, function() if self and self.applyBackground then self:applyBackground() end end)
   end)
-  table.insert(self.eventHandlers, h)
+  table.insert(self.eventHandlers, hid)
 
-  h = registerAnonymousEventHandler("sysAppStyleSheetChange", function()
+  hid = registerAnonymousEventHandler("sysAppStyleSheetChange", function()
     self:applyBackground()
     self:after(0.2, function() if self and self.applyBackground then self:applyBackground() end end)
   end)
-  table.insert(self.eventHandlers, h)
+  table.insert(self.eventHandlers, hid)
 
   self:layout()
 
@@ -2659,6 +2663,7 @@ end
 
 function ArjUI:renderTellContacts()
   if not self.tellsBox then return end
+  self:updateChatTabStyles()
   
   self.tellsBox:clear()
   
@@ -3276,6 +3281,7 @@ function ArjUI:onCommChannel()
   
   -- Always send to ALL tab
   self:displayChannelMessage(self.chatBox,snapshots,prefix,text)
+  self:noteChatUnread("all")
   
   -- Route to specific tab based on channel
   local channelLower = channel:lower()
@@ -3289,12 +3295,16 @@ function ArjUI:onCommChannel()
     return  -- Don't continue to other tabs
   elseif channelLower == "nchat" or channelLower == "newbie" or channelLower == "jchat" then
     self:displayChannelMessage(self.nchatBox,snapshots,prefix,text)
+    self:noteChatUnread("nchat")
   elseif channelLower == "say" or channelLower == "yell" or channelLower == "shout" then
     self:displayChannelMessage(self.roomBox,snapshots,prefix,text)
+    self:noteChatUnread("room")
   elseif channelLower == "gcc" or channelLower == "guild" or channelLower == "clan" then
     self:displayChannelMessage(self.guildBox,snapshots,prefix,text)
+    self:noteChatUnread("guild")
   elseif channelLower == "group" or channelLower == "gtell" or channelLower == "party" or channelLower == "gsay" then
     self:displayChannelMessage(self.groupChatBox,snapshots,prefix,text)
+    self:noteChatUnread("group")
   end
 end
 
@@ -3830,10 +3840,21 @@ function ArjUI:paintGroupRow(row, mem, isWeakest)
 
   row.memberName = name
   local nameStyle = not inRoom and groupStyles.nameAway or (isWeakest and groupStyles.nameWeakest or groupStyles.name)
-  paintGroupLabel(row.nameLabel, nameStyle, displayName:sub(1, mem.isNpc and 13 or 14) .. (mem.isNpc and "*" or ""))
-  if row.nameLabel.groupTip ~= displayName then
-    row.nameLabel.groupTip = displayName
-    row.nameLabel:setToolTip(displayName)
+  -- Group.Status rank: "head" is the leader; others stand in the front or back rank.
+  local isLeader = mem.rank == "head"
+  local width = (mem.isNpc and 13 or 14) - (isLeader and 2 or 0)
+  paintGroupLabel(row.nameLabel, nameStyle,
+    (isLeader and "♔ " or "") .. displayName:sub(1, width) .. (mem.isNpc and "*" or ""))
+  local facts = {}
+  if isLeader then facts[#facts + 1] = "Leader"
+  elseif mem.rank == "front" or mem.rank == "back" then facts[#facts + 1] = mem.rank:sub(1,1):upper() .. mem.rank:sub(2) .. " rank" end
+  local level = toNum(mem.level)
+  if level and level > 0 then facts[#facts + 1] = "level " .. level end
+  if type(mem.class) == "string" and mem.class ~= "" then facts[#facts + 1] = stripColors(mem.class) end
+  local tip = #facts > 0 and (displayName .. "\n" .. table.concat(facts, " · ")) or displayName
+  if row.nameLabel.groupTip ~= tip then
+    row.nameLabel.groupTip = tip
+    row.nameLabel:setToolTip(tip)
   end
 
   -- Moves (middle) - coloured by how spent they are
@@ -3958,17 +3979,53 @@ function ArjUI:switchChatTab(tabName)
   if self.chatPanels[tabName] then
     self.chatPanels[tabName]:show()
   end
+  if self.chatUnread then self.chatUnread[tabName] = nil end
   
   self:updateChatTabStyles()
 end
 
+-- Count channel lines that arrive in a tab other than the one being read.
+-- TELLS counts come from the private conversations instead (see chatTabUnread).
+function ArjUI:noteChatUnread(tabName)
+  if not self.chatUnread or tabName == self.activeChatTab then return end
+  self.chatUnread[tabName] = (self.chatUnread[tabName] or 0) + 1
+  self:updateChatTabStyles()
+end
+
+function ArjUI:chatTabUnread(tabName)
+  if tabName == "tells" then
+    local total = 0
+    for _, chat in pairs(self.privateChats or {}) do total = total + (chat.unread or 0) end
+    return total
+  end
+  return self.chatUnread and self.chatUnread[tabName] or 0
+end
+
 function ArjUI:updateChatTabStyles()
+  if not self.chatTabs then return end
   local activeStyle = "background-color: #16140f; border: 1px solid #5a4b37; border-top: 1px solid #8c6e46; border-bottom: none; color: #e6e6e6; font-size: 7px; font-weight: bold;"
   local inactiveStyle = "background-color: #0a0908; border: 1px solid #3c3832; color: #706050; font-size: 7px;"
+  local unreadStyle = "background-color: #0a0908; border: 1px solid #8c6e46; color: #d4af37; font-size: 7px; font-weight: bold;"
   
   for name, btn in pairs(self.chatTabs) do
+    local unread = self:chatTabUnread(name)
+    local label = self.chatTabLabels and self.chatTabLabels[name] or name:upper()
+    -- A gold bullet fits the narrow tabs at every geometry; the count is in the tooltip.
+    -- Geyser keeps the last echo colour, so always pass one.
+    if unread > 0 then label = "•" .. label end
+    if btn.arjLabel ~= label then
+      btn:echo("<center>" .. label .. "</center>", unread > 0 and "#d4af37" or "white")
+      btn.arjLabel = label
+    end
+    local tip = unread > 0 and string.format("%d new message%s", unread, unread == 1 and "" or "s") or nil
+    if btn.arjTip ~= tip then
+      if tip then btn:setToolTip(tip) else btn:resetToolTip() end
+      btn.arjTip = tip
+    end
     if name == self.activeChatTab then
       btn:setStyleSheet(activeStyle)
+    elseif unread > 0 then
+      btn:setStyleSheet(unreadStyle)
     else
       btn:setStyleSheet(inactiveStyle)
     end
@@ -4183,7 +4240,7 @@ function ArjUI:selectSpellView(name)
   s.spellView = name
   if name=="spells" then
     self:requestSpellOutput("spells")
-  elseif s.spellCommand=="will" then
+  elseif s.spellCommand=="will" then -- luacheck: ignore 542
     -- Mana casters have nothing to prepare.
   elseif s.spellCommand then
     self:requestSpellOutput(s.spellCommand)
@@ -5306,11 +5363,11 @@ function ArjUI:renderShipBridge()
     local overlapping=actual and ordered and
       math.abs(math.sin(math.rad(actual))-math.sin(math.rad(ordered)))*45<18 and
       math.abs(math.cos(math.rad(actual))-math.cos(math.rad(ordered)))*45<18
-    for _,marker in ipairs({{"actual",v.heading,overlapping and "●◇" or "●"},{"ordered",b.setHeading,"◇"}}) do
-      local heading=tonumber(marker[2])
-      if heading and not (overlapping and marker[1]=="ordered") then local angle=math.rad(heading%360)
+    for _,mark in ipairs({{"actual",v.heading,overlapping and "●◇" or "●"},{"ordered",b.setHeading,"◇"}}) do
+      local heading=tonumber(mark[2])
+      if heading and not (overlapping and mark[1]=="ordered") then local angle=math.rad(heading%360)
         local markerWidth=overlapping and 36 or 18
-        label("heading"..marker[1],cx+math.sin(angle)*45-markerWidth/2,cy-math.cos(angle)*45-9,markerWidth,18,marker[3],nil,"padding:0;border:none;background-color:transparent;color:#eed7a3;")
+        label("heading"..mark[1],cx+math.sin(angle)*45-markerWidth/2,cy-math.cos(angle)*45-9,markerWidth,18,mark[3],nil,"padding:0;border:none;background-color:transparent;color:#eed7a3;")
       end
     end
     y=compassY+134
@@ -5562,7 +5619,7 @@ function ArjUI:renderShip()
     box:cecho(string.format("\n<dim_gray>Contacts (%d)\n", #list))
     for _, c in ipairs(list) do
       local id = pick(c, "id", "num", "number")
-      local name = pick(c, "name", "ship") or "?"
+      local contactName = pick(c, "name", "ship") or "?"
       local color = shipSideColor(c)
       local bits = {}
       local b, h, r, sp = pick(c, "bearing", "b"), pick(c, "heading", "h"), pick(c, "range", "distance", "r"), pick(c, "speed", "s")
@@ -5588,7 +5645,7 @@ function ArjUI:renderShip()
         end
       end
       box:cecho(color)
-      box:echo(string.format("%s[%s] %s%s %s\n", c.you_targeting and "*" or "", text(id or "-"), text(name), c.sunk and " (sunk)" or "", text(table.concat(bits, " "))))
+      box:echo(string.format("%s[%s] %s%s %s\n", c.you_targeting and "*" or "", text(id or "-"), text(contactName), c.sunk and " (sunk)" or "", text(table.concat(bits, " "))))
     end
     shown = true
   elseif type(contacts) == "table" and shown then
@@ -5766,10 +5823,10 @@ end
 
 -- scrollTo() names the bottom line of the upper pane, which takes about three
 -- quarters of the console once split. Aim to show the match in its upper half.
-function ArjUI:scrollOutputTo(line, trim)
+function ArjUI:scrollOutputTo(line, trimAt)
   if not (self.console and scrollTo) then return end
   -- A find link names its line as numbered when it was listed.
-  if trim then line = line - ((self.outputTrim or 0) - trim) end
+  if trimAt then line = line - ((self.outputTrim or 0) - trimAt) end
   if line < 0 then return end
   local _, rowHeight = calcFontSize(self.console.name)
   local rows = math.max(1, math.floor(self.console:get_height() * .75 / math.max(1, rowHeight or 14)))

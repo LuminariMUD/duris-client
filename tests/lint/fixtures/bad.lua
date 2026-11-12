@@ -11,4 +11,6 @@ tempTimer(5, function() end)
 registerAnonymousEventHandler("gmcp.Char.Vitals", function() end)
   tempAlias("^x$", function()
   end)
+
+local crown = "\u{2654} leader"
 return Bad

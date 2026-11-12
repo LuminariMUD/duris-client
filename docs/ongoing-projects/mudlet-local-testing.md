@@ -1,5 +1,24 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Chat unread markers and group leader — 2026-11-13
+
+Candidate **2.8.0**, branch `branch/chat-unread-group-leader` (LuminariGUI
+audit R3/R4). `chat` adds a `channel-unread` step: hidden tabs are counted and the
+active tab is not, opening a tab clears its marker, large counts stay compact,
+and TELLS reflects unread private messages. `crowded` checks the leader crown
+and the rank/level/class tooltips, including an NPC with no class.
+
+- Mudlet 5.0.1 under Xvfb in WSL2/Ubuntu 24.04: all **32/32** suite
+  expectations pass (`--jobs 3`). Focused runs
+  `20261112T223922Z-4479b2e4-chat` and `20261112T223950Z-f717bb40-crowded`.
+- Inspected `11-channel-unread.png`: gold `•ROOM`/`•GUILD`/`•GROUP` fit at
+  1366×768, though a numeric `GROUP 99+` did not, hence the bullet. Inspected
+  `01-full-group-room.png`: ♔ precedes the leader. Errors views are empty.
+- Package SHA-256 `3390b1ab4501e49e95e14d769b9daabe99702a299d1bf9452bf803d9cf18335a`.
+
+Live Duris, Mudlet 4.19.1, native Windows/macOS and desktop DPI remain unverified;
+the ♔ glyph depends on the platform font.
+
 ## Issue #36 GEAR resync, combat flag and Items retry — 2026-11-11
 
 Candidate **2.6.1**, branch `fix/issue-36-gear-resync-combat-retry` based on

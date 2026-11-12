@@ -232,11 +232,11 @@ python3 build.py -o "$MUDLET_DEV_ROOT/artifacts/duris-client.mpackage"
 sha256sum "$MUDLET_DEV_ROOT/artifacts/duris-client.mpackage"
 ```
 
-Stop if the compiler check fails. In the current [build script](../build.py),
-a missing compiler produces a warning and a successful return value;
-`--check` then prints `Lua OK`. That output alone is not evidence of a syntax
-check. Prefer Lua **5.1**, as used by repository CI, over the build script's
-fallback to a later language version. Even with a compiler, no Geyser or
+Stop if the compiler check fails. The [build script](../build.py) only uses a
+`luac` that reports Lua **5.1**, Mudlet's language version; a 5.3/5.4 compiler
+accepts syntax that Mudlet rejects. Without one it prints a warning and
+succeeds locally (`--check` then prints `Lua OK`, which is not evidence of a
+syntax check), and fails when `CI` is set. Even with a compiler, no Geyser or
 Mudlet API calls execute during this check.
 
 On Mudlet 5.x, creating `config/mudlet/profiles` explicitly selects the test

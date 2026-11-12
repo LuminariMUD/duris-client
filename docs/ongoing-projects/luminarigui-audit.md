@@ -49,7 +49,7 @@ each lands.
 | T1 (globals guard), T3 (link checker), T4 (pattern/ownership lint), dead `duris-v1.png` links | Implemented: `tests/lint/`, run by CI. The `build.py` Lua 5.1 requirement ships with the first runtime PR because `build.py` changes need a `VERSION` bump. |
 | T2 (workflow hardening), T5 (gitleaks) | Implemented: actions pinned to v4 SHAs (Dependabot proposes majors), `persist-credentials: false` outside release, build timeout, PR-only CI cancellation, `.github/workflows/security.yml` with gitleaks 8.30.1. The canary is random per run because gitleaks 8.30 ignores LuminariGUI's sequential fake token. |
 | T6 (luacheck), T7 (ruff, clean checkout, summaries, CI docs) | Implemented: CI `lint` job with pinned luacheck 1.2.0 (`.luacheckrc` reads `tests/lint/lua_globals.txt`) and ruff 0.14.10 (`ruff.toml`; six existing findings fixed). luacheck is report-only, with 14 warnings left for the first runtime PR to fix before it becomes blocking. The checks table is in [RELEASING.md](../RELEASING.md#ci-checks). |
-| R3, R4 | Pending |
+| R3 (chat unread), R4 (group leader/rank/level/class), `build.py` Lua 5.1, luacheck blocking | Implemented in 2.8.0. Unread tabs show a gold `•` with the count in the tooltip: a number did not fit the tabs at 1366×768. Fixing the 14 luacheck warnings changed no behaviour. A new lint rule rejects Lua 5.2+ escapes such as `\u{...}`, which Lua 5.1 compiles but reads as plain letters. |
 | R5 | Pending |
 | R2 | Pending |
 | R1 | Pending |

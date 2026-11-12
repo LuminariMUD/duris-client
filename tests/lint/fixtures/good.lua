@@ -13,4 +13,7 @@ Good.alias = tempAlias("^x$", function()
 end)
 Good.mapper:load(id)
 local payload = self:download(url)
-return Good, note, doc, arm, payload
+
+local escaped = "C:\\u{2654} -- \\z" -- comment with "\u{2654}" is ignored
+local glyph, it = "♔", "it's \"quoted\""
+return Good, note, doc, arm, payload, escaped, glyph, it

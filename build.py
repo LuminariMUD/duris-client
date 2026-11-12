@@ -2,7 +2,7 @@
 """Assemble `duris-client.mpackage` from the sources under src/.
 
     python3 build.py            # build to ./duris-client.mpackage
-    python3 build.py --check    # syntax-check the Lua only (needs luac)
+    python3 build.py --check    # syntax-check the Lua only (needs Lua 5.1's luac)
     python3 build.py -o path    # build somewhere else
 
 Layout:
@@ -21,6 +21,7 @@ XML, and writes a *stored* (uncompressed) zip, which is what Mudlet expects.
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -51,14 +52,29 @@ def lua_sources():
     return {f[:-4]: os.path.join(d, f) for f in sorted(os.listdir(d)) if f.endswith(".lua")}
 
 
+def find_luac51():
+    """Return a luac that is really Lua 5.1 (Mudlet's Lua), or None.
+
+    A 5.3/5.4 luac is not a substitute: it accepts `goto`, `//` and bitwise
+    operators that Mudlet rejects when the package loads.
+    """
+    for cand in ("luac5.1", "luac"):
+        path = shutil.which(cand)
+        if path:
+            r = subprocess.run([path, "-v"], capture_output=True, text=True)
+            if "Lua 5.1" in r.stdout + r.stderr:
+                return path
+    return None
+
+
 def check_lua(paths):
-    luac = None
-    for cand in ("luac5.1", "luac", "luac5.3", "luac5.4"):
-        if subprocess.run(["which", cand], capture_output=True).returncode == 0:
-            luac = cand
-            break
+    luac = find_luac51()
     if not luac:
-        print("warning: no luac found, skipping Lua syntax check", file=sys.stderr)
+        msg = "no Lua 5.1 luac found (install lua5.1); Lua syntax was not checked"
+        if os.environ.get("CI"):
+            print(f"error: {msg}", file=sys.stderr)
+            return False
+        print(f"warning: {msg}", file=sys.stderr)
         return True
     ok = True
     for p in paths:
