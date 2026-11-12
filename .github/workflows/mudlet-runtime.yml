@@ -54,6 +54,12 @@ jobs:
               error = json.loads(result.read_text()).get("error") if case.get("run") and result.is_file() else None
               detail = (error or case.get("stderr") or "no error recorded").strip()
               print("\n```\n" + detail[:3000] + "\n```")
+          for case in cases:
+              result = Path(case.get("run") or "") / "results.json"
+              if case.get("run") and result.is_file():
+                  for item in json.loads(result.read_text()).get("assertions") or []:
+                      if item.get("skipped"):
+                          print(f"- SKIPPED in `{case['case']}`: {item.get('description')}")
           print("\nVisual review of screenshots is still manual.")
           PY
       - name: Checks left the checkout unchanged
