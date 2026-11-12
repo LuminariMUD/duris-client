@@ -1,5 +1,24 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## Room details, wilderness legend and chat gag — 2026-11-13
+
+Candidate **2.12.0**, branch `branch/deferred-items` (the audit's deferred
+items). The new `extras` scenario covers: the room tooltip (zone room,
+wilderness with terrain only, unknown terrain number) and `ui debug`; that
+`mapper legend` prints colour-coded categories with no raw `&` codes; and the
+chat gag. The gag checks are: off by default; GMCP-first and text-first both
+hide the GAME OUTPUT line while the main window and chat tab keep it; a line
+from a different speaker is kept; one message hides only one line; ordinary
+text is untouched; an expired GMCP copy hides nothing.
+
+- Mudlet 5.0.1 under Xvfb: all **35/35** suite expectations pass. Focused run
+  `20261112T234757Z-e11b8274-extras`; `02-legend.png` shows the legend in
+  the profile palette, and the Errors view is empty.
+- Package SHA-256 `51ba0c2a289cb48a701ee380c6285b9722b93a26f7ae10b78aa9cb7fe25a6402`.
+
+Chat gag ordering and formats against a live Duris server are unverified; the
+gag is opt-in for that reason.
+
 ## CI-only `console` failure: function keys on Qt 6.10 — 2026-11-13
 
 From 2.7.0, CI's `console` scenario failed at "Shift+F3 twice then F3 lands on

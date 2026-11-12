@@ -15,6 +15,7 @@ clearWindow
 color_table
 copy
 createMiniConsole
+decho
 deleteLine
 deselect
 disableTimeStamps

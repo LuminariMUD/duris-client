@@ -15,6 +15,7 @@
     "console": "Center-only widening, GAME OUTPUT scrollbar, ordered command/script/GA-prompt echoes, joined wraps, native logging, timestamps, link click, right-click select/copy, search box with typed Enter/F3/Shift+F3 and ui find",
     "cast": "Spell-casting progress in the PREP slot: chant/silent/weave starts, progress countdown, completion, class aborts, expiry and session end",
     "sound": "Sound alerts: off by default, real playSoundFile table call, low HP/moves latch and cooldown, tell/chat/banner routing, commands, persistence and corrupt settings",
+    "extras": "Room vnum/zone/terrain/coords tooltip, wilderness legend, opt-in chat gag in both GMCP/text orders, narrow matching, one line per message and expiry",
     "vitals": "Full/zero health, non-mana class, zero/missing maxima and experience",
     "vamp-overheal": "Player, self-tank, group and target HP fill bounds during vamp overheal, group row reuse and recovery; actual numbers preserved",
     "crowded": "Full group, scrolling, NPC/away/weakest/leader markers, rank/level/class tooltips, crowded room and removal",
