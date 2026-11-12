@@ -1,5 +1,24 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## CI-only `console` failure: function keys on Qt 6.10 — 2026-11-13
+
+From 2.7.0, CI's `console` scenario failed at "Shift+F3 twice then F3 lands on
+the expected match"; it passed locally. Reproduced in a container matching CI
+(`ubuntu:26.04`, the checksum-pinned Mudlet 5.0.1 `.deb`, Qt 6.10.2, plus
+`xdg-utils`). Without `xdg-utils`, startup blocks on a Telnet-handler dialog.
+
+- Xvfb's keymap is correct (`F3` keycode 69), and numpad, letters, arrows and
+  Return reach Mudlet. No function key reached a `tempKey` binding: F3,
+  Shift+F3 and an F7 probe all registered zero calls, whether the search box or
+  GAME OUTPUT had focus. The same scenario passes with Mudlet 5.0.1 on Qt
+  6.11.1 (local AppImage), so this belongs to the build, not the package.
+- The scenario now sends an F7 probe first. Where function keys arrive, it
+  asserts the real F3 navigation. Where they do not, it asserts that no search
+  key arrived, records a visible skip, and checks the same older/older/newer
+  navigation by calling the search directly. The CI summary lists skips and
+  failure errors.
+- README troubleshooting tells players to use Enter or ▲/▼ on affected builds.
+- Also unverified: whether a Qt 6.10 Mudlet on a real desktop session (not Xvfb/xdotool) behaves the same.
 ## Spell-casting progress — 2026-11-13
 
 Candidate **2.10.0**, branch `branch/cast-progress` (LuminariGUI audit R2). The
