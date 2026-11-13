@@ -320,7 +320,7 @@ real Mudlet when changing fonts or measurements.
 | `ui off` / `ui on` | Hides/shows the existing interface while retaining its state and widgets. |
 | `ui find <text>` | Lists recent GAME OUTPUT lines containing the text; click one to scroll there. |
 | `ui debug` | Prints a copyable diagnostic report: versions, connection, server features, GMCP arrival ages, owned resources and artwork. |
-| `ui sound` | Shows and changes sound alerts. The master switch is off by default. Low HP/moves sounds fire once per crossing and re-arm after recovery; each sound has a cooldown. |
+| `ui sound` | Shows and changes sound alerts. The master switch is off by default. Low HP/moves sounds fire once below the threshold and re-arm after recovery or a new session; disabled/cooldown-blocked requests remain armed. Each sound has a cooldown. |
 
 Hiding the UI restores Mudlet's main output area. It does not unload the
 package or turn off enabled automation. The native command line stays

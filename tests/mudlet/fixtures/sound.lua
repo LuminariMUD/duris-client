@@ -32,6 +32,9 @@ T.steps({
  {name="enable-and-latch",run=function()
   expandAlias("ui sound on")
   T.check(ArjUI.sound.enabled and settingsFile().sound.enabled==true,"ui sound on is saved")
+  vitals(100,5)
+  T.check(count("lowhp")==1 and count("lowmove")==1,"enabling sound while already low warns on the next vitals update")
+  played={}; ArjUI.soundLast={}
   vitals(900)
   vitals(200)
   T.check(count("lowhp")==1 and played[1].tag=="arjui" and played[1].volume==70 and played[1].name:find("duris%-lowhp%.wav$"),"crossing below 25% plays low HP once")
@@ -40,10 +43,20 @@ T.steps({
   vitals(500); vitals(100)
   T.check(count("lowhp")==1,"re-armed alert still respects the 10 s cooldown")
   ArjUI.soundLast.lowhp=nil
-  vitals(500); vitals(100)
-  T.check(count("lowhp")==2,"re-armed after recovery plays again")
+  vitals(100)
+  T.check(count("lowhp")==2,"a re-armed alert held by cooldown plays when cooldown expires, without another recovery")
   vitals(900,120); vitals(900,10)
   T.check(count("lowmove")==1,"low movement plays once")
+ end},
+ {name="session-latches",run=function()
+  vitals(100,5)
+  local hp,moves=count("lowhp"),count("lowmove")
+  ArjUI.soundLast.lowhp=getEpoch()-31; ArjUI.soundLast.lowmove=getEpoch()-31
+  ArjUI:endSession()
+  ArjUI.initialDataRequested=true
+  T.emit("Char.Status",{name="VisualTester",level=25,class="Warrior",race="Human"})
+  vitals(100,5)
+  T.check(count("lowhp")==hp+1 and count("lowmove")==moves+1,"a new low-vitals session is not silenced by the old session's latches")
  end},
  {name="tells-chat-alerts",run=function()
   T.emit("Comm.Channel",{channel="tell",sender="Companion",text="hello"})

@@ -2,6 +2,7 @@
 
 ## 2.11.0 - 2026-11-13
 
+- Keep low-vitals alerts armed while sound is disabled or on cooldown, and reset their latches for each character session.
 - New sound alerts, off until you type `ui sound on`.
   - Sounds play for incoming tells, low health (below 25%), low movement (below 20%) and alert banners such as sanctuary fading or being scried.
   - Chat channels can also make a sound (`ui sound chat on`). They only do so when the message lands in a tab you aren't reading.

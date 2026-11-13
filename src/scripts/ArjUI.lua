@@ -908,6 +908,7 @@ end
 -- ============================================================
 
 function ArjUI:resetCharacterState()
+  self.soundArmed = nil
   self.state = {
     hp = 1, hpmax = 1, mana = 1, manamax = 1, move = 1, movemax = 1,
     tnl = 0, tnlBaseline = nil, position = "standing",
@@ -6083,8 +6084,7 @@ function ArjUI:checkVitalSound(kind, value, max)
   self.soundArmed = self.soundArmed or { lowhp = true, lowmove = true }
   if pct < limits.alert then
     if self.soundArmed[kind] then
-      self.soundArmed[kind] = false
-      self:playSound(kind)
+      if self:playSound(kind) then self.soundArmed[kind] = false end
     end
   elseif pct >= limits.reset then
     self.soundArmed[kind] = true
