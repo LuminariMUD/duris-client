@@ -1,5 +1,23 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## PR #46 maintenance review — 2026-11-13
+
+Candidate 2.9.0 on refreshed master, including the diagnostic resource-count
+fix. The report had omitted mirror/scan timers, capture/routing triggers and
+the two F3 search keys held outside its primary resource arrays.
+
+- Full real-Mudlet offline suite: **32/32** pass at
+  `/tmp/duris-maintenance-pr46-suite/suite-results.json`, including handler
+  cleanup/reinstall, protocol consumers and panel lifecycle.
+- Final focused run `/tmp/duris-maintenance-pr46-final-lowhp/20261113T113645Z-bd42e8ae-lowhp`
+  passes timer stop/restart and search-key hide/show count regressions.
+  Inspected `scenario.png` and `errors-view.png`: readable report at 1366x768,
+  no Lua errors; review recorded in the run directory.
+- Lua 5.1 build, lint/release/controller tests (9/15/11), ruff, luacheck
+  (zero warnings) and committed-package release validation pass.
+- Environment: Mudlet 5.0.1 / Qt 6.11.1, WSL2/Xvfb. Live game, Mudlet 4.19.1
+  and physical/cross-platform desktop behavior remain unverified.
+
 ## PR #45 maintenance review — 2026-11-13
 
 Candidate 2.8.0 on `branch/chat-unread-group-leader`, including the visibility

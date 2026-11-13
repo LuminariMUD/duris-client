@@ -2782,11 +2782,12 @@ function ArjUI:debugReportLines()
     add("  %-22s %s", pkg, detail)
   end
 
-  local timers = countOf(self.timers)
+  local timers = countOf(self.timers) + (self.mirrorTimer and 1 or 0) + (self.scanTimer and 1 or 0)
   add("ArjUI resources: %d handlers, %d timers, %d triggers, %d aliases, %d keys",
-    countOf(self.eventHandlers), timers, countOf(self.runtimeTriggers) + countOf(self.portTriggers),
+    countOf(self.eventHandlers), timers, countOf(self.runtimeTriggers) + countOf(self.portTriggers)
+      + countOf(self.captureTriggerIds) + countOf(self.captureTriggers) + (self.routeAllTriggerId and 1 or 0),
     countOf(self.portAliases) + (self.uiOnAlias and 1 or 0) + (self.uiOffAlias and 1 or 0) + (self.debugAlias and 1 or 0),
-    countOf(self.portKeys))
+    countOf(self.portKeys) + countOf(self.searchKeys))
   if ArjMapper then
     add("ArjMapper: %s, %d handlers", ArjMapper.state and (ArjMapper.state.enabled and "on" or "off") or "not started",
       countOf(ArjMapper.handlers))
