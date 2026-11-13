@@ -518,6 +518,10 @@ function ArjUI:reconcilePanelViews()
   for name,widget in pairs(self.chatPanels or {}) do
     if name==self.activeChatTab then widget:show() else widget:hide() end
   end
+  if self.chatUnread and self:panelIsVisible("chat") then
+    self.chatUnread[self.activeChatTab]=nil
+    self:updateChatTabStyles()
+  end
   -- Parent show() recursively exposes inactive views. Hide them again without
   -- switching tabs (which can send a server command or clear scrollback).
   if self.mapper then self.mapper:hide() end
@@ -712,7 +716,6 @@ function ArjUI:resetLayout()
   end
   for _,chat in pairs(self.privateChats) do if chat.window then chat.visible=false end end
   self.activeTab="group"; self.activeChatTab="all"
-  if self.chatUnread then self.chatUnread.all=nil end
   self.activeRoomTab="mobs"; self.activeGearTab="inv"
   self:updateTabStyles(); self:updateChatTabStyles()
   self:applyPanelLayout(); self:renderActiveTab(); self:refreshPanelContent()
@@ -905,6 +908,7 @@ end
 -- ============================================================
 
 function ArjUI:resetCharacterState()
+  self.soundArmed = nil
   self.state = {
     hp = 1, hpmax = 1, mana = 1, manamax = 1, move = 1, movemax = 1,
     tnl = 0, tnlBaseline = nil, position = "standing",
@@ -2790,11 +2794,12 @@ function ArjUI:debugReportLines()
     add("  %-22s %s", pkg, detail)
   end
 
-  local timers = countOf(self.timers)
+  local timers = countOf(self.timers) + (self.mirrorTimer and 1 or 0) + (self.scanTimer and 1 or 0)
   add("ArjUI resources: %d handlers, %d timers, %d triggers, %d aliases, %d keys",
-    countOf(self.eventHandlers), timers, countOf(self.runtimeTriggers) + countOf(self.portTriggers),
+    countOf(self.eventHandlers), timers, countOf(self.runtimeTriggers) + countOf(self.portTriggers)
+      + countOf(self.captureTriggerIds) + countOf(self.captureTriggers) + (self.routeAllTriggerId and 1 or 0),
     countOf(self.portAliases) + (self.uiOnAlias and 1 or 0) + (self.uiOffAlias and 1 or 0) + (self.debugAlias and 1 or 0),
-    countOf(self.portKeys))
+    countOf(self.portKeys) + countOf(self.searchKeys))
   if ArjMapper then
     add("ArjMapper: %s, %d handlers", ArjMapper.state and (ArjMapper.state.enabled and "on" or "off") or "not started",
       countOf(ArjMapper.handlers))
@@ -4144,7 +4149,7 @@ function ArjUI:switchChatTab(tabName)
   if self.chatPanels[tabName] then
     self.chatPanels[tabName]:show()
   end
-  if self.chatUnread then self.chatUnread[tabName] = nil end
+  if self.chatUnread and self:panelIsVisible("chat") then self.chatUnread[tabName] = nil end
   
   self:updateChatTabStyles()
 end
@@ -4152,7 +4157,7 @@ end
 -- Count channel lines that arrive in a tab other than the one being read.
 -- TELLS counts come from the private conversations instead (see chatTabUnread).
 function ArjUI:noteChatUnread(tabName)
-  if not self.chatUnread or tabName == self.activeChatTab then return end
+  if not self.chatUnread or (tabName == self.activeChatTab and self:panelIsVisible("chat")) then return end
   self.chatUnread[tabName] = (self.chatUnread[tabName] or 0) + 1
   self:updateChatTabStyles()
 end
@@ -6109,8 +6114,7 @@ function ArjUI:checkVitalSound(kind, value, max)
   self.soundArmed = self.soundArmed or { lowhp = true, lowmove = true }
   if pct < limits.alert then
     if self.soundArmed[kind] then
-      self.soundArmed[kind] = false
-      self:playSound(kind)
+      if self:playSound(kind) then self.soundArmed[kind] = false end
     end
   elseif pct >= limits.reset then
     self.soundArmed[kind] = true

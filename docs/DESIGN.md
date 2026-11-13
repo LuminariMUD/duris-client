@@ -320,7 +320,7 @@ real Mudlet when changing fonts or measurements.
 | `ui off` / `ui on` | Hides/shows the existing interface while retaining its state and widgets. |
 | `ui find <text>` | Lists recent GAME OUTPUT lines containing the text; click one to scroll there. |
 | `ui debug` | Prints a copyable diagnostic report: versions, connection, server features, GMCP arrival ages, owned resources and artwork. |
-| `ui sound` | Shows and changes sound alerts. The master switch is off by default. Low HP/moves sounds fire once per crossing and re-arm after recovery; each sound has a cooldown. |
+| `ui sound` | Shows and changes sound alerts. The master switch is off by default. Low HP/moves sounds fire once below the threshold and re-arm after recovery or a new session; disabled/cooldown-blocked requests remain armed. Each sound has a cooldown. |
 | Room name | Tooltip adds room number, zone, terrain name and coordinates when the server sends them (wilderness: terrain only). |
 | `mapper legend` | Prints the server's default wilderness glyphs in the profile palette. |
 | `ui set chatGag on` | Hides one GAME OUTPUT line per Comm.Channel message (matching sender and text), whichever arrives first; off by default. |
@@ -332,8 +332,10 @@ available in either view.
 Chat routes `gcc` to GUILD, `gsay` to GROUP, `jchat` with `nchat` to NCHAT,
 and room speech to ROOM; ALL collects the channels. TELLS provides contacts
 and individual conversation windows. `petition` and `wizmsg` have distinct
-colors in ALL. A tab that receives lines while another tab is selected shows a
-gold `•` and gold border, with the count in its tooltip, until it is opened.
+colors in ALL. A tab that receives lines while another tab is selected or CHAT
+is hidden, minimized or covered shows a gold `•` and gold border, with the count
+in its tooltip. Revealing CHAT acknowledges only its selected tab; selecting a
+tab while CHAT is hidden leaves its messages unread.
 TELLS uses the same marker for unread private messages. The marker is a bullet
 rather than a number because the six tabs must fit the minimum chat width. Timestamps and numpad movement are enabled by default and can
 be disabled with `ui set`; see the [command reference](../README.md#commands).
