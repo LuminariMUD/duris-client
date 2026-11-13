@@ -67,6 +67,7 @@ os
 pairs
 paste
 pcall
+playSoundFile
 registerAnonymousEventHandler
 replace
 resetFormat
@@ -89,6 +90,7 @@ setConfig
 setFgColor
 setUnderline
 speedwalk
+stopSounds
 string
 table
 tempAlias

@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.11.0 - 2026-11-13
+
+- Keep low-vitals alerts armed while sound is disabled or on cooldown, and reset their latches for each character session.
+- New sound alerts, off until you type `ui sound on`.
+  - Sounds play for incoming tells, low health (below 25%), low movement (below 20%) and alert banners such as sanctuary fading or being scried.
+  - Chat channels can also make a sound (`ui sound chat on`). They only do so when the message lands in a tab you aren't reading.
+  - A low-health or low-movement sound plays once and doesn't repeat until you recover past the reset level (40% health, 35% movement).
+  - `ui sound` lists the settings. You can change the volume (`ui sound volume 30`), turn single sounds on or off (`ui sound tell off`), set your own levels (`ui sound hp 30 50`), test a sound (`ui sound test tell`) and stop playback (`ui sound stop`). Settings are saved.
+  - The sounds are new, generated tones that ship with the package.
+- `ui help` describes `ui debug` correctly.
+
 ## 2.10.0 - 2026-11-13
 
 - While you cast, the PREP box in VITALS shows the spell and its remaining `*` steps, for example `fireball ***`. It then shows `OK` or `ABORTED` for a few seconds before switching back to the preparation timer. The spell name comes from the game's `Casting:` lines, or from your `cast '<spell>'` command when the game doesn't print one. A cast that never finishes clears itself after 12 seconds.

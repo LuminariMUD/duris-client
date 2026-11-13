@@ -320,6 +320,7 @@ real Mudlet when changing fonts or measurements.
 | `ui off` / `ui on` | Hides/shows the existing interface while retaining its state and widgets. |
 | `ui find <text>` | Lists recent GAME OUTPUT lines containing the text; click one to scroll there. |
 | `ui debug` | Prints a copyable diagnostic report: versions, connection, server features, GMCP arrival ages, owned resources and artwork. |
+| `ui sound` | Shows and changes sound alerts. The master switch is off by default. Low HP/moves sounds fire once below the threshold and re-arm after recovery or a new session; disabled/cooldown-blocked requests remain armed. Each sound has a cooldown. |
 
 Hiding the UI restores Mudlet's main output area. It does not unload the
 package or turn off enabled automation. The native command line stays
@@ -520,6 +521,12 @@ metadata and `ArjUI.VERSION`, validates XML, and copies assets into the
 `.mpackage`. Edit sources and rebuild; never hand-edit the archive. Repository
 documentation is not packaged and does not need a version bump. Package
 changes follow [RELEASING.md](RELEASING.md).
+
+The alert sounds in `src/assets/sounds/` are original tones synthesized by
+[`scripts/gen_sounds.py`](../scripts/gen_sounds.py) (stdlib only, byte-identical
+output). To change a sound, edit the script and regenerate rather than replacing
+a file with audio of unknown origin:
+`python3 scripts/gen_sounds.py src/assets/sounds`.
 
 For a visual or behavioral change, build the candidate, run
 `python3 scripts/mudlet_suite.py`, and inspect its real Mudlet screenshots and

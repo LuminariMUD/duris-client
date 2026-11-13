@@ -25,6 +25,7 @@ ArjUI.tellContacts = {}  -- List of players we've had tells with
 -- ============================================================
 
 function ArjUI:kill()
+  self:stopSounds()
   if self.panelGesture then self:finishPanelGesture(self.panelGesture) end
   if self.panels then self:saveLayout() end
   for _,panel in pairs(self.panels or {}) do self:disposeWidget(panel.frame) end
@@ -907,6 +908,7 @@ end
 -- ============================================================
 
 function ArjUI:resetCharacterState()
+  self.soundArmed = nil
   self.state = {
     hp = 1, hpmax = 1, mana = 1, manamax = 1, move = 1, movemax = 1,
     tnl = 0, tnlBaseline = nil, position = "standing",
@@ -2662,6 +2664,7 @@ function ArjUI:addTellContact(playerName)
 end
 
 function ArjUI:handleIncomingTell(sender, text, snapshots)
+  self:playSound("tell")
   local name = sender:lower()
   local displayName = sender:sub(1,1):upper() .. sender:sub(2):lower()
   
@@ -2803,6 +2806,12 @@ function ArjUI:debugReportLines()
   if ArjAuto then
     add("ArjAuto: %d triggers, %d aliases, %d keys, %d timers", countOf(ArjAuto.triggers), countOf(ArjAuto.aliases),
       countOf(ArjAuto.keys), countOf(ArjAuto.timers))
+  end
+  if self.sound then
+    local on = {}
+    for _, c in ipairs(self.SOUND_CHANNELS) do if self.sound.channels[c.key] then on[#on + 1] = c.key end end
+    add("Sound: %s, volume %d, channels %s", self.sound.enabled and "on" or "off", self.sound.volume,
+      #on > 0 and table.concat(on, " ") or "none")
   end
   local art = self.artwork or {}
   add("Artwork: frame %s, backdrop %s", art.frame and "found" or "MISSING", art.scene and "found" or "MISSING")
@@ -3196,6 +3205,8 @@ function ArjUI:onCharVitals()
   coins.gold = toNum(v.gold) or coins.gold
   coins.silver = toNum(v.silver) or coins.silver
   coins.copper = toNum(v.copper) or coins.copper
+  self:checkVitalSound("lowhp", self.state.hp, self.state.hpmax)
+  self:checkVitalSound("lowmove", self.state.move, self.state.movemax)
   self:renderVitals()
   self:renderTNLBar()
   self:renderTank()
@@ -3411,6 +3422,11 @@ function ArjUI:onCommChannel()
   
   -- Route to specific tab based on channel
   local channelLower = channel:lower()
+  local routed = ({nchat="nchat",newbie="nchat",jchat="nchat",say="room",yell="room",shout="room",
+    gcc="guild",guild="guild",clan="guild",group="group",gtell="group",party="group",gsay="group"})[channelLower] or "all"
+  local own = sender == "You" or sender:match("^You ") or (self.playerName and sender:lower() == self.playerName:lower())
+  local reading = self:panelIsVisible("chat") and (self.activeChatTab == "all" or self.activeChatTab == routed)
+  if channelLower ~= "tell" and channelLower ~= "tells" and not own and not reading then self:playSound("chat") end
   if channelLower == "tell" or channelLower == "tells" then
     -- Route to private messaging system only (don't echo to TELLS tab)
     if isOutgoing then
@@ -4791,6 +4807,7 @@ function ArjUI:loadSettings()
   self.shipMode, self.f3Paused = "bridge", false
   for k, v in pairs(self.settingsDefaults) do self.settings[k] = v end
   local data=self:readProfileJSON(getMudletHomeDir().."/arjui_settings.json")
+  self.sound = self:normalizeSound(data and data.sound)
   if data then
     self.shipMode = data.shipMode=="details" and "details" or "bridge"
     self.f3Paused = data.f3Paused == true
@@ -4805,6 +4822,7 @@ function ArjUI:saveSettings()
   local data = {}; for key,value in pairs(self.settings or self.settingsDefaults) do data[key]=value end
   data.shipMode=self.shipMode or "bridge"
   if self.f3Paused then data.f3Paused = true end
+  if self.sound then data.sound = self:normalizeSound(self.sound) end
   return self:writeProfileJSON(path,data,"UI settings")
 end
 
@@ -5095,6 +5113,7 @@ function ArjUI:setupAlerts()
       if not (ArjUI.settings and ArjUI.settings.alerts) then return end
       local text = label:gsub("%%(%d)", function(i) return matches[tonumber(i) + 1] or "" end)
       ArjUI:note(string.format("\n%s ══ %s ══", style, text))
+      ArjUI:playSound("alert")
     end)
   end
 end
@@ -5933,7 +5952,8 @@ end
 function ArjUI:showHelp()
   self:note("<gold>══ Arjinius Client commands ══")
   self:note("<white>ui on / ui off<dim_gray>        build or hide the interface")
-  self:note("<white>ui debug<dim_gray>              show which GMCP tables have arrived")
+  self:note("<white>ui debug<dim_gray>              diagnostic report to paste into bug reports")
+  self:note("<white>ui sound<dim_gray>              sound alerts (off by default): tells, chat, low HP/moves, banners")
   self:note("<white>ui damage<dim_gray>             session damage report; <white>ui damage reset<dim_gray> clears it")
   self:note("<white>ui layout<dim_gray>             panel controls and reset; right-click a panel title for actions")
   self:note("<white>ui set<dim_gray>                list toggles; <white>ui set <name> on|off<dim_gray> changes one")
@@ -5957,6 +5977,164 @@ function ArjUI:showSettings()
   for _, k in ipairs(sortedKeys(self.settingsDefaults)) do
     local on = self.settings[k]
     self:note(string.format("%s%-16s<dim_gray> %s  %s", on and "<green>" or "<indian_red>", k, on and "on " or "off", desc[k] or ""))
+  end
+end
+
+-- ============================================================
+-- SOUND ALERTS (ui sound)
+-- ============================================================
+-- Off until the player runs `ui sound on`. Each channel has its own switch and
+-- cooldown; low HP / low moves fire once on crossing below the alert level and
+-- re-arm only after recovering past the reset level, so a fight hovering
+-- around the threshold does not repeat. Sounds play through Mudlet's media
+-- API under one tag, so `ui sound stop` and uninstall stop only ours.
+ArjUI.SOUND_TAG = "arjui"
+ArjUI.SOUND_CHANNELS = {
+  { key = "tell",    file = "duris-tell.wav",    on = true,  cooldown = 2,  desc = "incoming tell" },
+  { key = "chat",    file = "duris-tell.wav",    on = false, cooldown = 5,  desc = "channel message in a tab you are not reading" },
+  { key = "lowhp",   file = "duris-lowhp.wav",   on = true,  cooldown = 10, desc = "health fell below the alert level" },
+  { key = "lowmove", file = "duris-lowmove.wav", on = true,  cooldown = 30, desc = "movement fell below the alert level" },
+  { key = "alert",   file = "duris-alert.wav",   on = true,  cooldown = 5,  desc = "alert banners (scry, disarm, sanctuary down, ...)" },
+}
+ArjUI.SOUND_DEFAULTS = { enabled = false, volume = 70,
+  hp = { alert = 25, reset = 40 }, moves = { alert = 20, reset = 35 } }
+
+local function clampInt(v, lo, hi, fallback)
+  v = tonumber(v)
+  if not v or v ~= v then return fallback end
+  return math.max(lo, math.min(hi, math.floor(v + .5)))
+end
+
+-- Validate a saved/loaded sound table, falling back to defaults per field.
+function ArjUI:normalizeSound(data)
+  local d, out = self.SOUND_DEFAULTS, {}
+  data = type(data) == "table" and data or {}
+  out.enabled = data.enabled == true
+  out.volume = clampInt(data.volume, 0, 100, d.volume)
+  out.channels = {}
+  local saved = type(data.channels) == "table" and data.channels or {}
+  for _, c in ipairs(self.SOUND_CHANNELS) do
+    if saved[c.key] == nil then out.channels[c.key] = c.on else out.channels[c.key] = saved[c.key] == true end
+  end
+  for _, k in ipairs({ "hp", "moves" }) do
+    local t = type(data[k]) == "table" and data[k] or {}
+    local alert = clampInt(t.alert, 1, 99, d[k].alert)
+    local reset = clampInt(t.reset, 2, 100, d[k].reset)
+    if reset <= alert then alert, reset = d[k].alert, d[k].reset end
+    out[k] = { alert = alert, reset = reset }
+  end
+  return out
+end
+
+function ArjUI:soundPath(file)
+  local home = getMudletHomeDir()
+  for _, root in ipairs({ home, home .. "/profiles/" .. getProfileName() }) do
+    for _, package in ipairs({ "Arjinius Client", "Arjinius Client V1.0" }) do
+      local path = (root .. "/" .. package .. "/sounds/" .. file):gsub("\\", "/")
+      local f = io.open(path, "rb")
+      if f then f:close(); return path end
+    end
+  end
+end
+
+-- Play one channel's sound. force skips the master switch, channel switch
+-- and cooldown (for `ui sound test`). Returns true when playback was requested.
+function ArjUI:playSound(key, force)
+  local s = self.sound
+  local channel
+  for _, c in ipairs(self.SOUND_CHANNELS) do if c.key == key then channel = c end end
+  if not (s and channel) then return false end
+  if not force and not (s.enabled and s.channels[key]) then return false end
+  local now = getEpoch()
+  self.soundLast = self.soundLast or {}
+  if not force and self.soundLast[key] and now - self.soundLast[key] < channel.cooldown then return false end
+  local path = self:soundPath(channel.file)
+  self.soundFailures = self.soundFailures or {}
+  if not path or not playSoundFile then
+    if not self.soundFailures[key] then
+      self.soundFailures[key] = true
+      self:note("<indian_red>[sound] " .. (path and "this Mudlet cannot play sounds" or ("missing sound file " .. channel.file)))
+    end
+    return false
+  end
+  local ok = pcall(playSoundFile, { name = path, volume = s.volume, key = self.SOUND_TAG .. "-" .. key, tag = self.SOUND_TAG })
+  if not ok then
+    if not self.soundFailures[key] then
+      self.soundFailures[key] = true
+      self:note("<indian_red>[sound] Mudlet could not play " .. channel.file)
+    end
+    return false
+  end
+  self.soundLast[key] = now
+  self.soundPlayed = (self.soundPlayed or 0) + 1
+  return true
+end
+
+function ArjUI:stopSounds()
+  if stopSounds then pcall(stopSounds, { tag = self.SOUND_TAG }) end
+end
+
+-- Low-vitals latch: fire once below `alert`%, re-arm above `reset`%.
+function ArjUI:checkVitalSound(kind, value, max)
+  local s = self.sound
+  value, max = tonumber(value), tonumber(max)
+  if not (s and value and max and max > 0) then return end
+  local limits = s[kind == "lowhp" and "hp" or "moves"]
+  local pct = value / max * 100
+  self.soundArmed = self.soundArmed or { lowhp = true, lowmove = true }
+  if pct < limits.alert then
+    if self.soundArmed[kind] then
+      if self:playSound(kind) then self.soundArmed[kind] = false end
+    end
+  elseif pct >= limits.reset then
+    self.soundArmed[kind] = true
+  end
+end
+
+function ArjUI:soundStatus()
+  local s = self.sound
+  self:note(string.format("<gold>══ Sound alerts: %s, volume %d ══", s.enabled and "<green>on<gold>" or "<indian_red>off<gold>", s.volume))
+  for _, c in ipairs(self.SOUND_CHANNELS) do
+    local on = s.channels[c.key]
+    local extra = ""
+    if c.key == "lowhp" then extra = string.format(" (below %d%%, re-arms at %d%%)", s.hp.alert, s.hp.reset) end
+    if c.key == "lowmove" then extra = string.format(" (below %d%%, re-arms at %d%%)", s.moves.alert, s.moves.reset) end
+    self:note(string.format("%s%-8s<dim_gray> %s  %s%s", on and "<green>" or "<indian_red>", c.key, on and "on " or "off", c.desc, extra))
+  end
+  self:note("<dim_gray>ui sound on|off · ui sound <channel> on|off · ui sound test <channel> · ui sound stop")
+  self:note("<dim_gray>ui sound volume <0-100> · ui sound hp|moves <alert%> <reset%>")
+end
+
+function ArjUI:soundCommand(args)
+  local s = self.sound
+  args = (args or ""):lower()
+  local words = {}
+  for w in args:gmatch("%S+") do words[#words + 1] = w end
+  local a, b, c = words[1], words[2], words[3]
+  local function known(key)
+    for _, ch in ipairs(self.SOUND_CHANNELS) do if ch.key == key then return true end end
+  end
+  local prior = self:normalizeSound(s)
+  local changed = true
+  if not a then self:soundStatus(); return
+  elseif (a == "on" or a == "off") and not b then s.enabled = a == "on"
+  elseif known(a) and (b == "on" or b == "off") and not c then s.channels[a] = b == "on"
+  elseif a == "volume" and tonumber(b) and not c then s.volume = clampInt(b, 0, 100, s.volume)
+  elseif (a == "hp" or a == "moves") and tonumber(b) and tonumber(c) then
+    local alert, reset = clampInt(b, 1, 99, 0), clampInt(c, 2, 100, 0)
+    if reset <= alert then self:note("<indian_red>[sound] the reset level must be above the alert level"); return end
+    s[a] = { alert = alert, reset = reset }
+  elseif a == "test" and known(b) and not c then
+    changed = false
+    if self:playSound(b, true) then self:note("<dim_gray>[sound] playing " .. b) end
+  elseif a == "stop" and not b then changed = false; self:stopSounds()
+  else
+    self:note("<indian_red>[sound] unknown command. <dim_gray>Type <white>ui sound<dim_gray> for usage.")
+    return
+  end
+  if changed then
+    if not self:saveSettings() then self.sound = prior; return end
+    self:soundStatus()
   end
 end
 
@@ -6312,6 +6490,7 @@ function ArjUI:setupAliases()
   -- ui set [<name> on|off]
   table.insert(self.portAliases, tempAlias("^ui set$", function() ArjUI:showSettings() end))
   -- ui find <text>
+  table.insert(self.portAliases, tempAlias("^ui sound(?: (.+))?$", function() ArjUI:soundCommand(matches[2]) end))
   table.insert(self.portAliases, tempAlias("^ui find (.+)$", function() ArjUI:findInOutput(matches[2]) end))
   table.insert(self.portAliases, tempAlias("^ui set (\\w+) (on|off)$", function()
     local key, val = matches[2], matches[3] == "on"

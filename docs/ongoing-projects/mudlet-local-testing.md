@@ -1,5 +1,25 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## PR #48 maintenance review — 2026-11-13
+
+Candidate 2.11.0 refreshed onto master. Fixed low-vitals latches surviving
+session end and being disarmed by disabled/cooldown-blocked playback. A real
+Mudlet regression fails before the fix at
+`/tmp/duris-maintenance-pr48-before/20261113T114446Z-1e2a59fd-sound`.
+
+- Full offline suite **34/34 PASS** at
+  `/tmp/duris-maintenance-pr48-suite/suite-results.json`, including shared
+  vitals/session/persistence/lifecycle consumers. The sound case verifies
+  enable-while-low, cooldown retry without recovery, and new-session alerts.
+- Inspected sound `20261113T114544Z-a651f4fc-sound` (`scenario.png`,
+  `errors-view.png`): readable status/controls and no Lua errors; review recorded.
+- Regenerated all four WAV files outside the checkout: byte-identical to the
+  committed assets. Build, lint/release/controller tests (9/15/11), ruff,
+  luacheck and release payload validation pass.
+- Mudlet 5.0.1 / Qt 6.11.1 under WSL2/Xvfb. The first real media API request
+  executes; later playback is recorded by the fixture. Audible output,
+  Mudlet 4.19.1 media behavior and Windows/macOS audio remain unverified.
+
 ## PR #47 maintenance review — 2026-11-13
 
 Candidate 2.10.0 refreshed onto master, package regenerated from merged sources.
@@ -72,6 +92,22 @@ the expected match"; it passed locally. Reproduced in a container matching CI
   failure errors.
 - README troubleshooting tells players to use Enter or ▲/▼ on affected builds.
 - Also unverified: whether a Qt 6.10 Mudlet on a real desktop session (not Xvfb/xdotool) behaves the same.
+## Sound alerts — 2026-11-13
+
+Candidate **2.11.0**, branch `branch/sound-alerts` (LuminariGUI audit R1). The
+new `sound` scenario makes one real `playSoundFile` table-form call. Mudlet's
+`TMedia` accepted it and the Errors view stayed empty. It then records
+playback to check: off-by-default, low HP/moves latch and cooldown, tell and
+outgoing tell, chat only for tabs you are not reading, your own lines, the
+alert banner, commands, tag-scoped stop, persistence across reload, and
+corrupt saved values.
+
+- Mudlet 5.0.1 under Xvfb: all **34/34** suite expectations pass. Focused run
+  `20261112T225650Z-afebe686-sound`.
+- Package SHA-256 `68f2b4b0842e4503ddd4d957c96ccca46132bd81a8e99a92a5ffbfd691623936`.
+
+Audible output, Mudlet 4.19.1 media behavior and Windows/macOS audio are unverified.
+
 ## Spell-casting progress — 2026-11-13
 
 Candidate **2.10.0**, branch `branch/cast-progress` (LuminariGUI audit R2). The
