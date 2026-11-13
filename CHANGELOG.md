@@ -1,5 +1,39 @@
 # Changelog
 
+## 2.12.0 - 2026-11-13
+
+- Correlate complete chat lines and wrapped rows, preserve ordinary or older output, and keep search highlights aligned after deletion. Pending chat gags expire by time, support bursts, and clear on toggle/session changes.
+- Hovering over the room name shows the room number, zone, terrain and coordinates the game sends, for example `Room 90010 · zone 9001 · Forest · (3, -2, 0)`. In the wilderness the game sends only the terrain, so only the terrain is shown. `ui debug` also lists them.
+- New `mapper legend` shows what each wilderness map symbol means, in your colours. It shows the game's default symbols; if you changed them with the game's `glyphs` command, the map shows yours instead.
+- New `ui set chatGag on` hides chat lines in GAME OUTPUT, because the CHAT tabs already show them. It is off by default. It hides only the one line that matches the sender and text of each chat message, whichever of the two arrives first. The line stays in Mudlet's own window and log.
+
+## 2.11.0 - 2026-11-13
+
+- Keep low-vitals alerts armed while sound is disabled or on cooldown, and reset their latches for each character session.
+- New sound alerts, off until you type `ui sound on`.
+  - Sounds play for incoming tells, low health (below 25%), low movement (below 20%) and alert banners such as sanctuary fading or being scried.
+  - Chat channels can also make a sound (`ui sound chat on`). They only do so when the message lands in a tab you aren't reading.
+  - A low-health or low-movement sound plays once and doesn't repeat until you recover past the reset level (40% health, 35% movement).
+  - `ui sound` lists the settings. You can change the volume (`ui sound volume 30`), turn single sounds on or off (`ui sound tell off`), set your own levels (`ui sound hp 30 50`), test a sound (`ui sound test tell`) and stop playback (`ui sound stop`). Settings are saved.
+  - The sounds are new, generated tones that ship with the package.
+- `ui help` describes `ui debug` correctly.
+
+## 2.10.0 - 2026-11-13
+
+- While you cast, the PREP box in VITALS shows the spell and its remaining `*` steps, for example `fireball ***`. It then shows `OK` or `ABORTED` for a few seconds before switching back to the preparation timer. The spell name comes from the game's `Casting:` lines, or from your `cast '<spell>'` command when the game doesn't print one. A cast that never finishes clears itself after 12 seconds.
+
+## 2.9.0 - 2026-11-13
+
+- Include mirror/scan timers, capture/routing triggers and search keys in the diagnostic resource totals.
+- `ui debug` now prints a full diagnostic report to paste into bug reports. It shows the package, Mudlet and OS versions, the profile, the window size and UI state, the connection, whether GMCP is enabled, the server session and the features the server reports. It also shows how long ago each GMCP message last arrived, how many triggers, aliases and timers the client is running, and whether the frame artwork was found.
+
+## 2.8.0 - 2026-11-13
+
+- Keep messages unread while CHAT is hidden, minimized or covered, including its selected tab. Revealing CHAT clears only the tab actually shown.
+- Chat tabs show how many new messages arrived while you were reading another tab, for example `NCHAT 3`, in gold. Opening the tab clears it. TELLS shows the number of unread private messages.
+- GROUP marks the leader with a crown (♔). Hovering over a name shows the member's rank (leader, front or back), level and class.
+- Internal cleanup with no visible change: removed unused mapper code and renamed variables that hid other names.
+
 ## 2.7.0 - 2026-11-11
 
 - Panels now reach the decorated frame on the left and right, as they already did at the top and bottom. The side columns keep their width and GAME OUTPUT, TANK and TARGET take the extra space.

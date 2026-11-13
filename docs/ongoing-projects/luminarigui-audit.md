@@ -49,10 +49,18 @@ each lands.
 | T1 (globals guard), T3 (link checker), T4 (pattern/ownership lint), dead `duris-v1.png` links | Implemented: `tests/lint/`, run by CI. The `build.py` Lua 5.1 requirement ships with the first runtime PR because `build.py` changes need a `VERSION` bump. |
 | T2 (workflow hardening), T5 (gitleaks) | Implemented: actions pinned to v4 SHAs (Dependabot proposes majors), `persist-credentials: false` outside release, build timeout, PR-only CI cancellation, `.github/workflows/security.yml` with gitleaks 8.30.1. The canary is random per run because gitleaks 8.30 ignores LuminariGUI's sequential fake token. |
 | T6 (luacheck), T7 (ruff, clean checkout, summaries, CI docs) | Implemented: CI `lint` job with pinned luacheck 1.2.0 (`.luacheckrc` reads `tests/lint/lua_globals.txt`) and ruff 0.14.10 (`ruff.toml`; six existing findings fixed). luacheck is report-only, with 14 warnings left for the first runtime PR to fix before it becomes blocking. The checks table is in [RELEASING.md](../RELEASING.md#ci-checks). |
-| R3, R4 | Pending |
-| R5 | Pending |
-| R2 | Pending |
-| R1 | Pending |
+| R3 (chat unread), R4 (group leader/rank/level/class), `build.py` Lua 5.1, luacheck blocking | Implemented in 2.8.0. Unread tabs show a gold `•` with the count in the tooltip: a number did not fit the tabs at 1366×768. Fixing the 14 luacheck warnings changed no behaviour. A new lint rule rejects Lua 5.2+ escapes such as `\u{...}`, which Lua 5.1 compiles but reads as plain letters. |
+| R5 (`ui debug` report) | Implemented in 2.9.0. `ArjUI:debugReportLines()` reports the versions, profile, window and UI state, connection, GMCP setting, session, server features, the age of each of 17 GMCP messages, resource counts for the three scripts, and artwork. Each probe is wrapped in `pcall`. |
+| R2 (casting progress) | Implemented in 2.10.0. Triggers match the `sparser.c` start lines (chant, silent hands, prepared weave), `Casting:` progress lines, completion lines (both forms) and the three Duris class aborts. The spell name comes from a typed `cast`/`c`/`will '<spell>'` command when the server prints no progress line. A 12 s idle expiry covers casts with no outcome. The new `cast` scenario covers it. A GMCP cast event, which would be exact, remains a possible server addition. |
+| R1 (sound alerts) | Implemented in 2.11.0. Five channels: tell, chat, lowhp, lowmove, alert. Master switch off by default; per-channel cooldowns; low-vitals latch (25/40% HP, 20/35% moves); one `arjui` media tag for stop and uninstall. Settings are in `arjui_settings.json` under `sound`, validated on load. LuminariGUI's audio files have an undocumented origin, so the sounds are original tones from `scripts/gen_sounds.py` (stdlib, byte-identical output). The new `sound` scenario makes one real `playSoundFile` call; whether the table form is accepted on Mudlet 4.19.1 is still unverified. |
+| Deferred: gag chat duplicates, wilderness legend, room vnum/terrain/coords | Implemented in 2.12.0. The server source settled each open question. Chat text and `Comm.Channel` come from separate paths (`comm.c`, `actnew.c`), so the gag handles both orders: a GMCP-first line is never mirrored, and a text-first line is removed from the newest GAME OUTPUT rows. Each message hides at most one line, and only when both sender and text match. The legend uses `sector_symbol[]` from `world/map.c`. The terrain names use `sector_types[]` from `core/common.c`. The `extras` scenario covers all three. |
+
+Not implemented, as planned:
+- the optional LuaLS stubs from T6;
+- the [rejected](#not-worth-porting) ports.
+
+Remaining checks: a live Duris server, Mudlet 4.19.1, and Windows/macOS fonts
+and audio. See the [testing log](mudlet-local-testing.md).
 
 ## Runtime features
 

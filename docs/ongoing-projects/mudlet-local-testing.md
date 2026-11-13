@@ -1,5 +1,126 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## PR #49 maintenance review — 2026-11-13
+
+Candidate 2.12.0 refreshed onto master. Verified and repaired retrospective
+wrapped-chat matching, deletion of unrelated output, stale search-highlight
+indices, pending gags ignoring the off toggle/session reset, and count-limited
+matching windows that dropped bursts or text followed by intervening output.
+The pre-fix real-Mudlet candidate deletes room text in
+`/tmp/duris-maintenance-pr49-before/20261113T115037Z-8274e67c-extras`.
+
+- Full offline suite **35/35 PASS**:
+  `/tmp/duris-maintenance-pr49-suite/suite-results.json`.
+- Final affected consumer rerun (after replacing count limits with the same
+  three-second expiry):
+  `/tmp/duris-maintenance-pr49-final-window/20261113T115707Z-d660bcc9-extras`.
+  Passes both orders, wrapped deletion, named/anonymous/outgoing false matches,
+  validated full presentations, older identical output, shifted-highlight
+  cleanup, twelve-message bursts, intervening output, toggle and session reset.
+- Inspected final `02-legend.png`, `06-gag-wrapped-and-search.png` and
+  `errors-view.png`: readable legend and output, preserved surrounding lines,
+  no Lua errors. Review recorded against this run.
+- Legacy headers and terrain/glyph tables were checked against local Duris
+  actcomm.c, actnew.c, actwiz.c, common.c and map.c. Fixtures now use the real
+  nchat terminal format. Unmatched formats or bodies remain visible.
+- Lua 5.1 build, 9 lint / 15 release / 11 controller tests, ruff, luacheck,
+  workflow and release payload validation pass. Unchanged consumers reuse
+  their valid full-suite results; final chat-gag changes have the focused rerun.
+- Mudlet 5.0.1 / Qt 6.11.1 under WSL2/Xvfb. Live chat ordering, Mudlet 4.19.1
+  and physical/cross-platform desktop behavior remain unverified.
+
+## Room details, wilderness legend and chat gag — 2026-11-13
+
+Candidate **2.12.0**, branch `branch/deferred-items` (the audit's deferred
+items). The new `extras` scenario covers: the room tooltip (zone room,
+wilderness with terrain only, unknown terrain number) and `ui debug`; that
+`mapper legend` prints colour-coded categories with no raw `&` codes; and the
+chat gag. The gag checks are: off by default; GMCP-first and text-first both
+hide the GAME OUTPUT line while the main window and chat tab keep it; a line
+from a different speaker is kept; one message hides only one line; ordinary
+text is untouched; an expired GMCP copy hides nothing.
+
+- Mudlet 5.0.1 under Xvfb: all **35/35** suite expectations pass. Focused run
+  `20261112T234757Z-e11b8274-extras`; `02-legend.png` shows the legend in
+  the profile palette, and the Errors view is empty.
+- Package SHA-256 `51ba0c2a289cb48a701ee380c6285b9722b93a26f7ae10b78aa9cb7fe25a6402`.
+
+Chat gag ordering and formats against a live Duris server are unverified; the
+gag is opt-in for that reason.
+
+## PR #48 maintenance review — 2026-11-13
+
+Candidate 2.11.0 refreshed onto master. Fixed low-vitals latches surviving
+session end and being disarmed by disabled/cooldown-blocked playback. A real
+Mudlet regression fails before the fix at
+`/tmp/duris-maintenance-pr48-before/20261113T114446Z-1e2a59fd-sound`.
+
+- Full offline suite **34/34 PASS** at
+  `/tmp/duris-maintenance-pr48-suite/suite-results.json`, including shared
+  vitals/session/persistence/lifecycle consumers. The sound case verifies
+  enable-while-low, cooldown retry without recovery, and new-session alerts.
+- Inspected sound `20261113T114544Z-a651f4fc-sound` (`scenario.png`,
+  `errors-view.png`): readable status/controls and no Lua errors; review recorded.
+- Regenerated all four WAV files outside the checkout: byte-identical to the
+  committed assets. Build, lint/release/controller tests (9/15/11), ruff,
+  luacheck and release payload validation pass.
+- Mudlet 5.0.1 / Qt 6.11.1 under WSL2/Xvfb. The first real media API request
+  executes; later playback is recorded by the fixture. Audible output,
+  Mudlet 4.19.1 media behavior and Windows/macOS audio remain unverified.
+
+## PR #47 maintenance review — 2026-11-13
+
+Candidate 2.10.0 refreshed onto master, package regenerated from merged sources.
+The cast text patterns were checked against local Duris `src/net/sparser.c`.
+No additional substantive defect was found. Full offline suite **33/33 PASS**:
+`/tmp/duris-maintenance-pr47-suite/suite-results.json`. Inspected cast run
+`20261113T114032Z-9f319034-cast` (`scenario.png`, `errors-view.png`): progress
+fits the PREP slot at 1366x768 and the error view is clear; review recorded.
+Build, 9 lint / 15 release / 11 controller tests, ruff, luacheck and release
+payload validation pass. Environment remains Mudlet 5.0.1 / Qt 6.11.1 under
+WSL2/Xvfb. Live casting and Mudlet 4.19.1 remain unverified.
+
+## PR #46 maintenance review — 2026-11-13
+
+Candidate 2.9.0 on refreshed master, including the diagnostic resource-count
+fix. The report had omitted mirror/scan timers, capture/routing triggers and
+the two F3 search keys held outside its primary resource arrays.
+
+- Full real-Mudlet offline suite: **32/32** pass at
+  `/tmp/duris-maintenance-pr46-suite/suite-results.json`, including handler
+  cleanup/reinstall, protocol consumers and panel lifecycle.
+- Final focused run `/tmp/duris-maintenance-pr46-final-lowhp/20261113T113645Z-bd42e8ae-lowhp`
+  passes timer stop/restart and search-key hide/show count regressions.
+  Inspected `scenario.png` and `errors-view.png`: readable report at 1366x768,
+  no Lua errors; review recorded in the run directory.
+- Lua 5.1 build, lint/release/controller tests (9/15/11), ruff, luacheck
+  (zero warnings) and committed-package release validation pass.
+- Environment: Mudlet 5.0.1 / Qt 6.11.1, WSL2/Xvfb. Live game, Mudlet 4.19.1
+  and physical/cross-platform desktop behavior remain unverified.
+
+## PR #45 maintenance review — 2026-11-13
+
+Candidate 2.8.0 on `branch/chat-unread-group-leader`, including the visibility
+fix: the selected CHAT tab used to drop unread counts while hidden. The new
+`hidden-channel-unread` fixture reproduced the failure before the fix at
+`/tmp/duris-maintenance-pr45-before/20261113T113024Z-76f08cba-chat`.
+
+- Real Mudlet 5.0.1 / Qt 6.11.1 under WSL2/Xvfb: **32/32** offline cases pass
+  at `/tmp/duris-maintenance-pr45-suite/suite-results.json`, including shared
+  panel lifecycle, group, mapper and protocol consumers.
+- Final chat rerun at `/tmp/duris-maintenance-pr45-final-chat/20261113T113311Z-e7abb4c8-chat`
+  passes hidden/minimized/covered/UI-off handling, selective reveal, and layout
+  reset while the UI is off. The final layout case also passes.
+- Inspected chat `12-channel-unread.png` and `errors-view.png`, and crowded
+  `01-full-group-room.png`; readable gold markers and leader crown at 1366x768,
+  with no collected Lua errors. Reviews recorded against those run directories.
+- Lua 5.1 package build, 9 lint tests, 15 release tests, 11 controller tests,
+  ruff 0.14.10, luacheck 1.2.0 (zero warnings), release payload validation and
+  workflow validation pass. Actionlint's obsolete ubuntu-26.04 label diagnostic
+  was excluded; other checks remained enabled.
+- Not run: live gameplay, Mudlet 4.19.1, Windows/macOS glyph rendering or
+  physical desktop DPI. Offline success does not establish those claims.
+
 ## CI-only `console` failure: function keys on Qt 6.10 — 2026-11-13
 
 From 2.7.0, CI's `console` scenario failed at "Shift+F3 twice then F3 lands on
@@ -19,6 +140,68 @@ the expected match"; it passed locally. Reproduced in a container matching CI
   failure errors.
 - README troubleshooting tells players to use Enter or ▲/▼ on affected builds.
 - Also unverified: whether a Qt 6.10 Mudlet on a real desktop session (not Xvfb/xdotool) behaves the same.
+## Sound alerts — 2026-11-13
+
+Candidate **2.11.0**, branch `branch/sound-alerts` (LuminariGUI audit R1). The
+new `sound` scenario makes one real `playSoundFile` table-form call. Mudlet's
+`TMedia` accepted it and the Errors view stayed empty. It then records
+playback to check: off-by-default, low HP/moves latch and cooldown, tell and
+outgoing tell, chat only for tabs you are not reading, your own lines, the
+alert banner, commands, tag-scoped stop, persistence across reload, and
+corrupt saved values.
+
+- Mudlet 5.0.1 under Xvfb: all **34/34** suite expectations pass. Focused run
+  `20261112T225650Z-afebe686-sound`.
+- Package SHA-256 `68f2b4b0842e4503ddd4d957c96ccca46132bd81a8e99a92a5ffbfd691623936`.
+
+Audible output, Mudlet 4.19.1 media behavior and Windows/macOS audio are unverified.
+
+## Spell-casting progress — 2026-11-13
+
+Candidate **2.10.0**, branch `branch/cast-progress` (LuminariGUI audit R2). The
+new `cast` scenario feeds the server's text lines through real triggers: chant,
+silent and weave starts; the progress countdown; completion; a psionic abort; idle
+expiry; session end; and a quoted line that must not match.
+
+- Mudlet 5.0.1 under Xvfb: all **33/33** suite expectations pass. Focused run
+  `20261112T225010Z-3686747d-cast`; `05-session-end-clears.png` shows
+  `lightning … ****` fitting the PREP box at 1366×768. The Errors view is empty.
+- Package SHA-256 `9ef13cd6247b2bbe398ae299faa68d4041e70004cb1d70f3348083f60473dbf8`.
+
+Live Duris casting (skill-roll gaps between `Casting:` lines, lag) is unverified.
+
+## ui debug diagnostic report — 2026-11-13
+
+Candidate **2.9.0**, branch `branch/ui-debug-report` (LuminariGUI audit R5).
+`lowhp` checks the report: package and Mudlet versions, GMCP ages, `never` for
+messages that never arrived, artwork, resource counts, and that `ui debug` prints it.
+
+- Mudlet 5.0.1 under Xvfb: all **32/32** suite expectations pass. Focused run
+  `20261112T224500Z-600a4552-lowhp`; `scenario.png` shows the report in
+  GAME OUTPUT and the Errors view is empty.
+- Package SHA-256 `b3ce9fda82ce720417db10d8bc069fdb23eae7ec9e205f4aa898c3ec9c6dc0b4`.
+
+`getConfig("enableGMCP")` and the other probes are wrapped in `pcall` and show
+`unknown` where unavailable. Their output on Mudlet 4.19.1 is unverified.
+
+## Chat unread markers and group leader — 2026-11-13
+
+Candidate **2.8.0**, branch `branch/chat-unread-group-leader` (LuminariGUI
+audit R3/R4). `chat` adds a `channel-unread` step: hidden tabs are counted and the
+active tab is not, opening a tab clears its marker, large counts stay compact,
+and TELLS reflects unread private messages. `crowded` checks the leader crown
+and the rank/level/class tooltips, including an NPC with no class.
+
+- Mudlet 5.0.1 under Xvfb in WSL2/Ubuntu 24.04: all **32/32** suite
+  expectations pass (`--jobs 3`). Focused runs
+  `20261112T223922Z-4479b2e4-chat` and `20261112T223950Z-f717bb40-crowded`.
+- Inspected `11-channel-unread.png`: gold `•ROOM`/`•GUILD`/`•GROUP` fit at
+  1366×768, though a numeric `GROUP 99+` did not, hence the bullet. Inspected
+  `01-full-group-room.png`: ♔ precedes the leader. Errors views are empty.
+- Package SHA-256 `3390b1ab4501e49e95e14d769b9daabe99702a299d1bf9452bf803d9cf18335a`.
+
+Live Duris, Mudlet 4.19.1, native Windows/macOS and desktop DPI remain unverified;
+the ♔ glyph depends on the platform font.
 
 ## Issue #36 GEAR resync, combat flag and Items retry — 2026-11-11
 

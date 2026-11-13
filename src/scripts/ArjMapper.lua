@@ -176,11 +176,10 @@ end
 function ArjMapper:isWilderness(roomData)
     if not roomData then return false end
     if not roomData.num or roomData.num == 0 then return true end
+    -- Wilderness exits are booleans; checking any one exit is enough.
     if roomData.exits then
-        for _, dest in pairs(roomData.exits) do
-            if type(dest) == "boolean" then return true end
-            break
-        end
+        local _, dest = next(roomData.exits)
+        if type(dest) == "boolean" then return true end
     end
     return false
 end
@@ -405,7 +404,7 @@ end
 -- ============================================================
 
 function ArjMapper:clearZoneDisplay()
-    for key, label in pairs(self.ui.roomLabels) do
+    for _, label in pairs(self.ui.roomLabels) do
         if type(label) == "table" and label.hide then 
             label:hide() 
         end
@@ -482,19 +481,9 @@ function ArjMapper:computeZoneLayout(zoneId)
         southwest = { -1, -1,  0 },
     }
     
-    -- Opposite directions for loop closure
-    local opposite = {
-        north = "south", south = "north",
-        east = "west", west = "east",
-        up = "down", down = "up",
-        northeast = "southwest", southwest = "northeast",
-        northwest = "southeast", southeast = "northwest",
-    }
-
     local occupied = {}
     local function gridKey(x, y, z) return x .. "," .. y .. "," .. z end
     local function isOccupied(x, y, z) return occupied[gridKey(x, y, z)] ~= nil end
-    local function getOccupant(x, y, z) return occupied[gridKey(x, y, z)] end
     local function occupy(x, y, z, id) occupied[gridKey(x, y, z)] = id end
 
     -- Check if placing at (tx, ty) would close a loop with an already-placed neighbor
@@ -831,7 +820,6 @@ function ArjMapper:renderZoneMap()
 
     local colors = self.config.colors
     local activeLabels = {}
-    local rc = colors.roomColor
     
     -- Get doors for current room from state
     local currentRoomDoors = self.state.roomDoors[currentRoom] or {}
@@ -1178,15 +1166,8 @@ end
 function ArjMapper:parseDoorsFromGMCP(roomData)
     local doors = {}
     
-    if roomData and roomData.exits then
-        -- The exits might be in format { "North", "South#", "East" }
-        -- or { north = 123, south = 456 }
-        -- We need to check the raw GMCP data
-        
-        -- Check if we have the raw exit string from somewhere
-        -- For now, we'll store this per-room as we visit
-    end
-    
+    -- Door markers are not available from Room.Info exits yet
+    -- ({ "North", "South#" } or { north = 123 }); nothing is detected.
     return doors
 end
 
@@ -1272,6 +1253,60 @@ function ArjMapper:setupHandlers()
 end
 
 -- ============================================================
+-- WILDERNESS LEGEND (mapper legend)
+-- ============================================================
+-- The server's default glyphs (Duris src/world/map.c sector_symbol[]), with
+-- their colour codes, rendered through the same parser and profile palette as
+-- the map. Players who choose other glyphs with the game's `glyphs` command
+-- will see those on the map instead.
+ArjMapper.LEGEND = {
+    { "Terrain", {
+        { "&=wl^", "town" }, { "&+L+", "road" }, { "&+g.", "field" }, { "&+g*", "forest" },
+        { "&=lg*", "snowy forest" }, { "&+y^", "hills" }, { "&+yM", "mountains" }, { "&=yY.", "desert" },
+        { "&+W.", "tundra" }, { "&=mL*", "swamp" }, { "&=cwr", "shallows" }, { "&=bB ", "deep water" },
+        { "&=rR ", "lava, fire" } } },
+    { "Underdark", {
+        { "&=mL.", "wilds" }, { "&=wl*", "city" }, { "&+m.", "inside" }, { "&+LM", "mountains" },
+        { "&=rL*", "slime" }, { "&+M,", "low ceiling" }, { "&+Mo", "mushrooms" } } },
+    { "Places", {
+        { "&=wL#", "castle wall" }, { "&=wB^", "castle gate" }, { "&+rO", "castle" }, { "&+C#", "building" },
+        { "&+MO", "portal" }, { "&+CG", "guildhall" }, { "&+Ym", "mine" }, { "&+ym", "gem mine" } } },
+    { "Beings", {
+        { "&+W@", "you" }, { "&=LGP", "group" }, { "&=LYP", "good player" }, { "&=LRP", "evil player" },
+        { "&=LWP", "player" }, { "&=LBM", "mob" }, { "&=LRD", "dragon" }, { "&=LWW", "witch" } } },
+    { "Ships", {
+        { "&+W^>v<", "your ship" }, { "&+YS", "good" }, { "&+RS", "evil" }, { "&+LS", "undead" },
+        { "&+MS", "neutral" }, { "&+WS", "other" }, { "&+WF", "ferry" }, { "&=bLo", "cargo" } } },
+    { "Marks", {
+        { "&+rC", "corpse" }, { "&+Y.", "tracks" }, { "&+R.", "blood" }, { "&+r.", "old blood" },
+        { "&+LD", "magic dark" }, { "&+WL", "magic light" }, { "&=LYF", "CTF flag" } } },
+    { "Resources", {
+        { "&+Wo", "stone" }, { "&+Gt", "timber" }, { "&+Yf", "flax" }, { "&+Cw", "spring" },
+        { "&+wo", "UD ore" }, { "&+mm", "UD fungus" }, { "&+mf", "UD silk" }, { "&+cw", "UD pool" } } },
+}
+
+-- decho lines for the legend, one category per line.
+function ArjMapper:legendLines()
+    local lines = {}
+    for _, group in ipairs(self.LEGEND) do
+        local cells = {}
+        for _, entry in ipairs(group[2]) do
+            cells[#cells + 1] = self:parseWildernessMap(entry[1]) .. " " .. entry[2]
+        end
+        lines[#lines + 1] = string.format("<200,170,110>%-10s<r>", group[1]) .. table.concat(cells, "  ")
+    end
+    return lines
+end
+
+function ArjMapper:showLegend()
+    local window = ArjUI and ArjUI.console
+    local function put(text) if window then window:decho(text) else decho(text) end end
+    put("\n<200,170,110>== Wilderness map legend (server defaults) ==<r>\n")
+    for _, line in ipairs(self:legendLines()) do put(line .. "\n") end
+    put("<128,128,128>Your own choices from the game's 'glyphs' command replace these on the map.<r>\n")
+end
+
+-- ============================================================
 -- UTILITY
 -- ============================================================
 
@@ -1348,6 +1383,9 @@ function ArjMapper:setupAliases()
         elseif cmd == "status" then
             ArjMapper:showStatus()
 
+        elseif cmd == "legend" then
+            ArjMapper:showLegend()
+
         elseif cmd == "reload" then
             ArjMapper.state.zoneData = {}
             ArjMapper.state.lastZoneId = nil
@@ -1366,7 +1404,7 @@ function ArjMapper:setupAliases()
 
         else
             ArjMapper:out("<cyan>[Mapper v1.0]<reset>\n")
-            ArjMapper:out("  on | off | status | reload | debug\n")
+            ArjMapper:out("  on | off | status | reload | debug | legend\n")
             ArjMapper:out("  size <8-20> - room size\n")
             ArjMapper:out("\n")
             ArjMapper:out("  <90,170,255>▲<reset>=Up  <90,210,130>▼<reset>=Down  <255,70,70>●<reset>=You\n")
@@ -1415,7 +1453,7 @@ function ArjMapper:kill()
     if self.alias then killAlias(self.alias); self.alias = nil end
     if self.reloadAlias then killAlias(self.reloadAlias); self.reloadAlias = nil end
     self:clearZoneDisplay()
-    for key, widget in pairs(self.ui) do
+    for _, widget in pairs(self.ui) do
         if type(widget) == "table" and widget.hide then
             if widget.delete then widget:delete() else widget:hide() end
         end

@@ -25,6 +25,7 @@ ArjUI.tellContacts = {}  -- List of players we've had tells with
 -- ============================================================
 
 function ArjUI:kill()
+  self:stopSounds()
   if self.panelGesture then self:finishPanelGesture(self.panelGesture) end
   if self.panels then self:saveLayout() end
   for _,panel in pairs(self.panels or {}) do self:disposeWidget(panel.frame) end
@@ -517,6 +518,10 @@ function ArjUI:reconcilePanelViews()
   for name,widget in pairs(self.chatPanels or {}) do
     if name==self.activeChatTab then widget:show() else widget:hide() end
   end
+  if self.chatUnread and self:panelIsVisible("chat") then
+    self.chatUnread[self.activeChatTab]=nil
+    self:updateChatTabStyles()
+  end
   -- Parent show() recursively exposes inactive views. Hide them again without
   -- switching tabs (which can send a server command or clear scrollback).
   if self.mapper then self.mapper:hide() end
@@ -694,7 +699,7 @@ function ArjUI:showPanelsMenu()
       self:panelAction(def.id,"show"); self:showPanelMenu(def.id)
     end})
   end
-  for name,chat in pairs(self.privateChats) do
+  for name in pairs(self.privateChats) do
     table.insert(items,{text="Tell: "..name,callback=function() self:openPrivateChat(name); self:showPanelMenu("tell:"..name) end})
   end
   self:showContextMenu(items)
@@ -903,6 +908,8 @@ end
 -- ============================================================
 
 function ArjUI:resetCharacterState()
+  self.soundArmed = nil
+  self.chatGagQueue = nil
   self.state = {
     hp = 1, hpmax = 1, mana = 1, manamax = 1, move = 1, movemax = 1,
     tnl = 0, tnlBaseline = nil, position = "standing",
@@ -940,6 +947,7 @@ function ArjUI:endSession()
   end
   if self.scanTimer then killTimer(self.scanTimer); self.scanTimer = nil end
   self.scanCounts = {}
+  self:clearCast()
   self:resetCharacterState()
   self.damage = {fight=0, fightHits=0, session=0, sessionHits=0, sessionStart=os.time(), lastHit=0,incomplete=self.combatStopped==true}
   if ArjAuto and ArjAuto.resetSession then ArjAuto:resetSession() end
@@ -1263,7 +1271,7 @@ function ArjUI:onOwnerItems()
         or (condition~=nil and condition~=yajl.null and type(condition)~="string")
         or (type(condition)=="string" and (#condition>128 or condition:find("[%z\1-\31\127]")))
         or (item.selector~=nil and item.selector~=yajl.null and not itemSelector(item.selector))
-        or (item.slotName~=nil and (type(item.slotName)~="string" or #item.slotName>128 or item.slotName:find("[%z\1-\31\127]"))) then
+        or (item.slotName~=nil and (type(item.slotName)~="string" or #item.slotName>128 or item.slotName:find("[%z\1-\31\127]"))) then -- luacheck: ignore 542
       -- Skip only the invalid row so a resync of the same list stays usable.
     else items[#items+1]={description=item.description,quantity=1,condition=type(condition)=="string" and condition or "",
       selector=itemSelector(item.selector) and item.selector or nil,
@@ -1479,6 +1487,13 @@ function ArjUI:setSpellPreparation(mode, seconds)
 end
 
 function ArjUI:renderSpellPreparation()
+  -- An in-flight or just-finished cast takes the slot; preparation returns after.
+  local castLabel, castHint = self:castDisplay()
+  if castLabel then
+    self.prepLabel:echo(castLabel)
+    self.prepLabel:setToolTip(castHint)
+    return
+  end
   local mode = self.state.prepMode
   local label, hint = "PREP —", "No spell preparation estimate from the server."
   if mode=="complete" then
@@ -1805,9 +1820,12 @@ function ArjUI:init()
   self.chatTabs = {}
   self.chatPanels = {}
   self.activeChatTab = "all"
+  self.chatUnread = {}
   
   local chatTabNames = { "all", "tells", "nchat", "room", "guild", "group" }
   local chatTabLabels = { "ALL", "TELLS", "NCHAT", "ROOM", "GUILD", "GROUP" }
+  self.chatTabLabels = {}
+  for i, tabName in ipairs(chatTabNames) do self.chatTabLabels[tabName] = chatTabLabels[i] end
   local chatTabW = 16  -- percentage width per tab
   
   for i, tabName in ipairs(chatTabNames) do
@@ -2006,11 +2024,11 @@ function ArjUI:init()
   self:setupPanelControls()
   self:loadLayout()
 
-  local h
-  h = registerAnonymousEventHandler("sysWindowResizeEvent", function() self:layout() end)
-  table.insert(self.eventHandlers, h)
+  local hid
+  hid = registerAnonymousEventHandler("sysWindowResizeEvent", function() self:layout() end)
+  table.insert(self.eventHandlers, hid)
   -- Trimming the main window's oldest lines renumbers those still to mirror.
-  h = registerAnonymousEventHandler("sysBufferShrinkEvent", function(_, name, removed)
+  hid = registerAnonymousEventHandler("sysBufferShrinkEvent", function(_, name, removed)
     removed = tonumber(removed) or 0
     if self.console and name == self.console.name then self:outputTrimmed(removed); return end
     if name ~= "main" or not self.mainRow then return end
@@ -2021,19 +2039,19 @@ function ArjUI:init()
       if self.mainPending.row < 0 then self.mainPending = nil end
     end
   end)
-  table.insert(self.eventHandlers, h)
+  table.insert(self.eventHandlers, hid)
 
-  h = registerAnonymousEventHandler("sysConnectionEvent", function()
+  hid = registerAnonymousEventHandler("sysConnectionEvent", function()
     self:applyBackground()
     self:after(0.2, function() if self and self.applyBackground then self:applyBackground() end end)
   end)
-  table.insert(self.eventHandlers, h)
+  table.insert(self.eventHandlers, hid)
 
-  h = registerAnonymousEventHandler("sysAppStyleSheetChange", function()
+  hid = registerAnonymousEventHandler("sysAppStyleSheetChange", function()
     self:applyBackground()
     self:after(0.2, function() if self and self.applyBackground then self:applyBackground() end end)
   end)
-  table.insert(self.eventHandlers, h)
+  table.insert(self.eventHandlers, hid)
 
   self:layout()
 
@@ -2647,6 +2665,7 @@ function ArjUI:addTellContact(playerName)
 end
 
 function ArjUI:handleIncomingTell(sender, text, snapshots)
+  self:playSound("tell")
   local name = sender:lower()
   local displayName = sender:sub(1,1):upper() .. sender:sub(2):lower()
   
@@ -2659,6 +2678,7 @@ end
 
 function ArjUI:renderTellContacts()
   if not self.tellsBox then return end
+  self:updateChatTabStyles()
   
   self.tellsBox:clear()
   
@@ -2691,11 +2711,132 @@ function ArjUI:renderTellContacts()
 end
 
 -- ============================================================
+-- DIAGNOSTICS (ui debug)
+-- ============================================================
+
+-- GMCP packages the client uses, in report order. Arrival times are recorded
+-- by one lightweight handler per package (registerDebugHandlers).
+ArjUI.DEBUG_GMCP = {
+  "Char.Status", "Char.Vitals", "Char.Affects", "Char.SpellPreparation", "Char.Items.List",
+  "Room.Info", "Room.Map", "Group.Status", "Comm.Channel", "Combat.Update",
+  "Quest.Status", "Ship.Info", "Ship.Contacts",
+  "Duris.Capabilities", "Duris.Session", "Duris.Time", "Duris.Combat",
+}
+
+function ArjUI:registerDebugHandlers()
+  self.gmcpSeen = self.gmcpSeen or {}
+  for _, pkg in ipairs(self.DEBUG_GMCP) do
+    local name = pkg
+    table.insert(self.eventHandlers, registerAnonymousEventHandler("gmcp." .. name, function()
+      if ArjUI and ArjUI.gmcpSeen then ArjUI.gmcpSeen[name] = getEpoch() end
+    end))
+  end
+end
+
+local function countOf(t)
+  local n = 0
+  if type(t) == "table" then for _ in pairs(t) do n = n + 1 end end
+  return n
+end
+
+local function gmcpValue(path)
+  local node = gmcp
+  for part in path:gmatch("[^.]+") do
+    if type(node) ~= "table" then return nil end
+    node = node[part]
+  end
+  return node
+end
+
+-- Plain-text lines describing the client, for bug reports. Every probe is
+-- guarded so a missing API on an older Mudlet degrades to "unknown".
+function ArjUI:debugReportLines()
+  local lines = {}
+  local function add(fmt, ...) lines[#lines + 1] = string.format(fmt, ...) end
+  local function try(fn, ...)
+    local ok, a, b, c = pcall(fn, ...)
+    if ok then return a, b, c end
+  end
+
+  add("Package: Arjinius Client %s", tostring(self.VERSION))
+  local mudlet = try(getMudletVersion, "string")
+  local os_name, os_version = try(getOS)
+  add("Mudlet: %s on %s %s", tostring(mudlet or "unknown"), tostring(os_name or "unknown"), tostring(os_version or ""))
+  add("Profile: %s", tostring(try(getProfileName) or "unknown"))
+  local mw, mh = try(getMainWindowSize)
+  add("Window: %sx%s; UI %s%s", tostring(mw or "?"), tostring(mh or "?"),
+    self.hidden and "hidden (ui off)" or "shown",
+    self.maximizedPanel and ("; maximized " .. self.maximizedPanel) or "")
+  local host, port, connected = try(getConnectionInfo)
+  add("Connection: %s:%s %s", tostring(host or "?"), tostring(port or "?"),
+    connected and "connected" or "not connected")
+  local gmcpOn = try(getConfig, "enableGMCP")
+  add("GMCP setting: %s", gmcpOn == nil and "unknown" or (gmcpOn and "on" or "OFF"))
+
+  local session = self.session
+  add("Session: %s", session and tostring(session.state) or "none (older server or not in game)")
+  local active = {}
+  for name in pairs(self.protocolActive or {}) do active[#active + 1] = name end
+  table.sort(active)
+  add("Server capabilities: %s", #active > 0 and table.concat(active, ", ") or "none reported")
+  add("Initial data requested: %s", tostring(self.initialDataRequested))
+  add("Room: %s", self:roomDetails() ~= "" and self:roomDetails() or "none")
+
+  add("GMCP received (age in seconds):")
+  local now = try(getEpoch) or 0
+  for _, pkg in ipairs(self.DEBUG_GMCP) do
+    local seen = self.gmcpSeen and self.gmcpSeen[pkg]
+    local value = gmcpValue(pkg)
+    local detail
+    if seen then detail = string.format("%.0fs ago", math.max(0, now - seen))
+    elseif value ~= nil then detail = "present (before this load)"
+    else detail = "never" end
+    if pkg == "Char.Affects" and type(value) == "table" then detail = detail .. ", " .. countOf(value) .. " entries" end
+    add("  %-22s %s", pkg, detail)
+  end
+
+  local timers = countOf(self.timers) + (self.mirrorTimer and 1 or 0) + (self.scanTimer and 1 or 0)
+  add("ArjUI resources: %d handlers, %d timers, %d triggers, %d aliases, %d keys",
+    countOf(self.eventHandlers), timers, countOf(self.runtimeTriggers) + countOf(self.portTriggers)
+      + countOf(self.captureTriggerIds) + countOf(self.captureTriggers) + (self.routeAllTriggerId and 1 or 0),
+    countOf(self.portAliases) + (self.uiOnAlias and 1 or 0) + (self.uiOffAlias and 1 or 0) + (self.debugAlias and 1 or 0),
+    countOf(self.portKeys) + countOf(self.searchKeys))
+  if ArjMapper then
+    add("ArjMapper: %s, %d handlers", ArjMapper.state and (ArjMapper.state.enabled and "on" or "off") or "not started",
+      countOf(ArjMapper.handlers))
+  end
+  if ArjAuto then
+    add("ArjAuto: %d triggers, %d aliases, %d keys, %d timers", countOf(ArjAuto.triggers), countOf(ArjAuto.aliases),
+      countOf(ArjAuto.keys), countOf(ArjAuto.timers))
+  end
+  if self.sound then
+    local on = {}
+    for _, c in ipairs(self.SOUND_CHANNELS) do if self.sound.channels[c.key] then on[#on + 1] = c.key end end
+    add("Sound: %s, volume %d, channels %s", self.sound.enabled and "on" or "off", self.sound.volume,
+      #on > 0 and table.concat(on, " ") or "none")
+  end
+  local art = self.artwork or {}
+  add("Artwork: frame %s, backdrop %s", art.frame and "found" or "MISSING", art.scene and "found" or "MISSING")
+  return lines
+end
+
+function ArjUI:showDebugReport()
+  if not self.console then return end
+  self.console:cecho("\n<gold>══ Arjinius Client diagnostics ══<reset>\n")
+  for _, line in ipairs(self:debugReportLines()) do
+    self.console:echo(line .. "\n")
+  end
+  self.console:cecho("<dim_gray>Copy these lines into a bug report (select, right-click, Copy).<reset>\n")
+  self.console:cecho("<gold>══════════════════════════════<reset>\n\n")
+end
+
+-- ============================================================
 -- GMCP HANDLERS
 -- ============================================================
 
 function ArjUI:registerGMCPHandlers()
   local h
+  self:registerDebugHandlers()
   for event,method in pairs({["Duris.Time"]="onDurisTime",["Duris.Session"]="onDurisSession",
       ["Duris.Combat"]="onDurisCombat",["Char.Items.List"]="onOwnerItems"}) do
     local callback=method
@@ -2740,6 +2881,7 @@ function ArjUI:registerGMCPHandlers()
     -- Mudlet echoes the command to the main window just before this event.
     self:mirrorMain()
     self:watchSpellCommand(command)
+    self:watchCastCommand(command)
     if self.timeQueryTimer and tostring(command):lower():match("^%s*time%s*$") then
       killTimer(self.timeQueryTimer)
       self.timers[self.timeQueryTimer] = nil
@@ -3065,6 +3207,8 @@ function ArjUI:onCharVitals()
   coins.gold = toNum(v.gold) or coins.gold
   coins.silver = toNum(v.silver) or coins.silver
   coins.copper = toNum(v.copper) or coins.copper
+  self:checkVitalSound("lowhp", self.state.hp, self.state.hpmax)
+  self:checkVitalSound("lowmove", self.state.move, self.state.movemax)
   self:renderVitals()
   self:renderTNLBar()
   self:renderTank()
@@ -3078,6 +3222,9 @@ function ArjUI:onRoomInfo()
   self.state.room = r.name or self.state.room
   self.state.coloredRoom = r.colored_name or r.name or self.state.room
   self.state.area = tostring(r.area or r.zone or self.state.area)
+  self.state.roomNum, self.state.roomZone, self.state.roomTerrain = tonumber(r.num), tonumber(r.zone), tonumber(r.terrain)
+  local c = type(r.coords) == "table" and r.coords or {}
+  self.state.roomCoords = (tonumber(c.x) and tonumber(c.y)) and {tonumber(c.x), tonumber(c.y), tonumber(c.z) or 0} or nil
   self.state.coloredArea = r.colored_area or r.area or self.state.area
   self.state.roomId = r.num or self.state.roomId
   self.state.zoneId = r.zone or self.state.zoneId
@@ -3273,12 +3420,19 @@ function ArjUI:onCommChannel()
   end
   local prefix=string.format("%s%s[%s] %s<reset>: ",stamp,color,channel,senderColored)
   local snapshots=self:chatSnapshots(c)
+  if self.settings and self.settings.chatGag then self:gagChatLine(channel, sender, text, snapshots.full) end
   
   -- Always send to ALL tab
   self:displayChannelMessage(self.chatBox,snapshots,prefix,text)
+  self:noteChatUnread("all")
   
   -- Route to specific tab based on channel
   local channelLower = channel:lower()
+  local routed = ({nchat="nchat",newbie="nchat",jchat="nchat",say="room",yell="room",shout="room",
+    gcc="guild",guild="guild",clan="guild",group="group",gtell="group",party="group",gsay="group"})[channelLower] or "all"
+  local own = sender == "You" or sender:match("^You ") or (self.playerName and sender:lower() == self.playerName:lower())
+  local reading = self:panelIsVisible("chat") and (self.activeChatTab == "all" or self.activeChatTab == routed)
+  if channelLower ~= "tell" and channelLower ~= "tells" and not own and not reading then self:playSound("chat") end
   if channelLower == "tell" or channelLower == "tells" then
     -- Route to private messaging system only (don't echo to TELLS tab)
     if isOutgoing then
@@ -3289,12 +3443,16 @@ function ArjUI:onCommChannel()
     return  -- Don't continue to other tabs
   elseif channelLower == "nchat" or channelLower == "newbie" or channelLower == "jchat" then
     self:displayChannelMessage(self.nchatBox,snapshots,prefix,text)
+    self:noteChatUnread("nchat")
   elseif channelLower == "say" or channelLower == "yell" or channelLower == "shout" then
     self:displayChannelMessage(self.roomBox,snapshots,prefix,text)
+    self:noteChatUnread("room")
   elseif channelLower == "gcc" or channelLower == "guild" or channelLower == "clan" then
     self:displayChannelMessage(self.guildBox,snapshots,prefix,text)
+    self:noteChatUnread("guild")
   elseif channelLower == "group" or channelLower == "gtell" or channelLower == "party" or channelLower == "gsay" then
     self:displayChannelMessage(self.groupChatBox,snapshots,prefix,text)
+    self:noteChatUnread("group")
   end
 end
 
@@ -3374,6 +3532,28 @@ function ArjUI:renderVitals()
   end
 end
 
+-- Duris sector_types[] (src/core/common.c), indexed by Room.Info terrain.
+ArjUI.SECTOR_NAMES = { [0] = "Inside", "City", "Field", "Forest", "Hills", "Mountains", "Water-Swim",
+  "Water-NoSwim", "No-Ground", "Underwater", "Underwater-Ground", "Plane-of-Fire", "Ocean", "UD-Wild",
+  "UD-City", "UD-Inside", "UD-Water-Swim", "UD-Water-NoSwim", "UD-No-Ground", "Plane-of-Air",
+  "Plane-of-Water", "Plane-of-Earth", "Plane-of-Ethereal", "Plane-of-Astral", "Desert", "Tundra/Ice",
+  "Swamp", "UD-Mountains", "UD-Slime", "UD-Low Ceilings", "UD-Liquid Mithril", "UD-Mushroom Forest",
+  "Outer Castle Wall", "Castle Gate", "Castle", "Negative Plane", "Plane of Avernus", "Patrolled Road",
+  "Snowy Forest", "Lava" }
+
+-- "Room 12345 · zone 9001 · Forest · (3, -2, 0)": the parts the server sent.
+-- Wilderness rooms hide their vnum and coordinates, so only terrain remains.
+function ArjUI:roomDetails()
+  local s, parts = self.state, {}
+  if s.roomNum and s.roomNum > 0 then parts[#parts + 1] = "Room " .. s.roomNum end
+  if s.roomZone and s.roomZone > 0 then parts[#parts + 1] = "zone " .. s.roomZone end
+  local terrain = s.roomTerrain and self.SECTOR_NAMES[s.roomTerrain]
+  if terrain then parts[#parts + 1] = terrain
+  elseif s.roomTerrain then parts[#parts + 1] = "terrain " .. s.roomTerrain end
+  if s.roomCoords then parts[#parts + 1] = string.format("(%d, %d, %d)", s.roomCoords[1], s.roomCoords[2], s.roomCoords[3]) end
+  return table.concat(parts, " · ")
+end
+
 function ArjUI:renderRoom()
   -- Use colored area/room names if available
   local coloredArea = self.state.coloredArea or self.state.area or "Unknown Area"
@@ -3381,7 +3561,8 @@ function ArjUI:renderRoom()
   self.areaLabel:decho(durisToDecho(coloredArea))
   self.roomLabel:decho(durisToDecho(coloredRoom))
   self.areaLabel:setToolTip(stripColors(tostring(coloredArea)))
-  self.roomLabel:setToolTip(stripColors(tostring(coloredRoom)))
+  local details = self:roomDetails()
+  self.roomLabel:setToolTip(stripColors(tostring(coloredRoom)) .. (details ~= "" and ("\n" .. details) or ""))
   self:renderExits()
 end
 
@@ -3830,10 +4011,21 @@ function ArjUI:paintGroupRow(row, mem, isWeakest)
 
   row.memberName = name
   local nameStyle = not inRoom and groupStyles.nameAway or (isWeakest and groupStyles.nameWeakest or groupStyles.name)
-  paintGroupLabel(row.nameLabel, nameStyle, displayName:sub(1, mem.isNpc and 13 or 14) .. (mem.isNpc and "*" or ""))
-  if row.nameLabel.groupTip ~= displayName then
-    row.nameLabel.groupTip = displayName
-    row.nameLabel:setToolTip(displayName)
+  -- Group.Status rank: "head" is the leader; others stand in the front or back rank.
+  local isLeader = mem.rank == "head"
+  local width = (mem.isNpc and 13 or 14) - (isLeader and 2 or 0)
+  paintGroupLabel(row.nameLabel, nameStyle,
+    (isLeader and "♔ " or "") .. displayName:sub(1, width) .. (mem.isNpc and "*" or ""))
+  local facts = {}
+  if isLeader then facts[#facts + 1] = "Leader"
+  elseif mem.rank == "front" or mem.rank == "back" then facts[#facts + 1] = mem.rank:sub(1,1):upper() .. mem.rank:sub(2) .. " rank" end
+  local level = toNum(mem.level)
+  if level and level > 0 then facts[#facts + 1] = "level " .. level end
+  if type(mem.class) == "string" and mem.class ~= "" then facts[#facts + 1] = stripColors(mem.class) end
+  local tip = #facts > 0 and (displayName .. "\n" .. table.concat(facts, " · ")) or displayName
+  if row.nameLabel.groupTip ~= tip then
+    row.nameLabel.groupTip = tip
+    row.nameLabel:setToolTip(tip)
   end
 
   -- Moves (middle) - coloured by how spent they are
@@ -3958,17 +4150,53 @@ function ArjUI:switchChatTab(tabName)
   if self.chatPanels[tabName] then
     self.chatPanels[tabName]:show()
   end
+  if self.chatUnread and self:panelIsVisible("chat") then self.chatUnread[tabName] = nil end
   
   self:updateChatTabStyles()
 end
 
+-- Count channel lines that arrive in a tab other than the one being read.
+-- TELLS counts come from the private conversations instead (see chatTabUnread).
+function ArjUI:noteChatUnread(tabName)
+  if not self.chatUnread or (tabName == self.activeChatTab and self:panelIsVisible("chat")) then return end
+  self.chatUnread[tabName] = (self.chatUnread[tabName] or 0) + 1
+  self:updateChatTabStyles()
+end
+
+function ArjUI:chatTabUnread(tabName)
+  if tabName == "tells" then
+    local total = 0
+    for _, chat in pairs(self.privateChats or {}) do total = total + (chat.unread or 0) end
+    return total
+  end
+  return self.chatUnread and self.chatUnread[tabName] or 0
+end
+
 function ArjUI:updateChatTabStyles()
+  if not self.chatTabs then return end
   local activeStyle = "background-color: #16140f; border: 1px solid #5a4b37; border-top: 1px solid #8c6e46; border-bottom: none; color: #e6e6e6; font-size: 7px; font-weight: bold;"
   local inactiveStyle = "background-color: #0a0908; border: 1px solid #3c3832; color: #706050; font-size: 7px;"
+  local unreadStyle = "background-color: #0a0908; border: 1px solid #8c6e46; color: #d4af37; font-size: 7px; font-weight: bold;"
   
   for name, btn in pairs(self.chatTabs) do
+    local unread = self:chatTabUnread(name)
+    local label = self.chatTabLabels and self.chatTabLabels[name] or name:upper()
+    -- A gold bullet fits the narrow tabs at every geometry; the count is in the tooltip.
+    -- Geyser keeps the last echo colour, so always pass one.
+    if unread > 0 then label = "•" .. label end
+    if btn.arjLabel ~= label then
+      btn:echo("<center>" .. label .. "</center>", unread > 0 and "#d4af37" or "white")
+      btn.arjLabel = label
+    end
+    local tip = unread > 0 and string.format("%d new message%s", unread, unread == 1 and "" or "s") or nil
+    if btn.arjTip ~= tip then
+      if tip then btn:setToolTip(tip) else btn:resetToolTip() end
+      btn.arjTip = tip
+    end
     if name == self.activeChatTab then
       btn:setStyleSheet(activeStyle)
+    elseif unread > 0 then
+      btn:setStyleSheet(unreadStyle)
     else
       btn:setStyleSheet(inactiveStyle)
     end
@@ -4183,7 +4411,7 @@ function ArjUI:selectSpellView(name)
   s.spellView = name
   if name=="spells" then
     self:requestSpellOutput("spells")
-  elseif s.spellCommand=="will" then
+  elseif s.spellCommand=="will" then -- luacheck: ignore 542
     -- Mana casters have nothing to prepare.
   elseif s.spellCommand then
     self:requestSpellOutput(s.spellCommand)
@@ -4601,6 +4829,7 @@ ArjUI.settingsDefaults = {
   scanFormat = true,      -- rewrite 'scan' output into aligned columns
   alerts = true,          -- console banners for notable events
   expTracker = true,      -- '+exp' notices with kills-to-level estimate
+  chatGag = false,        -- drop chat lines from GAME OUTPUT (they stay in the chat tabs and Mudlet's log)
 }
 
 function ArjUI:loadSettings()
@@ -4608,6 +4837,7 @@ function ArjUI:loadSettings()
   self.shipMode, self.f3Paused = "bridge", false
   for k, v in pairs(self.settingsDefaults) do self.settings[k] = v end
   local data=self:readProfileJSON(getMudletHomeDir().."/arjui_settings.json")
+  self.sound = self:normalizeSound(data and data.sound)
   if data then
     self.shipMode = data.shipMode=="details" and "details" or "bridge"
     self.f3Paused = data.f3Paused == true
@@ -4622,6 +4852,7 @@ function ArjUI:saveSettings()
   local data = {}; for key,value in pairs(self.settings or self.settingsDefaults) do data[key]=value end
   data.shipMode=self.shipMode or "bridge"
   if self.f3Paused then data.f3Paused = true end
+  if self.sound then data.sound = self:normalizeSound(self.sound) end
   return self:writeProfileJSON(path,data,"UI settings")
 end
 
@@ -4642,6 +4873,7 @@ function ArjUI:setSetting(key, on)
   end
   if key == "keypad" then self:setupKeypad() end
   if key == "timestamps" then self:applyTimestamps() end
+  if key == "chatGag" then self.chatGagQueue=nil end
   if key=="damageTracker" then self.combatStopped=nil; self:changeProtocolInterest() end
   if key == "compactHeader" then
     self:applyBackground()
@@ -4696,6 +4928,7 @@ function ArjUI:setupPorted()
   self:setupDamageTracker()
   self:setupScanFormatter()
   self:setupAlerts()
+  self:setupCastTracker()
   self:setupShipText()
   self:setupKeypad()
 end
@@ -4911,7 +5144,113 @@ function ArjUI:setupAlerts()
       if not (ArjUI.settings and ArjUI.settings.alerts) then return end
       local text = label:gsub("%%(%d)", function(i) return matches[tonumber(i) + 1] or "" end)
       ArjUI:note(string.format("\n%s ══ %s ══", style, text))
+      ArjUI:playSound("alert")
     end)
+  end
+end
+
+-- ------------------------------------------------------------
+-- SPELL CASTING PROGRESS
+-- Duris prints the cast lifecycle as text (src/net/sparser.c): a start line,
+-- "Casting: <spell> ***" progress lines (one * per remaining step, printed
+-- only when a skill roll passes, or always for psionicists, mindflayers,
+-- druids and blighters), then a completion or abort line. VITALS shows it in
+-- the PREP slot while a cast is in flight and returns to preparation after.
+ArjUI.CAST_IDLE_SECONDS = 12   -- clear a cast that never resolves (target lost, lag, ...)
+ArjUI.CAST_RESULT_SECONDS = 3  -- keep "done"/"aborted" visible briefly
+
+ArjUI.CAST_LINES = {
+  start = {
+    "^You start chanting\\.\\.\\.$",
+    "^You call forth your prepared spell\\.\\.\\.$",
+    "^With the absence of sound, you begin using your hands to channel the weave\\.\\.\\.$",
+  },
+  progress = "^Casting: (.+?) ?(\\**)$",
+  complete = {
+    "^You complete your spell\\.\\.\\.$",
+    "^Your mental manipulations become a reality\\.\\.\\.$",
+  },
+  abort = {
+    "^You abort your spell before it's done!$",
+    "^You abort your mental image before it has become reality!$",
+    "^You abort your prayer before it's done!$",
+  },
+}
+
+-- cast 'fireball' target / c 'fireball' / will 'mind blast' -> spell name
+function ArjUI:watchCastCommand(command)
+  local verb, spell = tostring(command or ""):lower():match("^%s*(%a+)%s+'([^']+)'")
+  if spell and (verb == "will" or ("cast"):sub(1, #verb) == verb) then
+    self.pendingCastSpell = spell
+  end
+end
+
+function ArjUI:castEvent(kind, spell, stars)
+  local now = getEpoch()
+  local cast = self.state.cast
+  if kind == "start" then
+    cast = { spell = self.pendingCastSpell, phase = "casting", at = now }
+  elseif kind == "progress" then
+    cast = cast and cast.phase == "casting" and cast or { phase = "casting" }
+    cast.spell, cast.stars, cast.at = spell, #(stars or ""), now
+  elseif kind == "complete" or kind == "abort" then
+    cast = { spell = cast and cast.spell or self.pendingCastSpell, phase = kind == "complete" and "done" or "aborted", at = now }
+  end
+  if kind ~= "progress" then self.pendingCastSpell = nil end
+  self.state.cast = cast
+  self:scheduleCastExpiry()
+  self:renderSpellPreparation()
+end
+
+function ArjUI:scheduleCastExpiry()
+  if self.castTimer then
+    killTimer(self.castTimer); self.timers[self.castTimer] = nil; self.castTimer = nil
+  end
+  local cast = self.state.cast
+  if not cast then return end
+  local wait = cast.phase == "casting" and self.CAST_IDLE_SECONDS or self.CAST_RESULT_SECONDS
+  self.castTimer = self:after(wait, function()
+    self.castTimer = nil
+    self.state.cast = nil
+    self:renderSpellPreparation()
+  end)
+end
+
+function ArjUI:clearCast()
+  if self.castTimer then
+    killTimer(self.castTimer); self.timers[self.castTimer] = nil; self.castTimer = nil
+  end
+  self.state.cast, self.pendingCastSpell = nil, nil
+end
+
+-- Label text and tooltip while a cast is shown, or nil to show preparation.
+function ArjUI:castDisplay()
+  local cast = self.state.cast
+  if not cast then return nil end
+  local spell = cast.spell and stripColors(cast.spell) or nil
+  local short = spell and (#spell > 11 and spell:sub(1, 10) .. "…" or spell) or nil
+  if cast.phase == "done" then
+    return (short or "CAST") .. " OK", (spell and ("Cast " .. spell) or "Spell") .. " complete."
+  elseif cast.phase == "aborted" then
+    return "ABORTED", (spell and ("Cast of " .. spell) or "Spell") .. " aborted."
+  end
+  local label = (short or "CASTING") .. (cast.stars and cast.stars > 0 and (" " .. string.rep("*", math.min(cast.stars, 6))) or "")
+  local hint = "Casting " .. (spell or "a spell")
+  if cast.stars then hint = hint .. string.format(" — %d step%s left", cast.stars, cast.stars == 1 and "" or "s") end
+  return label, hint .. "."
+end
+
+function ArjUI:setupCastTracker()
+  local L = self.CAST_LINES
+  for _, pattern in ipairs(L.start) do
+    addTrigger(self, pattern, function() if ArjUI then ArjUI:castEvent("start") end end)
+  end
+  addTrigger(self, L.progress, function() if ArjUI then ArjUI:castEvent("progress", matches[2], matches[3]) end end)
+  for _, pattern in ipairs(L.complete) do
+    addTrigger(self, pattern, function() if ArjUI then ArjUI:castEvent("complete") end end)
+  end
+  for _, pattern in ipairs(L.abort) do
+    addTrigger(self, pattern, function() if ArjUI then ArjUI:castEvent("abort") end end)
   end
 end
 
@@ -5306,11 +5645,11 @@ function ArjUI:renderShipBridge()
     local overlapping=actual and ordered and
       math.abs(math.sin(math.rad(actual))-math.sin(math.rad(ordered)))*45<18 and
       math.abs(math.cos(math.rad(actual))-math.cos(math.rad(ordered)))*45<18
-    for _,marker in ipairs({{"actual",v.heading,overlapping and "●◇" or "●"},{"ordered",b.setHeading,"◇"}}) do
-      local heading=tonumber(marker[2])
-      if heading and not (overlapping and marker[1]=="ordered") then local angle=math.rad(heading%360)
+    for _,mark in ipairs({{"actual",v.heading,overlapping and "●◇" or "●"},{"ordered",b.setHeading,"◇"}}) do
+      local heading=tonumber(mark[2])
+      if heading and not (overlapping and mark[1]=="ordered") then local angle=math.rad(heading%360)
         local markerWidth=overlapping and 36 or 18
-        label("heading"..marker[1],cx+math.sin(angle)*45-markerWidth/2,cy-math.cos(angle)*45-9,markerWidth,18,marker[3],nil,"padding:0;border:none;background-color:transparent;color:#eed7a3;")
+        label("heading"..mark[1],cx+math.sin(angle)*45-markerWidth/2,cy-math.cos(angle)*45-9,markerWidth,18,mark[3],nil,"padding:0;border:none;background-color:transparent;color:#eed7a3;")
       end
     end
     y=compassY+134
@@ -5562,7 +5901,7 @@ function ArjUI:renderShip()
     box:cecho(string.format("\n<dim_gray>Contacts (%d)\n", #list))
     for _, c in ipairs(list) do
       local id = pick(c, "id", "num", "number")
-      local name = pick(c, "name", "ship") or "?"
+      local contactName = pick(c, "name", "ship") or "?"
       local color = shipSideColor(c)
       local bits = {}
       local b, h, r, sp = pick(c, "bearing", "b"), pick(c, "heading", "h"), pick(c, "range", "distance", "r"), pick(c, "speed", "s")
@@ -5588,7 +5927,7 @@ function ArjUI:renderShip()
         end
       end
       box:cecho(color)
-      box:echo(string.format("%s[%s] %s%s %s\n", c.you_targeting and "*" or "", text(id or "-"), text(name), c.sunk and " (sunk)" or "", text(table.concat(bits, " "))))
+      box:echo(string.format("%s[%s] %s%s %s\n", c.you_targeting and "*" or "", text(id or "-"), text(contactName), c.sunk and " (sunk)" or "", text(table.concat(bits, " "))))
     end
     shown = true
   elseif type(contacts) == "table" and shown then
@@ -5644,7 +5983,8 @@ end
 function ArjUI:showHelp()
   self:note("<gold>══ Arjinius Client commands ══")
   self:note("<white>ui on / ui off<dim_gray>        build or hide the interface")
-  self:note("<white>ui debug<dim_gray>              show which GMCP tables have arrived")
+  self:note("<white>ui debug<dim_gray>              diagnostic report to paste into bug reports")
+  self:note("<white>ui sound<dim_gray>              sound alerts (off by default): tells, chat, low HP/moves, banners")
   self:note("<white>ui damage<dim_gray>             session damage report; <white>ui damage reset<dim_gray> clears it")
   self:note("<white>ui layout<dim_gray>             panel controls and reset; right-click a panel title for actions")
   self:note("<white>ui set<dim_gray>                list toggles; <white>ui set <name> on|off<dim_gray> changes one")
@@ -5664,10 +6004,169 @@ function ArjUI:showSettings()
     timestamps = "time each GAME OUTPUT line arrived (main window's clock button)",
     damageTracker = "damage counter in the target panel", scanFormat = "aligned, coloured scan output",
     alerts = "banners for sanc/rage/disarm/scry/skill-up", expTracker = "+exp notices with kills-to-level",
+    chatGag = "hide chat lines in GAME OUTPUT; they stay in the CHAT tabs",
   }
   for _, k in ipairs(sortedKeys(self.settingsDefaults)) do
     local on = self.settings[k]
     self:note(string.format("%s%-16s<dim_gray> %s  %s", on and "<green>" or "<indian_red>", k, on and "on " or "off", desc[k] or ""))
+  end
+end
+
+-- ============================================================
+-- SOUND ALERTS (ui sound)
+-- ============================================================
+-- Off until the player runs `ui sound on`. Each channel has its own switch and
+-- cooldown; low HP / low moves fire once on crossing below the alert level and
+-- re-arm only after recovering past the reset level, so a fight hovering
+-- around the threshold does not repeat. Sounds play through Mudlet's media
+-- API under one tag, so `ui sound stop` and uninstall stop only ours.
+ArjUI.SOUND_TAG = "arjui"
+ArjUI.SOUND_CHANNELS = {
+  { key = "tell",    file = "duris-tell.wav",    on = true,  cooldown = 2,  desc = "incoming tell" },
+  { key = "chat",    file = "duris-tell.wav",    on = false, cooldown = 5,  desc = "channel message in a tab you are not reading" },
+  { key = "lowhp",   file = "duris-lowhp.wav",   on = true,  cooldown = 10, desc = "health fell below the alert level" },
+  { key = "lowmove", file = "duris-lowmove.wav", on = true,  cooldown = 30, desc = "movement fell below the alert level" },
+  { key = "alert",   file = "duris-alert.wav",   on = true,  cooldown = 5,  desc = "alert banners (scry, disarm, sanctuary down, ...)" },
+}
+ArjUI.SOUND_DEFAULTS = { enabled = false, volume = 70,
+  hp = { alert = 25, reset = 40 }, moves = { alert = 20, reset = 35 } }
+
+local function clampInt(v, lo, hi, fallback)
+  v = tonumber(v)
+  if not v or v ~= v then return fallback end
+  return math.max(lo, math.min(hi, math.floor(v + .5)))
+end
+
+-- Validate a saved/loaded sound table, falling back to defaults per field.
+function ArjUI:normalizeSound(data)
+  local d, out = self.SOUND_DEFAULTS, {}
+  data = type(data) == "table" and data or {}
+  out.enabled = data.enabled == true
+  out.volume = clampInt(data.volume, 0, 100, d.volume)
+  out.channels = {}
+  local saved = type(data.channels) == "table" and data.channels or {}
+  for _, c in ipairs(self.SOUND_CHANNELS) do
+    if saved[c.key] == nil then out.channels[c.key] = c.on else out.channels[c.key] = saved[c.key] == true end
+  end
+  for _, k in ipairs({ "hp", "moves" }) do
+    local t = type(data[k]) == "table" and data[k] or {}
+    local alert = clampInt(t.alert, 1, 99, d[k].alert)
+    local reset = clampInt(t.reset, 2, 100, d[k].reset)
+    if reset <= alert then alert, reset = d[k].alert, d[k].reset end
+    out[k] = { alert = alert, reset = reset }
+  end
+  return out
+end
+
+function ArjUI:soundPath(file)
+  local home = getMudletHomeDir()
+  for _, root in ipairs({ home, home .. "/profiles/" .. getProfileName() }) do
+    for _, package in ipairs({ "Arjinius Client", "Arjinius Client V1.0" }) do
+      local path = (root .. "/" .. package .. "/sounds/" .. file):gsub("\\", "/")
+      local f = io.open(path, "rb")
+      if f then f:close(); return path end
+    end
+  end
+end
+
+-- Play one channel's sound. force skips the master switch, channel switch
+-- and cooldown (for `ui sound test`). Returns true when playback was requested.
+function ArjUI:playSound(key, force)
+  local s = self.sound
+  local channel
+  for _, c in ipairs(self.SOUND_CHANNELS) do if c.key == key then channel = c end end
+  if not (s and channel) then return false end
+  if not force and not (s.enabled and s.channels[key]) then return false end
+  local now = getEpoch()
+  self.soundLast = self.soundLast or {}
+  if not force and self.soundLast[key] and now - self.soundLast[key] < channel.cooldown then return false end
+  local path = self:soundPath(channel.file)
+  self.soundFailures = self.soundFailures or {}
+  if not path or not playSoundFile then
+    if not self.soundFailures[key] then
+      self.soundFailures[key] = true
+      self:note("<indian_red>[sound] " .. (path and "this Mudlet cannot play sounds" or ("missing sound file " .. channel.file)))
+    end
+    return false
+  end
+  local ok = pcall(playSoundFile, { name = path, volume = s.volume, key = self.SOUND_TAG .. "-" .. key, tag = self.SOUND_TAG })
+  if not ok then
+    if not self.soundFailures[key] then
+      self.soundFailures[key] = true
+      self:note("<indian_red>[sound] Mudlet could not play " .. channel.file)
+    end
+    return false
+  end
+  self.soundLast[key] = now
+  self.soundPlayed = (self.soundPlayed or 0) + 1
+  return true
+end
+
+function ArjUI:stopSounds()
+  if stopSounds then pcall(stopSounds, { tag = self.SOUND_TAG }) end
+end
+
+-- Low-vitals latch: fire once below `alert`%, re-arm above `reset`%.
+function ArjUI:checkVitalSound(kind, value, max)
+  local s = self.sound
+  value, max = tonumber(value), tonumber(max)
+  if not (s and value and max and max > 0) then return end
+  local limits = s[kind == "lowhp" and "hp" or "moves"]
+  local pct = value / max * 100
+  self.soundArmed = self.soundArmed or { lowhp = true, lowmove = true }
+  if pct < limits.alert then
+    if self.soundArmed[kind] then
+      if self:playSound(kind) then self.soundArmed[kind] = false end
+    end
+  elseif pct >= limits.reset then
+    self.soundArmed[kind] = true
+  end
+end
+
+function ArjUI:soundStatus()
+  local s = self.sound
+  self:note(string.format("<gold>══ Sound alerts: %s, volume %d ══", s.enabled and "<green>on<gold>" or "<indian_red>off<gold>", s.volume))
+  for _, c in ipairs(self.SOUND_CHANNELS) do
+    local on = s.channels[c.key]
+    local extra = ""
+    if c.key == "lowhp" then extra = string.format(" (below %d%%, re-arms at %d%%)", s.hp.alert, s.hp.reset) end
+    if c.key == "lowmove" then extra = string.format(" (below %d%%, re-arms at %d%%)", s.moves.alert, s.moves.reset) end
+    self:note(string.format("%s%-8s<dim_gray> %s  %s%s", on and "<green>" or "<indian_red>", c.key, on and "on " or "off", c.desc, extra))
+  end
+  self:note("<dim_gray>ui sound on|off · ui sound <channel> on|off · ui sound test <channel> · ui sound stop")
+  self:note("<dim_gray>ui sound volume <0-100> · ui sound hp|moves <alert%> <reset%>")
+end
+
+function ArjUI:soundCommand(args)
+  local s = self.sound
+  args = (args or ""):lower()
+  local words = {}
+  for w in args:gmatch("%S+") do words[#words + 1] = w end
+  local a, b, c = words[1], words[2], words[3]
+  local function known(key)
+    for _, ch in ipairs(self.SOUND_CHANNELS) do if ch.key == key then return true end end
+  end
+  local prior = self:normalizeSound(s)
+  local changed = true
+  if not a then self:soundStatus(); return
+  elseif (a == "on" or a == "off") and not b then s.enabled = a == "on"
+  elseif known(a) and (b == "on" or b == "off") and not c then s.channels[a] = b == "on"
+  elseif a == "volume" and tonumber(b) and not c then s.volume = clampInt(b, 0, 100, s.volume)
+  elseif (a == "hp" or a == "moves") and tonumber(b) and tonumber(c) then
+    local alert, reset = clampInt(b, 1, 99, 0), clampInt(c, 2, 100, 0)
+    if reset <= alert then self:note("<indian_red>[sound] the reset level must be above the alert level"); return end
+    s[a] = { alert = alert, reset = reset }
+  elseif a == "test" and known(b) and not c then
+    changed = false
+    if self:playSound(b, true) then self:note("<dim_gray>[sound] playing " .. b) end
+  elseif a == "stop" and not b then changed = false; self:stopSounds()
+  else
+    self:note("<indian_red>[sound] unknown command. <dim_gray>Type <white>ui sound<dim_gray> for usage.")
+    return
+  end
+  if changed then
+    if not self:saveSettings() then self.sound = prior; return end
+    self:soundStatus()
   end
 end
 
@@ -5703,17 +6202,133 @@ function ArjUI:setupRouteAll()
       local row = getLineNumber()
       -- Commands echoed before this line belong above it.
       ArjUI:mirrorMain(row)
-      -- A capture trigger may already have gagged the line.
+      -- A capture trigger may already have gagged the line; chatGag drops a
+      -- line whose Comm.Channel copy already reached the chat tabs.
       if getCurrentLine() == line then
-        selectCurrentLine()
-        copy()
-        appendBuffer("ArjUI_Console")
+        if not ArjUI:consumeChatGag(line) then
+          selectCurrentLine()
+          copy()
+          appendBuffer("ArjUI_Console")
+        end
         -- The line stays in the covered main window, so Mudlet's own logging
         -- records it; mirrorMain() skips its rows once Mudlet has wrapped it.
         ArjUI.mainPending = {row = row, text = line}
       end
     end
   end)
+end
+
+-- CHAT GAG (ui set chatGag on)
+-- Duris sends a chat line as text and as Comm.Channel from separate paths, so
+-- either may arrive first. A GMCP copy first waits briefly for its text line
+-- (consumeChatGag skips mirroring it); a text line first is removed from the
+-- newest GAME OUTPUT rows. Each message hides at most one line, and the main
+-- window keeps every line, so Mudlet's log is unaffected.
+ArjUI.CHAT_GAG_SECONDS = 3
+
+local function chatLineMatches(text, entry)
+  if entry.full then return text == entry.full end
+  if entry.channel == "wizmsg" then
+    local suffix = " [ " .. entry.text .. " ]"
+    local prefix = entry.sender .. " : ("
+    if text:sub(-#suffix) ~= suffix then return false end
+    local header = text:sub(1, #text - #suffix)
+    return header:sub(1, #prefix) == prefix and header:sub(#prefix + 1):match("^%d+%)$") ~= nil
+  end
+  local suffix = "'" .. entry.text .. "'"
+  if text:sub(-#suffix) ~= suffix then return false end
+  local header = text:sub(1, #text - #suffix):lower()
+  for _, prefix in ipairs(entry.headers) do
+    if header:sub(1, #prefix) == prefix:lower() and not header:sub(#prefix + 1):find("['\n]") then return true end
+  end
+  return false
+end
+
+-- Legacy terminal headers from Duris actcomm.c, actnew.c and actwiz.c.
+-- Prefer the already validated full presentation when the server supplies it.
+local function chatHeaders(channel, sender, own)
+  local headers = ({say={sender .. " says "},tell={sender .. " tells you "},
+    gcc={sender .. " tells "},gsay={sender .. " group-says "},
+    nchat={sender .. " tells your racewar: ",sender .. " racewar-chats "},
+    jchat={sender .. " jchat: ",sender .. " jchat "},petition={sender .. " petitions "}})[channel] or {}
+  local recipient = sender:match("^You %-> (.+)$")
+  if channel == "tell" and recipient then headers = {"You tell " .. recipient .. " "}
+  elseif own then
+    local prefix = ({say="You say ",gcc="You tell ",gsay="You group-say ",
+      nchat="You tell your racewar ",jchat="You jchat ",petition="You petition "})[channel]
+    if prefix then headers[#headers + 1] = prefix end
+    if channel == "nchat" then headers[#headers + 1] = "You racewar chat to " end
+  end
+  return headers
+end
+
+local function recentChatRow(name, row, now)
+  local stamp = getTimestamp(name, row)
+  local h,m,s,f = tostring(stamp):match("^(%d+):(%d+):(%d+)%.?(%d*)")
+  if not h then return false end
+  local clock = os.date("*t", math.floor(now))
+  local seconds = clock.hour * 3600 + clock.min * 60 + clock.sec + now % 1
+  local age = (seconds - (tonumber(h) * 3600 + tonumber(m) * 60 + tonumber(s) + (tonumber("0." .. f) or 0))) % 86400
+  if age > 43200 then age=age-86400 end
+  -- Qt's row timestamp and getEpoch can straddle the same millisecond.
+  return age >= -.1 and age <= ArjUI.CHAT_GAG_SECONDS
+end
+
+function ArjUI:gagChatLine(channel, sender, text, full)
+  local entry = {channel=channel:lower(),sender=sender,text=text,full=full and full.text,at=getEpoch()}
+  if entry.text:match("^%s*$") then return end
+  entry.headers = chatHeaders(entry.channel,sender,sender == "You" or
+    (self.playerName and sender:lower() == self.playerName:lower()))
+  local name = self.console and self.console.name
+  if name then
+    local row = getLastLineNumber(name)
+    while row >= 0 do
+      local first = row
+      while first > 0 and tostring(getTimestamp(name,first)):sub(1,1) == "-" do first=first-1 end
+      if not recentChatRow(name,first,entry.at) then break end
+      local got = getLines(name,first,row+1) or {}
+      if chatLineMatches(table.concat(got,""),entry) then
+        for at=row,first,-1 do moveCursor(name,0,at); deleteLine(name) end
+        moveCursorEnd(name)
+        local removed = row-first+1
+        local search = self.outputSearch
+        if search and search.row then
+          if search.row >= first and search.row <= row then search.row = nil
+          elseif search.row > row then search.row = search.row - removed end
+        end
+        if search and search.mark then
+          if search.mark.row >= first and search.mark.row <= row then search.mark=nil
+          elseif search.mark.row > row then search.mark.row=search.mark.row-removed end
+        end
+        self.chatGagged = (self.chatGagged or 0) + 1
+        return
+      end
+      row=first-1
+    end
+  end
+  self.chatGagQueue = self.chatGagQueue or {}
+  for i=#self.chatGagQueue,1,-1 do
+    if entry.at-self.chatGagQueue[i].at > self.CHAT_GAG_SECONDS then table.remove(self.chatGagQueue,i) end
+  end
+  table.insert(self.chatGagQueue, entry)
+end
+
+function ArjUI:consumeChatGag(text)
+  if not (self.settings and self.settings.chatGag) then self.chatGagQueue=nil; return false end
+  local queue = self.chatGagQueue
+  if not queue or #queue == 0 then return false end
+  local now = getEpoch()
+  for i = #queue, 1, -1 do
+    if now - queue[i].at > self.CHAT_GAG_SECONDS then table.remove(queue, i) end
+  end
+  for i, entry in ipairs(queue) do
+    if chatLineMatches(text, entry) then
+      table.remove(queue, i)
+      self.chatGagged = (self.chatGagged or 0) + 1
+      return true
+    end
+  end
+  return false
 end
 
 -- Mudlet's search box searches the main window, which the router empties, so
@@ -5766,10 +6381,10 @@ end
 
 -- scrollTo() names the bottom line of the upper pane, which takes about three
 -- quarters of the console once split. Aim to show the match in its upper half.
-function ArjUI:scrollOutputTo(line, trim)
+function ArjUI:scrollOutputTo(line, trimAt)
   if not (self.console and scrollTo) then return end
   -- A find link names its line as numbered when it was listed.
-  if trim then line = line - ((self.outputTrim or 0) - trim) end
+  if trimAt then line = line - ((self.outputTrim or 0) - trimAt) end
   if line < 0 then return end
   local _, rowHeight = calcFontSize(self.console.name)
   local rows = math.max(1, math.floor(self.console:get_height() * .75 / math.max(1, rowHeight or 14)))
@@ -6007,25 +6622,7 @@ function ArjUI:setupAliases()
   
   -- ui debug - show GMCP data status in ArjUI console
   self.debugAlias = tempAlias("^ui debug$", function()
-    if ArjUI and ArjUI.console then
-      ArjUI.console:cecho("\n<gold>══ GMCP Debug Info ══<reset>\n")
-      ArjUI.console:cecho("<cyan>Char.Vitals:<reset> " .. (gmcp and gmcp.Char and gmcp.Char.Vitals and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<cyan>Char.Status:<reset> " .. (gmcp and gmcp.Char and gmcp.Char.Status and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<cyan>Char.Affects:<reset> " .. (gmcp and gmcp.Char and gmcp.Char.Affects and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<cyan>Room.Info:<reset> " .. (gmcp and gmcp.Room and gmcp.Room.Info and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<cyan>Group.Status:<reset> " .. (gmcp and gmcp.Group and gmcp.Group.Status and "YES" or "NO") .. "\n")
-      if gmcp and gmcp.Char and gmcp.Char.Affects then
-        local count = 0
-        if type(gmcp.Char.Affects) == "table" then
-          for _ in pairs(gmcp.Char.Affects) do count = count + 1 end
-        end
-        ArjUI.console:cecho("<cyan>Affects count:<reset> " .. count .. "\n")
-      end
-      ArjUI.console:cecho("<cyan>initialDataRequested:<reset> " .. tostring(ArjUI.initialDataRequested) .. "\n")
-      ArjUI.console:cecho("<cyan>Ship.Info:<reset> " .. (gmcp and gmcp.Ship and gmcp.Ship.Info and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<cyan>Ship.Contacts:<reset> " .. (gmcp and gmcp.Ship and gmcp.Ship.Contacts and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<gold>═══════════════════════<reset>\n\n")
-    end
+    if ArjUI then ArjUI:showDebugReport() end
   end)
   
   table.insert(self.portAliases, tempAlias("^ui layout(?: (reset|lock|unlock))?$", function() ArjUI:layoutCommand(matches[2]) end))
@@ -6041,6 +6638,7 @@ function ArjUI:setupAliases()
   -- ui set [<name> on|off]
   table.insert(self.portAliases, tempAlias("^ui set$", function() ArjUI:showSettings() end))
   -- ui find <text>
+  table.insert(self.portAliases, tempAlias("^ui sound(?: (.+))?$", function() ArjUI:soundCommand(matches[2]) end))
   table.insert(self.portAliases, tempAlias("^ui find (.+)$", function() ArjUI:findInOutput(matches[2]) end))
   table.insert(self.portAliases, tempAlias("^ui set (\\w+) (on|off)$", function()
     local key, val = matches[2], matches[3] == "on"

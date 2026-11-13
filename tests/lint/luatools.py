@@ -92,6 +92,28 @@ def strip_lua(text):
     return "".join(out)
 
 
+class _Literal:
+    def __init__(self, text, start, end):
+        self.text, self._start, self._end = text, start, end
+
+    def start(self):
+        return self._start
+
+    def group(self, _=0):
+        return self.text[self._start:self._end]
+
+
+def string_literals(text):
+    """Yield each short quoted string literal in code (not in comments).
+
+    strip_lua keeps string delimiters at their positions and blanks the
+    contents, so a delimiter pair with only blanks between is one literal.
+    """
+    code = strip_lua(text)
+    for m in re.finditer(r"""(["'])[^"'\n]*\1""", code):
+        yield _Literal(text, m.start(), m.end())
+
+
 def call_args(code, open_paren):
     """Split the top-level arguments of a call whose '(' is at open_paren.
 

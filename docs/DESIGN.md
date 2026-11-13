@@ -169,6 +169,11 @@ The bottom strip puts HP, MP, and movement below the left column. Position
 shares the bottom row with the spell preparation estimate. An active estimate
 counts down from the latest server snapshot. A paused estimate holds its value,
 and PREP OK requires server confirmation. An unavailable stream shows PREP —.
+While a spell is being cast, the same slot shows the spell and its remaining
+`*` steps from the server's `Casting:` text lines, then `OK` or `ABORTED` for 3
+seconds. A cast with no outcome clears after 12 seconds. Duris prints progress
+only when a skill roll passes, so the slot also starts from the chant line or a
+typed `cast '<spell>'` command.
 Tank and target displays split the space below the console. **BUFFS and
 DEBUFFS both describe the player's affects**, even though they sit below the
 tank and target respectively. DMG shows the current fight's damage total.
@@ -253,7 +258,9 @@ HP, mana, movement, and experience gauges use red, blue, green, and purple
 respectively; the target gauge uses gold. Health-dependent tank/group colors
 also communicate severity. Retain numeric values, labels, and state markers
 alongside color: non-mana characters show **MP n/a**, absent group members show
-**AWAY**, and NPC group members retain a trailing `*`.
+**AWAY**, NPC group members retain a trailing `*`, and the leader (`rank`
+`head`) carries a ♔ before the name. A member's tooltip adds rank, level and
+class.
 
 Player, tank, target, and group HP fills stop at 100% width. Vamp healing can
 raise actual HP above the normal maximum; retain those values in state and
@@ -312,6 +319,11 @@ real Mudlet when changing fonts or measurements.
 | Map + / − | Changes zone room size or wilderness text zoom according to the current mode. |
 | `ui off` / `ui on` | Hides/shows the existing interface while retaining its state and widgets. |
 | `ui find <text>` | Lists recent GAME OUTPUT lines containing the text; click one to scroll there. |
+| `ui debug` | Prints a copyable diagnostic report: versions, connection, server features, GMCP arrival ages, owned resources and artwork. |
+| `ui sound` | Shows and changes sound alerts. The master switch is off by default. Low HP/moves sounds fire once below the threshold and re-arm after recovery or a new session; disabled/cooldown-blocked requests remain armed. Each sound has a cooldown. |
+| Room name | Tooltip adds room number, zone, terrain name and coordinates when the server sends them (wilderness: terrain only). |
+| `mapper legend` | Prints the server's default wilderness glyphs in the profile palette. |
+| `ui set chatGag on` | Hides a complete matched chat copy, including wrapped rows, in either arrival order within three seconds; off by default. Unmatched output remains visible. Turning it off or ending the session clears pending matches. |
 
 Hiding the UI restores Mudlet's main output area. It does not unload the
 package or turn off enabled automation. The native command line stays
@@ -320,7 +332,12 @@ available in either view.
 Chat routes `gcc` to GUILD, `gsay` to GROUP, `jchat` with `nchat` to NCHAT,
 and room speech to ROOM; ALL collects the channels. TELLS provides contacts
 and individual conversation windows. `petition` and `wizmsg` have distinct
-colors in ALL. Timestamps and numpad movement are enabled by default and can
+colors in ALL. A tab that receives lines while another tab is selected or CHAT
+is hidden, minimized or covered shows a gold `•` and gold border, with the count
+in its tooltip. Revealing CHAT acknowledges only its selected tab; selecting a
+tab while CHAT is hidden leaves its messages unread.
+TELLS uses the same marker for unread private messages. The marker is a bullet
+rather than a number because the six tabs must fit the minimum chat width. Timestamps and numpad movement are enabled by default and can
 be disabled with `ui set`; see the [command reference](../README.md#commands).
 
 ## Runtime architecture
@@ -507,6 +524,12 @@ metadata and `ArjUI.VERSION`, validates XML, and copies assets into the
 `.mpackage`. Edit sources and rebuild; never hand-edit the archive. Repository
 documentation is not packaged and does not need a version bump. Package
 changes follow [RELEASING.md](RELEASING.md).
+
+The alert sounds in `src/assets/sounds/` are original tones synthesized by
+[`scripts/gen_sounds.py`](../scripts/gen_sounds.py) (stdlib only, byte-identical
+output). To change a sound, edit the script and regenerate rather than replacing
+a file with audio of unknown origin:
+`python3 scripts/gen_sounds.py src/assets/sounds`.
 
 For a visual or behavioral change, build the candidate, run
 `python3 scripts/mudlet_suite.py`, and inspect its real Mudlet screenshots and

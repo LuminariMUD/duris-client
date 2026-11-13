@@ -66,9 +66,11 @@ Type these into the Mudlet command input:
 | `ui layout reset` | Restore every dashboard panel and the default tabs without clearing game state or scrollback. The fixed **Reset layout** button does the same. |
 | `ui panel <id> <action>` | Actions: `show`, `hide`, `minimize`, `restore`, `maximize`, `dock`, `float`, `lock`, `unlock`. Right-click a panel title or use the fixed **Panels** button for mouse controls. |
 | `ui help` | List commands and numpad keys. |
-| `ui debug` | Show which core GMCP data tables have arrived. |
+| `ui debug` | Print a diagnostic report for bug reports: versions, connection, server features, how recently each GMCP message arrived, running triggers/timers and artwork. |
 | GAME OUTPUT search box | Type in the box next to the room name and press Enter. Enter or ▲ (Shift+F3) finds the next older match, ▼ (F3) the next newer one. Mudlet's own search box only searches the hidden main window. |
 | `ui find <text>` | List the latest GAME OUTPUT lines containing the text. Click one to scroll back to it. |
+| `ui set chatGag on\|off` | Hide matched chat copies in GAME OUTPUT, including wrapped lines; CHAT and Mudlet's log retain them. Off by default. |
+| `ui sound` | Sound alerts, off by default. `ui sound on\|off`. `ui sound <tell\|chat\|lowhp\|lowmove\|alert> on\|off` toggles one sound. `ui sound test <name>` plays it. `ui sound stop` stops playback. `ui sound volume <0-100>`. `ui sound hp\|moves <alert%> <reset%>` sets when the low-health/low-movement sound plays and re-arms. |
 | `ui damage` | Session damage report (total, hits, damage per second, current fight). `ui damage reset` clears it. Clicking the **DMG** counter in the target panel shows the same report. |
 | `ui set` | List the toggles below. `ui set <name> on` or `off` changes one and remembers it. |
 | `ui set compactHeader on` / `off` | Choose a quiet gradient (`on`) or the Stormwatch panorama (`off`, default). Both retain the slim frame and expanded panel workspace. |
@@ -77,6 +79,7 @@ Type these into the Mudlet command input:
 | `mapper on` / `mapper off` | Enable or pause mapper updates. |
 | `mapper status` | Show the current map mode, room, zone, and cache statistics. |
 | `mapper debug` | Inspect current room, exit, and cached zone data. |
+| `mapper legend` | Show what the wilderness map symbols mean (the game's defaults, in your colours). |
 | `mapper reload` | Clear cached zone layouts; move or use `look` to request fresh room data and reload the map. |
 | `mapper size 14` | Set zone room size; accepts integers from **8–20**. |
 | `/mapreload` | An additional shortcut to clear the map cache. |
@@ -158,7 +161,8 @@ See the [design guide](docs/DESIGN.md) for panel proportions, visual conventions
 
 ## Troubleshooting and current limits
 
-- **Empty vitals or room panels:** run `ui debug`, check that GMCP is enabled, then reconnect and enter the game. Initial character setup uses `Char.Status` on login.
+- **Reporting a bug:** run `ui debug`, then select its lines in GAME OUTPUT, right-click and choose Copy, and paste them into the report.
+- **Empty vitals or room panels:** run `ui debug`. Check that it reports `GMCP setting: on` and which GMCP messages show `never`, then reconnect and enter the game. Initial character setup uses `Char.Status` on login.
 - **Blank or stale zone map:** run `mapper status` and `mapper debug`, check access to the Duris website, then try `mapper reload` followed by `look`.
 - **Missing gear or clock information:** enable GMCP and open GEAR to subscribe to owner items. The clock subscribes automatically. An unavailable item view differs from an empty one; normal visibility and access rules still apply. Older servers and WHO depend on recognized text/prompt formats.
 - **Damage counter has an asterisk:** the event history is incomplete after interruption, hotboot or quota removal. Re-enabling `ui set damageTracker on` explicitly requests future events; it does not replay lost hits. Reset the counters after restoring the stream to start a new baseline.

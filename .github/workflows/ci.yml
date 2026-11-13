@@ -78,22 +78,22 @@ jobs:
       - name: Python tooling (ruff)
         run: ruff check --output-format=github .
 
-      # Report-only until the existing warnings are fixed; see .luacheckrc.
-      - name: Lua (luacheck, report-only)
+      - name: Lua (luacheck)
         run: |
           set +e
           luacheck src/scripts --codes --formatter plain > "$RUNNER_TEMP/luacheck.txt"
           status=$?
           set -e
           cat "$RUNNER_TEMP/luacheck.txt"
-          count=$(grep -c . "$RUNNER_TEMP/luacheck.txt" || true)
-          {
-            echo "### luacheck: $count warning(s), exit $status (report-only)"
-            echo '```'
-            cat "$RUNNER_TEMP/luacheck.txt"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ "$status" -gt 1 ]; then exit "$status"; fi
+          if [ "$status" -ne 0 ]; then
+            {
+              echo "### luacheck failed (exit $status)"
+              echo '```'
+              cat "$RUNNER_TEMP/luacheck.txt"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$status"
 
       - name: Checks left the checkout unchanged
         run: test -z "$(git status --porcelain --untracked-files=all)"
