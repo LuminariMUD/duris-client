@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.10.0 - 2026-11-13
+
+- While you cast, the PREP box in VITALS shows the spell and its remaining `*` steps, for example `fireball ***`. It then shows `OK` or `ABORTED` for a few seconds before switching back to the preparation timer. The spell name comes from the game's `Casting:` lines, or from your `cast '<spell>'` command when the game doesn't print one. A cast that never finishes clears itself after 12 seconds.
+
 ## 2.9.0 - 2026-11-13
 
 - Include mirror/scan timers, capture/routing triggers and search keys in the diagnostic resource totals.

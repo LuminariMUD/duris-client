@@ -1,5 +1,17 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## PR #47 maintenance review — 2026-11-13
+
+Candidate 2.10.0 refreshed onto master, package regenerated from merged sources.
+The cast text patterns were checked against local Duris `src/net/sparser.c`.
+No additional substantive defect was found. Full offline suite **33/33 PASS**:
+`/tmp/duris-maintenance-pr47-suite/suite-results.json`. Inspected cast run
+`20261113T114032Z-9f319034-cast` (`scenario.png`, `errors-view.png`): progress
+fits the PREP slot at 1366x768 and the error view is clear; review recorded.
+Build, 9 lint / 15 release / 11 controller tests, ruff, luacheck and release
+payload validation pass. Environment remains Mudlet 5.0.1 / Qt 6.11.1 under
+WSL2/Xvfb. Live casting and Mudlet 4.19.1 remain unverified.
+
 ## PR #46 maintenance review — 2026-11-13
 
 Candidate 2.9.0 on refreshed master, including the diagnostic resource-count
@@ -60,6 +72,20 @@ the expected match"; it passed locally. Reproduced in a container matching CI
   failure errors.
 - README troubleshooting tells players to use Enter or ▲/▼ on affected builds.
 - Also unverified: whether a Qt 6.10 Mudlet on a real desktop session (not Xvfb/xdotool) behaves the same.
+## Spell-casting progress — 2026-11-13
+
+Candidate **2.10.0**, branch `branch/cast-progress` (LuminariGUI audit R2). The
+new `cast` scenario feeds the server's text lines through real triggers: chant,
+silent and weave starts; the progress countdown; completion; a psionic abort; idle
+expiry; session end; and a quoted line that must not match.
+
+- Mudlet 5.0.1 under Xvfb: all **33/33** suite expectations pass. Focused run
+  `20261112T225010Z-3686747d-cast`; `05-session-end-clears.png` shows
+  `lightning … ****` fitting the PREP box at 1366×768. The Errors view is empty.
+- Package SHA-256 `9ef13cd6247b2bbe398ae299faa68d4041e70004cb1d70f3348083f60473dbf8`.
+
+Live Duris casting (skill-roll gaps between `Casting:` lines, lag) is unverified.
+
 ## ui debug diagnostic report — 2026-11-13
 
 Candidate **2.9.0**, branch `branch/ui-debug-report` (LuminariGUI audit R5).

@@ -51,7 +51,7 @@ each lands.
 | T6 (luacheck), T7 (ruff, clean checkout, summaries, CI docs) | Implemented: CI `lint` job with pinned luacheck 1.2.0 (`.luacheckrc` reads `tests/lint/lua_globals.txt`) and ruff 0.14.10 (`ruff.toml`; six existing findings fixed). luacheck is report-only, with 14 warnings left for the first runtime PR to fix before it becomes blocking. The checks table is in [RELEASING.md](../RELEASING.md#ci-checks). |
 | R3 (chat unread), R4 (group leader/rank/level/class), `build.py` Lua 5.1, luacheck blocking | Implemented in 2.8.0. Unread tabs show a gold `•` with the count in the tooltip: a number did not fit the tabs at 1366×768. Fixing the 14 luacheck warnings changed no behaviour. A new lint rule rejects Lua 5.2+ escapes such as `\u{...}`, which Lua 5.1 compiles but reads as plain letters. |
 | R5 (`ui debug` report) | Implemented in 2.9.0. `ArjUI:debugReportLines()` reports the versions, profile, window and UI state, connection, GMCP setting, session, server features, the age of each of 17 GMCP messages, resource counts for the three scripts, and artwork. Each probe is wrapped in `pcall`. |
-| R2 | Pending |
+| R2 (casting progress) | Implemented in 2.10.0. Triggers match the `sparser.c` start lines (chant, silent hands, prepared weave), `Casting:` progress lines, completion lines (both forms) and the three Duris class aborts. The spell name comes from a typed `cast`/`c`/`will '<spell>'` command when the server prints no progress line. A 12 s idle expiry covers casts with no outcome. The new `cast` scenario covers it. A GMCP cast event, which would be exact, remains a possible server addition. |
 | R1 | Pending |
 
 ## Runtime features
