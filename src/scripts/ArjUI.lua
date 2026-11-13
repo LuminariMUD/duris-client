@@ -909,6 +909,7 @@ end
 
 function ArjUI:resetCharacterState()
   self.soundArmed = nil
+  self.chatGagQueue = nil
   self.state = {
     hp = 1, hpmax = 1, mana = 1, manamax = 1, move = 1, movemax = 1,
     tnl = 0, tnlBaseline = nil, position = "standing",
@@ -2779,6 +2780,7 @@ function ArjUI:debugReportLines()
   table.sort(active)
   add("Server capabilities: %s", #active > 0 and table.concat(active, ", ") or "none reported")
   add("Initial data requested: %s", tostring(self.initialDataRequested))
+  add("Room: %s", self:roomDetails() ~= "" and self:roomDetails() or "none")
 
   add("GMCP received (age in seconds):")
   local now = try(getEpoch) or 0
@@ -3220,6 +3222,9 @@ function ArjUI:onRoomInfo()
   self.state.room = r.name or self.state.room
   self.state.coloredRoom = r.colored_name or r.name or self.state.room
   self.state.area = tostring(r.area or r.zone or self.state.area)
+  self.state.roomNum, self.state.roomZone, self.state.roomTerrain = tonumber(r.num), tonumber(r.zone), tonumber(r.terrain)
+  local c = type(r.coords) == "table" and r.coords or {}
+  self.state.roomCoords = (tonumber(c.x) and tonumber(c.y)) and {tonumber(c.x), tonumber(c.y), tonumber(c.z) or 0} or nil
   self.state.coloredArea = r.colored_area or r.area or self.state.area
   self.state.roomId = r.num or self.state.roomId
   self.state.zoneId = r.zone or self.state.zoneId
@@ -3415,6 +3420,7 @@ function ArjUI:onCommChannel()
   end
   local prefix=string.format("%s%s[%s] %s<reset>: ",stamp,color,channel,senderColored)
   local snapshots=self:chatSnapshots(c)
+  if self.settings and self.settings.chatGag then self:gagChatLine(channel, sender, text, snapshots.full) end
   
   -- Always send to ALL tab
   self:displayChannelMessage(self.chatBox,snapshots,prefix,text)
@@ -3526,6 +3532,28 @@ function ArjUI:renderVitals()
   end
 end
 
+-- Duris sector_types[] (src/core/common.c), indexed by Room.Info terrain.
+ArjUI.SECTOR_NAMES = { [0] = "Inside", "City", "Field", "Forest", "Hills", "Mountains", "Water-Swim",
+  "Water-NoSwim", "No-Ground", "Underwater", "Underwater-Ground", "Plane-of-Fire", "Ocean", "UD-Wild",
+  "UD-City", "UD-Inside", "UD-Water-Swim", "UD-Water-NoSwim", "UD-No-Ground", "Plane-of-Air",
+  "Plane-of-Water", "Plane-of-Earth", "Plane-of-Ethereal", "Plane-of-Astral", "Desert", "Tundra/Ice",
+  "Swamp", "UD-Mountains", "UD-Slime", "UD-Low Ceilings", "UD-Liquid Mithril", "UD-Mushroom Forest",
+  "Outer Castle Wall", "Castle Gate", "Castle", "Negative Plane", "Plane of Avernus", "Patrolled Road",
+  "Snowy Forest", "Lava" }
+
+-- "Room 12345 · zone 9001 · Forest · (3, -2, 0)": the parts the server sent.
+-- Wilderness rooms hide their vnum and coordinates, so only terrain remains.
+function ArjUI:roomDetails()
+  local s, parts = self.state, {}
+  if s.roomNum and s.roomNum > 0 then parts[#parts + 1] = "Room " .. s.roomNum end
+  if s.roomZone and s.roomZone > 0 then parts[#parts + 1] = "zone " .. s.roomZone end
+  local terrain = s.roomTerrain and self.SECTOR_NAMES[s.roomTerrain]
+  if terrain then parts[#parts + 1] = terrain
+  elseif s.roomTerrain then parts[#parts + 1] = "terrain " .. s.roomTerrain end
+  if s.roomCoords then parts[#parts + 1] = string.format("(%d, %d, %d)", s.roomCoords[1], s.roomCoords[2], s.roomCoords[3]) end
+  return table.concat(parts, " · ")
+end
+
 function ArjUI:renderRoom()
   -- Use colored area/room names if available
   local coloredArea = self.state.coloredArea or self.state.area or "Unknown Area"
@@ -3533,7 +3561,8 @@ function ArjUI:renderRoom()
   self.areaLabel:decho(durisToDecho(coloredArea))
   self.roomLabel:decho(durisToDecho(coloredRoom))
   self.areaLabel:setToolTip(stripColors(tostring(coloredArea)))
-  self.roomLabel:setToolTip(stripColors(tostring(coloredRoom)))
+  local details = self:roomDetails()
+  self.roomLabel:setToolTip(stripColors(tostring(coloredRoom)) .. (details ~= "" and ("\n" .. details) or ""))
   self:renderExits()
 end
 
@@ -4800,6 +4829,7 @@ ArjUI.settingsDefaults = {
   scanFormat = true,      -- rewrite 'scan' output into aligned columns
   alerts = true,          -- console banners for notable events
   expTracker = true,      -- '+exp' notices with kills-to-level estimate
+  chatGag = false,        -- drop chat lines from GAME OUTPUT (they stay in the chat tabs and Mudlet's log)
 }
 
 function ArjUI:loadSettings()
@@ -4843,6 +4873,7 @@ function ArjUI:setSetting(key, on)
   end
   if key == "keypad" then self:setupKeypad() end
   if key == "timestamps" then self:applyTimestamps() end
+  if key == "chatGag" then self.chatGagQueue=nil end
   if key=="damageTracker" then self.combatStopped=nil; self:changeProtocolInterest() end
   if key == "compactHeader" then
     self:applyBackground()
@@ -5973,6 +6004,7 @@ function ArjUI:showSettings()
     timestamps = "time each GAME OUTPUT line arrived (main window's clock button)",
     damageTracker = "damage counter in the target panel", scanFormat = "aligned, coloured scan output",
     alerts = "banners for sanc/rage/disarm/scry/skill-up", expTracker = "+exp notices with kills-to-level",
+    chatGag = "hide chat lines in GAME OUTPUT; they stay in the CHAT tabs",
   }
   for _, k in ipairs(sortedKeys(self.settingsDefaults)) do
     local on = self.settings[k]
@@ -6170,17 +6202,133 @@ function ArjUI:setupRouteAll()
       local row = getLineNumber()
       -- Commands echoed before this line belong above it.
       ArjUI:mirrorMain(row)
-      -- A capture trigger may already have gagged the line.
+      -- A capture trigger may already have gagged the line; chatGag drops a
+      -- line whose Comm.Channel copy already reached the chat tabs.
       if getCurrentLine() == line then
-        selectCurrentLine()
-        copy()
-        appendBuffer("ArjUI_Console")
+        if not ArjUI:consumeChatGag(line) then
+          selectCurrentLine()
+          copy()
+          appendBuffer("ArjUI_Console")
+        end
         -- The line stays in the covered main window, so Mudlet's own logging
         -- records it; mirrorMain() skips its rows once Mudlet has wrapped it.
         ArjUI.mainPending = {row = row, text = line}
       end
     end
   end)
+end
+
+-- CHAT GAG (ui set chatGag on)
+-- Duris sends a chat line as text and as Comm.Channel from separate paths, so
+-- either may arrive first. A GMCP copy first waits briefly for its text line
+-- (consumeChatGag skips mirroring it); a text line first is removed from the
+-- newest GAME OUTPUT rows. Each message hides at most one line, and the main
+-- window keeps every line, so Mudlet's log is unaffected.
+ArjUI.CHAT_GAG_SECONDS = 3
+
+local function chatLineMatches(text, entry)
+  if entry.full then return text == entry.full end
+  if entry.channel == "wizmsg" then
+    local suffix = " [ " .. entry.text .. " ]"
+    local prefix = entry.sender .. " : ("
+    if text:sub(-#suffix) ~= suffix then return false end
+    local header = text:sub(1, #text - #suffix)
+    return header:sub(1, #prefix) == prefix and header:sub(#prefix + 1):match("^%d+%)$") ~= nil
+  end
+  local suffix = "'" .. entry.text .. "'"
+  if text:sub(-#suffix) ~= suffix then return false end
+  local header = text:sub(1, #text - #suffix):lower()
+  for _, prefix in ipairs(entry.headers) do
+    if header:sub(1, #prefix) == prefix:lower() and not header:sub(#prefix + 1):find("['\n]") then return true end
+  end
+  return false
+end
+
+-- Legacy terminal headers from Duris actcomm.c, actnew.c and actwiz.c.
+-- Prefer the already validated full presentation when the server supplies it.
+local function chatHeaders(channel, sender, own)
+  local headers = ({say={sender .. " says "},tell={sender .. " tells you "},
+    gcc={sender .. " tells "},gsay={sender .. " group-says "},
+    nchat={sender .. " tells your racewar: ",sender .. " racewar-chats "},
+    jchat={sender .. " jchat: ",sender .. " jchat "},petition={sender .. " petitions "}})[channel] or {}
+  local recipient = sender:match("^You %-> (.+)$")
+  if channel == "tell" and recipient then headers = {"You tell " .. recipient .. " "}
+  elseif own then
+    local prefix = ({say="You say ",gcc="You tell ",gsay="You group-say ",
+      nchat="You tell your racewar ",jchat="You jchat ",petition="You petition "})[channel]
+    if prefix then headers[#headers + 1] = prefix end
+    if channel == "nchat" then headers[#headers + 1] = "You racewar chat to " end
+  end
+  return headers
+end
+
+local function recentChatRow(name, row, now)
+  local stamp = getTimestamp(name, row)
+  local h,m,s,f = tostring(stamp):match("^(%d+):(%d+):(%d+)%.?(%d*)")
+  if not h then return false end
+  local clock = os.date("*t", math.floor(now))
+  local seconds = clock.hour * 3600 + clock.min * 60 + clock.sec + now % 1
+  local age = (seconds - (tonumber(h) * 3600 + tonumber(m) * 60 + tonumber(s) + (tonumber("0." .. f) or 0))) % 86400
+  if age > 43200 then age=age-86400 end
+  -- Qt's row timestamp and getEpoch can straddle the same millisecond.
+  return age >= -.1 and age <= ArjUI.CHAT_GAG_SECONDS
+end
+
+function ArjUI:gagChatLine(channel, sender, text, full)
+  local entry = {channel=channel:lower(),sender=sender,text=text,full=full and full.text,at=getEpoch()}
+  if entry.text:match("^%s*$") then return end
+  entry.headers = chatHeaders(entry.channel,sender,sender == "You" or
+    (self.playerName and sender:lower() == self.playerName:lower()))
+  local name = self.console and self.console.name
+  if name then
+    local row = getLastLineNumber(name)
+    while row >= 0 do
+      local first = row
+      while first > 0 and tostring(getTimestamp(name,first)):sub(1,1) == "-" do first=first-1 end
+      if not recentChatRow(name,first,entry.at) then break end
+      local got = getLines(name,first,row+1) or {}
+      if chatLineMatches(table.concat(got,""),entry) then
+        for at=row,first,-1 do moveCursor(name,0,at); deleteLine(name) end
+        moveCursorEnd(name)
+        local removed = row-first+1
+        local search = self.outputSearch
+        if search and search.row then
+          if search.row >= first and search.row <= row then search.row = nil
+          elseif search.row > row then search.row = search.row - removed end
+        end
+        if search and search.mark then
+          if search.mark.row >= first and search.mark.row <= row then search.mark=nil
+          elseif search.mark.row > row then search.mark.row=search.mark.row-removed end
+        end
+        self.chatGagged = (self.chatGagged or 0) + 1
+        return
+      end
+      row=first-1
+    end
+  end
+  self.chatGagQueue = self.chatGagQueue or {}
+  for i=#self.chatGagQueue,1,-1 do
+    if entry.at-self.chatGagQueue[i].at > self.CHAT_GAG_SECONDS then table.remove(self.chatGagQueue,i) end
+  end
+  table.insert(self.chatGagQueue, entry)
+end
+
+function ArjUI:consumeChatGag(text)
+  if not (self.settings and self.settings.chatGag) then self.chatGagQueue=nil; return false end
+  local queue = self.chatGagQueue
+  if not queue or #queue == 0 then return false end
+  local now = getEpoch()
+  for i = #queue, 1, -1 do
+    if now - queue[i].at > self.CHAT_GAG_SECONDS then table.remove(queue, i) end
+  end
+  for i, entry in ipairs(queue) do
+    if chatLineMatches(text, entry) then
+      table.remove(queue, i)
+      self.chatGagged = (self.chatGagged or 0) + 1
+      return true
+    end
+  end
+  return false
 end
 
 -- Mudlet's search box searches the main window, which the router empties, so

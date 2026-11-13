@@ -321,6 +321,9 @@ real Mudlet when changing fonts or measurements.
 | `ui find <text>` | Lists recent GAME OUTPUT lines containing the text; click one to scroll there. |
 | `ui debug` | Prints a copyable diagnostic report: versions, connection, server features, GMCP arrival ages, owned resources and artwork. |
 | `ui sound` | Shows and changes sound alerts. The master switch is off by default. Low HP/moves sounds fire once below the threshold and re-arm after recovery or a new session; disabled/cooldown-blocked requests remain armed. Each sound has a cooldown. |
+| Room name | Tooltip adds room number, zone, terrain name and coordinates when the server sends them (wilderness: terrain only). |
+| `mapper legend` | Prints the server's default wilderness glyphs in the profile palette. |
+| `ui set chatGag on` | Hides a complete matched chat copy, including wrapped rows, in either arrival order within three seconds; off by default. Unmatched output remains visible. Turning it off or ending the session clears pending matches. |
 
 Hiding the UI restores Mudlet's main output area. It does not unload the
 package or turn off enabled automation. The native command line stays

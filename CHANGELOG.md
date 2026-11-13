@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.12.0 - 2026-11-13
+
+- Correlate complete chat lines and wrapped rows, preserve ordinary or older output, and keep search highlights aligned after deletion. Pending chat gags expire by time, support bursts, and clear on toggle/session changes.
+- Hovering over the room name shows the room number, zone, terrain and coordinates the game sends, for example `Room 90010 · zone 9001 · Forest · (3, -2, 0)`. In the wilderness the game sends only the terrain, so only the terrain is shown. `ui debug` also lists them.
+- New `mapper legend` shows what each wilderness map symbol means, in your colours. It shows the game's default symbols; if you changed them with the game's `glyphs` command, the map shows yours instead.
+- New `ui set chatGag on` hides chat lines in GAME OUTPUT, because the CHAT tabs already show them. It is off by default. It hides only the one line that matches the sender and text of each chat message, whichever of the two arrives first. The line stays in Mudlet's own window and log.
+
 ## 2.11.0 - 2026-11-13
 
 - Keep low-vitals alerts armed while sound is disabled or on cooldown, and reset their latches for each character session.
