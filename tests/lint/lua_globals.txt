@@ -38,6 +38,8 @@ getLines
 getMainWindowSize
 getMousePosition
 getMudletHomeDir
+getMudletVersion
+getOS
 getProfileName
 getRowCount
 getTime

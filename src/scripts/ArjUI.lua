@@ -2699,11 +2699,125 @@ function ArjUI:renderTellContacts()
 end
 
 -- ============================================================
+-- DIAGNOSTICS (ui debug)
+-- ============================================================
+
+-- GMCP packages the client uses, in report order. Arrival times are recorded
+-- by one lightweight handler per package (registerDebugHandlers).
+ArjUI.DEBUG_GMCP = {
+  "Char.Status", "Char.Vitals", "Char.Affects", "Char.SpellPreparation", "Char.Items.List",
+  "Room.Info", "Room.Map", "Group.Status", "Comm.Channel", "Combat.Update",
+  "Quest.Status", "Ship.Info", "Ship.Contacts",
+  "Duris.Capabilities", "Duris.Session", "Duris.Time", "Duris.Combat",
+}
+
+function ArjUI:registerDebugHandlers()
+  self.gmcpSeen = self.gmcpSeen or {}
+  for _, pkg in ipairs(self.DEBUG_GMCP) do
+    local name = pkg
+    table.insert(self.eventHandlers, registerAnonymousEventHandler("gmcp." .. name, function()
+      if ArjUI and ArjUI.gmcpSeen then ArjUI.gmcpSeen[name] = getEpoch() end
+    end))
+  end
+end
+
+local function countOf(t)
+  local n = 0
+  if type(t) == "table" then for _ in pairs(t) do n = n + 1 end end
+  return n
+end
+
+local function gmcpValue(path)
+  local node = gmcp
+  for part in path:gmatch("[^.]+") do
+    if type(node) ~= "table" then return nil end
+    node = node[part]
+  end
+  return node
+end
+
+-- Plain-text lines describing the client, for bug reports. Every probe is
+-- guarded so a missing API on an older Mudlet degrades to "unknown".
+function ArjUI:debugReportLines()
+  local lines = {}
+  local function add(fmt, ...) lines[#lines + 1] = string.format(fmt, ...) end
+  local function try(fn, ...)
+    local ok, a, b, c = pcall(fn, ...)
+    if ok then return a, b, c end
+  end
+
+  add("Package: Arjinius Client %s", tostring(self.VERSION))
+  local mudlet = try(getMudletVersion, "string")
+  local os_name, os_version = try(getOS)
+  add("Mudlet: %s on %s %s", tostring(mudlet or "unknown"), tostring(os_name or "unknown"), tostring(os_version or ""))
+  add("Profile: %s", tostring(try(getProfileName) or "unknown"))
+  local mw, mh = try(getMainWindowSize)
+  add("Window: %sx%s; UI %s%s", tostring(mw or "?"), tostring(mh or "?"),
+    self.hidden and "hidden (ui off)" or "shown",
+    self.maximizedPanel and ("; maximized " .. self.maximizedPanel) or "")
+  local host, port, connected = try(getConnectionInfo)
+  add("Connection: %s:%s %s", tostring(host or "?"), tostring(port or "?"),
+    connected and "connected" or "not connected")
+  local gmcpOn = try(getConfig, "enableGMCP")
+  add("GMCP setting: %s", gmcpOn == nil and "unknown" or (gmcpOn and "on" or "OFF"))
+
+  local session = self.session
+  add("Session: %s", session and tostring(session.state) or "none (older server or not in game)")
+  local active = {}
+  for name in pairs(self.protocolActive or {}) do active[#active + 1] = name end
+  table.sort(active)
+  add("Server capabilities: %s", #active > 0 and table.concat(active, ", ") or "none reported")
+  add("Initial data requested: %s", tostring(self.initialDataRequested))
+
+  add("GMCP received (age in seconds):")
+  local now = try(getEpoch) or 0
+  for _, pkg in ipairs(self.DEBUG_GMCP) do
+    local seen = self.gmcpSeen and self.gmcpSeen[pkg]
+    local value = gmcpValue(pkg)
+    local detail
+    if seen then detail = string.format("%.0fs ago", math.max(0, now - seen))
+    elseif value ~= nil then detail = "present (before this load)"
+    else detail = "never" end
+    if pkg == "Char.Affects" and type(value) == "table" then detail = detail .. ", " .. countOf(value) .. " entries" end
+    add("  %-22s %s", pkg, detail)
+  end
+
+  local timers = countOf(self.timers) + (self.mirrorTimer and 1 or 0) + (self.scanTimer and 1 or 0)
+  add("ArjUI resources: %d handlers, %d timers, %d triggers, %d aliases, %d keys",
+    countOf(self.eventHandlers), timers, countOf(self.runtimeTriggers) + countOf(self.portTriggers)
+      + countOf(self.captureTriggerIds) + countOf(self.captureTriggers) + (self.routeAllTriggerId and 1 or 0),
+    countOf(self.portAliases) + (self.uiOnAlias and 1 or 0) + (self.uiOffAlias and 1 or 0) + (self.debugAlias and 1 or 0),
+    countOf(self.portKeys) + countOf(self.searchKeys))
+  if ArjMapper then
+    add("ArjMapper: %s, %d handlers", ArjMapper.state and (ArjMapper.state.enabled and "on" or "off") or "not started",
+      countOf(ArjMapper.handlers))
+  end
+  if ArjAuto then
+    add("ArjAuto: %d triggers, %d aliases, %d keys, %d timers", countOf(ArjAuto.triggers), countOf(ArjAuto.aliases),
+      countOf(ArjAuto.keys), countOf(ArjAuto.timers))
+  end
+  local art = self.artwork or {}
+  add("Artwork: frame %s, backdrop %s", art.frame and "found" or "MISSING", art.scene and "found" or "MISSING")
+  return lines
+end
+
+function ArjUI:showDebugReport()
+  if not self.console then return end
+  self.console:cecho("\n<gold>══ Arjinius Client diagnostics ══<reset>\n")
+  for _, line in ipairs(self:debugReportLines()) do
+    self.console:echo(line .. "\n")
+  end
+  self.console:cecho("<dim_gray>Copy these lines into a bug report (select, right-click, Copy).<reset>\n")
+  self.console:cecho("<gold>══════════════════════════════<reset>\n\n")
+end
+
+-- ============================================================
 -- GMCP HANDLERS
 -- ============================================================
 
 function ArjUI:registerGMCPHandlers()
   local h
+  self:registerDebugHandlers()
   for event,method in pairs({["Duris.Time"]="onDurisTime",["Duris.Session"]="onDurisSession",
       ["Duris.Combat"]="onDurisCombat",["Char.Items.List"]="onOwnerItems"}) do
     local callback=method
@@ -6067,25 +6181,7 @@ function ArjUI:setupAliases()
   
   -- ui debug - show GMCP data status in ArjUI console
   self.debugAlias = tempAlias("^ui debug$", function()
-    if ArjUI and ArjUI.console then
-      ArjUI.console:cecho("\n<gold>══ GMCP Debug Info ══<reset>\n")
-      ArjUI.console:cecho("<cyan>Char.Vitals:<reset> " .. (gmcp and gmcp.Char and gmcp.Char.Vitals and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<cyan>Char.Status:<reset> " .. (gmcp and gmcp.Char and gmcp.Char.Status and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<cyan>Char.Affects:<reset> " .. (gmcp and gmcp.Char and gmcp.Char.Affects and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<cyan>Room.Info:<reset> " .. (gmcp and gmcp.Room and gmcp.Room.Info and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<cyan>Group.Status:<reset> " .. (gmcp and gmcp.Group and gmcp.Group.Status and "YES" or "NO") .. "\n")
-      if gmcp and gmcp.Char and gmcp.Char.Affects then
-        local count = 0
-        if type(gmcp.Char.Affects) == "table" then
-          for _ in pairs(gmcp.Char.Affects) do count = count + 1 end
-        end
-        ArjUI.console:cecho("<cyan>Affects count:<reset> " .. count .. "\n")
-      end
-      ArjUI.console:cecho("<cyan>initialDataRequested:<reset> " .. tostring(ArjUI.initialDataRequested) .. "\n")
-      ArjUI.console:cecho("<cyan>Ship.Info:<reset> " .. (gmcp and gmcp.Ship and gmcp.Ship.Info and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<cyan>Ship.Contacts:<reset> " .. (gmcp and gmcp.Ship and gmcp.Ship.Contacts and "YES" or "NO") .. "\n")
-      ArjUI.console:cecho("<gold>═══════════════════════<reset>\n\n")
-    end
+    if ArjUI then ArjUI:showDebugReport() end
   end)
   
   table.insert(self.portAliases, tempAlias("^ui layout(?: (reset|lock|unlock))?$", function() ArjUI:layoutCommand(matches[2]) end))

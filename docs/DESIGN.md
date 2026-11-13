@@ -314,6 +314,7 @@ real Mudlet when changing fonts or measurements.
 | Map + / − | Changes zone room size or wilderness text zoom according to the current mode. |
 | `ui off` / `ui on` | Hides/shows the existing interface while retaining its state and widgets. |
 | `ui find <text>` | Lists recent GAME OUTPUT lines containing the text; click one to scroll there. |
+| `ui debug` | Prints a copyable diagnostic report: versions, connection, server features, GMCP arrival ages, owned resources and artwork. |
 
 Hiding the UI restores Mudlet's main output area. It does not unload the
 package or turn off enabled automation. The native command line stays
