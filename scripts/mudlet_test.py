@@ -48,7 +48,7 @@ def pointer_action(wid, action, scale):
             previous = delivered() if action.get("ack") else None
             xdo("mousedown", button)
             if action.get("ack"):
-                wait_for(lambda: delivered() > previous, 5)
+                wait_for(lambda previous=previous: delivered() > previous, 5)
             for step in range(1, 9):
                 previous = delivered() if action.get("ack") else None
                 move(action["x"] + (action["to_x"] - action["x"]) * step / 8,
@@ -56,7 +56,7 @@ def pointer_action(wid, action, scale):
                 if action.get("ack"):
                     # A pointer at its target does not mean Qt has delivered the
                     # move callback yet. Keep the button held until it has.
-                    wait_for(lambda: delivered() > previous, 5)
+                    wait_for(lambda previous=previous: delivered() > previous, 5)
                 time.sleep(.04)
         finally:
             xdo("mouseup", button)

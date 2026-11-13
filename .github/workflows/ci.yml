@@ -35,19 +35,75 @@ jobs:
         run: python3 -m unittest discover -s tests/release -v
 
       - name: Validate changelog, Lua, XML, and committed package
-        run: python3 scripts/release.py --output build
+        run: python3 scripts/release.py --output "$RUNNER_TEMP/build"
+
+      - name: Summarize package
+        run: |
+          {
+            echo "### Package $(cat VERSION)"
+            echo '```'
+            cat "$RUNNER_TEMP/build/SHA256SUMS.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checks left the checkout unchanged
+        run: |
+          git status --porcelain --untracked-files=all
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: duris-client-${{ github.sha }}
-          path: build/*
+          path: ${{ runner.temp }}/build/*
+
+  lint:
+    name: Lint Lua (luacheck) and Python (ruff)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      LUACHECK_VERSION: 1.2.0-1
+      RUFF_VERSION: 0.14.10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Install pinned luacheck and ruff
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q lua5.1 liblua5.1-0-dev luarocks
+          sudo luarocks --lua-version 5.1 install luacheck "$LUACHECK_VERSION"
+          pipx install "ruff==$RUFF_VERSION"
+
+      - name: Python tooling (ruff)
+        run: ruff check --output-format=github .
+
+      # Report-only until the existing warnings are fixed; see .luacheckrc.
+      - name: Lua (luacheck, report-only)
+        run: |
+          set +e
+          luacheck src/scripts --codes --formatter plain > "$RUNNER_TEMP/luacheck.txt"
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/luacheck.txt"
+          count=$(grep -c . "$RUNNER_TEMP/luacheck.txt" || true)
+          {
+            echo "### luacheck: $count warning(s), exit $status (report-only)"
+            echo '```'
+            cat "$RUNNER_TEMP/luacheck.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$status" -gt 1 ]; then exit "$status"; fi
+
+      - name: Checks left the checkout unchanged
+        run: test -z "$(git status --porcelain --untracked-files=all)"
 
   runtime:
     uses: ./.github/workflows/mudlet-runtime.yml
 
   release:
     name: Publish unreleased version
-    needs: [build, runtime]
+    needs: [build, lint, runtime]
     if: >-
       github.repository == 'LuminariMUD/duris-client' &&
       github.ref == 'refs/heads/master' &&
