@@ -9,12 +9,21 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same pull request cancels its older run. Pushes to
+# master never cancel each other: each may publish a release.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     name: Validate release and build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Install luac (Lua 5.1, matching Mudlet)
         run: sudo apt-get update -q && sudo apt-get install -y -q lua5.1
@@ -28,7 +37,7 @@ jobs:
       - name: Validate changelog, Lua, XML, and committed package
         run: python3 scripts/release.py --output build
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: duris-client-${{ github.sha }}
           path: build/*

@@ -1,0 +1,96 @@
+name: Security
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      - name: Check out complete history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install checksum-pinned gitleaks
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/gitleaks.tar.gz"
+          printf '[]\n' > "$RUNNER_TEMP/gitleaks-report.json"
+          curl --fail --location --silent --show-error --retry 3 --output "$archive" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  ${archive}" | sha256sum --check
+          tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
+          test "$("$RUNNER_TEMP/gitleaks" version)" = "$GITLEAKS_VERSION"
+
+      # Proves the scanner and config detect a token and redact it, so a quiet
+      # scan below means "no secrets", not "scanner silently broken".
+      - name: Verify scanner with a redacted canary
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/canary-src"; out="$RUNNER_TEMP/canary-out"
+          mkdir -p "$src" "$out"
+          # Random each run: gitleaks ignores obviously fake tokens such as
+          # ghp_aBcDeF..., so a fixed sequential canary would not be detected.
+          canary="ghp_$(head -c 512 /dev/urandom | tr -dc 'A-Za-z0-9' | cut -c1-36)"
+          test ${#canary} -eq 40
+          printf 'token = "%s"\n' "$canary" > "$src/canary.txt"
+          set +e
+          "$RUNNER_TEMP/gitleaks" detect --no-git --source "$src" --config .gitleaks.toml \
+            --redact --no-banner --no-color --report-format json \
+            --report-path "$out/report.json" > "$out/scan.log" 2>&1
+          status=$?
+          set -e
+          if [[ $status -ne 1 || ! -s "$out/report.json" ]]; then
+            echo "::error::gitleaks did not detect the canary"; exit 1
+          fi
+          if grep -Fq -- "$canary" "$out/report.json" "$out/scan.log"; then
+            echo "::error::gitleaks printed the canary unredacted"; exit 1
+          fi
+          echo "Canary detected and redacted"
+
+      - name: Scan pull-request commits
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          "$RUNNER_TEMP/gitleaks" detect --source . --config .gitleaks.toml \
+            --log-opts="${BASE_SHA}..${HEAD_SHA}" --redact --no-banner --no-color \
+            --report-format json --report-path "$RUNNER_TEMP/gitleaks-report.json"
+
+      - name: Scan complete history
+        if: github.event_name != 'pull_request'
+        run: |
+          "$RUNNER_TEMP/gitleaks" detect --source . --config .gitleaks.toml \
+            --redact --no-banner --no-color \
+            --report-format json --report-path "$RUNNER_TEMP/gitleaks-report.json"
+
+      - name: Upload redacted report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gitleaks-report-${{ github.run_id }}
+          path: ${{ runner.temp }}/gitleaks-report.json
+          if-no-files-found: error
+          retention-days: 30
