@@ -1,5 +1,34 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## PR #49 maintenance review — 2026-11-13
+
+Candidate 2.12.0 refreshed onto master. Verified and repaired retrospective
+wrapped-chat matching, deletion of unrelated output, stale search-highlight
+indices, pending gags ignoring the off toggle/session reset, and count-limited
+matching windows that dropped bursts or text followed by intervening output.
+The pre-fix real-Mudlet candidate deletes room text in
+`/tmp/duris-maintenance-pr49-before/20261113T115037Z-8274e67c-extras`.
+
+- Full offline suite **35/35 PASS**:
+  `/tmp/duris-maintenance-pr49-suite/suite-results.json`.
+- Final affected consumer rerun (after replacing count limits with the same
+  three-second expiry):
+  `/tmp/duris-maintenance-pr49-final-window/20261113T115707Z-d660bcc9-extras`.
+  Passes both orders, wrapped deletion, named/anonymous/outgoing false matches,
+  validated full presentations, older identical output, shifted-highlight
+  cleanup, twelve-message bursts, intervening output, toggle and session reset.
+- Inspected final `02-legend.png`, `06-gag-wrapped-and-search.png` and
+  `errors-view.png`: readable legend and output, preserved surrounding lines,
+  no Lua errors. Review recorded against this run.
+- Legacy headers and terrain/glyph tables were checked against local Duris
+  actcomm.c, actnew.c, actwiz.c, common.c and map.c. Fixtures now use the real
+  nchat terminal format. Unmatched formats or bodies remain visible.
+- Lua 5.1 build, 9 lint / 15 release / 11 controller tests, ruff, luacheck,
+  workflow and release payload validation pass. Unchanged consumers reuse
+  their valid full-suite results; final chat-gag changes have the focused rerun.
+- Mudlet 5.0.1 / Qt 6.11.1 under WSL2/Xvfb. Live chat ordering, Mudlet 4.19.1
+  and physical/cross-platform desktop behavior remain unverified.
+
 ## Room details, wilderness legend and chat gag — 2026-11-13
 
 Candidate **2.12.0**, branch `branch/deferred-items` (the audit's deferred

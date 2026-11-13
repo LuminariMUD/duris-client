@@ -69,7 +69,7 @@ Type these into the Mudlet command input:
 | `ui debug` | Print a diagnostic report for bug reports: versions, connection, server features, how recently each GMCP message arrived, running triggers/timers and artwork. |
 | GAME OUTPUT search box | Type in the box next to the room name and press Enter. Enter or ▲ (Shift+F3) finds the next older match, ▼ (F3) the next newer one. Mudlet's own search box only searches the hidden main window. |
 | `ui find <text>` | List the latest GAME OUTPUT lines containing the text. Click one to scroll back to it. |
-| `ui set chatGag on\|off` | Hide chat lines in GAME OUTPUT; the CHAT tabs and Mudlet's log still have them. Off by default. |
+| `ui set chatGag on\|off` | Hide matched chat copies in GAME OUTPUT, including wrapped lines; CHAT and Mudlet's log retain them. Off by default. |
 | `ui sound` | Sound alerts, off by default. `ui sound on\|off`. `ui sound <tell\|chat\|lowhp\|lowmove\|alert> on\|off` toggles one sound. `ui sound test <name>` plays it. `ui sound stop` stops playback. `ui sound volume <0-100>`. `ui sound hp\|moves <alert%> <reset%>` sets when the low-health/low-movement sound plays and re-arms. |
 | `ui damage` | Session damage report (total, hits, damage per second, current fight). `ui damage reset` clears it. Clicking the **DMG** counter in the target panel shows the same report. |
 | `ui set` | List the toggles below. `ui set <name> on` or `off` changes one and remembers it. |

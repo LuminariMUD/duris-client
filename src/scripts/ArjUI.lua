@@ -909,6 +909,7 @@ end
 
 function ArjUI:resetCharacterState()
   self.soundArmed = nil
+  self.chatGagQueue = nil
   self.state = {
     hp = 1, hpmax = 1, mana = 1, manamax = 1, move = 1, movemax = 1,
     tnl = 0, tnlBaseline = nil, position = "standing",
@@ -3418,8 +3419,8 @@ function ArjUI:onCommChannel()
     if ok and t then stamp = "<dim_gray>" .. t .. " " end
   end
   local prefix=string.format("%s%s[%s] %s<reset>: ",stamp,color,channel,senderColored)
-  if self.settings and self.settings.chatGag then self:gagChatLine(actualSender, text) end
   local snapshots=self:chatSnapshots(c)
+  if self.settings and self.settings.chatGag then self:gagChatLine(channel, sender, text, snapshots.full) end
   
   -- Always send to ALL tab
   self:displayChannelMessage(self.chatBox,snapshots,prefix,text)
@@ -4872,6 +4873,7 @@ function ArjUI:setSetting(key, on)
   end
   if key == "keypad" then self:setupKeypad() end
   if key == "timestamps" then self:applyTimestamps() end
+  if key == "chatGag" then self.chatGagQueue=nil end
   if key=="damageTracker" then self.combatStopped=nil; self:changeProtocolInterest() end
   if key == "compactHeader" then
     self:applyBackground()
@@ -6223,43 +6225,96 @@ end
 -- newest GAME OUTPUT rows. Each message hides at most one line, and the main
 -- window keeps every line, so Mudlet's log is unaffected.
 ArjUI.CHAT_GAG_SECONDS = 3
-ArjUI.CHAT_GAG_ROWS = 6
 
 local function chatLineMatches(text, entry)
-  if not text or entry.text == "" then return false end
-  if not text:find(entry.text, 1, true) then return false end
-  return entry.sender == "" or text:lower():find(entry.sender, 1, true) ~= nil
+  if entry.full then return text == entry.full end
+  if entry.channel == "wizmsg" then
+    local suffix = " [ " .. entry.text .. " ]"
+    local prefix = entry.sender .. " : ("
+    if text:sub(-#suffix) ~= suffix then return false end
+    local header = text:sub(1, #text - #suffix)
+    return header:sub(1, #prefix) == prefix and header:sub(#prefix + 1):match("^%d+%)$") ~= nil
+  end
+  local suffix = "'" .. entry.text .. "'"
+  if text:sub(-#suffix) ~= suffix then return false end
+  local header = text:sub(1, #text - #suffix):lower()
+  for _, prefix in ipairs(entry.headers) do
+    if header:sub(1, #prefix) == prefix:lower() and not header:sub(#prefix + 1):find("['\n]") then return true end
+  end
+  return false
 end
 
-function ArjUI:gagChatLine(sender, text)
-  local entry = { sender = stripColors(sender or ""):lower(), text = stripColors(text or ""), at = getEpoch() }
+-- Legacy terminal headers from Duris actcomm.c, actnew.c and actwiz.c.
+-- Prefer the already validated full presentation when the server supplies it.
+local function chatHeaders(channel, sender, own)
+  local headers = ({say={sender .. " says "},tell={sender .. " tells you "},
+    gcc={sender .. " tells "},gsay={sender .. " group-says "},
+    nchat={sender .. " tells your racewar: ",sender .. " racewar-chats "},
+    jchat={sender .. " jchat: ",sender .. " jchat "},petition={sender .. " petitions "}})[channel] or {}
+  local recipient = sender:match("^You %-> (.+)$")
+  if channel == "tell" and recipient then headers = {"You tell " .. recipient .. " "}
+  elseif own then
+    local prefix = ({say="You say ",gcc="You tell ",gsay="You group-say ",
+      nchat="You tell your racewar ",jchat="You jchat ",petition="You petition "})[channel]
+    if prefix then headers[#headers + 1] = prefix end
+    if channel == "nchat" then headers[#headers + 1] = "You racewar chat to " end
+  end
+  return headers
+end
+
+local function recentChatRow(name, row, now)
+  local stamp = getTimestamp(name, row)
+  local h,m,s,f = tostring(stamp):match("^(%d+):(%d+):(%d+)%.?(%d*)")
+  if not h then return false end
+  local clock = os.date("*t", math.floor(now))
+  local seconds = clock.hour * 3600 + clock.min * 60 + clock.sec + now % 1
+  local age = (seconds - (tonumber(h) * 3600 + tonumber(m) * 60 + tonumber(s) + (tonumber("0." .. f) or 0))) % 86400
+  if age > 43200 then age=age-86400 end
+  -- Qt's row timestamp and getEpoch can straddle the same millisecond.
+  return age >= -.1 and age <= ArjUI.CHAT_GAG_SECONDS
+end
+
+function ArjUI:gagChatLine(channel, sender, text, full)
+  local entry = {channel=channel:lower(),sender=sender,text=text,full=full and full.text,at=getEpoch()}
   if entry.text:match("^%s*$") then return end
-  if entry.sender == "you" or entry.sender == "someone" then entry.sender = "" end
+  entry.headers = chatHeaders(entry.channel,sender,sender == "You" or
+    (self.playerName and sender:lower() == self.playerName:lower()))
   local name = self.console and self.console.name
   if name then
-    local last = getLastLineNumber(name)
-    for row = last, math.max(0, last - self.CHAT_GAG_ROWS), -1 do
-      local got = getLines(name, row, row + 1)
-      if got and chatLineMatches(got[1], entry) then
-        moveCursor(name, 0, row)
-        deleteLine(name)
+    local row = getLastLineNumber(name)
+    while row >= 0 do
+      local first = row
+      while first > 0 and tostring(getTimestamp(name,first)):sub(1,1) == "-" do first=first-1 end
+      if not recentChatRow(name,first,entry.at) then break end
+      local got = getLines(name,first,row+1) or {}
+      if chatLineMatches(table.concat(got,""),entry) then
+        for at=row,first,-1 do moveCursor(name,0,at); deleteLine(name) end
         moveCursorEnd(name)
+        local removed = row-first+1
         local search = self.outputSearch
         if search and search.row then
-          if search.row == row then search.row, search.mark = nil, nil
-          elseif search.row > row then search.row = search.row - 1 end
+          if search.row >= first and search.row <= row then search.row = nil
+          elseif search.row > row then search.row = search.row - removed end
+        end
+        if search and search.mark then
+          if search.mark.row >= first and search.mark.row <= row then search.mark=nil
+          elseif search.mark.row > row then search.mark.row=search.mark.row-removed end
         end
         self.chatGagged = (self.chatGagged or 0) + 1
         return
       end
+      row=first-1
     end
   end
   self.chatGagQueue = self.chatGagQueue or {}
+  for i=#self.chatGagQueue,1,-1 do
+    if entry.at-self.chatGagQueue[i].at > self.CHAT_GAG_SECONDS then table.remove(self.chatGagQueue,i) end
+  end
   table.insert(self.chatGagQueue, entry)
-  while #self.chatGagQueue > 10 do table.remove(self.chatGagQueue, 1) end
 end
 
 function ArjUI:consumeChatGag(text)
+  if not (self.settings and self.settings.chatGag) then self.chatGagQueue=nil; return false end
   local queue = self.chatGagQueue
   if not queue or #queue == 0 then return false end
   local now = getEpoch()
