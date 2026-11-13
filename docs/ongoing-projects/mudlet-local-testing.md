@@ -1,5 +1,17 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## PR #47 maintenance review — 2026-11-13
+
+Candidate 2.10.0 refreshed onto master, package regenerated from merged sources.
+The cast text patterns were checked against local Duris `src/net/sparser.c`.
+No additional substantive defect was found. Full offline suite **33/33 PASS**:
+`/tmp/duris-maintenance-pr47-suite/suite-results.json`. Inspected cast run
+`20261113T114032Z-9f319034-cast` (`scenario.png`, `errors-view.png`): progress
+fits the PREP slot at 1366x768 and the error view is clear; review recorded.
+Build, 9 lint / 15 release / 11 controller tests, ruff, luacheck and release
+payload validation pass. Environment remains Mudlet 5.0.1 / Qt 6.11.1 under
+WSL2/Xvfb. Live casting and Mudlet 4.19.1 remain unverified.
+
 ## PR #46 maintenance review — 2026-11-13
 
 Candidate 2.9.0 on refreshed master, including the diagnostic resource-count
