@@ -33,7 +33,7 @@ reproduction or fix is claimed by this planning document.
 
 The following observations refer to the pinned base, not a future build:
 
-- [The current frame](../../src/assets/duris-v1.png) bakes the tall wordmark,
+- [The current frame](https://github.com/LuminariMUD/duris-client/blob/07063aa23fb4/src/assets/duris-v1.png) bakes the tall wordmark,
   crest, perimeter, and black interior into one opaque image. Its
   [artwork record](../artwork/duris-frame.md) describes a deliberately empty
   center. The [rearranged-panel capture](../testing/issue-5/dashboard-resized.png)

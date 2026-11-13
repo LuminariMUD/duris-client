@@ -34,6 +34,7 @@ Track [issue #13](https://github.com/LuminariMUD/duris-client/issues/13) on
 | [RELEASING.md](RELEASING.md) | Package versioning, builds and releases. |
 | [Server study and implementation log](ongoing-projects/updates-upgrades.md) | Historical server protocol snapshot and early client improvements; use the later connection audit and fixtures for updated behavior. |
 | [lielz port log](ongoing-projects/lielz-port.md) | Adapted display helpers and automation. |
+| [LuminariGUI audit](ongoing-projects/luminarigui-audit.md) | Features, tooling and CI practices from LuminariGUI worth porting (2026-11-13; recommendations, not implemented). |
 | [Frame artwork](artwork/duris-frame.md) and [README header artwork](assets/header-prompt.md) | Art direction and generation records for the installed frame and the separate README illustration. |
 
 ## Imported reference material

@@ -227,6 +227,7 @@ command -v luac5.1
 luac5.1 -v
 luac5.1 -p src/scripts/ArjUI.lua src/scripts/ArjMapper.lua src/scripts/ArjAuto.lua
 python3 build.py --check
+python3 -m unittest discover -s tests/lint -v
 python3 build.py -o "$MUDLET_DEV_ROOT/artifacts/duris-client.mpackage"
 sha256sum "$MUDLET_DEV_ROOT/artifacts/duris-client.mpackage"
 ```

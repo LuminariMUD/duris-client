@@ -136,7 +136,7 @@ when line numbers move during implementation.
   it does not establish that every player finds the current size excessive.
 - **The title is part of one background image, not a header widget.**
   [`applyBackground()`](../../src/scripts/ArjUI.lua#L137) stretches
-  [`duris-v1.png`](../../src/assets/duris-v1.png) over a root-level label.
+  [`duris-v1.png`](https://github.com/LuminariMUD/duris-client/blob/07063aa23fb4/src/assets/duris-v1.png) over a root-level label.
   Inspection of that asset and the
   [artwork record](../artwork/duris-frame.md) confirms the wordmark and upper
   decoration are baked into the perimeter frame. Reducing `bannerPct` alone
