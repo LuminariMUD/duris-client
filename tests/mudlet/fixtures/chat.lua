@@ -26,6 +26,27 @@ steps[#steps+1]={name="tell-while-ui-off",run=function()
  T.check(chat.visible and chat.unread==0,"opening conversation reads hidden tell")
  T.check(T.lines(chat.historyBox.name):find("UNREAD-WHILE-OFF",1,true),"hidden tell appears on reopen")
 end}
+steps[#steps+1]={name="hidden-channel-unread",run=function()
+ ArjUI:switchChatTab("all")
+ for _,mode in ipairs({"hide","minimize","cover","ui-off"}) do
+  if mode=="cover" then ArjUI:panelAction("output","maximize")
+  elseif mode=="ui-off" then expandAlias("ui off")
+  else ArjUI:panelAction("chat",mode) end
+  T.emit("Comm.Channel",{channel="nchat",sender="Companion",text="HIDDEN-"..mode})
+  T.check(ArjUI.chatUnread.all==1,mode..": selected hidden tab retains unread messages")
+  if mode=="ui-off" then
+   expandAlias("ui layout reset")
+   T.check(ArjUI.chatUnread.all==1,"resetting the layout while UI is off does not acknowledge messages")
+  end
+  ArjUI:switchChatTab("nchat")
+  T.check((ArjUI.chatUnread.nchat or 0)>0,mode..": selecting a hidden tab does not acknowledge it")
+  if mode=="cover" then ArjUI:panelAction("output","maximize")
+  elseif mode=="ui-off" then expandAlias("ui on")
+  else ArjUI:panelAction("chat","show") end
+  T.check(not ArjUI.chatUnread.nchat and ArjUI.chatUnread.all==1,mode..": revealing acknowledges only the visible tab")
+  ArjUI:switchChatTab("all")
+ end
+end}
 steps[#steps+1]={name="channel-unread",run=function()
  ArjUI:switchChatTab("all")
  T.check(not ArjUI.chatUnread.all,"reading ALL clears its count")

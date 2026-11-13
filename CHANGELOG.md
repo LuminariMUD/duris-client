@@ -16,10 +16,12 @@
 
 ## 2.9.0 - 2026-11-13
 
+- Include mirror/scan timers, capture/routing triggers and search keys in the diagnostic resource totals.
 - `ui debug` now prints a full diagnostic report to paste into bug reports. It shows the package, Mudlet and OS versions, the profile, the window size and UI state, the connection, whether GMCP is enabled, the server session and the features the server reports. It also shows how long ago each GMCP message last arrived, how many triggers, aliases and timers the client is running, and whether the frame artwork was found.
 
 ## 2.8.0 - 2026-11-13
 
+- Keep messages unread while CHAT is hidden, minimized or covered, including its selected tab. Revealing CHAT clears only the tab actually shown.
 - Chat tabs show how many new messages arrived while you were reading another tab, for example `NCHAT 3`, in gold. Opening the tab clears it. TELLS shows the number of unread private messages.
 - GROUP marks the leader with a crown (♔). Hovering over a name shows the member's rank (leader, front or back), level and class.
 - Internal cleanup with no visible change: removed unused mapper code and renamed variables that hid other names.

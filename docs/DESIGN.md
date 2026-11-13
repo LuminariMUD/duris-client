@@ -329,8 +329,10 @@ available in either view.
 Chat routes `gcc` to GUILD, `gsay` to GROUP, `jchat` with `nchat` to NCHAT,
 and room speech to ROOM; ALL collects the channels. TELLS provides contacts
 and individual conversation windows. `petition` and `wizmsg` have distinct
-colors in ALL. A tab that receives lines while another tab is selected shows a
-gold `•` and gold border, with the count in its tooltip, until it is opened.
+colors in ALL. A tab that receives lines while another tab is selected or CHAT
+is hidden, minimized or covered shows a gold `•` and gold border, with the count
+in its tooltip. Revealing CHAT acknowledges only its selected tab; selecting a
+tab while CHAT is hidden leaves its messages unread.
 TELLS uses the same marker for unread private messages. The marker is a bullet
 rather than a number because the six tabs must fit the minimum chat width. Timestamps and numpad movement are enabled by default and can
 be disabled with `ui set`; see the [command reference](../README.md#commands).
