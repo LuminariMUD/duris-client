@@ -12,8 +12,13 @@ Good.alias = tempAlias("^x$", function()
   send("look")
 end)
 Good.mapper:load(id)
+local multiline =
+  tempTimer(1, function() end, true)
+table.insert(Good.handlers,
+  registerAnonymousEventHandler("sysLoadEvent", function() end))
+Good.key = tempKey(key, function() end)
+Good.lines = tempLineTrigger(1, 2, function() end)
 local payload = self:download(url)
-
 local escaped = "C:\\u{2654} -- \\z" -- comment with "\u{2654}" is ignored
 local glyph, it = "♔", "it's \"quoted\""
-return Good, note, doc, arm, payload, escaped, glyph, it
+return Good, note, doc, arm, payload, multiline, escaped, glyph, it

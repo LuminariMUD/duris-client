@@ -6,7 +6,9 @@ skipped.
 """
 
 import re
+import tempfile
 import unittest
+from pathlib import Path
 from urllib.parse import unquote
 
 import luatools
@@ -55,7 +57,7 @@ def anchors(path):
     if path not in _anchor_cache:
         text = path.read_text(encoding="utf-8")
         found, seen = set(HTML_ID.findall(text)), {}
-        for m in HEADING.finditer(without_code(text)):
+        for m in HEADING.finditer(FENCE.sub("", text)):
             slug = slugify(m.group(2))
             n = seen.get(slug, 0)
             seen[slug] = n + 1
@@ -86,6 +88,13 @@ def broken_links(path):
 
 
 class SlugTests(unittest.TestCase):
+    def test_anchors_preserve_inline_code_and_ignore_fences(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "headings.md"
+            path.write_text("### Richer `ui debug` snapshot\n\n```md\n# Hidden\n```\n"
+                            "### Richer `ui debug` snapshot\n", encoding="utf-8")
+            self.assertEqual(anchors(path), {"richer-ui-debug-snapshot", "richer-ui-debug-snapshot-1"})
+
     def test_github_slugs(self):
         self.assertEqual(slugify("Foundation: Understanding Mudlet Packages"),
                          "foundation-understanding-mudlet-packages")

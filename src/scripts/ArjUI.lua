@@ -517,6 +517,10 @@ function ArjUI:reconcilePanelViews()
   for name,widget in pairs(self.chatPanels or {}) do
     if name==self.activeChatTab then widget:show() else widget:hide() end
   end
+  if self.chatUnread and self:panelIsVisible("chat") then
+    self.chatUnread[self.activeChatTab]=nil
+    self:updateChatTabStyles()
+  end
   -- Parent show() recursively exposes inactive views. Hide them again without
   -- switching tabs (which can send a server command or clear scrollback).
   if self.mapper then self.mapper:hide() end
@@ -711,7 +715,6 @@ function ArjUI:resetLayout()
   end
   for _,chat in pairs(self.privateChats) do if chat.window then chat.visible=false end end
   self.activeTab="group"; self.activeChatTab="all"
-  if self.chatUnread then self.chatUnread.all=nil end
   self.activeRoomTab="mobs"; self.activeGearTab="inv"
   self:updateTabStyles(); self:updateChatTabStyles()
   self:applyPanelLayout(); self:renderActiveTab(); self:refreshPanelContent()
@@ -4092,7 +4095,7 @@ function ArjUI:switchChatTab(tabName)
   if self.chatPanels[tabName] then
     self.chatPanels[tabName]:show()
   end
-  if self.chatUnread then self.chatUnread[tabName] = nil end
+  if self.chatUnread and self:panelIsVisible("chat") then self.chatUnread[tabName] = nil end
   
   self:updateChatTabStyles()
 end
@@ -4100,7 +4103,7 @@ end
 -- Count channel lines that arrive in a tab other than the one being read.
 -- TELLS counts come from the private conversations instead (see chatTabUnread).
 function ArjUI:noteChatUnread(tabName)
-  if not self.chatUnread or tabName == self.activeChatTab then return end
+  if not self.chatUnread or (tabName == self.activeChatTab and self:panelIsVisible("chat")) then return end
   self.chatUnread[tabName] = (self.chatUnread[tabName] or 0) + 1
   self:updateChatTabStyles()
 end

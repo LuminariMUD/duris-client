@@ -1,5 +1,28 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## PR #45 maintenance review — 2026-11-13
+
+Candidate 2.8.0 on `branch/chat-unread-group-leader`, including the visibility
+fix: the selected CHAT tab used to drop unread counts while hidden. The new
+`hidden-channel-unread` fixture reproduced the failure before the fix at
+`/tmp/duris-maintenance-pr45-before/20261113T113024Z-76f08cba-chat`.
+
+- Real Mudlet 5.0.1 / Qt 6.11.1 under WSL2/Xvfb: **32/32** offline cases pass
+  at `/tmp/duris-maintenance-pr45-suite/suite-results.json`, including shared
+  panel lifecycle, group, mapper and protocol consumers.
+- Final chat rerun at `/tmp/duris-maintenance-pr45-final-chat/20261113T113311Z-e7abb4c8-chat`
+  passes hidden/minimized/covered/UI-off handling, selective reveal, and layout
+  reset while the UI is off. The final layout case also passes.
+- Inspected chat `12-channel-unread.png` and `errors-view.png`, and crowded
+  `01-full-group-room.png`; readable gold markers and leader crown at 1366x768,
+  with no collected Lua errors. Reviews recorded against those run directories.
+- Lua 5.1 package build, 9 lint tests, 15 release tests, 11 controller tests,
+  ruff 0.14.10, luacheck 1.2.0 (zero warnings), release payload validation and
+  workflow validation pass. Actionlint's obsolete ubuntu-26.04 label diagnostic
+  was excluded; other checks remained enabled.
+- Not run: live gameplay, Mudlet 4.19.1, Windows/macOS glyph rendering or
+  physical desktop DPI. Offline success does not establish those claims.
+
 ## CI-only `console` failure: function keys on Qt 6.10 — 2026-11-13
 
 From 2.7.0, CI's `console` scenario failed at "Shift+F3 twice then F3 lands on
