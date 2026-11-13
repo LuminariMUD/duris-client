@@ -21,7 +21,7 @@ TEMP_CALLS = ("tempTimer", "tempTrigger", "tempRegexTrigger", "tempAlias", "temp
               "tempLineTrigger", "tempBeginOfLineTrigger", "tempExactMatchTrigger")
 OWNED_CALLS = TEMP_CALLS + ("registerAnonymousEventHandler",)
 CALL = re.compile(r"(?<![\w.:])(" + "|".join(OWNED_CALLS) + r")\s*\(")
-# What may precede an owned call on its line: an assignment, a return, or an
+# What may precede an owned call: an assignment, a return, or an
 # argument position (table.insert(list, ...), f(..., call(...))).
 STORED_BEFORE = re.compile(r"(=|\breturn|,|\(|\[)\s*$")
 
@@ -34,9 +34,10 @@ def violations(text, name="<lua>"):
     for m in CALL.finditer(code):
         fn, line = m.group(1), luatools.line_of(code, m.start())
         args, _ = luatools.call_args(code, m.end() - 1)
-        if fn in TEMP_CALLS and args and re.match(r"""^("|'|\[=*\[)""", args[-1]):
+        callback = 2 if fn == "tempLineTrigger" or (fn == "tempKey" and len(args) == 3) else 1
+        if fn in TEMP_CALLS and len(args) > callback and re.match(r"""^("|'|\[=*\[)""", args[callback]):
             found.append(f"{name}:{line}: {fn} with a string-code callback; pass a function")
-        before = code[code.rfind("\n", 0, m.start()) + 1:m.start()]
+        before = code[:m.start()]
         if not STORED_BEFORE.search(before):
             found.append(f"{name}:{line}: {fn} result discarded; store the id so it can be killed")
     return found

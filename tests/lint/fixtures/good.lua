@@ -12,5 +12,11 @@ Good.alias = tempAlias("^x$", function()
   send("look")
 end)
 Good.mapper:load(id)
+local multiline =
+  tempTimer(1, function() end, true)
+table.insert(Good.handlers,
+  registerAnonymousEventHandler("sysLoadEvent", function() end))
+Good.key = tempKey(key, function() end)
+Good.lines = tempLineTrigger(1, 2, function() end)
 local payload = self:download(url)
-return Good, note, doc, arm, payload
+return Good, note, doc, arm, payload, multiline
