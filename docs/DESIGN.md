@@ -253,7 +253,9 @@ HP, mana, movement, and experience gauges use red, blue, green, and purple
 respectively; the target gauge uses gold. Health-dependent tank/group colors
 also communicate severity. Retain numeric values, labels, and state markers
 alongside color: non-mana characters show **MP n/a**, absent group members show
-**AWAY**, and NPC group members retain a trailing `*`.
+**AWAY**, NPC group members retain a trailing `*`, and the leader (`rank`
+`head`) carries a ♔ before the name. A member's tooltip adds rank, level and
+class.
 
 Player, tank, target, and group HP fills stop at 100% width. Vamp healing can
 raise actual HP above the normal maximum; retain those values in state and
@@ -320,7 +322,12 @@ available in either view.
 Chat routes `gcc` to GUILD, `gsay` to GROUP, `jchat` with `nchat` to NCHAT,
 and room speech to ROOM; ALL collects the channels. TELLS provides contacts
 and individual conversation windows. `petition` and `wizmsg` have distinct
-colors in ALL. Timestamps and numpad movement are enabled by default and can
+colors in ALL. A tab that receives lines while another tab is selected or CHAT
+is hidden, minimized or covered shows a gold `•` and gold border, with the count
+in its tooltip. Revealing CHAT acknowledges only its selected tab; selecting a
+tab while CHAT is hidden leaves its messages unread.
+TELLS uses the same marker for unread private messages. The marker is a bullet
+rather than a number because the six tabs must fit the minimum chat width. Timestamps and numpad movement are enabled by default and can
 be disabled with `ui set`; see the [command reference](../README.md#commands).
 
 ## Runtime architecture

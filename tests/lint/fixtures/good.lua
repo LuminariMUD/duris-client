@@ -19,4 +19,6 @@ table.insert(Good.handlers,
 Good.key = tempKey(key, function() end)
 Good.lines = tempLineTrigger(1, 2, function() end)
 local payload = self:download(url)
-return Good, note, doc, arm, payload, multiline
+local escaped = "C:\\u{2654} -- \\z" -- comment with "\u{2654}" is ignored
+local glyph, it = "♔", "it's \"quoted\""
+return Good, note, doc, arm, payload, multiline, escaped, glyph, it

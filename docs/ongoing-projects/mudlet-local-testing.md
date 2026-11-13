@@ -1,5 +1,28 @@
 # Local Mudlet testing — GUI/server connection audit
 
+## PR #45 maintenance review — 2026-11-13
+
+Candidate 2.8.0 on `branch/chat-unread-group-leader`, including the visibility
+fix: the selected CHAT tab used to drop unread counts while hidden. The new
+`hidden-channel-unread` fixture reproduced the failure before the fix at
+`/tmp/duris-maintenance-pr45-before/20261113T113024Z-76f08cba-chat`.
+
+- Real Mudlet 5.0.1 / Qt 6.11.1 under WSL2/Xvfb: **32/32** offline cases pass
+  at `/tmp/duris-maintenance-pr45-suite/suite-results.json`, including shared
+  panel lifecycle, group, mapper and protocol consumers.
+- Final chat rerun at `/tmp/duris-maintenance-pr45-final-chat/20261113T113311Z-e7abb4c8-chat`
+  passes hidden/minimized/covered/UI-off handling, selective reveal, and layout
+  reset while the UI is off. The final layout case also passes.
+- Inspected chat `12-channel-unread.png` and `errors-view.png`, and crowded
+  `01-full-group-room.png`; readable gold markers and leader crown at 1366x768,
+  with no collected Lua errors. Reviews recorded against those run directories.
+- Lua 5.1 package build, 9 lint tests, 15 release tests, 11 controller tests,
+  ruff 0.14.10, luacheck 1.2.0 (zero warnings), release payload validation and
+  workflow validation pass. Actionlint's obsolete ubuntu-26.04 label diagnostic
+  was excluded; other checks remained enabled.
+- Not run: live gameplay, Mudlet 4.19.1, Windows/macOS glyph rendering or
+  physical desktop DPI. Offline success does not establish those claims.
+
 ## CI-only `console` failure: function keys on Qt 6.10 — 2026-11-13
 
 From 2.7.0, CI's `console` scenario failed at "Shift+F3 twice then F3 lands on
@@ -19,6 +42,24 @@ the expected match"; it passed locally. Reproduced in a container matching CI
   failure errors.
 - README troubleshooting tells players to use Enter or ▲/▼ on affected builds.
 - Also unverified: whether a Qt 6.10 Mudlet on a real desktop session (not Xvfb/xdotool) behaves the same.
+## Chat unread markers and group leader — 2026-11-13
+
+Candidate **2.8.0**, branch `branch/chat-unread-group-leader` (LuminariGUI
+audit R3/R4). `chat` adds a `channel-unread` step: hidden tabs are counted and the
+active tab is not, opening a tab clears its marker, large counts stay compact,
+and TELLS reflects unread private messages. `crowded` checks the leader crown
+and the rank/level/class tooltips, including an NPC with no class.
+
+- Mudlet 5.0.1 under Xvfb in WSL2/Ubuntu 24.04: all **32/32** suite
+  expectations pass (`--jobs 3`). Focused runs
+  `20261112T223922Z-4479b2e4-chat` and `20261112T223950Z-f717bb40-crowded`.
+- Inspected `11-channel-unread.png`: gold `•ROOM`/`•GUILD`/`•GROUP` fit at
+  1366×768, though a numeric `GROUP 99+` did not, hence the bullet. Inspected
+  `01-full-group-room.png`: ♔ precedes the leader. Errors views are empty.
+- Package SHA-256 `3390b1ab4501e49e95e14d769b9daabe99702a299d1bf9452bf803d9cf18335a`.
+
+Live Duris, Mudlet 4.19.1, native Windows/macOS and desktop DPI remain unverified;
+the ♔ glyph depends on the platform font.
 
 ## Issue #36 GEAR resync, combat flag and Items retry — 2026-11-11
 

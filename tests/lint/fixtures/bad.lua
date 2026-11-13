@@ -14,4 +14,5 @@ registerAnonymousEventHandler("gmcp.Char.Vitals", function() end)
 Bad.repeatTimer = tempTimer(.25, "send('look')", true)
 Bad.key = tempKey(key, "send('look')")
 Bad.lines = tempLineTrigger(1, 2, "send('look')")
+local crown = "\u{2654} leader"
 return Bad

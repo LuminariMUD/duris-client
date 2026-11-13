@@ -176,11 +176,10 @@ end
 function ArjMapper:isWilderness(roomData)
     if not roomData then return false end
     if not roomData.num or roomData.num == 0 then return true end
+    -- Wilderness exits are booleans; checking any one exit is enough.
     if roomData.exits then
-        for _, dest in pairs(roomData.exits) do
-            if type(dest) == "boolean" then return true end
-            break
-        end
+        local _, dest = next(roomData.exits)
+        if type(dest) == "boolean" then return true end
     end
     return false
 end
@@ -405,7 +404,7 @@ end
 -- ============================================================
 
 function ArjMapper:clearZoneDisplay()
-    for key, label in pairs(self.ui.roomLabels) do
+    for _, label in pairs(self.ui.roomLabels) do
         if type(label) == "table" and label.hide then 
             label:hide() 
         end
@@ -482,19 +481,9 @@ function ArjMapper:computeZoneLayout(zoneId)
         southwest = { -1, -1,  0 },
     }
     
-    -- Opposite directions for loop closure
-    local opposite = {
-        north = "south", south = "north",
-        east = "west", west = "east",
-        up = "down", down = "up",
-        northeast = "southwest", southwest = "northeast",
-        northwest = "southeast", southeast = "northwest",
-    }
-
     local occupied = {}
     local function gridKey(x, y, z) return x .. "," .. y .. "," .. z end
     local function isOccupied(x, y, z) return occupied[gridKey(x, y, z)] ~= nil end
-    local function getOccupant(x, y, z) return occupied[gridKey(x, y, z)] end
     local function occupy(x, y, z, id) occupied[gridKey(x, y, z)] = id end
 
     -- Check if placing at (tx, ty) would close a loop with an already-placed neighbor
@@ -831,7 +820,6 @@ function ArjMapper:renderZoneMap()
 
     local colors = self.config.colors
     local activeLabels = {}
-    local rc = colors.roomColor
     
     -- Get doors for current room from state
     local currentRoomDoors = self.state.roomDoors[currentRoom] or {}
@@ -1178,15 +1166,8 @@ end
 function ArjMapper:parseDoorsFromGMCP(roomData)
     local doors = {}
     
-    if roomData and roomData.exits then
-        -- The exits might be in format { "North", "South#", "East" }
-        -- or { north = 123, south = 456 }
-        -- We need to check the raw GMCP data
-        
-        -- Check if we have the raw exit string from somewhere
-        -- For now, we'll store this per-room as we visit
-    end
-    
+    -- Door markers are not available from Room.Info exits yet
+    -- ({ "North", "South#" } or { north = 123 }); nothing is detected.
     return doors
 end
 
@@ -1415,7 +1396,7 @@ function ArjMapper:kill()
     if self.alias then killAlias(self.alias); self.alias = nil end
     if self.reloadAlias then killAlias(self.reloadAlias); self.reloadAlias = nil end
     self:clearZoneDisplay()
-    for key, widget in pairs(self.ui) do
+    for _, widget in pairs(self.ui) do
         if type(widget) == "table" and widget.hide then
             if widget.delete then widget:delete() else widget:hide() end
         end

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.8.0 - 2026-11-13
+
+- Keep messages unread while CHAT is hidden, minimized or covered, including its selected tab. Revealing CHAT clears only the tab actually shown.
+- Chat tabs show how many new messages arrived while you were reading another tab, for example `NCHAT 3`, in gold. Opening the tab clears it. TELLS shows the number of unread private messages.
+- GROUP marks the leader with a crown (♔). Hovering over a name shows the member's rank (leader, front or back), level and class.
+- Internal cleanup with no visible change: removed unused mapper code and renamed variables that hid other names.
+
 ## 2.7.0 - 2026-11-11
 
 - Panels now reach the decorated frame on the left and right, as they already did at the top and bottom. The side columns keep their width and GAME OUTPUT, TANK and TARGET take the extra space.

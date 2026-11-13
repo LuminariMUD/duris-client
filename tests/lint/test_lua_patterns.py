@@ -3,6 +3,8 @@
 * No dynamic code or shell execution.
 * No string-code callbacks to Mudlet temp* functions (they compile at runtime
   and escape the package's error handling).
+* No Lua 5.2+ string escapes (\\u{...}, \\z). Lua 5.1 compiles them without
+  error but reads them as plain letters, so the text comes out wrong.
 * Every handler/timer/trigger/alias/key id is stored, so kill()/uninstall can
   remove it. A discarded id leaks for the rest of the session.
 
@@ -26,9 +28,16 @@ CALL = re.compile(r"(?<![\w.:])(" + "|".join(OWNED_CALLS) + r")\s*\(")
 STORED_BEFORE = re.compile(r"(=|\breturn|,|\(|\[)\s*$")
 
 
+NEW_ESCAPE = re.compile(r"(?<!\\)(?:\\\\)*\\(u\{[0-9A-Fa-f]+\}|z)")
+
+
 def violations(text, name="<lua>"):
     code = luatools.strip_lua(text)
     found = []
+    for m in luatools.string_literals(text):
+        for e in NEW_ESCAPE.finditer(m.group(0)):
+            found.append(f"{name}:{luatools.line_of(text, m.start())}: Lua 5.1 does not support the escape "
+                         f"\\{e.group(1)}; write the UTF-8 character itself")
     for m in FORBIDDEN.finditer(code):
         found.append(f"{name}:{luatools.line_of(code, m.start())}: forbidden {m.group(1)}()")
     for m in CALL.finditer(code):
