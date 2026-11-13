@@ -11,4 +11,7 @@ tempTimer(5, function() end)
 registerAnonymousEventHandler("gmcp.Char.Vitals", function() end)
   tempAlias("^x$", function()
   end)
+Bad.repeatTimer = tempTimer(.25, "send('look')", true)
+Bad.key = tempKey(key, "send('look')")
+Bad.lines = tempLineTrigger(1, 2, "send('look')")
 return Bad
