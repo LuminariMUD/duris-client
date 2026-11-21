@@ -69,6 +69,12 @@ Default rectangles (x, y, width, height as percentages of the content root):
 - Vitals: (0, 80, 16.5, 19.5); tank: (16.7, 80, 28.3, 19.5);
   target: (45.5, 80, 28.2, 19.5).
 
+GAME OUTPUT uses a 16px XP bar above an 18px room and search row. The console
+fills the remaining panel height. The bar shows progress from the current
+GMCP XP and TNL snapshot. Zero TNL shows **XP ready** for a character below the
+mortal maximum and **TNL: n/a** at the maximum. **TNL: —** indicates missing
+TNL data. Level changes reset the previous-gain comparison.
+
 The bottom strip is slightly taller to preserve combat labels below the new
 frame controls. Names/positions use 16px, HP uses 16px, affects headers 14px;
 remaining height is for affects. Character/chat tab rows retain an 18px minimum.

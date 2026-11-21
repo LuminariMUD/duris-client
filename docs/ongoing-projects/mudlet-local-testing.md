@@ -1548,3 +1548,18 @@ Duris's native room-selector harness at
 `77c0ce2865ade168cae34d52408d2a58ce36c9cf` passed. It confirms that the
 opposing human resolves by ordinal under racewar when lookup by name fails.
 Production Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.
+
+## 2.12.3 Game Output XP gauge (issue #55) — 2026-11-21
+
+Mudlet 5.0.1 on Linux/Xvfb passed 62 assertions in the \`vitals\` scenario at
+1280×720 and 1366×768. The replay covers login, XP gain and loss, recovery to
+the same percentage, reconnect, partial vitals, level changes, a met threshold,
+maximum mortal level and loss of GMCP. Same-level XP notices still print, and
+XP rollover does not produce a false gain notice.
+
+Reviewed both \`07-xp-gain.png\` screenshots, the full \`15-xp-threshold.png\` at
+1280×720, \`16-xp-max-level.png\` at 1366×768 and the Errors views.
+The full XP label fits above the room and search row. The only Geyser debug
+messages also appear on 2.12.2 when the fixture sends zero maxima for the
+HP, mana, move and tank gauges. No XP gauge or Lua errors were observed.
+Live Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.
