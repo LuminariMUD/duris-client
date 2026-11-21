@@ -44,6 +44,16 @@ The information scenario also includes observed live inventory naming and
 empty-equipment messages. The map is invented test geography in the production
 API's nodes/edges shape; no actual world data is needed for offline tests.
 
+The MOBS portion of `information` uses the Bullywug Hut names and vnums from
+[issue #51](https://github.com/LuminariMUD/duris-client/issues/51) with synthetic
+room selectors. X11 pointer clicks reach the rendered rows and their menu
+entries. The companion records the resulting game commands locally.
+`server-wire` also sends an NPC snapshot modeled on
+[Duris #1324](https://github.com/LuminariMUD/Duris/pull/1324) to exercise
+decoding both a room selector and an explicitly unavailable target. It opens
+the linked row by mouse and checks that Telnet WONT GMCP clears the list and
+closes the mob menu while the socket remains connected.
+
 `lowhp` reproduces the original manual fixture. Other scenarios exercise state
 transitions, not just fully populated panels. Login querying is suppressed in
 ordinary fixtures and separately observed in `login`. `send` is recorded only

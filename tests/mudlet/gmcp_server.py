@@ -158,6 +158,16 @@ class GMCPServer:
                                 playing = True
                                 capabilities(playing)
                                 preparation_snapshot()
+                            if phase == 'mob-selectors':
+                                # Synthetic NPC entries exercise the optional Duris #1324 field.
+                                packet('Room.Info', {
+                                    'num': 22800, 'zone': 228, 'name': 'Test room',
+                                    'npcs': [
+                                        {'vnum': 80100, 'name': 'an elder bullywug hunter',
+                                         'keyword': 'bullywug', 'target': '2.bullywug'},
+                                        {'vnum': 80101, 'name': 'a lookout', 'keyword': 'lookout', 'target': ''},
+                                    ],
+                                })
                             # Synthetic snapshots match the versioned preparation contract.
                             if phase == 'prep-active':
                                 set_estimate('active', 2)

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.12.1 - 2026-11-21
+
+- ROOM → MOBS lists different mob templates separately, even when they share a keyword. Copies of one template still stack, with combat tags scoped to that stack. Menu actions use the game's room selectors when available. Rows with a shared keyword stay unlinked on older servers that omit selectors.
+
 ## 2.12.0 - 2026-11-13
 
 - Correlate complete chat lines and wrapped rows, preserve ordinary or older output, and keep search highlights aligned after deletion. Pending chat gags expire by time, support bursts, and clear on toggle/session changes.
