@@ -126,6 +126,7 @@ T.steps({
  end},
  {name="reinstall-active-stream",run=function()
   installPackage(T.run.."/duris-client.mpackage")
+  ArjMapper.config.apiBase=T.config.map_base
  end,wait=.65,verify=function()
   T.check(ArjUI.gmcpNegotiation.subscriptions==1 and ArjUI.prepLabel.message=="HOLD 0:17"
     and not ArjUI.gmcpRetryTimer,"reinstall requests and receives a fresh estimate for an already active stream")
@@ -134,14 +135,29 @@ T.steps({
  {name="refreshed-interests",run=function()
   T.check(gmcp.Test.Interests.names[2]=="Duris.Time","resnapshot preserves other active interests")
  end},
+ {name="mob-selectors-wire",run=function()
+  T.originalSend("mob-selectors",false)
+ end,wait=.5,verify=function()
+  local npcs=ArjUI.state.npcs
+  T.check(#npcs==2 and npcs[1].target=="2.bullywug" and npcs[2].target=="",
+    "wire snapshot decodes the optional selector and explicitly unavailable target")
+ end,actions=function()
+  local box=ArjUI.mobsBox
+  local w,h=calcFontSize(9)
+  return {{type="click",x=box:get_x()+w*2,y=box:get_y()+h/2}}
+ end},
  {name="preparation-protocol-disabled",run=function()
   T.originalSend("prep-active",false)
  end,wait=.5,verify=function()
   T.check(ArjUI.prepTimer,"timer can restart after invalidation")
+  T.check(ArjUI.currentMenu,"wire mob selector opens a menu before GMCP stops")
   T.originalSend("prep-wont",false)
  end},
  {name="preparation-disabled-clear",run=function() end,verify=function()
   T.check(ArjUI.prepLabel.message=="PREP —" and not ArjUI.prepTimer,"WONT GMCP clears estimate and stops timer")
+  T.check(select(3,getConnectionInfo()),"the game socket stays connected after WONT GMCP")
+  T.check(not ArjUI.currentMenu and #ArjUI.state.npcs==0
+    and T.lines("ArjUI_MobsBox"):find("(none)",1,true),"WONT GMCP invalidates mob rows and closes their menu")
  end},
  {name="wire-disconnect",run=function()
   ArjUI.state.spellCommand="commune"

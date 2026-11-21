@@ -1525,3 +1525,11 @@ Reviewed `03-mob-templates.png`, `05-mob-hunter-row-after-input.png`,
 `14-mob-selector-refresh.png`, `16-mob-legacy-collision-after-input.png` and
 `errors-view.png` in the `20261121T171810Z-2627502f-information` suite run.
 Production Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.
+
+PR review added a loopback regression for Telnet WONT GMCP while the game
+socket stays open. The Mudlet run reproduced the stale menu on
+the original PR head. After the fix, Mudlet 5.0.1 decoded the room selectors,
+opened the mob menu on a native click, then cleared the list and closed the
+menu when GMCP stopped. Reviewed the menu, cleared list and empty Errors view
+in `20261121T173151Z-7be4f1ff-server-wire`, and repeated the separate rows, combat
+tag, menu and legacy views in `20261121T173105Z-6b698cec-information`.

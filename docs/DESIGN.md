@@ -108,11 +108,14 @@ v1 layout available to older package versions.
 
 MOBS lists one row per mob template (vnum) in room order. The row shows the
 number of copies and a combat tag for that template, preferring `[vs YOU]`.
-Its actions use the first available server-supplied room selector within the
-stack. A new room snapshot closes an open mob menu because its selector can
-change. On older servers that omit selectors, rows whose keyword is shared
-across visible templates are display-only. Masked infravision entries remain
-hidden from the panel.
+Its actions use the first available `Room.Info.npcs[].target` selector within
+the stack. The server sends an empty string for an unavailable selector. A
+new room snapshot closes an open mob menu because its selector can change.
+Losing GMCP clears the mob list and closes its menu until a fresh snapshot
+arrives. On older servers that omit selectors, rows whose first keyword
+is shared across visible templates are display-only. Other legacy actions
+use keyword matching, which can also match secondary aliases. Masked
+infravision entries remain hidden from the panel.
 
 The character tabs are **GROUP / STATS / GEAR / SPELLS / WHO / SHIP**, with GROUP
 selected initially. GEAR remembers the selected INV or EQ subtab during the UI

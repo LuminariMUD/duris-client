@@ -2911,6 +2911,8 @@ function ArjUI:registerGMCPHandlers()
       self:setSpellPreparation(nil)
       self.damage.gmcpAvailable,self.damage.source=false,nil
       self.damage.incomplete=true
+      self.state.npcs = {}
+      self:renderMobs()
       self:renderInventory(); self:renderEq(); self:renderDamage()
     end
   end)
