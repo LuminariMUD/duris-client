@@ -1511,3 +1511,17 @@ fails when its fix is removed:
 `console` passes 61 assertions and the full suite passes **32/32** under Mudlet 5.0.1/Xvfb,
 with empty Errors views. Live Duris, Mudlet 4.19.1 (which may lack
 `getTimestamp`, `enableTimeStamps` or `f3SearchEnabled`) and native DPI remain unverified.
+
+## 2.12.1 Mob Panel grouping and selectors — 2026-11-21
+
+Mudlet 5.0.1 on Linux/Xvfb passed the 69-assertion `information` scenario and
+all 35 offline suite expectations. Native pointer clicks on the two bullywug
+rows sent each row's selector for Look, Consider, Kill, a custom command and a
+custom spell. The scenario also covers identical names with different vnums,
+same-template stacks, legacy keyword collisions, masked infravision, a cleared
+room and an old menu callback after a selector changes.
+
+Reviewed `03-mob-templates.png`, `05-mob-hunter-row-after-input.png`,
+`14-mob-selector-refresh.png`, `16-mob-legacy-collision-after-input.png` and
+`errors-view.png` in the `20261121T171810Z-2627502f-information` suite run.
+Production Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.

@@ -1,5 +1,23 @@
 local T=DurisTest
 ArjUI.initialDataRequested=true
+local hunter={vnum=80100,keyword="bullywug",name="an elder bullywug hunter",
+ colored_name="&+gan elder bully&+Lwug&+g hunter&N",target="3.bullywug",fighting="you"}
+local woman={vnum=80090,keyword="bullywug",name="a bullywug woman",
+ colored_name="&+ga bully&+ywug&+g woman&N",target="2.bullywug"}
+local function mobs(npcs)
+ T.emit("Room.Info",{num=80308,name="A Bullywug Hut",npcs=npcs,items={{name="a red apple"}}})
+ return (T.lines("ArjUI_MobsBox"):gsub("%s+"," "))
+end
+local function mobRow(line)
+ local box=ArjUI.mobsBox
+ local w,h=calcFontSize(9)
+ return {type="click",x=box:get_x()+w*2,y=box:get_y()+h*(line-.5)}
+end
+local function mobMenuAction(index)
+ local menu=assert(ArjUI.currentMenu,"mob row opens the action menu")
+ -- Menu entries are scroll-local, below the 22px title band.
+ return {type="click",x=menu:get_x()+40,y=menu:get_y()+32+(index-1)*22}
+end
 T.steps({
  {name="room-mobs",run=function()
   local room,players=ArjUI.panels.room.frame,ArjUI.panels.players.frame
@@ -17,6 +35,74 @@ T.steps({
   ArjUI:panelAction("room","maximize")
   ArjUI:panelAction("room","restore")
   T.check(ArjUI.mobsBox.hidden and not ArjUI.objsBox.hidden,"ROOM restore retains selected view")
+ end,actions=function() return {T.click(ArjUI.roomTabs.mobs)} end},
+ {name="mob-templates",run=function()
+  local lines=mobs({woman,hunter})
+  T.check(lines:find("a bullywug woman an elder bullywug hunter %[vs YOU%]") and not lines:find("(x2)",1,true),
+    "shared keyword produces separate rows in server order and combat tag stays on the hunter")
+  ArjUI.customCommands.mobs={{text="Inspect",cmd="examine"},{text="Blindness",cmd="blindness",isSpell=true}}
+ end,actions=function() return {mobRow(1)} end},
+ {name="mob-woman-menu",run=function() end,actions=function() return {mobMenuAction(1)} end},
+ {name="mob-hunter-row",run=function()
+  T.check(T.commands[#T.commands].command=="look 2.bullywug","Look uses the woman's server selector")
+ end,actions=function() return {mobRow(2)} end},
+ {name="mob-hunter-menu",run=function() end,actions=function() return {mobMenuAction(2)} end},
+ {name="mob-hunter-select",run=function()
+  T.check(T.commands[#T.commands].command=="consider 3.bullywug","Consider uses the hunter's server selector")
+ end,actions=function() return {mobRow(2)} end},
+ {name="mob-kill-menu",run=function() end,actions=function() return {mobMenuAction(3)} end},
+ {name="mob-custom-row",run=function()
+  T.check(T.commands[#T.commands].command=="kill 3.bullywug","Kill uses the hunter's server selector")
+ end,actions=function() return {mobRow(1)} end},
+ {name="mob-custom-menu",run=function() end,actions=function() return {mobMenuAction(4)} end},
+ {name="mob-spell-row",run=function()
+  T.check(T.commands[#T.commands].command=="examine 2.bullywug","Custom commands use the row selector")
+ end,actions=function() return {mobRow(1)} end},
+ {name="mob-spell-menu",run=function() end,actions=function() return {mobMenuAction(6)} end},
+ {name="mob-ordinals",run=function()
+  T.check(T.commands[#T.commands].command=="cast 'blindness' 2.bullywug","Custom spells use the row selector")
+ end,actions=function() return {mobRow(1)} end},
+ {name="mob-selector-refresh",run=function()
+  local menu=assert(ArjUI.currentMenu)
+  local oldMobAction=menu.windowList[menu.name.."_entries"].windowList[menu.name.."_3"].clickCallback
+  hunter.target="1.bullywug"
+  local lines=mobs({hunter,{vnum=80100,keyword="bullywug",name=hunter.name,target="2.bullywug"}})
+  T.check(lines:find("an elder bullywug hunter %(x2%) %[vs YOU%]"),"same vnum stacks with its combat tag")
+  T.check(not ArjUI.currentMenu,"a replacement snapshot closes the open mob menu")
+  local sent=#T.commands
+  oldMobAction()
+  T.check(#T.commands==sent,"a stale callback cannot retarget a recycled ordinal")
+ end,actions=function() return {mobRow(1)} end},
+ {name="mob-refreshed-menu",run=function() end,actions=function() return {mobMenuAction(1)} end},
+ {name="mob-legacy-collision",run=function()
+  T.check(T.commands[#T.commands].command=="look 1.bullywug","fresh stacked row uses the first selector in the new snapshot")
+  local lines=mobs({
+   {vnum=80100,keyword="bullywug",name=hunter.name},
+   {vnum=80090,keyword="Bullywug",name=woman.name},
+   {vnum=0,keyword="",name="a red shape"}
+  })
+  T.check(lines:find(hunter.name,1,true) and lines:find(woman.name,1,true) and not lines:find("a red shape",1,true),
+    "legacy overlap still renders both templates and skips masked NPCs")
+ end,actions=function() return {mobRow(1)} end},
+ {name="mob-legacy-unavailable",run=function()
+  T.check(not ArjUI.currentMenu,"legacy overlap offers no ambiguous menu")
+  mobs({{vnum=80100,keyword="bullywug",name=hunter.name,target=""}})
+ end,actions=function() return {mobRow(1)} end},
+ {name="mob-legacy-single",run=function()
+  T.check(not ArjUI.currentMenu,"explicitly unavailable selector has no legacy fallback")
+  local lines=mobs({{vnum=80105,name="a young bullywug",keyword="bullywug",target="1.bullywug"},
+   {vnum=80106,name="a young bullywug",keyword="bullywug",target="2.bullywug"}})
+  local _,rows=lines:gsub("a young bullywug","")
+  T.check(rows==2,"identical plain names and keywords still form separate vnum groups")
+  lines=mobs({{name="guardian"}})
+  T.check(lines:find("guardian",1,true),"name-only legacy NPC renders")
+ end,actions=function() return {mobRow(1)} end},
+ {name="mob-legacy-menu",run=function() end,actions=function() return {mobMenuAction(1)} end},
+ {name="mob-empty",run=function()
+  T.check(T.commands[#T.commands].command=="look guardian","name-only legacy row retains its action")
+  local lines=mobs({})
+  T.check(lines:find("(none)",1,true) and not lines:find("guardian",1,true),"empty room clears prior mob rows")
+  ArjUI.customCommands.mobs={}
  end,actions=function() return {T.click(ArjUI.tabButtons.gear)} end},
  {name="inventory",run=function()
   T.check(ArjUI.activeTab=="gear" and ArjUI.activeGearTab=="inv" and T.commands[#T.commands].command=="inv","INV click sends one inventory request")

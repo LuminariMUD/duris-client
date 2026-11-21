@@ -2172,6 +2172,7 @@ function ArjUI:showContextMenu(items, x, y)
     btn:echo(item.text)
 
     btn:setClickCallback(function()
+      if menu.mobSnapshot and self.state.npcs ~= menu.mobSnapshot then return end
       self:disposeWidget(menu)
       self.currentMenu = nil
       -- Package actions share the same menu path as existing game commands.
@@ -3665,36 +3666,49 @@ function ArjUI:renderExits()
 end
 
 function ArjUI:renderMobs()
-  self.mobsBox:clear()
   local npcs = self.state.npcs or {}
+  local menu = self.currentMenu
+  if menu and menu.mobSnapshot and menu.mobSnapshot ~= npcs then
+    self:disposeWidget(menu)
+    self.currentMenu = nil
+  end
+  self.mobsBox:clear()
   if #npcs == 0 then self.mobsBox:cecho("<dim_gray>(none)\n"); return end
-  
-  -- Track by keyword, preserve colored_name for display
-  -- Room.Info.npcs[].fighting = "you" | player name | npc name | "someone" | "someone who has already left"
-  local counts, order, coloredNames, fighting = {}, {}, {}, {}
+
+  local groups, order, keywordOwners = {}, {}, {}
   for _, npc in ipairs(npcs) do
-    local keyword = npc.keyword or npc.name or "unknown"
-    local colored = npc.colored_name or npc.name or keyword
-    if keyword ~= "" then
-      if not counts[keyword] then 
-        counts[keyword] = 0
-        table.insert(order, keyword)
-        coloredNames[keyword] = colored
+    if npc.keyword ~= "" then -- An empty keyword masks an infravision-only NPC.
+      local keyword = npc.keyword or npc.name
+      local name = npc.name or keyword or "unknown"
+      local vnum = tonumber(npc.vnum)
+      local key = finite(vnum) and vnum > 0 and vnum % 1 == 0 and vnum or name
+      local group = groups[key]
+      if not group then
+        group = {coloredName = npc.colored_name or name, count = 0,
+          legacyTarget = npc.target == nil and keyword or nil}
+        groups[key] = group
+        order[#order + 1] = group
       end
-      counts[keyword] = counts[keyword] + 1
+      group.count = group.count + 1
+      if keyword then
+        local folded = keyword:lower()
+        local owner = keywordOwners[folded]
+        keywordOwners[folded] = (owner == nil or owner == group) and group or false
+      end
+      local target = npc.target
+      if not group.target and type(target) == "string" and target:match("^[1-9]%d*%.[^%c%s;|]+$") then
+        group.target = target
+      end
       if type(npc.fighting) == "string" and npc.fighting ~= "" then
-        -- prefer "you" over any other opponent when several share a keyword
-        if npc.fighting == "you" or not fighting[keyword] then fighting[keyword] = npc.fighting end
+        if npc.fighting == "you" or not group.fighting then group.fighting = npc.fighting end
       end
     end
   end
-  
-  for _, keyword in ipairs(order) do
-    local count = counts[keyword]
-    local colored = coloredNames[keyword] or keyword
-    local coloredDisplay = durisToDecho(colored)
+
+  for _, group in ipairs(order) do
+    local coloredDisplay = durisToDecho(group.coloredName)
     local tag = ""
-    local f = fighting[keyword]
+    local f = group.fighting
     if f == "you" then
       tag = " <220,60,60>[vs YOU]"
     elseif f and not f:find("^someone") then
@@ -3702,10 +3716,23 @@ function ArjUI:renderMobs()
     elseif f then
       tag = " <140,140,140>[fighting]"
     end
-    local text = count > 1 and string.format("%s <128,128,128>(x%d)%s\n", coloredDisplay, count, tag) or string.format("%s%s\n", coloredDisplay, tag)
-    self.mobsBox:dechoLink(text, function()
-      self:showContextMenu(self:getContextMenuItems("mobs", keyword))
-    end, "Click for options", true)
+    local count = group.count > 1 and string.format(" <128,128,128>(x%d)", group.count) or ""
+    local text = coloredDisplay .. count .. tag .. "\n"
+    local legacyTarget = group.legacyTarget
+    -- A visible overlap on older servers cannot be disambiguated from the first keyword.
+    local target = group.target
+    if not target and legacyTarget and keywordOwners[legacyTarget:lower()] == group then
+      target = legacyTarget
+    end
+    if target then
+      self.mobsBox:dechoLink(text, function()
+        if self.state.npcs ~= npcs then return end
+        self:showContextMenu(self:getContextMenuItems("mobs", target))
+        self.currentMenu.mobSnapshot = npcs
+      end, "Click for options", true)
+    else
+      self.mobsBox:decho(text)
+    end
   end
 end
 

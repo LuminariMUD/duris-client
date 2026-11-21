@@ -106,6 +106,14 @@ rectangle into ROOM, falling back to ITEMS. The combined frame stays accessible
 if either old panel was visible. Migration saves to the v2 file and leaves the
 v1 layout available to older package versions.
 
+MOBS lists one row per mob template (vnum) in room order. The row shows the
+number of copies and a combat tag for that template, preferring `[vs YOU]`.
+Its actions use the first available server-supplied room selector within the
+stack. A new room snapshot closes an open mob menu because its selector can
+change. On older servers that omit selectors, rows whose keyword is shared
+across visible templates are display-only. Masked infravision entries remain
+hidden from the panel.
+
 The character tabs are **GROUP / STATS / GEAR / SPELLS / WHO / SHIP**, with GROUP
 selected initially. GEAR remembers the selected INV or EQ subtab during the UI
 session. SPELLS has **INTERFACE / SPELLS** subtabs, with INTERFACE selected
