@@ -36,3 +36,4 @@ A **Mudlet client package** for the MUD *Duris*. Repository: https://github.com/
 
 ## Git
 - Commit only when asked. Keep commits small and describe what changed in the XML/Lua.
+- **Attribution:** NEVER add co-authors, attributions, `Claude-Session`, or signed-off-by lines.
