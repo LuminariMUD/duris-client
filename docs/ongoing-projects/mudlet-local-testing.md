@@ -1533,3 +1533,18 @@ opened the mob menu on a native click, then cleared the list and closed the
 menu when GMCP stopped. Reviewed the menu, cleared list and empty Errors view
 in `20261121T173151Z-7be4f1ff-server-wire`, and repeated the separate rows, combat
 tag, menu and legacy views in `20261121T173105Z-6b698cec-information`.
+
+## 2.12.2 PLAYERS room selectors under racewar
+
+`server-wire` used native row and menu clicks in Mudlet 5.0.1/Xvfb. The
+original package sent `look Enemy` and failed the regression. The rebuilt
+package sent `look 3.Human` and passed all 62 assertions. The loopback run
+also checked legacy Look by name, name-based Consent, JSON null, selector
+replacement, queued Look callback invalidation, and GMCP shutdown. Reviewed
+the player menus, refreshed snapshot and empty Errors view in
+`20261121T174842Z-3d0df857-server-wire`.
+
+Duris's native room-selector harness at
+`77c0ce2865ade168cae34d52408d2a58ce36c9cf` passed. It confirms that the
+opposing human resolves by ordinal under racewar when lookup by name fails.
+Production Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.

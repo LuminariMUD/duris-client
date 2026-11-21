@@ -158,10 +158,23 @@ class GMCPServer:
                                 playing = True
                                 capabilities(playing)
                                 preparation_snapshot()
+                            if phase in {'racewar-players', 'racewar-players-shifted'}:
+                                # Match the ordinals in Duris's native racewar harness.
+                                selector = '3.Human' if phase == 'racewar-players' else '2.Human'
+                                packet('Room.Info', {
+                                    'num': 22800, 'zone': 228, 'name': 'Test room',
+                                    'players': [
+                                        {'name': 'Enemy', 'target': selector},
+                                        {'name': 'Friend', 'target': '1.Friend'},
+                                        {'name': 'Above', 'target': None},
+                                        {'name': 'Legacy'},
+                                    ],
+                                })
                             if phase == 'mob-selectors':
                                 # Synthetic NPC entries exercise the optional Duris #1324 field.
                                 packet('Room.Info', {
                                     'num': 22800, 'zone': 228, 'name': 'Test room',
+                                    'players': [{'name': 'Friend', 'target': '1.Friend'}],
                                     'npcs': [
                                         {'vnum': 80100, 'name': 'an elder bullywug hunter',
                                          'keyword': 'bullywug', 'target': '2.bullywug'},
