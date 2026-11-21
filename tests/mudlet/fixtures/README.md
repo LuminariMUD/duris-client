@@ -54,6 +54,12 @@ decoding both a room selector and an explicitly unavailable target. It opens
 the linked row by mouse and checks that Telnet WONT GMCP clears the list and
 closes the mob menu while the socket remains connected.
 
+For PLAYERS, `server-wire` models the opposing human and selector from
+Duris's [native racewar harness](https://github.com/LuminariMUD/Duris/blob/77c0ce2865ade168cae34d52408d2a58ce36c9cf/tests/async/test_room_target_selectors.py#L56).
+Native row and menu clicks check the Look command recorded by Mudlet.
+The loopback packets exercise JSON null, absent selectors, name-based
+Consent, refreshed ordinals and cleanup when GMCP stops.
+
 `lowhp` reproduces the original manual fixture. Other scenarios exercise state
 transitions, not just fully populated panels. Login querying is suppressed in
 ordinary fixtures and separately observed in `login`. `send` is recorded only

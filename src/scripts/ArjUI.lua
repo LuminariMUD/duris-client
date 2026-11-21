@@ -873,6 +873,10 @@ local function normalizeTargetName(name)
   return trim(s)
 end
 
+local function roomSelector(value)
+  return type(value) == "string" and value:match("^[1-9]%d*%.[^%c%s;|]+$")
+end
+
 local function quoteIfNeeded(s)
   s = trim(s or "")
   if s:find("%s") then
@@ -949,6 +953,7 @@ function ArjUI:endSession()
   self.scanCounts = {}
   self:clearCast()
   self:resetCharacterState()
+  self:invalidateRoomMenu()
   self.damage = {fight=0, fightHits=0, session=0, sessionHits=0, sessionStart=os.time(), lastHit=0,incomplete=self.combatStopped==true}
   if ArjAuto and ArjAuto.resetSession then ArjAuto:resetSession() end
   if ArjMapper and ArjMapper.resetSession then ArjMapper:resetSession() end
@@ -2120,7 +2125,18 @@ end
 -- CONTEXT MENUS
 -- ============================================================
 
-function ArjUI:showContextMenu(items, x, y)
+local function staleRoomMenu(ui, menu)
+  return menu and menu.roomList and ui.state[menu.roomList] ~= menu.roomSnapshot
+end
+
+function ArjUI:invalidateRoomMenu()
+  if staleRoomMenu(self, self.currentMenu) then
+    self:disposeWidget(self.currentMenu)
+    self.currentMenu = nil
+  end
+end
+
+function ArjUI:showContextMenu(items, x, y, roomList)
   -- Hide any existing menu
   if self.currentMenu then self:disposeWidget(self.currentMenu); self.currentMenu=nil end
 
@@ -2141,6 +2157,9 @@ function ArjUI:showContextMenu(items, x, y)
     name = "ArjUI_Menu_" .. tostring(os.time()) .. "_" .. tostring(math.random(1000,9999)),
     x = x, y = y, width = menuW, height = menuH,
   }, self.main)
+  if roomList then
+    menu.roomList, menu.roomSnapshot = roomList, self.state[roomList]
+  end
   menu:setStyleSheet("background-color: #0f0e0c; border: 1px solid #5a4b37; border-radius: 3px;")
   menu:raise()
   
@@ -2172,7 +2191,7 @@ function ArjUI:showContextMenu(items, x, y)
     btn:echo(item.text)
 
     btn:setClickCallback(function()
-      if menu.mobSnapshot and self.state.npcs ~= menu.mobSnapshot then return end
+      if staleRoomMenu(self, menu) then return end
       self:disposeWidget(menu)
       self.currentMenu = nil
       -- Package actions share the same menu path as existing game commands.
@@ -2485,19 +2504,25 @@ end
 -- CONTEXT MENU WITH CUSTOM COMMANDS
 -- ============================================================
 
-function ArjUI:getContextMenuItems(category, target)
+function ArjUI:getContextMenuItems(category, target, roomTarget)
   local items = {}
   
   -- Default commands based on category
   if category == "players" then
-    items = {
-      { text = "Look", cmd = "look " .. target },
-      { text = "Assist", cmd = "assist " .. target },
-      { text = "Follow", cmd = "follow " .. target },
-      { text = "Rescue", cmd = "rescue " .. target },
-      { text = "Consent", cmd = "consent " .. target },
-      { text = "Group", cmd = "group " .. target },
-    }
+    -- Nil retains name targeting for older snapshots and GROUP panel menus.
+    -- False means the current server explicitly supplied no usable selector.
+    if roomTarget == nil then roomTarget = target end
+    if roomTarget then
+      items = {
+        { text = "Look", cmd = "look " .. roomTarget },
+        { text = "Assist", cmd = "assist " .. roomTarget },
+        { text = "Follow", cmd = "follow " .. roomTarget },
+        { text = "Rescue", cmd = "rescue " .. roomTarget },
+      }
+    end
+    -- Consent scans connected player names. Custom actions retain their name argument.
+    items[#items + 1] = { text = "Consent", cmd = "consent " .. target }
+    if roomTarget then items[#items + 1] = { text = "Group", cmd = "group " .. roomTarget } end
   elseif category == "mobs" then
     items = {
       { text = "Look", cmd = "look " .. target },
@@ -2911,8 +2936,10 @@ function ArjUI:registerGMCPHandlers()
       self:setSpellPreparation(nil)
       self.damage.gmcpAvailable,self.damage.source=false,nil
       self.damage.incomplete=true
-      self.state.npcs = {}
+      self.state.npcs, self.state.players = {}, {}
+      self:invalidateRoomMenu()
       self:renderMobs()
+      self:renderPlayers()
       self:renderInventory(); self:renderEq(); self:renderDamage()
     end
   end)
@@ -3245,6 +3272,7 @@ function ArjUI:onRoomInfo()
   self.state.npcs = r.npcs or {}
   self.state.items = r.items or {}
   self.state.players = r.players or {}
+  self:invalidateRoomMenu()
   
   self:renderRoom()
   self:renderMobs()
@@ -3669,11 +3697,6 @@ end
 
 function ArjUI:renderMobs()
   local npcs = self.state.npcs or {}
-  local menu = self.currentMenu
-  if menu and menu.mobSnapshot and menu.mobSnapshot ~= npcs then
-    self:disposeWidget(menu)
-    self.currentMenu = nil
-  end
   self.mobsBox:clear()
   if #npcs == 0 then self.mobsBox:cecho("<dim_gray>(none)\n"); return end
 
@@ -3698,7 +3721,7 @@ function ArjUI:renderMobs()
         keywordOwners[folded] = (owner == nil or owner == group) and group or false
       end
       local target = npc.target
-      if not group.target and type(target) == "string" and target:match("^[1-9]%d*%.[^%c%s;|]+$") then
+      if not group.target and roomSelector(target) then
         group.target = target
       end
       if type(npc.fighting) == "string" and npc.fighting ~= "" then
@@ -3729,8 +3752,7 @@ function ArjUI:renderMobs()
     if target then
       self.mobsBox:dechoLink(text, function()
         if self.state.npcs ~= npcs then return end
-        self:showContextMenu(self:getContextMenuItems("mobs", target))
-        self.currentMenu.mobSnapshot = npcs
+        self:showContextMenu(self:getContextMenuItems("mobs", target), nil, nil, "npcs")
       end, "Click for options", true)
     else
       self.mobsBox:decho(text)
@@ -3779,7 +3801,6 @@ function ArjUI:renderPlayers()
   for _, p in ipairs(players) do
     local name = p.name or "Someone"
     local displayName = normalizeTargetName(name)
-    local cmdName = displayName  -- Use clean name for commands
     
     -- Check for alignment in player data from Room.Info, or from our tracked alignments
     local alignment = p.alignment or alignments[name:lower()] or "unknown"
@@ -3795,10 +3816,12 @@ function ArjUI:renderPlayers()
       color = "<140,140,140>"  -- Gray for neutral/unknown
     end
     
-    -- Use unified context menu system for players
-    local target = quoteIfNeeded(cmdName)
+    local nameTarget = quoteIfNeeded(displayName)
+    local roomTarget = p.target
+    if roomTarget ~= nil and not roomSelector(roomTarget) then roomTarget = false end
     self.enemyBox:dechoLink(string.format("%s%s\n", color, displayName), function()
-      self:showContextMenu(self:getContextMenuItems("players", target))
+      if self.state.players ~= players then return end
+      self:showContextMenu(self:getContextMenuItems("players", nameTarget, roomTarget), nil, nil, "players")
     end, "Click for options", true)
   end
 end

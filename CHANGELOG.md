@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.12.2 - 2026-11-21
+
+- PLAYERS uses Duris room selectors for Look, Assist, Follow, Rescue, and Group. This lets Look identify the selected opposing player under racewar. Consent, custom actions, and older servers retain name targeting. Player menus close when the room snapshot changes or GMCP stops.
+
 ## 2.12.1 - 2026-11-21
 
 - ROOM → MOBS lists different mob templates separately, even when they share a keyword. Copies of one template still stack, with combat tags scoped to that stack. Menu actions use the game's room selectors when available. Rows with a shared keyword stay unlinked on older servers that omit selectors.

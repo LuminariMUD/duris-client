@@ -117,6 +117,14 @@ is shared across visible templates are display-only. Other legacy actions
 use keyword matching, which can also match secondary aliases. Masked
 infravision entries remain hidden from the panel.
 
+PLAYERS displays names and keeps the server's `Room.Info.players[].target`
+separate for Look, Assist, Follow, Rescue, and Group. The room matcher can
+resolve an opposing player by an ordinal and race when racewar prevents
+lookup by name. If the field is absent, room actions use the
+name for compatibility. An explicit null omits the room-matcher actions.
+Consent and custom actions continue to receive the displayed name. The same
+room snapshot and GMCP lifecycle rules close open player menus.
+
 The character tabs are **GROUP / STATS / GEAR / SPELLS / WHO / SHIP**, with GROUP
 selected initially. GEAR remembers the selected INV or EQ subtab during the UI
 session. SPELLS has **INTERFACE / SPELLS** subtabs, with INTERFACE selected

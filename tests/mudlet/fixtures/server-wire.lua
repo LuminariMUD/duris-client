@@ -1,12 +1,25 @@
 local T=DurisTest
 local nativeGMCP=sendGMCP
 local recordedSend=send
+local oldPlayerLook, sentBeforeRefresh
 local function withNativeSend(action)
   local recordedSend = send
   send = T.originalSend
   local ok, err = pcall(action)
   send = recordedSend
   assert(ok, err)
+end
+local function clickPlayer(row)
+  local box=ArjUI.enemyBox
+  local w,h=calcFontSize(9)
+  return {type="click",x=box:get_x()+w*2,y=box:get_y()+h*(row-.5)}
+end
+local function clickMenuAction(index)
+  local menu=assert(ArjUI.currentMenu,"player row opens its menu")
+  return {type="click",x=menu:get_x()+40,y=menu:get_y()+32+(index-1)*22}
+end
+local function firstMenuButton(menu)
+  return menu.windowList[menu.name.."_entries"].windowList[menu.name.."_1"]
 end
 T.steps({
  {name="negotiate",run=function()
@@ -135,7 +148,42 @@ T.steps({
  {name="refreshed-interests",run=function()
   T.check(gmcp.Test.Interests.names[2]=="Duris.Time","resnapshot preserves other active interests")
  end},
+ {name="racewar-player-snapshot",run=function()
+  T.originalSend("racewar-players",false)
+ end,wait=.5,verify=function()
+  local players=ArjUI.state.players
+  T.check(players[1].target=="3.Human" and players[3].target==yajl.null,
+    "wire snapshot decodes the racewar selector and explicit JSON null")
+  T.check(T.lines("ArjUI_EnemyBox"):find("Enemy",1,true),"opposing player keeps the displayed name")
+ end,actions=function() return {clickPlayer(1)} end},
+ {name="racewar-player-look",run=function() end,actions=function() return {clickMenuAction(1)} end},
+ {name="racewar-player-result",run=function()
+  T.check(T.commands[#T.commands].command=="look 3.Human","Look sends the opposing player's room selector")
+ end,actions=function() return {clickPlayer(2)} end},
+ {name="player-consent",run=function() end,actions=function() return {clickMenuAction(5)} end},
+ {name="player-legacy",run=function()
+  T.check(T.commands[#T.commands].command=="consent Friend","Consent uses the player name required by its parser")
+ end,actions=function() return {clickPlayer(4)} end},
+ {name="player-legacy-look",run=function() end,actions=function() return {clickMenuAction(1)} end},
+ {name="player-unavailable",run=function()
+  T.check(T.commands[#T.commands].command=="look Legacy","missing selector retains legacy Look by name")
+ end,actions=function() return {clickPlayer(3)} end},
+ {name="player-no-room-actions",run=function()
+  T.check(firstMenuButton(assert(ArjUI.currentMenu)).message=="Consent",
+    "explicitly unavailable selector omits room actions and retains name-based Consent")
+ end,actions=function() return {clickPlayer(1)} end},
+ {name="player-selector-refresh",run=function()
+  oldPlayerLook=firstMenuButton(assert(ArjUI.currentMenu)).clickCallback
+  sentBeforeRefresh=#T.commands
+  T.originalSend("racewar-players-shifted",false)
+ end,wait=.5,verify=function()
+  T.check(not ArjUI.currentMenu,"replacement room snapshot closes the player menu")
+  oldPlayerLook()
+  T.check(#T.commands==sentBeforeRefresh,"stale Look cannot send the previous ordinal")
+ end,actions=function() return {clickPlayer(1)} end},
+ {name="player-refreshed-look",run=function() end,actions=function() return {clickMenuAction(1)} end},
  {name="mob-selectors-wire",run=function()
+  T.check(T.commands[#T.commands].command=="look 2.Human","reopened player menu uses the new ordinal")
   T.originalSend("mob-selectors",false)
  end,wait=.5,verify=function()
   local npcs=ArjUI.state.npcs
@@ -151,11 +199,14 @@ T.steps({
  end,wait=.5,verify=function()
   T.check(ArjUI.prepTimer,"timer can restart after invalidation")
   T.check(ArjUI.currentMenu,"wire mob selector opens a menu before GMCP stops")
+  T.check(#ArjUI.state.players==1,"a player selector is present before GMCP stops")
   T.originalSend("prep-wont",false)
  end},
  {name="preparation-disabled-clear",run=function() end,verify=function()
   T.check(ArjUI.prepLabel.message=="PREP —" and not ArjUI.prepTimer,"WONT GMCP clears estimate and stops timer")
   T.check(select(3,getConnectionInfo()),"the game socket stays connected after WONT GMCP")
+  T.check(#ArjUI.state.players==0 and T.lines("ArjUI_EnemyBox"):find("(none)",1,true),
+    "WONT GMCP also invalidates the player list")
   T.check(not ArjUI.currentMenu and #ArjUI.state.npcs==0
     and T.lines("ArjUI_MobsBox"):find("(none)",1,true),"WONT GMCP invalidates mob rows and closes their menu")
  end},
