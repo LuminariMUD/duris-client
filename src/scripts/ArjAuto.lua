@@ -1,8 +1,7 @@
 -- ArjAuto (Mudlet 4.19.1)
 -- Automation and utility aliases for Duris, adapted from the community
--- "lielz scripts" collection (2015-2024). Every automatic behaviour is OFF
--- until switched on with `auto <name> on`; the setting is remembered.
--- Type `auto` for help.
+-- "lielz scripts" collection (2015-2024). Auto-stand is on by default.
+-- Change saved toggles with `auto <name> on|off`. Type `auto` for help.
 
 ArjAuto = ArjAuto or {}
 ArjAuto.triggers = ArjAuto.triggers or {}
@@ -15,7 +14,7 @@ ArjAuto.timers = ArjAuto.timers or {}
 -- ============================================================
 
 ArjAuto.toggleDefaults = {
-  autoStand   = false, -- stand up after being knocked down, and when mem/pray finishes
+  autoStand   = true,  -- stand up after being knocked down, and when mem/pray finishes
   autoGroup   = false, -- 'group <name>' when someone gives you consent
   autoRescue  = false, -- rescue people on your rescue list when they are attacked
   autoAssist  = false, -- assist a group member who gets attacked while you are idle
@@ -216,15 +215,15 @@ function ArjAuto:setupCombatTriggers()
   -- Auto stand: knocked down or finished memming/praying
   local standPatterns = {
     "^As (.*?) avoids your bash, you topple over and fall to the ground\\.$",
-    "In your haste to slam people around, you slip and fall!",
+    "^In your haste to slam people around, you slip and fall!$",
     "^Unfortunately\\. (.*?) grabs your leg and yanks you down to the ground!$",
-    "You manage with complete incompetence to throw yourself head first into the ground!",
-    "avoids your maul, and you become FURIOUS when you hit the ground!",
+    "^You manage with complete incompetence to throw yourself head first into the ground!$",
+    "^You growl as .+ avoids your maul, and you become FURIOUS when you hit the ground!$",
     "^You are knocked to the ground",
-    "You stagger and fall to your knees!",
-    "The powerful sweep sends you crashing to the ground!",
-    "The wave slams into you, knocking you off your feet!",
-    "mighty kick sends you crashing",
+    "^You stagger and fall to your knees!$",
+    "^The powerful sweep sends you crashing to the ground!!?$",
+    "^The wave slams into you, knocking you off your feet!$",
+    "^.+ mighty kick sends you crashing into the wall!$",
     "^You slam up against (.+)$",
     "^Your prayers are complete\\.$",
     "^Your studies are complete\\.$",

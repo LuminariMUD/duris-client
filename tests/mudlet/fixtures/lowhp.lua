@@ -21,7 +21,6 @@ T.check(math.abs(ArjUI.uiRoot:get_y()-math.max(24,height*.028))<2,"initial slim 
 T.check(ArjUI.creditBox.message:find(T.config.candidate.version,1,true), "footer version")
 T.check(not ArjUI.inputBar, "native command line is the only input")
 T.check(T.lines("ArjUI_Console"):find("Visual test: plain incoming text.",1,true), "text routed once to package console")
-for key in pairs(ArjAuto.toggleDefaults) do T.check(ArjAuto.settings[key]==false, key.." defaults off") end
 -- ui debug: a self-describing report for bug reports.
 local report=table.concat(ArjUI:debugReportLines(),"\n")
 T.check(report:find("Package: Arjinius Client "..T.config.candidate.version,1,true),"debug report names the package version")

@@ -29,9 +29,9 @@ design decisions change. Player commands are documented in the
   percentages; long output wraps and large groups scroll inside their panel.
   Fonts and some controls have fixed sizes and need visual checks at each
   supported geometry.
-- **Make automation opt-in.** ArjAuto's behavior toggles start off on a fresh
-  profile. Saved choices persist; repeated-command timers have explicit
-  start/stop commands.
+- **Default to auto-stand.** Fresh profiles stand after recognized knockdown
+  and spell-preparation messages. Saved preferences take precedence. Other
+  ArjAuto toggles are opt-in, and repeat timers have explicit start/stop commands.
 
 ## Interface layout
 
