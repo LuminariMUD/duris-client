@@ -2940,6 +2940,7 @@ function ArjUI:registerGMCPHandlers()
       self.state.tnl, self.state.xpProgress = nil, nil
       self:resetExpTracker()
       self:renderTNLBar()
+      if self.activeTab == "stats" then self:renderStats() end
       self.state.npcs, self.state.players = {}, {}
       self:invalidateRoomMenu()
       self:renderMobs()
@@ -3230,9 +3231,9 @@ function ArjUI:onCharVitals()
   if newTnl or newExp then
     -- A Vitals update can omit XP. Never combine halves from different snapshots.
     self.state.tnl = newTnl
-    local total = newExp and newTnl and (newExp + newTnl)
-    self.state.xpProgress = total and total > 0 and newTnl > 0 and math.max(0, newExp / total) or nil
-    if newExp then self:trackExp(newExp, newTnl) end
+    local threshold = newExp and newTnl and newTnl > 0 and (newExp + newTnl) or nil
+    self.state.xpProgress = threshold and threshold > 0 and math.max(0, newExp / threshold) or nil
+    if newExp then self:trackExp(newExp, newTnl, threshold) end
   end
   if v.position then self.state.position = v.position end
   if v.usesMana ~= nil then self.state.usesMana = (v.usesMana == true) end
@@ -3542,23 +3543,22 @@ end
 -- Duris sends zero TNL both at the XP threshold and at MAXLVLMORTAL.
 local maxMortalLevel = 56
 
+local function tnlDisplay(s)
+  local tnl, level = s.tnl, s.charLevel
+  if not tnl or tnl < 0 then return "—" end
+  if tnl == 0 and level then
+    if level >= maxMortalLevel then return "n/a" end
+    return "0 (XP ready)", 1
+  end
+  return string.format("%d", tnl), s.xpProgress or 0
+end
+
 function ArjUI:renderTNLBar()
   local s = self.state
-  local tnl, level = s.tnl, s.charLevel
-  if tnl == 0 and level and level >= maxMortalLevel then
-    self.xpGauge:setValue(0, 1, "TNL: n/a")
-    return
-  end
-
-  local progress, label = s.xpProgress or 0, "TNL: —"
-  if tnl and tnl >= 0 then
-    label = string.format("TNL: %d", tnl)
-    if tnl == 0 and level then
-      progress, label = 1, label .. " (XP ready)"
-    end
-    if s.lastExpGain then label = label .. string.format("   (last +%d)", s.lastExpGain) end
-  end
-  self.xpGauge:setValue(progress, 1, label)
+  local tnl, progress = tnlDisplay(s)
+  local label = "TNL: " .. tnl
+  if progress and s.lastExpGain then label = label .. string.format("   (last +%d)", s.lastExpGain) end
+  self.xpGauge:setValue(progress or 0, 1, label)
 end
 
 function ArjUI:renderVitals()
@@ -4313,7 +4313,8 @@ function ArjUI:renderStats()
     self.statsBox:cecho(string.format("<steel_blue>Mana: <white>%d<dim_gray>/<white>%d\n", s.mana or 0, s.manamax or 0))
   end
   self.statsBox:cecho(string.format("<khaki>Move: <white>%d<dim_gray>/<white>%d\n", s.move or 0, s.movemax or 0))
-  self.statsBox:cecho(string.format("<medium_orchid>TNL: <white>%d\n", s.tnl or 0))
+  local tnl = tnlDisplay(s)
+  self.statsBox:cecho("<medium_orchid>TNL: <white>" .. tnl .. "\n")
   self.statsBox:cecho(string.format("<dim_gray>Position: <white>%s\n", s.position or "unknown"))
   if s.fighting then
     self.statsBox:cecho(string.format("<dim_gray>Fighting: <indian_red>%s\n", s.fighting))
@@ -5015,21 +5016,22 @@ end
 
 function ArjUI:resetExpTracker()
   local s = self.state
-  s.exp, s.lastExpGain = nil, nil
+  s.exp, s.expThreshold, s.lastExpGain = nil, nil, nil
   s.expRevision = (s.expRevision or 0) + 1
 end
 
-function ArjUI:trackExp(exp, tnl)
+function ArjUI:trackExp(exp, tnl, threshold)
   local s = self.state
-  local prev = s.exp
-  s.exp = exp
+  local prev, previousThreshold = s.exp, s.expThreshold
+  s.exp, s.expThreshold = exp, threshold
+  -- A changed threshold makes the delta incomparable even across separate receives.
+  if threshold and previousThreshold and threshold ~= previousThreshold then return end
   if not prev or exp <= prev then return end
   local gained, revision = exp - prev, s.expRevision
   -- Vitals can precede the Status that announces a rollover in the same GMCP burst.
   self:after(0, function()
     if s.expRevision ~= revision then return end
     s.lastExpGain = gained
-    s.sessionExp = (s.sessionExp or 0) + gained
     self:renderTNLBar()
     if not (self.settings and self.settings.expTracker) then return end
     local msg = string.format("<gold>[+%s exp]", fmtNum(gained))

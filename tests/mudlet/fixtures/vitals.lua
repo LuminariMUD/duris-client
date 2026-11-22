@@ -117,6 +117,19 @@ T.steps({
   checkXP(5,"TNL: 1520000")
   T.check(not T.lines("ArjUI_Console"):find("[+70,000 exp]",1,true),"skip gain when the burst changes level")
  end},
+ {name="xp-split-level-loss",run=function()
+  reconnect()
+  status(30)
+  xp(10000,2990000)
+  -- Aggregate required XP changes across level bands. Let the Vitals handler
+  -- settle before delivering the Status packet for the new level.
+  xp(1590000,10000)
+ end,verify=function()
+  T.check(not T.lines("ArjUI_Console"):find("[+1,580,000 exp]",1,true),
+    "a changed XP threshold suppresses a false gain before Status arrives")
+  status(29)
+  checkXP(99.375,"TNL: 10000")
+ end},
  {name="xp-threshold",run=function()
   reconnect()
   status(50)
@@ -131,12 +144,16 @@ T.steps({
   checkXP(0,"TNL: 0")
   status(56)
   checkXP(0,"TNL: n/a")
+  T.check(T.lines("ArjUI_StatsBox"):find("TNL: n/a\n",1,true),
+    "live stats uses the same TNL state as the output gauge")
  end},
  {name="xp-gmcp-disabled",run=function()
   xp(510000,0)
   raiseEvent("sysProtocolDisabled","GMCP")
  end,verify=function()
   checkXP(0,"TNL: —")
+  T.check(T.lines("ArjUI_StatsBox"):find("TNL: —\n",1,true),
+    "live stats uses the same TNL state as the output gauge")
   T.check(not ArjUI.state.lastExpGain,"a queued gain does not survive loss of GMCP")
  end}
 })

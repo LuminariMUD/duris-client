@@ -73,7 +73,8 @@ GAME OUTPUT uses a 16px XP bar above an 18px room and search row. The console
 fills the remaining panel height. The bar shows progress from the current
 GMCP XP and TNL snapshot. Zero TNL shows **XP ready** for a character below the
 mortal maximum and **TNL: n/a** at the maximum. **TNL: —** indicates missing
-TNL data. Level changes reset the previous-gain comparison.
+TNL data. The Live Stats tab uses the same TNL display. Level changes reset
+the previous-gain comparison.
 
 The bottom strip is slightly taller to preserve combat labels below the new
 frame controls. Names/positions use 16px, HP uses 16px, affects headers 14px;
