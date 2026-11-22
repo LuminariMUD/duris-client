@@ -59,7 +59,7 @@ T.steps({
   -- An undecodable file ends at once, which the player turns into a stop.
   T.check(ArjUI.musicState=="playing" and current().title=="Trance of the Wild","a bundled MP3 is still playing after two seconds")
   if getPlayingMusic then
-    local list=getPlayingMusic() or {}
+    local list=getPlayingMusic(nil,ArjUI.musicNow.key) or {}
     local names=yajl.to_string(list)
     T.check(names:find("Trance of the Wild",1,true),"Mudlet reports the bundled track as playing ("..names..")")
   end
@@ -122,12 +122,16 @@ T.steps({
   finished("01 - First Theme.wav",nil,"music","","")
   T.check(#played==1,"another sound or unkeyed music with the same name is ignored")
   local realPlaying=getPlayingMusic
-  getPlayingMusic=function(filter)
-    T.check(filter.key==p.key,"legacy finish checks the active playback key")
+  local checkedKey
+  getPlayingMusic=function(name,key)
+    -- Mudlet 4.19.1's table overload returns true instead of the results.
+    if type(name)=="table" then return true end
+    checkedKey=key
     return {{key=p.key}}
   end
   finished("01 - First Theme.wav")
   getPlayingMusic=realPlaying
+  T.check(checkedKey==p.key,"legacy finish queries the current playback via the positional overload")
   T.check(#played==1,"a legacy finish from other media leaves a live track alone")
   expandAlias("ui music 1")
   T.check(#played==2 and played[2].key~=p.key and ArjUI.musicState=="playing",

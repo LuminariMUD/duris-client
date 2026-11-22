@@ -1600,7 +1600,9 @@ synchronous stop events, delayed events for the old playback, short starts
 and decode failures, legacy finish and pause behavior, zero volume and
 recovery, a missing local file, saved preferences, and teardown.
 
-Reviewed the playing strip, title-click menu and Errors view in runs
-`20261122T151847Z-069ba87c-music` and `20261122T151940Z-c535d3c0-music`.
+Reviewed the playing strip, title-click menu and Errors view in
+`queue-58-final` runs `20261122T152225Z-3ccdb9b4-music` and
+`20261122T152225Z-af210b65-music`. The legacy fixture models the 4.19.1
+table-form query returning a boolean and checks the working positional query.
 FFmpeg decoded all 15 bundled MP3s to completion. Audible playback, native
 desktop DPI, Mudlet 4.19.1 and live Duris remain unverified.

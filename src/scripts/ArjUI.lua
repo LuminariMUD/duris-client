@@ -6458,8 +6458,9 @@ function ArjUI:onMusicFinished(file, path, mediaType, key)
   if mediaType and (mediaType ~= "music" or key ~= now.key) then return end
   local name = tostring(file ~= nil and file ~= "" and file or path or ""):gsub("\\", "/"):match("[^/]*$")
   if name ~= now.file then return end
-  -- The legacy event may also be for an unrelated sound with the same name.
-  if not mediaType and getPlayingMusic and #(getPlayingMusic({ key = now.key }) or {}) > 0 then return end
+  -- Legacy finish events can share a filename with other media. Mudlet 4.19.1
+  -- returns the playback list only with the positional form.
+  if not mediaType and getPlayingMusic and #(getPlayingMusic(nil, now.key) or {}) > 0 then return end
   self.musicState, self.musicNow = "stopped", nil
   if not now.confirmed and getEpoch() - now.started < 1 then
     self:renderMusic()
