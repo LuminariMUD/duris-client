@@ -1,8 +1,7 @@
 -- ArjAuto (Mudlet 4.19.1)
 -- Automation and utility aliases for Duris, adapted from the community
--- "lielz scripts" collection (2015-2024). Every automatic behaviour is OFF
--- until switched on with `auto <name> on`; the setting is remembered.
--- Type `auto` for help.
+-- "lielz scripts" collection (2015-2024). Auto-stand is on by default.
+-- Change saved toggles with `auto <name> on|off`. Type `auto` for help.
 
 ArjAuto = ArjAuto or {}
 ArjAuto.triggers = ArjAuto.triggers or {}
@@ -15,7 +14,7 @@ ArjAuto.timers = ArjAuto.timers or {}
 -- ============================================================
 
 ArjAuto.toggleDefaults = {
-  autoStand   = false, -- stand up after being knocked down, and when mem/pray finishes
+  autoStand   = true,  -- stand up after being knocked down, and when mem/pray finishes
   autoGroup   = false, -- 'group <name>' when someone gives you consent
   autoRescue  = false, -- rescue people on your rescue list when they are attacked
   autoAssist  = false, -- assist a group member who gets attacked while you are idle

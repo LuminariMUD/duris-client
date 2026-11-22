@@ -29,19 +29,23 @@ local function retained()
  end
 end
 T.steps({
- {name="defaults-off",run=function()
-  for key in pairs(ArjAuto.toggleDefaults) do T.check(ArjAuto.settings[key]==false,key.." defaults off") end
-  feedTriggers("You are knocked to the ground\n")
-  T.check(#T.commands==0,"off automation emits no command")
+ {name="automation-defaults",run=function()
+  for key in pairs(ArjAuto.toggleDefaults) do
+   T.check(ArjAuto.settings[key]==(key=="autoStand"),key.." has the expected default")
+  end
+  local bash = "You are knocked to the ground by a guardian's mighty bash!\n"
+  feedTriggers(bash)
+  T.check(#T.commands==1 and T.commands[1].command=="stand","default autoStand sends stand once after a bash")
   expandAlias("tt guardian")
   expandAlias("kt")
-  T.check(#T.commands==1 and T.commands[1].command=="kill guardian","target alias emits exactly one command")
-  expandAlias("auto autoStand on")
-  feedTriggers("You are knocked to the ground\n")
-  T.check(#T.commands==2 and T.commands[2].command=="stand","enabled autoStand emits one command")
+  T.check(#T.commands==2 and T.commands[2].command=="kill guardian","target alias emits exactly one command")
   expandAlias("auto autoStand off")
-  feedTriggers("You are knocked to the ground\n")
+  feedTriggers(bash)
   T.check(#T.commands==2,"disabled autoStand stops")
+  expandAlias("auto autoStand on")
+  feedTriggers(bash)
+  T.check(#T.commands==3 and T.commands[3].command=="stand","re-enabled autoStand sends stand once")
+  expandAlias("auto autoStand off")
  end,actions=function() return {{type="key",key="KP_8"}} end},
  {name="keypad-on",run=function()
   T.check(T.commands[#T.commands].command=="north","physical numpad key sends north")
@@ -62,7 +66,10 @@ T.steps({
   expandAlias("spamoff")
   T.check(ArjAuto.timers.spam==nil,"spam cancel removes repeat timer")
   ArjAuto:load()
-  T.check(ArjAuto.settings.autoStand==false,"automation setting persisted")
+  T.check(ArjAuto.settings.autoStand==false,"saved off overrides the new default")
+  local commandCount=#T.commands
+  feedTriggers("You are knocked to the ground by a guardian's mighty bash!\n")
+  T.check(#T.commands==commandCount,"autoStand stays off after reloading settings")
  end},
  {name="header-full",run=function()
   T.check(ArjUI.settings.compactHeader==false,"fresh profile selects Stormwatch")

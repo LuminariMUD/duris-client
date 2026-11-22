@@ -1548,3 +1548,14 @@ Duris's native room-selector harness at
 `77c0ce2865ade168cae34d52408d2a58ce36c9cf` passed. It confirms that the
 opposing human resolves by ordinal under racewar when lookup by name fails.
 Production Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.
+
+## 2.13.0 Auto-stand default (2026-11-22)
+
+The Mudlet 5.0.1 Linux/Xvfb `controls` scenario passed all 151 assertions.
+A fresh profile sent one `stand` on the mighty bash message. Disabling
+auto-stand stopped the command, re-enabling it restored the trigger, and a
+saved `off` suppressed the command after reloading the settings.
+
+Reviewed `01-automation-defaults.png`, `04-context-menu.png`, and the empty
+Errors view in `20261122T090350Z-f58e1460-controls`. Live Duris and Mudlet
+4.19.1 were unverified.
