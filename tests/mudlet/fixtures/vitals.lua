@@ -142,7 +142,13 @@ T.steps({
   reconnect()
   xp(500000,0)
   checkXP(0,"TNL: 0")
+  status(55)
+  xp(500000,39500000)
+  checkXP(1.25,"TNL: 39500000")
+  -- The new Status can arrive while the previous Vitals snapshot is still present.
   status(56)
+  checkXP(0,"TNL: n/a")
+  xp(500000,0)
   checkXP(0,"TNL: n/a")
   T.check(T.lines("ArjUI_StatsBox"):find("TNL: n/a\n",1,true),
     "live stats uses the same TNL state as the output gauge")

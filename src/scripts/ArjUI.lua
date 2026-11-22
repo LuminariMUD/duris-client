@@ -3546,10 +3546,8 @@ local maxMortalLevel = 56
 local function tnlDisplay(s)
   local tnl, level = s.tnl, s.charLevel
   if not tnl or tnl < 0 then return "—" end
-  if tnl == 0 and level then
-    if level >= maxMortalLevel then return "n/a" end
-    return "0 (XP ready)", 1
-  end
+  if level and level >= maxMortalLevel then return "n/a" end
+  if tnl == 0 and level then return "0 (XP ready)", 1 end
   return string.format("%d", tnl), s.xpProgress or 0
 end
 

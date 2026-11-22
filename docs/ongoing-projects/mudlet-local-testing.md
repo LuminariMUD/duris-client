@@ -1564,10 +1564,11 @@ messages also appear on 2.12.2 when the fixture sends zero maxima for the
 HP, mana, move and tank gauges. No XP gauge or Lua errors were observed.
 Live Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.
 
-PR #56 maintenance replay on November 22 passed 69 assertions at each window
-size in `queue-56-final` runs `20261122T145825Z-4b9b7ff4-vitals` and
-`20261122T145825Z-703b7592-vitals`. The added checks cover a Vitals update
-with a changed XP threshold before a delayed Status packet, and matching
-Live Stats and Game Output labels at maximum level and after GMCP is disabled.
+PR #56 maintenance replay on November 22 passed 73 assertions at each window
+size in `queue-56-cap` runs `20261122T150249Z-456cf949-vitals` and
+`20261122T150249Z-c8bcb91e-vitals`. The added checks cover a Vitals update
+with a changed XP threshold before a delayed Status packet, reaching maximum
+level before Vitals refreshes, and matching Live Stats and Game Output labels
+at maximum level and after GMCP is disabled.
 Reviewed the gain, maximum-level and Errors screenshots. The four existing
 zero-maxima Geyser debug messages remained the only entries.
