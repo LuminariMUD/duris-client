@@ -29,19 +29,46 @@ local function retained()
  end
 end
 T.steps({
- {name="defaults-off",run=function()
-  for key in pairs(ArjAuto.toggleDefaults) do T.check(ArjAuto.settings[key]==false,key.." defaults off") end
-  feedTriggers("You are knocked to the ground\n")
-  T.check(#T.commands==0,"off automation emits no command")
+ {name="automation-defaults",run=function()
+  for key in pairs(ArjAuto.toggleDefaults) do
+   T.check(ArjAuto.settings[key]==(key=="autoStand"),key.." has the expected default")
+  end
+  local bash = "You are knocked to the ground by a guardian's mighty bash!\n"
+  feedTriggers(bash)
+  T.check(#T.commands==1 and T.commands[1].command=="stand","default autoStand sends stand once after a bash")
   expandAlias("tt guardian")
   expandAlias("kt")
-  T.check(#T.commands==1 and T.commands[1].command=="kill guardian","target alias emits exactly one command")
-  expandAlias("auto autoStand on")
-  feedTriggers("You are knocked to the ground\n")
-  T.check(#T.commands==2 and T.commands[2].command=="stand","enabled autoStand emits one command")
+  T.check(#T.commands==2 and T.commands[2].command=="kill guardian","target alias emits exactly one command")
   expandAlias("auto autoStand off")
-  feedTriggers("You are knocked to the ground\n")
+  feedTriggers(bash)
   T.check(#T.commands==2,"disabled autoStand stops")
+  expandAlias("auto autoStand on")
+  feedTriggers(bash)
+  T.check(#T.commands==3 and T.commands[3].command=="stand","re-enabled autoStand sends stand once")
+  for _,notification in ipairs({
+   "In your haste to slam people around, you slip and fall!",
+   "You manage with complete incompetence to throw yourself head first into the ground!",
+   "You stagger and fall to your knees!",
+   "The wave slams into you, knocking you off your feet!",
+   "The powerful sweep sends you crashing to the ground!!",
+   "The powerful sweep sends you crashing to the ground!",
+   "You growl as a guard avoids your maul, and you become FURIOUS when you hit the ground!",
+   "A guard's mighty kick sends you crashing into the wall!",
+   "Your prayers are complete.",
+  }) do
+   local count=#T.commands
+   feedTriggers("A companion says '"..notification.."'\n")
+   T.check(#T.commands==count,"quoted game text sends no stand")
+   feedTriggers(notification.."\n")
+   T.check(#T.commands==count+1 and T.commands[count+1].command=="stand",
+     "game notification sends one stand: "..notification)
+  end
+  T.check(ArjUI:writeProfileJSON(ArjAuto:path(),{vars={target="guardian"}},"automation fixture"),
+    "write a saved profile with no auto-stand preference")
+  ArjAuto:load()
+  T.check(ArjAuto.settings.autoStand==true and ArjAuto.vars.target=="guardian",
+    "missing preference gets the default and saved variables survive")
+  expandAlias("auto autoStand off")
  end,actions=function() return {{type="key",key="KP_8"}} end},
  {name="keypad-on",run=function()
   T.check(T.commands[#T.commands].command=="north","physical numpad key sends north")
@@ -62,7 +89,10 @@ T.steps({
   expandAlias("spamoff")
   T.check(ArjAuto.timers.spam==nil,"spam cancel removes repeat timer")
   ArjAuto:load()
-  T.check(ArjAuto.settings.autoStand==false,"automation setting persisted")
+  T.check(ArjAuto.settings.autoStand==false,"saved off overrides the new default")
+  local commandCount=#T.commands
+  feedTriggers("You are knocked to the ground by a guardian's mighty bash!\n")
+  T.check(#T.commands==commandCount,"autoStand stays off after reloading settings")
  end},
  {name="header-full",run=function()
   T.check(ArjUI.settings.compactHeader==false,"fresh profile selects Stormwatch")

@@ -29,9 +29,9 @@ design decisions change. Player commands are documented in the
   percentages; long output wraps and large groups scroll inside their panel.
   Fonts and some controls have fixed sizes and need visual checks at each
   supported geometry.
-- **Make automation opt-in.** ArjAuto's behavior toggles start off on a fresh
-  profile. Saved choices persist; repeated-command timers have explicit
-  start/stop commands.
+- **Default to auto-stand.** Fresh profiles stand after recognized knockdown
+  and spell-preparation messages. Saved preferences take precedence. Other
+  ArjAuto toggles are opt-in, and repeat timers have explicit start/stop commands.
 
 ## Interface layout
 
@@ -68,6 +68,13 @@ Default rectangles (x, y, width, height as percentages of the content root):
   chat: (73.9, 80, 26, 20).
 - Vitals: (0, 80, 16.5, 19.5); tank: (16.7, 80, 28.3, 19.5);
   target: (45.5, 80, 28.2, 19.5).
+
+GAME OUTPUT uses a 16px XP bar above an 18px room and search row. The console
+fills the remaining panel height. The bar shows progress from the current
+GMCP XP and TNL snapshot. Zero TNL shows **XP ready** for a character below the
+mortal maximum and **TNL: n/a** at the maximum. **TNL: —** indicates missing
+TNL data. The Live Stats tab uses the same TNL display. Level changes reset
+the previous-gain comparison.
 
 The bottom strip is slightly taller to preserve combat labels below the new
 frame controls. Names/positions use 16px, HP uses 16px, affects headers 14px;
@@ -345,7 +352,7 @@ real Mudlet when changing fonts or measurements.
 | `ui debug` | Prints a copyable diagnostic report: versions, connection, server features, GMCP arrival ages, owned resources and artwork. |
 | `ui sound` | Shows and changes sound alerts. The master switch is off by default. Low HP/moves sounds fire once below the threshold and re-arm after recovery or a new session; disabled/cooldown-blocked requests remain armed. Each sound has a cooldown. |
 | Music strip | ◀◀ / ▶ (❚❚ while playing) / ▶▶ step through the playlist. The title opens a menu: stop, shuffle, volume ±10, open the profile's `arjui_music` folder, rescan, then the tracks. Shuffle starts on, and a first play starts on a random track. Nothing plays until the player presses play. |
-| `ui music` | Shows the player state and track list, and offers the same controls as commands. Volume applies from the next track, because Mudlet cannot change a playing track's volume. |
+| `ui music` | Shows the player state and track list, and offers the same controls as commands. Zero volume stops the player and prevents playback until volume is raised. Positive volume changes apply from the next track. |
 | Room name | Tooltip adds room number, zone, terrain name and coordinates when the server sends them (wilderness: terrain only). |
 | `mapper legend` | Prints the server's default wilderness glyphs in the profile palette. |
 | `ui set chatGag on` | Hides a complete matched chat copy, including wrapped rows, in either arrival order within three seconds; off by default. Unmatched output remains visible. Turning it off or ending the session clears pending matches. |
@@ -533,15 +540,16 @@ group, quest, capture, ship, and current-map state is cleared, and pending
 actions are canceled. Preferences and in-memory chat remain. Map downloads
 and delayed actions must not apply to the next character session.
 
-Music plays through Mudlet's music channel under the `arjui-music` key and
-tag, separate from the `arjui` alert sounds. The playlist is the package's
-`music/` folder followed by the profile's `arjui_music/` folder, each in name
-order. A track that ends starts the next one (or a random different one with
-shuffle). The generator is seeded once per Mudlet session so shuffle does not
-replay one order. Mudlet 4.19.1 raises `sysMediaFinished` for every stop, with only
-the file name and path, so a finish advances only when it names the current
-track, playback is still ours and the track did not start this second.
-Teardown stops the music; hiding the UI does not.
+Music uses the `arjui-music` tag and assigns each playback a separate key.
+Alert sounds use their own tag. The playlist is the package's `music/` folder
+followed by the profile's `arjui_music/` folder, each in name order. A finished
+track starts the next one, or a random different one when shuffle is on.
+On Mudlet 4.19.1 the finish event has only the filename and path. The client
+checks whether its playback is still running before accepting a legacy
+finish. An immediate finish without a confirmed start stops with an error
+message. Teardown and track reselection clear playback state before asking
+Mudlet to stop because it can deliver the finish event synchronously.
+Hiding the UI leaves playback running.
 
 Each script tracks the runtime resources it creates. Package uninstall calls
 the three cleanup paths to remove aliases, triggers, keys, handlers, timers,

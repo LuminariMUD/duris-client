@@ -22,7 +22,7 @@ local function finished(file,started,...)
  raiseEvent("sysMediaFinished",file,folder.."/"..file,...)
 end
 local function current() return ArjUI.musicTracks[ArjUI.musicIndex] end
-local realPause=pauseMusic
+local realPlay,realStop,realPause=playMusicFile,stopMusic,pauseMusic
 local bundledFolders=ArjUI.musicFolders
 local empty=getMudletHomeDir().."/music-test-empty"
 T.steps({
@@ -63,6 +63,9 @@ T.steps({
     local names=yajl.to_string(list)
     T.check(names:find("Trance of the Wild",1,true),"Mudlet reports the bundled track as playing ("..names..")")
   end
+  expandAlias("ui music 4")
+  T.check(ArjUI.musicState=="playing" and current().title=="Trance of the Wild",
+    "reselecting an already playing track after two seconds keeps it playing")
   ArjUI:musicStop()
   ArjUI.musicFolders=function() return {empty} end
   ArjUI:scanMusic()
@@ -97,35 +100,54 @@ T.steps({
  end},
  {name="finish-rules",run=function()
   ArjUI:musicStop()
-  playMusicFile=function(t) played[#played+1]=t; return true end
-  stopMusic=function(t) stopped[#stopped+1]=t; return true end
+  local active
+  playMusicFile=function(t) active=t; played[#played+1]=t; return true end
+  stopMusic=function(t)
+    stopped[#stopped+1]=t
+    if active then
+      local path=active.name
+      active=nil
+      raiseEvent("sysMediaFinished",path:match("[^/]+$"),path)
+    end
+    return true
+  end
   pauseMusic=function(t) paused[#paused+1]=t; return true end
   ArjUI:musicPlayIndex(1)
   local p=played[1]
-  T.check(p and p.key=="arjui-music" and p.tag=="arjui-music" and p.volume==40 and p.loops==1 and p.name:find("01 %- First Theme%.wav$"),"play sends the track under the music key and tag")
+  T.check(p and p.key and p.tag=="arjui-music" and p.volume==40 and p.loops==1 and p.name:find("01 %- First Theme%.wav$"),
+    "play sends the track with a playback key and the music tag")
   finished("02_Second_Song.wav")
   T.check(current().file=="01 - First Theme.wav","a finish for another file is ignored")
-  finished("duris-tell.wav",nil,"sound","arjui-tell","arjui")
-  T.check(current().file=="01 - First Theme.wav","an alert sound's finish is ignored")
-  ArjUI:musicPlayIndex(1)
-  finished("01 - First Theme.wav",getEpoch())
-  T.check(#played==2 and ArjUI.musicState=="playing","an immediate stop of our own restart of the same file is ignored")
+  finished("01 - First Theme.wav",nil,"sound","arjui-tell","arjui")
+  finished("01 - First Theme.wav",nil,"music","","")
+  T.check(#played==1,"another sound or unkeyed music with the same name is ignored")
+  local realPlaying=getPlayingMusic
+  getPlayingMusic=function(filter)
+    T.check(filter.key==p.key,"legacy finish checks the active playback key")
+    return {{key=p.key}}
+  end
+  finished("01 - First Theme.wav")
+  getPlayingMusic=realPlaying
+  T.check(#played==1,"a legacy finish from other media leaves a live track alone")
+  expandAlias("ui music 1")
+  T.check(#played==2 and played[2].key~=p.key and ArjUI.musicState=="playing",
+    "reselecting stops the old playback before its synchronous legacy finish")
+  finished("01 - First Theme.wav",nil,"music",p.key,"arjui-music")
+  T.check(#played==2 and ArjUI.musicState=="playing","a delayed keyed finish for the old playback is ignored")
   ArjUI:musicStep(1)
-  finished("02_Second_Song.wav",getEpoch())
-  T.check(ArjUI.musicState=="stopped" and #played==3,"an immediate finish of a newly started file stops instead of skipping on")
+  finished("02_Second_Song.wav",getEpoch(),"music",played[3].key,"arjui-music")
+  T.check(ArjUI.musicState=="stopped" and #played==3,"an immediate finish without a start stops instead of skipping on")
   T.check(T.lines("ArjUI_Console"):find("could not play 02_Second_Song.wav",1,true),"and says the file could not be played")
   ArjUI:musicPlayIndex(1)
-  played={}; ArjUI:musicPlayIndex(1)
-  finished("01 - First Theme.wav")
-  T.check(#played==2 and current().file=="02_Second_Song.wav","the current track's finish plays the next")
-  finished("02_Second_Song.wav",nil,"music","arjui-music","arjui-music")
-  T.check(#played==3 and current().file=="01 - First Theme.wav","Mudlet 5's longer event also advances, wrapping to the first track")
+  raiseEvent("sysMediaStarted","01 - First Theme.wav",folder.."/01 - First Theme.wav","music",played[4].key,"arjui-music")
+  finished("01 - First Theme.wav",getEpoch(),"music",played[4].key,"arjui-music")
+  T.check(#played==5 and current().file=="02_Second_Song.wav","a confirmed short track advances on finish")
+  finished("02_Second_Song.wav")
+  T.check(#played==6 and current().file=="01 - First Theme.wav","a legacy finish advances and wraps the playlist")
   ArjUI:musicStop()
   T.check(stopped[#stopped].tag=="arjui-music","stop targets only the music tag")
-  ArjUI.musicNow={file="01 - First Theme.wav",started=0}
   raiseEvent("sysMediaFinished","01 - First Theme.wav",folder.."/01 - First Theme.wav")
-  T.check(#played==3,"after a stop, a late finish does not restart playback")
-  ArjUI.musicNow=nil
+  T.check(#played==6,"after a stop, a late finish does not restart playback")
  end},
  {name="pause-and-fallback",run=function()
   expandAlias("ui music 2")
@@ -135,8 +157,15 @@ T.steps({
   finished("02_Second_Song.wav")
   T.check(current().file=="02_Second_Song.wav" and ArjUI.musicState=="paused","no advance while paused")
   local n=#played
+  local key=played[n].key
   expandAlias("ui music play")
-  T.check(#played==n+1 and played[#played].name:find("02_Second_Song%.wav$") and ArjUI.musicState=="playing","play resumes the paused track")
+  T.check(#played==n+1 and played[#played].key==key and played[#played].continue and ArjUI.musicState=="playing",
+    "play resumes the paused track with the same key")
+  local stubPause=pauseMusic
+  pauseMusic=function() return nil,"fixture pause failure" end
+  expandAlias("ui music pause")
+  T.check(ArjUI.musicState=="playing","an API pause failure does not report paused")
+  pauseMusic=stubPause
   pauseMusic=nil
   ArjUI:musicToggle()
   T.check(ArjUI.musicState=="stopped","without pauseMusic (Mudlet 4.19.1) pause stops")
@@ -147,6 +176,32 @@ T.steps({
   T.check(current().file=="01 - First Theme.wav","next wraps")
   expandAlias("ui music prev")
   T.check(current().file=="02_Second_Song.wav","prev wraps back")
+ end},
+ {name="mute-and-missing-files",run=function()
+  expandAlias("ui music volume 0")
+  T.check(ArjUI.musicState=="stopped" and settingsFile().music.volume==0,"zero volume stops playback and persists")
+  local n=#played
+  expandAlias("ui music play")
+  expandAlias("ui music next")
+  expandAlias("ui music 1")
+  T.check(#played==n and ArjUI.musicState=="stopped","muted playback never requests a preload")
+  expandAlias("ui music volume 25")
+  T.check(#played==n,"raising volume does not start music")
+  expandAlias("ui music 1")
+  T.check(#played==n+1 and played[#played].volume==25,"play works after unmuting")
+  local missing=ArjUI.musicTracks[2].path
+  assert(os.rename(missing,missing..".bak"))
+  expandAlias("ui music 2")
+  T.check(#played==n+1 and current().file=="01 - First Theme.wav","a missing selection does not replace the current track")
+  finished("01 - First Theme.wav")
+  T.check(ArjUI.musicState=="stopped" and #played==n+1,"automatic advance to a missing file clears playback")
+  assert(os.rename(missing..".bak",missing))
+  local stubPlay=playMusicFile
+  playMusicFile=function() return nil,"fixture play failure" end
+  expandAlias("ui music 1")
+  T.check(ArjUI.musicState=="stopped" and T.lines("ArjUI_Console"):find("fixture play failure",1,true),
+    "a failed play reports the cause and clears playback")
+  playMusicFile=stubPlay
  end},
  {name="commands-persistence",run=function()
   expandAlias("ui music volume 25")
@@ -193,8 +248,12 @@ T.steps({
   expandAlias("ui debug")
   T.check(T.lines("ArjUI_Console"):find("Music: playing, 2 tracks, volume 25",1,true),"ui debug reports the player")
   ArjUI.musicFolders=bundledFolders
+  local n=#played
+  ArjUI.musicNow.started=getEpoch()-5
   ArjUI:kill()
-  T.check(stopped[#stopped].tag=="arjui-music" and ArjUI.musicState=="stopped","kill (reload/uninstall) stops the music")
+  T.check(stopped[#stopped].tag=="arjui-music" and ArjUI.musicState=="stopped" and #played==n,
+    "kill stops our music without starting a track inside the synchronous finish callback")
+  playMusicFile,stopMusic,pauseMusic=realPlay,realStop,realPause
   ArjUI:init(); ArjUI:setupAliases()
   T.check(ArjUI.musicState=="stopped" and #ArjUI.musicTracks==17 and current().file==ArjUI.music.track,"after a reload the bundled and personal tracks are listed, the last track is selected, and nothing plays")
   T.check(ArjUI.musicTracks[16].title=="First Theme","personal tracks follow the bundled ones")

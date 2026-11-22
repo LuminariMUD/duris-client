@@ -1548,3 +1548,59 @@ Duris's native room-selector harness at
 `77c0ce2865ade168cae34d52408d2a58ce36c9cf` passed. It confirms that the
 opposing human resolves by ordinal under racewar when lookup by name fails.
 Production Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.
+
+## 2.12.3 Game Output XP gauge (issue #55) — 2026-11-21
+
+Mudlet 5.0.1 on Linux/Xvfb passed 62 assertions in the \`vitals\` scenario at
+1280×720 and 1366×768. The replay covers login, XP gain and loss, recovery to
+the same percentage, reconnect, partial vitals, level changes, a met threshold,
+maximum mortal level and loss of GMCP. Same-level XP notices still print, and
+XP rollover does not produce a false gain notice.
+
+Reviewed both \`07-xp-gain.png\` screenshots, the full \`15-xp-threshold.png\` at
+1280×720, \`16-xp-max-level.png\` at 1366×768 and the Errors views.
+The full XP label fits above the room and search row. The only Geyser debug
+messages also appear on 2.12.2 when the fixture sends zero maxima for the
+HP, mana, move and tank gauges. No XP gauge or Lua errors were observed.
+Live Duris, Mudlet 4.19.1 and native desktop DPI remain unverified.
+
+PR #56 maintenance replay on November 22 passed 73 assertions at each window
+size in `queue-56-cap` runs `20261122T150249Z-456cf949-vitals` and
+`20261122T150249Z-c8bcb91e-vitals`. The added checks cover a Vitals update
+with a changed XP threshold before a delayed Status packet, reaching maximum
+level before Vitals refreshes, and matching Live Stats and Game Output labels
+at maximum level and after GMCP is disabled.
+Reviewed the gain, maximum-level and Errors screenshots. The four existing
+zero-maxima Geyser debug messages remained the only entries.
+
+## 2.13.0 Auto-stand default (2026-11-22)
+
+The Mudlet 5.0.1 Linux/Xvfb `controls` scenario passed all 151 assertions.
+A fresh profile sent one `stand` on the mighty bash message. Disabling
+auto-stand stopped the command, re-enabling it restored the trigger, and a
+saved `off` suppressed the command after reloading the settings.
+
+Reviewed `01-automation-defaults.png`, `04-context-menu.png`, and the empty
+Errors view in `20261122T090350Z-f58e1460-controls`. Live Duris and Mudlet
+4.19.1 were unverified.
+
+After updating to master, the `queue-57` run
+`20261122T150947Z-5928dc41-controls` passed 171 assertions. Nine pairs
+of quoted and standalone notifications exercised the incoming text triggers,
+including the archived wall-kick and sweep forms. A saved profile without
+`autoStand` kept its other settings and adopted the default. Reviewed the
+automation and context-menu screenshots and the empty Errors view.
+
+## 2.14.0 Music player (2026-11-22)
+
+Mudlet 5.0.1 on Linux/Xvfb passed 79 music assertions at 1280×720 and
+1920×1080. The real media API kept a bundled MP3 playing and restarted it
+when reselected after two seconds. The isolated media fixtures covered
+synchronous stop events, delayed events for the old playback, short starts
+and decode failures, legacy finish and pause behavior, zero volume and
+recovery, a missing local file, saved preferences, and teardown.
+
+Reviewed the playing strip, title-click menu and Errors view in runs
+`20261122T151847Z-069ba87c-music` and `20261122T151940Z-c535d3c0-music`.
+FFmpeg decoded all 15 bundled MP3s to completion. Audible playback, native
+desktop DPI, Mudlet 4.19.1 and live Duris remain unverified.

@@ -39,6 +39,7 @@ getLines
 getMainWindowSize
 getMousePosition
 getMudletHomeDir
+getPlayingMusic
 getMudletVersion
 getOS
 getProfileName

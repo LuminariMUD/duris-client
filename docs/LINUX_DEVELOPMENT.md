@@ -416,8 +416,8 @@ Two package behaviors affect offline tests:
 
 - `ArjUI:onCharStatus()` calls `onLoginDetected()`, which schedules a `time`
   command. The example suppresses that query; it therefore does **not** test
-  login behavior. Fresh profiles default ArjAuto toggles to off, but copied
-  profiles may restore automation and login commands from `arjauto.json`.
+  login behavior. Fresh profiles enable auto-stand by default. Copied profiles
+  may restore saved automation choices and login commands from `arjauto.json`.
 - `ArjMapper:processRoom()` can fetch missing zone data from the website.
   A room fixture needs known map data or an explicitly recorded network
   dependency. The starter fixture above does not inject rooms. A future
