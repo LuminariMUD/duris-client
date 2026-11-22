@@ -916,7 +916,7 @@ function ArjUI:resetCharacterState()
   self.chatGagQueue = nil
   self.state = {
     hp = 1, hpmax = 1, mana = 1, manamax = 1, move = 1, movemax = 1,
-    tnl = 0, tnlBaseline = nil, position = "standing",
+    position = "standing",
     area = "Unknown", room = "Unknown", roomId = nil, zoneId = nil,
     exits = {}, exitsRaw = {}, npcs = {}, items = {}, players = {},
     target = nil, targetHpPct = 100, targetCond = nil, targetPos = nil,
@@ -1703,16 +1703,17 @@ function ArjUI:init()
   self.centerCol = panel("output")
   styleSafe(self.centerCol, self.styles.panelPrimary)
 
-  self.xpGauge = Geyser.Gauge:new({ name = "ArjUI_TNLTop", x = "0.5%", y = "0.5%", width = "99%", height = "2.2%" }, self.centerCol)
+  self.xpGauge = Geyser.Gauge:new({ name = "ArjUI_TNLTop", x = "0.5%", y = 2, width = "99%", height = 16 }, self.centerCol)
   self.xpGauge.front:setStyleSheet(self.gaugeStyles.xpFront)
   self.xpGauge.back:setStyleSheet(self.gaugeStyles.xpBack)
   self.xpGauge.text:setStyleSheet(self.gaugeStyles.gaugeText)
 
-  self.roomLabel = Geyser.Label:new({ name = "ArjUI_RoomLabel", x = "0.5%", y = "3.0%", width = "99%-232px", height = "3.2%" }, self.centerCol)
+  local outputToolsY, outputToolsHeight = 20, 18
+  self.roomLabel = Geyser.Label:new({ name = "ArjUI_RoomLabel", x = "0.5%", y = outputToolsY, width = "99%-232px", height = outputToolsHeight }, self.centerCol)
   styleSafe(self.roomLabel, self.styles.roomName)
   -- Mudlet's search box and F3 only search its own (covered) main window.
   -- This one searches GAME OUTPUT: Enter or the up arrow finds older matches.
-  self.searchBox = Geyser.CommandLine:new({ name = "ArjUI_OutputSearch", x = "99.5%-228px", y = "3.0%", width = "164px", height = "3.2%" }, self.centerCol)
+  self.searchBox = Geyser.CommandLine:new({ name = "ArjUI_OutputSearch", x = "99.5%-228px", y = outputToolsY, width = "164px", height = outputToolsHeight }, self.centerCol)
   self.searchBox:setStyleSheet(string.format("QPlainTextEdit { background-color: %s; color: %s; border: 1px solid %s; font-size: 11px; }",
     colors.bgDark, colors.textMid, colors.borderDivider))
   self.searchBox:setAction(function(text)
@@ -1723,7 +1724,7 @@ function ArjUI:init()
     end)
   end)
   for _, spec in ipairs({{"Up", "▲", "-62px", "older", "Older match (Enter, Shift+F3)"}, {"Down", "▼", "-30px", "newer", "Newer match (F3)"}}) do
-    local button = Geyser.Label:new({ name = "ArjUI_OutputSearch" .. spec[1], x = "99.5%" .. spec[3], y = "3.0%", width = "28px", height = "3.2%" }, self.centerCol)
+    local button = Geyser.Label:new({ name = "ArjUI_OutputSearch" .. spec[1], x = "99.5%" .. spec[3], y = outputToolsY, width = "28px", height = outputToolsHeight }, self.centerCol)
     styleSafe(button, self.styles.roomName)
     button:echo("<center>" .. spec[2] .. "</center>")
     button:setToolTip(spec[5])
@@ -1735,7 +1736,7 @@ function ArjUI:init()
   self.outputSearch = {}
   self:bindSearchKeys(true)
 
-  self.console = makeConsole(self.centerCol, "ArjUI_Console", "0.5%", "6.5%", "99%", "93%", 10, {0, 0, 0})
+  self.console = makeConsole(self.centerCol, "ArjUI_Console", "0.5%", 40, "99%", "100%-42px", 10, {0, 0, 0})
   -- Mini-consoles start without the main window's scrollbar. Scrolling up
   -- still opens Mudlet's split view, with live output in the lower pane.
   self.console:enableScrollBar()
@@ -2936,6 +2937,10 @@ function ArjUI:registerGMCPHandlers()
       self:setSpellPreparation(nil)
       self.damage.gmcpAvailable,self.damage.source=false,nil
       self.damage.incomplete=true
+      self.state.tnl, self.state.xpProgress = nil, nil
+      self:resetExpTracker()
+      self:renderTNLBar()
+      if self.activeTab == "stats" then self:renderStats() end
       self.state.npcs, self.state.players = {}, {}
       self:invalidateRoomMenu()
       self:renderMobs()
@@ -3222,13 +3227,14 @@ function ArjUI:onCharVitals()
   self.state.move = toNum(pick(v, "move", "mv")) or self.state.move
   self.state.movemax = toNum(pick(v, "maxMove", "maxmove", "maxMv")) or self.state.movemax
   local newTnl = toNum(pick(v, "tnl", "toNextLevel"))
-  if newTnl then
-    if not self.state.tnlBaseline then self.state.tnlBaseline = newTnl
-    elseif newTnl > self.state.tnl then self.state.tnlBaseline = newTnl end
-    self.state.tnl = newTnl
-  end
   local newExp = toNum(pick(v, "exp", "experience"))
-  if newExp and self.trackExp then self:trackExp(newExp, newTnl) end
+  if newTnl or newExp then
+    -- A Vitals update can omit XP. Never combine halves from different snapshots.
+    self.state.tnl = newTnl
+    local threshold = newExp and newTnl and newTnl > 0 and (newExp + newTnl) or nil
+    self.state.xpProgress = threshold and threshold > 0 and math.max(0, newExp / threshold) or nil
+    if newExp then self:trackExp(newExp, newTnl, threshold) end
+  end
   if v.position then self.state.position = v.position end
   if v.usesMana ~= nil then self.state.usesMana = (v.usesMana == true) end
   self.state.fighting = (type(v.fighting) == "string" and v.fighting ~= "") and v.fighting or nil
@@ -3379,10 +3385,15 @@ function ArjUI:onCharStatus()
       self.state.spellView = "interface"
       self:renderSpells()
       self:setSpellPreparation(nil)
+      self.state.tnl, self.state.xpProgress, self.state.charLevel = nil, nil, nil
+      self:resetExpTracker()
     end
     self.playerName = s.name
   end
-  self.state.charLevel = toNum(s.level) or self.state.charLevel
+  local level = toNum(s.level)
+  if level and self.state.charLevel and level ~= self.state.charLevel then self:resetExpTracker() end
+  self.state.charLevel = level or self.state.charLevel
+  self:renderTNLBar()
   self.state.charClass = s.class and stripColors(s.class) or self.state.charClass
   self.state.charRace = s.race and stripColors(s.race) or self.state.charRace
   self.state.charGuild = s.guild and stripColors(s.guild) or self.state.charGuild
@@ -3529,17 +3540,23 @@ function ArjUI:getHpBarStyle(pct)
   return string.format("background-color: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 rgb(%d,%d,%d),stop:0.5 rgb(%d,%d,%d),stop:1 rgb(%d,%d,%d)); border: none; border-radius: 2px;", r1,g1,b1,r2,g2,b2,r1,g1,b1)
 end
 
+-- Duris sends zero TNL both at the XP threshold and at MAXLVLMORTAL.
+local maxMortalLevel = 56
+
+local function tnlDisplay(s)
+  local tnl, level = s.tnl, s.charLevel
+  if not tnl or tnl < 0 then return "—" end
+  if level and level >= maxMortalLevel then return "n/a" end
+  if tnl == 0 and level then return "0 (XP ready)", 1 end
+  return string.format("%d", tnl), s.xpProgress or 0
+end
+
 function ArjUI:renderTNLBar()
-  local tnl, base = self.state.tnl, self.state.tnlBaseline
-  local last = self.state.lastExpGain
-  local suffix = last and string.format("   (last +%d)", last) or ""
-  if tnl and tnl > 0 and base and base > 0 then
-    self.xpGauge:setValue(math.max(0, base - tnl), base, string.format("TNL: %d%s", tnl, suffix))
-  elseif tnl and tnl > 0 then
-    self.xpGauge:setValue(0, 100, string.format("TNL: %d%s", tnl, suffix))
-  else
-    self.xpGauge:setValue(0, 100, "TNL")
-  end
+  local s = self.state
+  local tnl, progress = tnlDisplay(s)
+  local label = "TNL: " .. tnl
+  if progress and s.lastExpGain then label = label .. string.format("   (last +%d)", s.lastExpGain) end
+  self.xpGauge:setValue(progress or 0, 1, label)
 end
 
 function ArjUI:renderVitals()
@@ -4294,7 +4311,8 @@ function ArjUI:renderStats()
     self.statsBox:cecho(string.format("<steel_blue>Mana: <white>%d<dim_gray>/<white>%d\n", s.mana or 0, s.manamax or 0))
   end
   self.statsBox:cecho(string.format("<khaki>Move: <white>%d<dim_gray>/<white>%d\n", s.move or 0, s.movemax or 0))
-  self.statsBox:cecho(string.format("<medium_orchid>TNL: <white>%d\n", s.tnl or 0))
+  local tnl = tnlDisplay(s)
+  self.statsBox:cecho("<medium_orchid>TNL: <white>" .. tnl .. "\n")
   self.statsBox:cecho(string.format("<dim_gray>Position: <white>%s\n", s.position or "unknown"))
   if s.fighting then
     self.statsBox:cecho(string.format("<dim_gray>Fighting: <indian_red>%s\n", s.fighting))
@@ -4976,7 +4994,6 @@ function ArjUI:setupPorted()
   self:teardownPorted()
   self.portTriggers = {}
   self.portKeys = {}
-  self:setupExpTracker()
   self:setupDamageTracker()
   self:setupScanFormatter()
   self:setupAlerts()
@@ -4995,27 +5012,33 @@ end
 -- EXPERIENCE TRACKER (GMCP Char.Vitals exp/tnl)
 -- ------------------------------------------------------------
 
-function ArjUI:setupExpTracker()
-  self.state.exp = nil
-  self.state.lastExpGain = nil
-  self.state.sessionExp = 0
+function ArjUI:resetExpTracker()
+  local s = self.state
+  s.exp, s.expThreshold, s.lastExpGain = nil, nil, nil
+  s.expRevision = (s.expRevision or 0) + 1
 end
 
-function ArjUI:trackExp(exp, tnl)
-  local prev = self.state.exp
-  self.state.exp = exp
-  if not prev then return end
-  local gained = exp - prev
-  if gained <= 0 then return end
-  self.state.lastExpGain = gained
-  self.state.sessionExp = (self.state.sessionExp or 0) + gained
-  if not (self.settings and self.settings.expTracker) then return end
-  local msg = string.format("<gold>[+%s exp]", fmtNum(gained))
-  if tnl and tnl > 0 then
-    local more = math.ceil(tnl / gained)
-    msg = msg .. string.format(" <dim_gray>%s to level, about %d more like that", fmtNum(tnl), more)
-  end
-  self:note(msg)
+function ArjUI:trackExp(exp, tnl, threshold)
+  local s = self.state
+  local prev, previousThreshold = s.exp, s.expThreshold
+  s.exp, s.expThreshold = exp, threshold
+  -- A changed threshold makes the delta incomparable even across separate receives.
+  if threshold and previousThreshold and threshold ~= previousThreshold then return end
+  if not prev or exp <= prev then return end
+  local gained, revision = exp - prev, s.expRevision
+  -- Vitals can precede the Status that announces a rollover in the same GMCP burst.
+  self:after(0, function()
+    if s.expRevision ~= revision then return end
+    s.lastExpGain = gained
+    self:renderTNLBar()
+    if not (self.settings and self.settings.expTracker) then return end
+    local msg = string.format("<gold>[+%s exp]", fmtNum(gained))
+    if tnl and tnl > 0 then
+      local more = math.ceil(tnl / gained)
+      msg = msg .. string.format(" <dim_gray>%s to level, about %d more like that", fmtNum(tnl), more)
+    end
+    self:note(msg)
+  end)
 end
 
 -- ------------------------------------------------------------
