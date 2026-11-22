@@ -80,7 +80,11 @@ short window, docked ROOM and PLAYERS give up height before docked VITALS and
 CHAT overlap their consoles.
 
 The fixed Panels and Reset layout controls sit just above the root inside the
-existing header margin. They remain outside maximized frames. Footer credits
+existing header margin. The music strip mirrors them at the right edge: three
+24px buttons (previous, play/pause, next) and a 70–170px title label in the
+same header style. The title is gold while playing and shrinks before the
+strip collides with the layout buttons; a window too narrow for the shortest
+title hides the strip. They remain outside maximized frames. Footer credits
 stay below the right column; native command input stays available. Auxiliary
 frames support hide/minimize, every dashboard frame supports maximize/restore
 and global/per-panel locking. Game output cannot hide/minimize independently.
@@ -340,6 +344,8 @@ real Mudlet when changing fonts or measurements.
 | `ui find <text>` | Lists recent GAME OUTPUT lines containing the text; click one to scroll there. |
 | `ui debug` | Prints a copyable diagnostic report: versions, connection, server features, GMCP arrival ages, owned resources and artwork. |
 | `ui sound` | Shows and changes sound alerts. The master switch is off by default. Low HP/moves sounds fire once below the threshold and re-arm after recovery or a new session; disabled/cooldown-blocked requests remain armed. Each sound has a cooldown. |
+| Music strip | ◀◀ / ▶ (❚❚ while playing) / ▶▶ step through the playlist. The title opens a menu: stop, shuffle, volume ±10, open the profile's `arjui_music` folder, rescan, then the tracks. Shuffle starts on, and a first play starts on a random track. Nothing plays until the player presses play. |
+| `ui music` | Shows the player state and track list, and offers the same controls as commands. Volume applies from the next track, because Mudlet cannot change a playing track's volume. |
 | Room name | Tooltip adds room number, zone, terrain name and coordinates when the server sends them (wilderness: terrain only). |
 | `mapper legend` | Prints the server's default wilderness glyphs in the profile palette. |
 | `ui set chatGag on` | Hides a complete matched chat copy, including wrapped rows, in either arrival order within three seconds; off by default. Unmatched output remains visible. Turning it off or ending the session clears pending matches. |
@@ -506,7 +512,8 @@ or use `look` to obtain fresh room data and retry.
 | Storage | Contents and lifetime |
 | --- | --- |
 | `arjui_layout_v2.json` | Dashboard modes, normal rectangles, locks, hidden/minimized flags and ROOM selection. Maximize is transient. |
-| `arjui_settings.json` | Seven display/input toggles: `compactHeader` defaults off; the other six default on |
+| `arjui_settings.json` | Display/input toggles (`compactHeader` and `chatGag` default off, the others on), sound alert preferences, and music volume, shuffle, strip visibility and last track |
+| `arjui_music/` | The player's own music files, read on startup and `ui music rescan`; package updates never touch them |
 | `arjui_custom_commands.json` | Custom context-menu actions |
 | `arjauto.json` | Automation toggles, variables, rescue list, bidscores, and login commands |
 | Memory | Character state, captures, damage counters, chat/contact history, map cache and current location |
@@ -526,6 +533,16 @@ group, quest, capture, ship, and current-map state is cleared, and pending
 actions are canceled. Preferences and in-memory chat remain. Map downloads
 and delayed actions must not apply to the next character session.
 
+Music plays through Mudlet's music channel under the `arjui-music` key and
+tag, separate from the `arjui` alert sounds. The playlist is the package's
+`music/` folder followed by the profile's `arjui_music/` folder, each in name
+order. A track that ends starts the next one (or a random different one with
+shuffle). The generator is seeded once per Mudlet session so shuffle does not
+replay one order. Mudlet 4.19.1 raises `sysMediaFinished` for every stop, with only
+the file name and path, so a finish advances only when it names the current
+track, playback is still ours and the track did not start this second.
+Teardown stops the music; hiding the UI does not.
+
 Each script tracks the runtime resources it creates. Package uninstall calls
 the three cleanup paths to remove aliases, triggers, keys, handlers, timers,
 and widgets. New callbacks or delayed work must join the owning script's
@@ -540,7 +557,14 @@ defaults with local diagnostics. Writes use a temporary file plus replacement.
 [`build.py`](../build.py) fills the three Lua placeholders in
 [`src/package.xml`](../src/package.xml), injects `VERSION` into packaged
 metadata and `ArjUI.VERSION`, validates XML, and copies assets into the
-`.mpackage`. Edit sources and rebuild; never hand-edit the archive. Repository
+`.mpackage`. Audio in `src/assets/music/` ships as-is in the archive and
+dominates its size: the 15 bundled tracks are 46 MB of a 49.8 MiB package,
+just under GitHub's 50 MiB file warning. They are MP3, the one format every
+supported Mudlet plays (Mudlet 4.x on Windows and macOS cannot decode Ogg or
+Opus). [`src/assets/music/README.txt`](../src/assets/music/README.txt) records
+the encoding. Add further bundled music only by trading out existing tracks;
+players can add any amount to their own `arjui_music/` folder.
+Edit sources and rebuild; never hand-edit the archive. Repository
 documentation is not packaged and does not need a version bump. Package
 changes follow [RELEASING.md](RELEASING.md).
 
