@@ -29,9 +29,9 @@ design decisions change. Player commands are documented in the
   percentages; long output wraps and large groups scroll inside their panel.
   Fonts and some controls have fixed sizes and need visual checks at each
   supported geometry.
-- **Make automation opt-in.** ArjAuto's behavior toggles start off on a fresh
-  profile. Saved choices persist; repeated-command timers have explicit
-  start/stop commands.
+- **Default to auto-stand.** Fresh profiles stand after recognized knockdown
+  and spell-preparation messages. Saved preferences take precedence. Other
+  ArjAuto toggles are opt-in, and repeat timers have explicit start/stop commands.
 
 ## Interface layout
 
@@ -68,6 +68,13 @@ Default rectangles (x, y, width, height as percentages of the content root):
   chat: (73.9, 80, 26, 20).
 - Vitals: (0, 80, 16.5, 19.5); tank: (16.7, 80, 28.3, 19.5);
   target: (45.5, 80, 28.2, 19.5).
+
+GAME OUTPUT uses a 16px XP bar above an 18px room and search row. The console
+fills the remaining panel height. The bar shows progress from the current
+GMCP XP and TNL snapshot. Zero TNL shows **XP ready** for a character below the
+mortal maximum and **TNL: n/a** at the maximum. **TNL: —** indicates missing
+TNL data. The Live Stats tab uses the same TNL display. Level changes reset
+the previous-gain comparison.
 
 The bottom strip is slightly taller to preserve combat labels below the new
 frame controls. Names/positions use 16px, HP uses 16px, affects headers 14px;

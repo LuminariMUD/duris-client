@@ -4,6 +4,10 @@
 
 - Auto-stand now defaults to on for profiles without a saved auto-stand setting. The client sends `stand` after recognized knockdowns or when memorization, prayer, or infusion finishes. Saved choices still apply. Use `auto autoStand off` to disable it.
 
+## 2.12.3 - 2026-11-21
+
+- The GAME OUTPUT XP bar shows progress toward the next level from the game's current XP and XP remaining. It keeps the same fill after reconnecting, distinguishes a met XP threshold from unavailable progress, and clears the last-gain label on level changes. The label fits in short windows.
+
 ## 2.12.2 - 2026-11-21
 
 - PLAYERS uses Duris room selectors for Look, Assist, Follow, Rescue, and Group. This lets Look identify the selected opposing player under racewar. Consent, custom actions, and older servers retain name targeting. Player menus close when the room snapshot changes or GMCP stops.
