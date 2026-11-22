@@ -1590,3 +1590,19 @@ of quoted and standalone notifications exercised the incoming text triggers,
 including the archived wall-kick and sweep forms. A saved profile without
 `autoStand` kept its other settings and adopted the default. Reviewed the
 automation and context-menu screenshots and the empty Errors view.
+
+## 2.14.0 Music player (2026-11-22)
+
+Mudlet 5.0.1 on Linux/Xvfb passed 79 music assertions at 1280×720 and
+1920×1080. The real media API kept a bundled MP3 playing and restarted it
+when reselected after two seconds. The isolated media fixtures covered
+synchronous stop events, delayed events for the old playback, short starts
+and decode failures, legacy finish and pause behavior, zero volume and
+recovery, a missing local file, saved preferences, and teardown.
+
+Reviewed the playing strip, title-click menu and Errors view in
+`queue-58-final` runs `20261122T152225Z-3ccdb9b4-music` and
+`20261122T152225Z-af210b65-music`. The legacy fixture models the 4.19.1
+table-form query returning a boolean and checks the working positional query.
+FFmpeg decoded all 15 bundled MP3s to completion. Audible playback, native
+desktop DPI, Mudlet 4.19.1 and live Duris remain unverified.

@@ -39,6 +39,7 @@ getLines
 getMainWindowSize
 getMousePosition
 getMudletHomeDir
+getPlayingMusic
 getMudletVersion
 getOS
 getProfileName
@@ -56,6 +57,7 @@ killAnonymousEventHandler
 killKey
 killTimer
 killTrigger
+lfs
 line
 matches
 math
@@ -67,7 +69,9 @@ openUrl
 os
 pairs
 paste
+pauseMusic
 pcall
+playMusicFile
 playSoundFile
 registerAnonymousEventHandler
 replace
@@ -91,6 +95,7 @@ setConfig
 setFgColor
 setUnderline
 speedwalk
+stopMusic
 stopSounds
 string
 table

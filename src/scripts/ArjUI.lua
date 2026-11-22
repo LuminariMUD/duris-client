@@ -26,6 +26,7 @@ ArjUI.tellContacts = {}  -- List of players we've had tells with
 
 function ArjUI:kill()
   self:stopSounds()
+  self:musicStop()
   if self.panelGesture then self:finishPanelGesture(self.panelGesture) end
   if self.panels then self:saveLayout() end
   for _,panel in pairs(self.panels or {}) do self:disposeWidget(panel.frame) end
@@ -575,6 +576,9 @@ function ArjUI:applyPanelLayout()
   self:reconcilePanelViews()
   if self.maximizedPanel and not self.hidden then self.panels[self.maximizedPanel].frame:raiseAll() end
   if self.panelsButton then self.panelsButton:raise(); self.resetLayoutButton:raise() end
+  if self.musicTitle and self.music.show and self.musicFits then
+    for _,w in ipairs(self:musicWidgets()) do w:raise() end
+  end
 end
 
 function ArjUI:finishPanelGesture(panel)
@@ -2028,6 +2032,7 @@ function ArjUI:init()
 
   self:resetCharacterState()
   self:setupPanelControls()
+  self:setupMusicPlayer()
   self:loadLayout()
 
   local hid
@@ -2103,6 +2108,7 @@ function ArjUI:layout()
     local controlsY=math.max(0,banner-24)
     self.panelsButton:move(insetX,controlsY)
     self.resetLayoutButton:move(insetX+80,controlsY)
+    self:layoutMusic(insetX,controlsY,rootW)
   end
   self:applyPanelLayout()
   self:refreshPanelContent()
@@ -2841,6 +2847,10 @@ function ArjUI:debugReportLines()
     for _, c in ipairs(self.SOUND_CHANNELS) do if self.sound.channels[c.key] then on[#on + 1] = c.key end end
     add("Sound: %s, volume %d, channels %s", self.sound.enabled and "on" or "off", self.sound.volume,
       #on > 0 and table.concat(on, " ") or "none")
+  end
+  if self.music then
+    add("Music: %s, %d tracks, volume %d, shuffle %s, player %s", self.musicState or "stopped", #(self.musicTracks or {}),
+      self.music.volume, self.music.shuffle and "on" or "off", self.music.show and "shown" or "hidden")
   end
   local art = self.artwork or {}
   add("Artwork: frame %s, backdrop %s", art.frame and "found" or "MISSING", art.scene and "found" or "MISSING")
@@ -4908,6 +4918,7 @@ function ArjUI:loadSettings()
   for k, v in pairs(self.settingsDefaults) do self.settings[k] = v end
   local data=self:readProfileJSON(getMudletHomeDir().."/arjui_settings.json")
   self.sound = self:normalizeSound(data and data.sound)
+  self.music = self:normalizeMusic(data and data.music)
   if data then
     self.shipMode = data.shipMode=="details" and "details" or "bridge"
     self.f3Paused = data.f3Paused == true
@@ -4923,6 +4934,7 @@ function ArjUI:saveSettings()
   data.shipMode=self.shipMode or "bridge"
   if self.f3Paused then data.f3Paused = true end
   if self.sound then data.sound = self:normalizeSound(self.sound) end
+  if self.music then data.music = self:normalizeMusic(self.music) end
   return self:writeProfileJSON(path,data,"UI settings")
 end
 
@@ -6060,6 +6072,7 @@ function ArjUI:showHelp()
   self:note("<white>ui on / ui off<dim_gray>        build or hide the interface")
   self:note("<white>ui debug<dim_gray>              diagnostic report to paste into bug reports")
   self:note("<white>ui sound<dim_gray>              sound alerts (off by default): tells, chat, low HP/moves, banners")
+  self:note("<white>ui music<dim_gray>              music player (top right): track list, play/pause/next, volume, shuffle")
   self:note("<white>ui damage<dim_gray>             session damage report; <white>ui damage reset<dim_gray> clears it")
   self:note("<white>ui layout<dim_gray>             panel controls and reset; right-click a panel title for actions")
   self:note("<white>ui set<dim_gray>                list toggles; <white>ui set <name> on|off<dim_gray> changes one")
@@ -6242,6 +6255,396 @@ function ArjUI:soundCommand(args)
   if changed then
     if not self:saveSettings() then self.sound = prior; return end
     self:soundStatus()
+  end
+end
+
+-- ============================================================
+-- MUSIC PLAYER (ui music)
+-- ============================================================
+-- A small playlist in the header's top-right corner. Tracks come from the
+-- package's music/ folder, then the profile's arjui_music/ folder, where a
+-- player can drop their own files (`ui music rescan` picks them up). Shuffle
+-- is on by default. Nothing plays until the player presses play. Music uses Mudlet's music channel
+-- under its own key and tag, so alert sounds neither stop nor replace it.
+--
+-- Mudlet 4.19.1 has no pauseMusic and its finish event only identifies
+-- the file. Newer events identify the playback by key and can report a
+-- successful start even for a short track.
+ArjUI.MUSIC_TAG = "arjui-music"
+ArjUI.MUSIC_FOLDER = "arjui_music"
+ArjUI.MUSIC_EXTENSIONS = { mp3 = true, ogg = true, oga = true, opus = true, wav = true,
+  flac = true, aac = true, m4a = true }
+ArjUI.MUSIC_DEFAULTS = { volume = 40, shuffle = true, show = true }
+ArjUI.MUSIC_BUTTON, ArjUI.MUSIC_GAP = 24, 2
+ArjUI.MUSIC_TITLE_MIN, ArjUI.MUSIC_TITLE_MAX = 70, 170
+
+function ArjUI:normalizeMusic(data)
+  local d = self.MUSIC_DEFAULTS
+  data = type(data) == "table" and data or {}
+  local out = {
+    volume = clampInt(data.volume, 0, 100, d.volume),
+    shuffle = d.shuffle,
+    show = d.show,
+  }
+  if type(data.shuffle) == "boolean" then out.shuffle = data.shuffle end
+  if type(data.show) == "boolean" then out.show = data.show end
+  if type(data.track) == "string" and data.track ~= "" then out.track = data.track end
+  return out
+end
+
+-- "03 - Storm_over_the_Keep.mp3" -> "Storm over the Keep". Up to three leading
+-- digits followed by a separator are a track number; "1984 Theme" keeps its year.
+local function musicTitle(file)
+  local t = file:gsub("%.[%w]+$", ""):gsub("_", " ")
+  local stripped = t:gsub("^%d%d?%d?[%s%-%.%)]+", "")
+  if stripped:match("%S") then t = stripped end
+  t = t:gsub("^%s+", ""):gsub("%s+$", ""):gsub("%s+", " ")
+  return t ~= "" and t or file
+end
+
+local function shorten(text, chars)
+  if #text <= chars then return text end
+  -- Cut on a UTF-8 character boundary.
+  local cut = math.max(1, chars - 1)
+  while cut > 1 and text:byte(cut + 1) and text:byte(cut + 1) >= 128 and text:byte(cut + 1) < 192 do cut = cut - 1 end
+  return text:sub(1, cut) .. "…"
+end
+
+function ArjUI:musicUserFolder()
+  return (getMudletHomeDir() .. "/" .. self.MUSIC_FOLDER):gsub("\\", "/")
+end
+
+function ArjUI:musicFolders()
+  local home = getMudletHomeDir():gsub("\\", "/")
+  local folders = {}
+  for _, root in ipairs({ home, home .. "/profiles/" .. getProfileName() }) do
+    for _, package in ipairs({ "Arjinius Client", "Arjinius Client V1.0" }) do
+      folders[#folders + 1] = root .. "/" .. package .. "/music"
+    end
+  end
+  folders[#folders + 1] = self:musicUserFolder()
+  return folders
+end
+
+-- Rebuild the playlist: each folder in name order, the first copy of a file
+-- name wins. Keeps the current track selected when it is still present.
+function ArjUI:scanMusic()
+  local tracks, seen = {}, {}
+  local current = self.musicTracks and self.musicIndex and self.musicTracks[self.musicIndex]
+  if lfs and lfs.dir and lfs.attributes then
+    for _, folder in ipairs(self:musicFolders()) do
+      if lfs.attributes(folder, "mode") == "directory" then
+        local names = {}
+        pcall(function() for f in lfs.dir(folder) do names[#names + 1] = f end end)
+        table.sort(names, function(a, b) return a:lower() < b:lower() end)
+        for _, f in ipairs(names) do
+          local ext = f:match("%.(%w+)$")
+          local path = folder .. "/" .. f
+          if f:sub(1, 1) ~= "." and ext and self.MUSIC_EXTENSIONS[ext:lower()] and not seen[f:lower()]
+            and lfs.attributes(path, "mode") == "file" then
+            seen[f:lower()] = true
+            tracks[#tracks + 1] = { file = f, path = path, title = musicTitle(f) }
+          end
+        end
+      end
+    end
+  end
+  self.musicTracks = tracks
+  self.musicIndex = nil
+  local want = current and current.file or (self.music and self.music.track)
+  for i, t in ipairs(tracks) do if t.file == want then self.musicIndex = i end end
+  if current and not self.musicIndex and self.musicState ~= "stopped" then self:musicStop() end
+  self:renderMusic()
+  return tracks
+end
+
+function ArjUI:musicFail(text)
+  self:note("<indian_red>[music] " .. text)
+end
+
+local function musicCallFailed(ok, result, message)
+  return not ok or result == false or (result == nil and message ~= nil)
+end
+
+function ArjUI:musicPlayIndex(index, resume)
+  local tracks = self.musicTracks or self:scanMusic()
+  local track = tracks[index]
+  if not track then
+    self:musicFail("no tracks. Put .mp3 or .ogg files in " .. self:musicUserFolder() .. ", then type ui music rescan.")
+    return false
+  end
+  if not playMusicFile then self:musicFail("this Mudlet cannot play music"); return false end
+  if self.music.volume == 0 then
+    self:musicFail("music is muted. Set a volume above 0, then press play.")
+    return false
+  end
+  if lfs.attributes(track.path, "mode") ~= "file" then
+    self:musicFail("file not found: " .. track.file .. ". Type ui music rescan.")
+    return false
+  end
+  if not resume then
+    -- Stop before publishing the new identity. Older Mudlet versions can
+    -- report the stop synchronously without the key of the ended playback.
+    if self.musicNow then self:musicStop() end
+    self.musicSerial = (self.musicSerial or 0) + 1
+    self.musicNow = { file = track.file, key = self.MUSIC_TAG .. "-" .. self.musicSerial, started = getEpoch() }
+  end
+  local playback = self.musicNow
+  self.musicIndex, self.musicState = index, "playing"
+  local ok, result, err = pcall(playMusicFile, { name = track.path, volume = self.music.volume, loops = 1,
+    key = playback.key, tag = self.MUSIC_TAG, continue = resume == true })
+  if self.musicNow ~= playback then return false end
+  if musicCallFailed(ok, result, err) then
+    self:musicStop()
+    local reason = ok and err or result
+    self:musicFail("Mudlet could not play " .. track.file .. (reason and (": " .. tostring(reason)) or ""))
+    return false
+  end
+  if self.music.track ~= track.file then self.music.track = track.file; self:saveSettings() end
+  self:renderMusic()
+  return true
+end
+
+function ArjUI:musicStop()
+  self.musicState, self.musicNow = "stopped", nil
+  if stopMusic then pcall(stopMusic, { tag = self.MUSIC_TAG }) end
+  self:renderMusic()
+end
+
+-- Play from stopped, resume from paused, pause (or stop on 4.19.1) while playing.
+function ArjUI:musicToggle()
+  local tracks = self.musicTracks or self:scanMusic()
+  if self.musicState == "playing" then
+    if pauseMusic then
+      local ok, result, err = pcall(pauseMusic, { tag = self.MUSIC_TAG })
+      if musicCallFailed(ok, result, err) then
+        self:musicFail("Mudlet could not pause the current track.")
+      else
+        self.musicState = "paused"
+        self:renderMusic()
+      end
+    else
+      self:musicStop()
+    end
+  elseif self.musicState == "paused" and self.musicIndex and tracks[self.musicIndex] then
+    self:musicPlayIndex(self.musicIndex, true)
+  else
+    -- A first play with shuffle on starts anywhere in the playlist.
+    local first = self.music.shuffle and #tracks > 0 and math.random(#tracks) or 1
+    self:musicPlayIndex(self.musicIndex or first)
+  end
+end
+
+function ArjUI:musicStep(direction)
+  local tracks = self.musicTracks or self:scanMusic()
+  local n = #tracks
+  if n == 0 then return self:musicPlayIndex(1) end
+  local i
+  if self.music.shuffle and n > 1 then
+    repeat i = math.random(n) until i ~= self.musicIndex
+  elseif not self.musicIndex then
+    i = direction > 0 and 1 or n
+  else
+    i = (self.musicIndex - 1 + direction) % n + 1
+  end
+  return self:musicPlayIndex(i)
+end
+
+-- sysMediaFinished: (event, fileName, path[, mediaType, key, tag]); Mudlet
+-- 5 adds the last three.
+function ArjUI:onMusicFinished(file, path, mediaType, key)
+  local now = self.musicNow
+  if self.musicState ~= "playing" or not now then return end
+  if mediaType and (mediaType ~= "music" or key ~= now.key) then return end
+  local name = tostring(file ~= nil and file ~= "" and file or path or ""):gsub("\\", "/"):match("[^/]*$")
+  if name ~= now.file then return end
+  -- Legacy finish events can share a filename with other media. Mudlet 4.19.1
+  -- returns the playback list only with the positional form.
+  if not mediaType and getPlayingMusic and #(getPlayingMusic(nil, now.key) or {}) > 0 then return end
+  self.musicState, self.musicNow = "stopped", nil
+  if not now.confirmed and getEpoch() - now.started < 1 then
+    self:renderMusic()
+    self:musicFail("Mudlet could not play " .. now.file .. ". MP3 plays in every supported Mudlet.")
+  elseif not self:musicStep(1) then
+    self:renderMusic()
+  end
+end
+
+function ArjUI:setupMusicPlayer()
+  local style = self.styles.header
+  local function button(name, text, tip, callback)
+    local b = makePanel(self.main, name, 0, 0, self.MUSIC_BUTTON, 22, style)
+    b:echo(text)
+    b:setToolTip(tip)
+    b:setClickCallback(callback)
+    return b
+  end
+  self.musicPrev = button("ArjUI_MusicPrev", "◀◀", "Previous track", function() self:musicStep(-1) end)
+  self.musicPlay = button("ArjUI_MusicPlay", "▶", "Play", function() self:musicToggle() end)
+  self.musicNext = button("ArjUI_MusicNext", "▶▶", "Next track", function() self:musicStep(1) end)
+  self.musicTitle = makePanel(self.main, "ArjUI_MusicTitle", 0, 0, self.MUSIC_TITLE_MAX, 22, style)
+  self.musicTitle:setClickCallback(function() self:showMusicMenu() end)
+  self.musicTitleWidth = self.MUSIC_TITLE_MAX
+  self.musicState = "stopped"
+  self.musicNow, self.musicTracks, self.musicIndex = nil, nil, nil
+  -- Lua's generator may start from the same seed every session; shuffle
+  -- would then replay one order. Seed once per Mudlet session.
+  if not ArjUI.musicSeeded then
+    math.randomseed(os.time() + math.floor((getEpoch() % 1) * 1000))
+    math.random(); ArjUI.musicSeeded = true
+  end
+  table.insert(self.eventHandlers, registerAnonymousEventHandler("sysMediaStarted", function(_, file, path, mediaType, key)
+    local now = self.musicNow
+    if now and file == now.file and mediaType == "music" and key == now.key then now.confirmed = true end
+  end))
+  table.insert(self.eventHandlers, registerAnonymousEventHandler("sysMediaFinished", function(_, file, path, mediaType, key)
+    if ArjUI then ArjUI:onMusicFinished(file, path, mediaType, key) end
+  end))
+  self:scanMusic()
+end
+
+function ArjUI:musicWidgets()
+  return { self.musicPrev, self.musicPlay, self.musicNext, self.musicTitle }
+end
+
+-- Right-aligned in the header band, level with Panels / Reset layout. The
+-- title shrinks first; the strip hides when even the shortest one would
+-- reach the layout buttons.
+function ArjUI:layoutMusic(insetX, controlsY, rootW)
+  if not self.musicTitle then return end
+  local b, gap = self.MUSIC_BUTTON, self.MUSIC_GAP
+  local buttons = 3 * b + 3 * gap
+  local room = rootW - 172 - 12 - buttons
+  local fits = room >= self.MUSIC_TITLE_MIN
+  self.musicFits = fits
+  if not fits or not self.music.show or self.hidden then
+    for _, w in ipairs(self:musicWidgets()) do w:hide() end
+    return
+  end
+  local titleW = math.min(self.MUSIC_TITLE_MAX, room)
+  local x = insetX + rootW - buttons - titleW
+  for i, w in ipairs({ self.musicPrev, self.musicPlay, self.musicNext }) do
+    w:move(x + (i - 1) * (b + gap), controlsY); w:show(); w:raise()
+  end
+  self.musicTitle:move(x + buttons, controlsY)
+  self.musicTitle:resize(titleW, 22)
+  self.musicTitle:show(); self.musicTitle:raise()
+  if self.musicTitleWidth ~= titleW then self.musicTitleWidth = titleW; self:renderMusic() end
+end
+
+function ArjUI:renderMusic()
+  if not self.musicTitle then return end
+  local tracks = self.musicTracks or {}
+  local track = self.musicIndex and tracks[self.musicIndex]
+  local playing = self.musicState == "playing"
+  local paused = self.musicState == "paused"
+  self.musicPlay:echo(playing and "❚❚" or "▶")
+  self.musicPlay:setToolTip(playing and (pauseMusic and "Pause" or "Stop") or (paused and "Resume" or "Play"))
+  local text, tip
+  if #tracks == 0 then
+    text = "♪ No music"
+    tip = "No tracks found. Click to open the music folder,\nadd .mp3 or .ogg files, then choose Rescan."
+  else
+    local title = (track or tracks[1]).title
+    local chars = math.max(4, math.floor((self.musicTitleWidth - 16) / 6))
+    text = "♪ " .. shorten(title, chars)
+    tip = string.format("%s\nTrack %d of %d · %s · volume %d%%%s\nClick for the track list and options",
+      title, track and self.musicIndex or 1, #tracks, playing and "playing" or (paused and "paused" or "stopped"),
+      self.music.volume, self.music.shuffle and " · shuffle" or "")
+  end
+  -- A label's echo sets its own font color, so the playing gold goes there.
+  self.musicTitle:setStyleSheet(self.styles.header .. " qproperty-alignment: 'AlignLeft|AlignVCenter'; padding-left: 4px;")
+  self.musicTitle:echo(text, playing and self.colors.textGold or nil)
+  self.musicTitle:setToolTip(tip)
+end
+
+function ArjUI:openMusicFolder()
+  local folder = self:musicUserFolder()
+  if lfs and lfs.attributes(folder, "mode") ~= "directory" and lfs.mkdir then lfs.mkdir(folder) end
+  local url = "file:///" .. folder:gsub("^/+", "")
+  openUrl(url)
+  self:note("<dim_gray>[music] your music folder: <white>" .. folder .. "<dim_gray> · add files, then type <white>ui music rescan")
+end
+
+function ArjUI:setMusicOption(key, value)
+  local prior = self:normalizeMusic(self.music)
+  self.music[key] = value
+  if not self:saveSettings() then self.music = prior; return false end
+  self:renderMusic()
+  return true
+end
+
+function ArjUI:showMusicMenu()
+  local tracks = self.musicTracks or self:scanMusic()
+  local m = self.music
+  local items = {}
+  if self.musicState ~= "stopped" then
+    items[#items + 1] = { text = "■ Stop", callback = function() self:musicStop() end }
+  end
+  items[#items + 1] = { text = "Shuffle: " .. (m.shuffle and "on" or "off"), callback = function() self:setMusicOption("shuffle", not m.shuffle) end }
+  for _, step in ipairs({ 10, -10 }) do
+    local v = math.max(0, math.min(100, m.volume + step))
+    if v ~= m.volume then
+      items[#items + 1] = { text = string.format("Volume %d%% → %d%%", m.volume, v), callback = function() self:musicCommand("volume " .. v) end }
+    end
+  end
+  items[#items + 1] = { text = "Open music folder", callback = function() self:openMusicFolder() end }
+  items[#items + 1] = { text = "Rescan folders", callback = function() self:musicCommand("rescan") end }
+  for i, t in ipairs(tracks) do
+    local mark = i == self.musicIndex and (self.musicState == "playing" and "▶ " or "· ") or "   "
+    items[#items + 1] = { text = mark .. shorten(t.title, 22), callback = function() self:musicPlayIndex(i) end }
+  end
+  self:showContextMenu(items)
+end
+
+function ArjUI:musicStatus()
+  local m, tracks = self.music, self.musicTracks or {}
+  local track = self.musicIndex and tracks[self.musicIndex]
+  self:note(string.format("<gold>══ Music: %s, volume %d, shuffle %s ══", self.musicState or "stopped", m.volume, m.shuffle and "on" or "off"))
+  if #tracks == 0 then
+    self:note("<dim_gray>No tracks. Put .mp3 or .ogg files in <white>" .. self:musicUserFolder() .. "<dim_gray>, then type <white>ui music rescan")
+  end
+  for i, t in ipairs(tracks) do
+    self:note(string.format("%s%2d. %s<dim_gray>  %s", t == track and "<gold>" or "<white>", i, t.title, t.file))
+  end
+  self:note("<dim_gray>ui music play|pause|stop|next|prev · ui music <number> · ui music volume <0-100>")
+  self:note("<dim_gray>ui music shuffle on|off · ui music show|hide · ui music folder · ui music rescan")
+end
+
+function ArjUI:musicCommand(args)
+  args = (args or ""):lower()
+  local words = {}
+  for w in args:gmatch("%S+") do words[#words + 1] = w end
+  local a, b = words[1], words[2]
+  if words[3] then a = "?" end
+  if not a then self:musicStatus()
+  elseif a == "play" and not b then
+    if self.musicState ~= "playing" then self:musicToggle() end
+  elseif a == "pause" and not b then
+    if self.musicState == "playing" then self:musicToggle() end
+  elseif a == "stop" and not b then self:musicStop()
+  elseif (a == "next" or a == "prev") and not b then self:musicStep(a == "next" and 1 or -1)
+  elseif tonumber(a) and not b then
+    local n = math.floor(tonumber(a))
+    if not (self.musicTracks or {})[n] then self:musicFail("no track " .. a .. ". Type ui music for the list."); return end
+    self:musicPlayIndex(n)
+  elseif a == "volume" and tonumber(b) then
+    local v = clampInt(b, 0, 100, self.music.volume)
+    if self:setMusicOption("volume", v) then
+      if v == 0 then self:musicStop() end
+      self:note(string.format("<dim_gray>[music] volume %d%%%s", v, self.musicState == "stopped" and "" or ", from the next track"))
+    end
+  elseif a == "shuffle" and (b == "on" or b == "off") then
+    if self:setMusicOption("shuffle", b == "on") then self:note("<dim_gray>[music] shuffle " .. b) end
+  elseif (a == "show" or a == "hide") and not b then
+    if self:setMusicOption("show", a == "show") then self:layout() end
+    if a == "show" and not self.musicFits then self:note("<dim_gray>[music] the window is too narrow to show the player") end
+  elseif a == "folder" and not b then self:openMusicFolder()
+  elseif a == "rescan" and not b then
+    local n = #self:scanMusic()
+    self:note(string.format("<dim_gray>[music] %d track%s found", n, n == 1 and "" or "s"))
+  else
+    self:musicFail("unknown command. <dim_gray>Type <white>ui music<dim_gray> for usage.")
   end
 end
 
@@ -6714,6 +7117,7 @@ function ArjUI:setupAliases()
   table.insert(self.portAliases, tempAlias("^ui set$", function() ArjUI:showSettings() end))
   -- ui find <text>
   table.insert(self.portAliases, tempAlias("^ui sound(?: (.+))?$", function() ArjUI:soundCommand(matches[2]) end))
+  table.insert(self.portAliases, tempAlias("^ui music(?: (.+))?$", function() ArjUI:musicCommand(matches[2]) end))
   table.insert(self.portAliases, tempAlias("^ui find (.+)$", function() ArjUI:findInOutput(matches[2]) end))
   table.insert(self.portAliases, tempAlias("^ui set (\\w+) (on|off)$", function()
     local key, val = matches[2], matches[3] == "on"
